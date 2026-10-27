@@ -37,6 +37,7 @@ Run everything here; the CI does not (it only deploys).
 
 ```
 vendor/bin/phpunit && vendor/bin/phpcs && vendor/bin/phpstan
+TEST_MYSQL_DSN='mysql:host=127.0.0.1;dbname=lista_test' vendor/bin/phpunit   # also on MySQL when SQL changes
 npm run check                 # tsc (app, service worker, scripts) + node --test
 npm run build && npm run e2e  # Chromium: sign in, go offline, reload (UI, worker or API changes)
 ```
@@ -60,7 +61,9 @@ hand (`DEPLOY.md`, "Pruebas en los dispositivos").
 Migrations are numbered `.sql` files in `migrations/`, applied by the app itself on the first
 request after a deploy (the host has no shell and the CI only deploys). Never edit one that
 has been deployed; add a new file. Write for MySQL **and** SQLite (tests use SQLite): the
-common subset, one `;` per statement, idempotent (`IF NOT EXISTS`).
+common subset, one `;` per statement, idempotent (`IF NOT EXISTS`). Run the suite against a
+MySQL-compatible server (`TEST_MYSQL_DSN`, see `tests/Support/TestDatabase.php`; MariaDB is what the
+sandbox can install, production is MySQL) whenever a migration or a query changes.
 
 ## Public repository
 

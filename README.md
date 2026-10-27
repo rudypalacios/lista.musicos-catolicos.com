@@ -50,6 +50,8 @@ All JSON, Spanish messages, `Cache-Control: no-store`. Requests that change data
 | `POST /api/login` `{email, password}` | `200 {email}` + cookie · `400` · `401` · `429` |
 | `POST /api/logout` | `200 {ok}` and clears the cookie |
 | `GET /api/me` | `200 {email}` · `401` |
+| `GET /api/sync?since=N` | `200 {songs, cursor, hasMore}`: songs changed after change number N, tombstones included · `400` · `401` |
+| `POST /api/sync` `{songs: [{id, title, author, body, updatedAt, deleted}]}` | `200 {applied, ignored}`; the newest `updatedAt` (client clock, epoch ms) wins · `400` (nothing stored) · `401` |
 
 Errors: `{error: "<code>", message: "<texto en español>"}`.
 

@@ -74,7 +74,7 @@ cada deploy (`migrations/`). No hay nada que ejecutar en el servidor.
 ## Comprobar el primer deploy
 
 1. `https://lista.musicos-catolicos.com/api/health` debe responder
-   `{"status":"ok","schema":"0001_create_users"}`. Si responde HTML o 404, falta el `.htaccess`
+   `{"status":"ok","schema":"<última migración>"}` (por ejemplo `0002_create_songs`). Si responde HTML o 404, falta el `.htaccess`
    (paso 7); si responde 500, revisa el `.env` y el usuario de la base.
 2. Abre `https://lista.musicos-catolicos.com/` e inicia sesión (si usaste `OWNER_PASSWORD`, bórrala del `.env`).
 3. Si ves "La aplicación no está compilada", el deploy no corrió el build: revisa el job en *Actions*.
