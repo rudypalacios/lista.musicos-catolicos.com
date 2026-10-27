@@ -4,6 +4,6 @@
     "lib": ["ES2022", "DOM"],
     "types": ["node"]
   },
-  "include": ["*.ts", "../tests/e2e/*.ts", "../tests/e2e/*.d.ts"],
+  "include": ["*.ts", "fixtures/*.ts", "../tests/e2e/*.ts", "../tests/e2e/*.d.ts"],
   "exclude": []
 }
