@@ -18,7 +18,11 @@ error_log
 public/error_log
 .phpunit.result.cache
 
-# Editors
+# Editors and tools, as in musicos-catolicos
 .idea/
 .vscode/
+nbproject/
 .DS_Store
+.agent/
+/coverage/
+composer.phar
