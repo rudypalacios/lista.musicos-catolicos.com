@@ -573,3 +573,19 @@ input[type='search'] {
 .import-card .preview {
     background: var(--bg);
 }
+
+input[type='file'] {
+    width: 100%;
+    padding: 0.5rem;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px dashed var(--border);
+    border-radius: 0.5rem;
+    font: inherit;
+}
+
+.help {
+    margin: 0.4rem 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+}

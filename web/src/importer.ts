@@ -115,6 +115,11 @@ export function importChordsOverLyrics(source: string): Imported {
             text = text.slice(verse[0].length);
         }
 
+        // The indent came from the page, not from the words ("    a un mundo…" under "1. Un pueblo…")
+        const indent = text.length - text.trimStart().length;
+        text = text.slice(indent);
+        offset += indent;
+
         if (chordRow === null) {
             lines.push(text);
             continue;

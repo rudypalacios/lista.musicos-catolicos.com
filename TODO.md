@@ -20,10 +20,11 @@ remember it.
 - [x] Importer: pasted "chords above the lyrics" text to ChordPro, with a review step. Handles a whole
       Mass pasted at once (one song per page, or split at "PART:" headers), two-column pages, hanging
       verse numbers and the zero-width characters Word leaves in PDFs.
-- [ ] Import straight from a PDF file (pdf.js, self-hosted): text items carry their x position, so
-      each chord can be matched to the exact letter instead of the approximate column that
-      `pdftotext -layout` gives (a letter or two off today). Needs the owner's go-ahead: a new
-      dependency (~1 MB, loaded only on the import screen, so not available offline).
+- [x] Import straight from a PDF file (pdf.js, bundled and served from this origin): every chord is
+      matched to the syllable it is over by its x position on the page; a whole Mass (one song per
+      page), two-column pages and hanging verse numbers work. The reader loads only on the import
+      screen (about 1.7 MB the first time, then cached by the browser), so importing wants a
+      connection once; reading and writing songs do not.
 - [x] Viewer with transposition, Do/C notation, lyrics size and fit-to-screen (toggle per device;
       maximum 34px, minimum 13px, two columns on wide screens, then scroll).
 - [ ] **Owner, on the real devices** (`DEPLOY.md`, "Pruebas en los dispositivos"): write a song

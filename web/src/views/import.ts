@@ -31,6 +31,34 @@ export function importView(app: App, navigate: Navigate): View {
     });
     const convert = h('button', { type: 'button', class: 'button button--primary' }, 'Convertir');
     const pasteError = h('p', { class: 'error', role: 'alert' });
+    const pdf = h('input', { id: 'pdf', type: 'file', accept: 'application/pdf,.pdf' });
+    const pdfStatus = h('p', { class: 'help', role: 'status' });
+
+    // A PDF is read where the chords really are (their position on the page), which a paste cannot say
+    pdf.addEventListener('change', () => {
+        const file = pdf.files?.[0];
+        if (file === undefined) {
+            return;
+        }
+        pasteError.textContent = '';
+        pdfStatus.textContent = 'Leyendo el PDF…';
+        void import('../pdf/read.ts')
+            .then((reader) => reader.readPdf(file))
+            .then((text) => {
+                paste.value = text;
+                pdfStatus.textContent = `Leído: ${file.name}`;
+                convert.click();
+            })
+            .catch((failure: unknown) => {
+                pdfStatus.textContent = '';
+                pasteError.textContent = failure instanceof Error && failure.name === 'PdfError'
+                    ? failure.message
+                    : 'No se pudo cargar el lector de PDF. Se necesita conexión la primera vez.';
+            })
+            .finally(() => {
+                pdf.value = '';
+            });
+    });
 
     const heading = h('h2', {}, 'Revisa el resultado');
     const cards = h('div', { class: 'cards' });
@@ -83,8 +111,12 @@ export function importView(app: App, navigate: Navigate): View {
         'div',
         { class: 'page' },
         h('h2', {}, 'Importar cantos'),
-        h('p', {}, 'Pega los cantos como los tienes escritos, con los acordes en una línea arriba de la letra. Si pegas varios (una misa con un canto por hoja), se separan solos. Se convierten a ChordPro y los revisas antes de guardarlos.'),
-        h('label', { for: 'paste' }, 'Texto'),
+        h('p', {}, 'Sube un PDF (lo más exacto: lee dónde está cada acorde en la hoja) o pega el texto, con los acordes en una línea arriba de la letra. Si hay varios cantos (una misa con un canto por hoja), se separan solos. Se convierten a ChordPro y los revisas antes de guardarlos.'),
+        h('p', { class: 'help' }, 'El PDF se lee en tu dispositivo: no se envía a ningún servidor.'),
+        h('label', { for: 'pdf' }, 'Subir un PDF'),
+        pdf,
+        pdfStatus,
+        h('label', { for: 'paste' }, 'O pegar el texto'),
         paste,
         pasteError,
         h('div', { class: 'actions' }, convert),

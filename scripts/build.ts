@@ -26,30 +26,72 @@ rmSync(join(publicDir, 'assets'), { recursive: true, force: true });
 rmSync(join(publicDir, 'index.html'), { force: true });
 rmSync(join(publicDir, 'sw.js'), { force: true });
 
-const app = await build({
-    entryPoints: { main: join(root, 'web/src/main.ts') },
+// The PDF reader's worker is its own file: the app needs to know its URL, so it is built first
+const worker = await build({
+    entryPoints: { 'pdf-worker': join(root, 'node_modules/pdfjs-dist/legacy/build/pdf.worker.min.mjs') },
     outdir: join(publicDir, 'assets'),
     entryNames: '[name]-[hash]',
     bundle: true,
     minify: true,
     format: 'esm',
-    // Safari 15 (iPads that do not update) is the oldest browser this has to run on
     target: ['es2022', 'safari15'],
     metafile: true,
     logLevel: 'info',
 });
-
-const outputs = Object.keys(app.metafile.outputs).map((path) => '/' + relative(publicDir, join(root, path)));
-const js = outputs.find((url) => url.endsWith('.js'));
-const css = outputs.find((url) => url.endsWith('.css'));
-if (js === undefined || css === undefined) {
-    throw new Error('The bundle must produce one JS and one CSS file, got: ' + outputs.join(', '));
+const workerFile = Object.keys(worker.metafile.outputs)[0];
+if (workerFile === undefined) {
+    throw new Error('The PDF worker was not built');
 }
+const workerUrl = '/' + relative(publicDir, join(root, workerFile));
+
+const app = await build({
+    entryPoints: { main: join(root, 'web/src/main.ts') },
+    outdir: join(publicDir, 'assets'),
+    entryNames: '[name]-[hash]',
+    // The PDF reader is a separate chunk, fetched only when a PDF is chosen (and not precached)
+    chunkNames: 'chunk-[hash]',
+    splitting: true,
+    bundle: true,
+    minify: true,
+    format: 'esm',
+    // Safari 15 (iPads that do not update) is the oldest browser this has to run on
+    target: ['es2022', 'safari15'],
+    define: { __PDF_WORKER_URL__: JSON.stringify(workerUrl) },
+    metafile: true,
+    logLevel: 'info',
+});
+
+// What the page loads at once: main's script, every chunk it imports statically (code shared with
+// the lazy parts ends up in chunks), and the one stylesheet. What loads on demand (the PDF reader
+// and its worker) is not precached: it is only needed to import, which wants a connection anyway.
+const outputs = app.metafile.outputs;
+const mainPath = Object.keys(outputs).find((path) => path.endsWith('.js') && outputs[path]?.entryPoint?.endsWith('main.ts') === true);
+const cssPath = Object.keys(outputs).find((path) => path.endsWith('.css'));
+if (mainPath === undefined || cssPath === undefined) {
+    throw new Error('The bundle must produce main\'s script and a stylesheet, got: ' + Object.keys(outputs).join(', '));
+}
+const loaded = new Set<string>();
+const visit = (path: string): void => {
+    if (loaded.has(path)) {
+        return;
+    }
+    loaded.add(path);
+    for (const edge of outputs[path]?.imports ?? []) {
+        if (edge.kind === 'import-statement' && outputs[edge.path] !== undefined) {
+            visit(edge.path);
+        }
+    }
+};
+visit(mainPath);
+const toUrl = (path: string): string => '/' + relative(publicDir, join(root, path));
+const js = toUrl(mainPath);
+const css = toUrl(cssPath);
+const scripts = [...loaded].map(toUrl);
 
 const html = readFileSync(join(root, 'web/index.html'), 'utf8').replace('%JS%', js).replace('%CSS%', css);
 writeFileSync(join(publicDir, 'index.html'), html);
 
-const shellUrls = ['/index.html', js, css, ...STATIC_SHELL];
+const shellUrls = ['/index.html', ...scripts, css, ...STATIC_SHELL];
 const files: ShellFile[] = shellUrls.map((url) => ({ url, content: readFileSync(join(publicDir, url)) }));
 const version = shellVersion(files);
 

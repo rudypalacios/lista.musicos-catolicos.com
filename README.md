@@ -66,3 +66,9 @@ Errors: `{error: "<code>", message: "<texto en español>"}`.
 - [`DEPLOY.md`](DEPLOY.md): hosting, first deploy, testing on the devices (Spanish).
 - [`TODO.md`](TODO.md): what is left.
 - [`CLAUDE.md`](CLAUDE.md): working rules for this repository.
+
+## Third-party code
+
+- [pdf.js](https://github.com/mozilla/pdf.js) (`pdfjs-dist`, Apache-2.0), the legacy build, bundled
+  by `scripts/build.ts` and served from this origin: it reads the PDFs of the import screen in the
+  browser. The text never leaves the device. Its license banner is kept in the built files.

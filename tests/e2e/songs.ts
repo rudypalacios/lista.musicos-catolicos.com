@@ -284,7 +284,7 @@ try {
 
     // ----- importing -----
     await page.goto(BASE + '/cantos/importar');
-    await page.getByLabel('Texto', { exact: true }).fill(IMPORTED);
+    await page.getByLabel('O pegar el texto').fill(IMPORTED);
     await page.getByRole('button', { name: 'Convertir' }).click();
     await page.getByRole('heading', { name: 'Revisa el resultado' }).waitFor();
     assert.equal(await page.getByLabel('Título').inputValue(), 'Sobre la mesa');
@@ -304,7 +304,7 @@ try {
         'SALIDA: Canto de despedida\n\n  G        D\nVamos en paz a servir\n',
     ].join('\f');
     await page.goto(BASE + '/cantos/importar');
-    await page.getByLabel('Texto', { exact: true }).fill(mass);
+    await page.getByLabel('O pegar el texto').fill(mass);
     await page.getByRole('button', { name: 'Convertir' }).click();
     await page.getByRole('heading', { name: /Se encontraron 3 cantos/ }).waitFor();
     assert.equal(await page.locator('.import-card').count(), 3);

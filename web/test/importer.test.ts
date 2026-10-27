@@ -254,7 +254,7 @@ describe('importChordsOverLyrics: sheets as a PDF gives them', () => {
     it('puts the chords of a numbered verse on the words, not on the number', () => {
         const body = importChordsOverLyrics(sheet).body;
 
-        assert.match(body, /\{c: Verso 1\}\n\[C\]Un puebl\[Am\]o que \[Dm\]espera el mañana,\n {4}y sa\[G\]be que Dio\[C\]s está aquí/);
+        assert.match(body, /\{c: Verso 1\}\n\[C\]Un puebl\[Am\]o que \[Dm\]espera el mañana,\ny sa\[G\]be que Dio\[C\]s está aquí/);
         assert.match(body, /\{c: Verso 2\}\n\[C\]Un puebl\[Am\]o que canta/);
     });
 

@@ -1,10 +1,10 @@
 /** What the e2e scripts share: the real PHP server on a throwaway SQLite database, and a few helpers */
 import { spawn, type ChildProcess } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { Page } from 'playwright';
+import type { BrowserContext, Page } from 'playwright';
 
 // Playwright is installed globally in the dev container, not in package.json (it would
 // download browsers on every install). CommonJS resolution honours NODE_PATH; import does not.
@@ -80,4 +80,37 @@ export async function signIn(page: Page, base: string): Promise<void> {
 /** Waits until the header says the songs are synced (nothing left to send) */
 export async function synced(page: Page): Promise<void> {
     await page.waitForFunction(() => document.querySelector('.sync')?.textContent === 'Sincronizado', { timeout: 15000 });
+}
+
+/** The Content-Security-Policy that public/.htaccess sends in production */
+export function contentSecurityPolicy(): string {
+    const htaccess = readFileSync(new URL('../../public/.htaccess', import.meta.url), 'utf8');
+    const match = /Content-Security-Policy "([^"]+)"/.exec(htaccess);
+    if (match?.[1] === undefined) {
+        throw new Error('public/.htaccess has no Content-Security-Policy');
+    }
+
+    return match[1];
+}
+
+/**
+ * Makes every response carry the production policy, as Apache does, so a script, a style, an
+ * eval or a worker that the policy forbids fails here and not only on the host. The built-in PHP
+ * server sends no such header, and the service worker would hide it, so use it with
+ * `serviceWorkers: 'block'`. Returns the policy violations the page reports.
+ */
+export async function enforcePolicy(context: BrowserContext, page: Page): Promise<string[]> {
+    const policy = contentSecurityPolicy();
+    await context.route('**/*', async (route) => {
+        const response = await route.fetch();
+        await route.fulfill({ response, headers: { ...response.headers(), 'content-security-policy': policy } });
+    });
+    const violations: string[] = [];
+    page.on('console', (message) => {
+        if (/content security policy/i.test(message.text())) {
+            violations.push(message.text());
+        }
+    });
+
+    return violations;
 }
