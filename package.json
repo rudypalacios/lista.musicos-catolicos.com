@@ -1,0 +1,20 @@
+{
+  "name": "lista-musicos-catolicos",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "build": "node scripts/build.ts",
+    "typecheck": "tsc -p web/tsconfig.json --noEmit && tsc -p web/tsconfig.sw.json --noEmit && tsc -p scripts/tsconfig.json --noEmit",
+    "test": "node --test \"web/test/*.test.ts\"",
+    "check": "npm run typecheck && npm test",
+    "e2e": "node tests/e2e/offline.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.7.0"
+  }
+}
