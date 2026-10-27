@@ -1,5 +1,5 @@
 import type { ErrorKinds } from '../../src/data/sync.ts';
-import type { Pulled, Pushed, Remote, Song } from '../../src/data/types.ts';
+import type { Collection, Pulled, Pushed, Records, Remote, Setlist, Song } from '../../src/data/types.ts';
 
 /** What the fake remote throws; the engine recognises them through FAKE_ERRORS */
 export class FakeNetworkError extends Error {}
@@ -13,12 +13,16 @@ export const FAKE_ERRORS: ErrorKinds = {
 };
 
 /**
- * The server of the sync API in a few lines, with the same rules as src/Sync/SongRepository.php:
- * the newest `updatedAt` wins, an equal or older one is ignored, every applied change gets the
- * next number, a pull returns what changed after a number, oldest first.
+ * The server of the sync API in a few lines, with the same rules as src/Sync/SongRepository.php
+ * and SetlistRepository.php: the newest `updatedAt` wins, an equal or older one is ignored,
+ * every applied change gets the next number (one counter for songs and setlists), a pull
+ * returns what changed after a number, oldest first, songs and setlists in one page.
  */
 export class FakeServer {
-    private rows = new Map<string, { song: Song; seq: number }>();
+    private rows: { [C in Collection]: Map<string, { record: Records[C]; seq: number }> } = {
+        songs: new Map(),
+        setlists: new Map(),
+    };
     private counter = 0;
     online = true;
     signedIn = true;
@@ -32,12 +36,16 @@ export class FakeServer {
     remote(): Remote {
         return {
             pull: (since) => this.pull(since),
-            push: (songs) => this.push(songs),
+            push: (collection, records) => this.push(collection, records),
         };
     }
 
     songs(): Song[] {
-        return [...this.rows.values()].map((row) => row.song);
+        return [...this.rows.songs.values()].map((row) => row.record);
+    }
+
+    setlists(): Setlist[] {
+        return [...this.rows.setlists.values()].map((row) => row.record);
     }
 
     private guard(): void {
@@ -49,10 +57,10 @@ export class FakeServer {
         }
     }
 
-    private async push(songs: readonly Song[]): Promise<Pushed> {
+    private async push<C extends Collection>(collection: C, records: readonly Records[C][]): Promise<Pushed> {
         this.guard();
-        this.pushes.push(songs.length);
-        if (songs.some((song) => this.refuse.has(song.id))) {
+        this.pushes.push(records.length);
+        if (records.some((record) => this.refuse.has(record.id))) {
             throw new FakeRefusal('400');
         }
         if (this.duringPush !== null) {
@@ -60,16 +68,17 @@ export class FakeServer {
             this.duringPush = null;
             await hook();
         }
+        const table = this.rows[collection] as Map<string, { record: Records[C]; seq: number }>;
         const applied: string[] = [];
         const ignored: string[] = [];
-        for (const song of songs) {
-            const existing = this.rows.get(song.id);
-            if (existing !== undefined && song.updatedAt <= existing.song.updatedAt) {
-                ignored.push(song.id);
+        for (const record of records) {
+            const existing = table.get(record.id);
+            if (existing !== undefined && record.updatedAt <= existing.record.updatedAt) {
+                ignored.push(record.id);
                 continue;
             }
-            this.rows.set(song.id, { song, seq: ++this.counter });
-            applied.push(song.id);
+            table.set(record.id, { record, seq: ++this.counter });
+            applied.push(record.id);
         }
 
         return { applied, ignored };
@@ -77,13 +86,27 @@ export class FakeServer {
 
     private pull(since: number): Promise<Pulled> {
         this.guard();
-        const changed = [...this.rows.values()].filter((row) => row.seq > since).sort((a, b) => a.seq - b.seq);
+        const changed = [
+            ...[...this.rows.songs.values()].map((row) => ({ kind: 'songs' as const, record: row.record, seq: row.seq })),
+            ...[...this.rows.setlists.values()].map((row) => ({ kind: 'setlists' as const, record: row.record, seq: row.seq })),
+        ]
+            .filter((row) => row.seq > since)
+            .sort((a, b) => a.seq - b.seq);
         const page = changed.slice(0, this.pageSize);
-
-        return Promise.resolve({
-            songs: page.map((row) => row.song),
+        const pulled: Pulled = {
+            songs: [],
+            setlists: [],
             cursor: page.length > 0 ? (page[page.length - 1]?.seq ?? since) : since,
             hasMore: changed.length > this.pageSize,
-        });
+        };
+        for (const row of page) {
+            if (row.kind === 'songs') {
+                pulled.songs.push(row.record);
+            } else {
+                pulled.setlists.push(row.record);
+            }
+        }
+
+        return Promise.resolve(pulled);
     }
 }

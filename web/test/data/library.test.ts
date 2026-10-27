@@ -22,7 +22,7 @@ describe('Library', () => {
         assert.deepEqual(song, {
             id: 'id-0', title: 'Caminamos con alegría', author: 'Anónimo', body: '[C]Caminamos', updatedAt: 1000, deletedAt: null,
         });
-        assert.deepEqual(await store.pending(), [song]);
+        assert.deepEqual(await store.pending('songs'), [song]);
     });
 
     it('lists by title in Spanish order, without the deleted ones', async () => {
@@ -62,22 +62,22 @@ describe('Library', () => {
         await library.remove(song.id);
 
         assert.equal(await library.get(song.id), undefined);
-        const tombstone = await store.getSong(song.id);
+        const tombstone = await store.get('songs', song.id);
         assert.equal(tombstone?.deletedAt, 2000);
         assert.equal(tombstone?.body, '');
-        assert.equal((await store.pending())[0]?.deletedAt, 2000);
+        assert.equal((await store.pending('songs'))[0]?.deletedAt, 2000);
     });
 
     it('ignores deleting what is not there or already gone', async () => {
         await library.remove('nope');
         const song = await library.create({ title: 'Uno', author: '', body: '' });
         await library.remove(song.id);
-        const deletedAt = (await store.getSong(song.id))?.deletedAt;
+        const deletedAt = (await store.get('songs', song.id))?.deletedAt;
         now = 9_000;
         await library.remove(song.id);
 
         assert.equal(deletedAt, 1001, 'stamped just after the song it deletes');
-        assert.equal((await store.getSong(song.id))?.deletedAt, deletedAt, 'deleting twice changes nothing');
+        assert.equal((await store.get('songs', song.id))?.deletedAt, deletedAt, 'deleting twice changes nothing');
     });
 
     it('refuses to edit a song that no longer exists', async () => {
@@ -94,7 +94,7 @@ describe('Library', () => {
     for (const [name, draft, message] of invalid) {
         it(`refuses ${name}, in Spanish`, async () => {
             await assert.rejects(library.create(draft), (e: unknown) => e instanceof ValidationError && message.test(e.message));
-            assert.deepEqual(await store.pending(), []);
+            assert.deepEqual(await store.pending('songs'), []);
         });
     }
 

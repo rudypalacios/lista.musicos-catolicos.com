@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Sync;
 
-use App\Database\Query;
 use PDO;
 
 /**
@@ -16,8 +15,11 @@ use PDO;
  */
 final class SongRepository
 {
+    private readonly Sequence $sequence;
+
     public function __construct(private readonly PDO $pdo)
     {
+        $this->sequence = new Sequence($pdo);
     }
 
     /**
@@ -39,7 +41,7 @@ final class SongRepository
 
         $this->pdo->beginTransaction();
         try {
-            $seq = $this->nextSeq($userId);
+            $seq = $this->sequence->next($userId);
             $values = [
                 $change->title,
                 $change->author,
@@ -102,22 +104,5 @@ final class SongRepository
         }
 
         return $songs;
-    }
-
-    /** The latest change number of the user, 0 before the first */
-    public function latestSeq(string $userId): int
-    {
-        return (int) Query::scalar($this->pdo, 'SELECT seq FROM sync_state WHERE user_id = ?', [$userId]);
-    }
-
-    private function nextSeq(string $userId): int
-    {
-        $bump = $this->pdo->prepare('UPDATE sync_state SET seq = seq + 1 WHERE user_id = ?');
-        $bump->execute([$userId]);
-        if ($bump->rowCount() === 0) {
-            $this->pdo->prepare('INSERT INTO sync_state (user_id, seq) VALUES (?, 1)')->execute([$userId]);
-        }
-
-        return $this->latestSeq($userId);
     }
 }

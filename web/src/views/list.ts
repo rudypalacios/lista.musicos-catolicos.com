@@ -42,7 +42,7 @@ export function listView(app: App): View {
     };
 
     search.addEventListener('input', draw);
-    const stop = app.onSongs(load);
+    const stop = app.onData(load);
     load();
 
     return { element, dispose: stop };

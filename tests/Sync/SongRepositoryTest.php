@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Sync;
 
+use App\Sync\Sequence;
 use App\Sync\SongChange;
 use App\Sync\SongRepository;
 use PHPUnit\Framework\TestCase;
@@ -16,10 +17,13 @@ final class SongRepositoryTest extends TestCase
     private const SONG = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
 
     private SongRepository $songs;
+    private Sequence $sequence;
 
     protected function setUp(): void
     {
-        $this->songs = new SongRepository(TestDatabase::migrated());
+        $pdo = TestDatabase::migrated();
+        $this->songs = new SongRepository($pdo);
+        $this->sequence = new Sequence($pdo);
     }
 
     private function change(string $title, int $at, bool $deleted = false, string $id = self::SONG): SongChange
@@ -38,7 +42,7 @@ final class SongRepositoryTest extends TestCase
         $this->assertSame(1000, $rows[0]['updatedAt']);
         $this->assertNull($rows[0]['deletedAt']);
         $this->assertSame(1, $rows[0]['seq']);
-        $this->assertSame(1, $this->songs->latestSeq(self::ME));
+        $this->assertSame(1, $this->sequence->latest(self::ME));
     }
 
     public function testANewerEditReplacesAndGetsANewNumber(): void
@@ -60,7 +64,7 @@ final class SongRepositoryTest extends TestCase
         $this->assertFalse($this->songs->apply(self::ME, $this->change('Desde el teléfono, sin conexión', 3000)));
 
         $this->assertSame('Desde el iPad', $this->songs->changedSince(self::ME, 0, 10)[0]['title']);
-        $this->assertSame(1, $this->songs->latestSeq(self::ME), 'an ignored change takes no number');
+        $this->assertSame(1, $this->sequence->latest(self::ME), 'an ignored change takes no number');
     }
 
     public function testTheSameEditSentTwiceIsAppliedOnce(): void
@@ -68,7 +72,7 @@ final class SongRepositoryTest extends TestCase
         $this->assertTrue($this->songs->apply(self::ME, $this->change('Uno', 1000)));
         $this->assertFalse($this->songs->apply(self::ME, $this->change('Uno', 1000)));
 
-        $this->assertSame(1, $this->songs->latestSeq(self::ME));
+        $this->assertSame(1, $this->sequence->latest(self::ME));
     }
 
     public function testADeletionKeepsATombstoneWithoutTheLyrics(): void
@@ -120,8 +124,8 @@ final class SongRepositoryTest extends TestCase
         $this->songs->apply(self::ME, $this->change('Mío', 1000));
         $this->songs->apply(self::OTHER, $this->change('Suyo', 1000, false, 'dddddddd-dddd-4ddd-8ddd-dddddddddddd'));
 
-        $this->assertSame(1, $this->songs->latestSeq(self::ME));
-        $this->assertSame(1, $this->songs->latestSeq(self::OTHER));
+        $this->assertSame(1, $this->sequence->latest(self::ME));
+        $this->assertSame(1, $this->sequence->latest(self::OTHER));
     }
 
     public function testChangedSinceReturnsOnlyWhatIsNewInOrder(): void

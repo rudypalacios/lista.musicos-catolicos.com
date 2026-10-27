@@ -1,9 +1,14 @@
 // Only what the e2e scripts use. The real package lives in the dev container, not in package.json
 // (installing it downloads browsers), so there are no bundled types to rely on.
 declare module 'playwright' {
+    interface LocatorOptions {
+        has?: Locator;
+        hasText?: string | RegExp;
+    }
     interface Locator {
         click(): Promise<void>;
         fill(value: string): Promise<void>;
+        blur(): Promise<void>;
         first(): Locator;
         waitFor(options?: { state?: 'visible' | 'hidden' | 'attached' | 'detached'; timeout?: number }): Promise<void>;
         textContent(): Promise<string | null>;
@@ -11,8 +16,13 @@ declare module 'playwright' {
         getAttribute(name: string): Promise<string | null>;
         count(): Promise<number>;
         isVisible(): Promise<boolean>;
+        isDisabled(): Promise<boolean>;
+        innerText(): Promise<string>;
         allTextContents(): Promise<string[]>;
-        locator(selector: string): Locator;
+        locator(selector: string, options?: LocatorOptions): Locator;
+        getByLabel(text: string, options?: { exact?: boolean }): Locator;
+        getByRole(role: string, options?: { name?: string | RegExp; exact?: boolean }): Locator;
+        getByText(text: string | RegExp, options?: { exact?: boolean }): Locator;
         press(key: string): Promise<void>;
         evaluate<T>(callback: (element: HTMLElement) => T): Promise<T>;
         setInputFiles(path: string): Promise<void>;
@@ -40,9 +50,10 @@ declare module 'playwright' {
         pdf(options?: { format?: string; printBackground?: boolean; preferCSSPageSize?: boolean }): Promise<Uint8Array>;
         on(event: 'console', listener: (message: ConsoleMessage) => void): void;
         getByLabel(text: string, options?: { exact?: boolean }): Locator;
-        getByRole(role: string, options: { name: string | RegExp; exact?: boolean }): Locator;
+        getByRole(role: string, options?: { name?: string | RegExp; exact?: boolean }): Locator;
         getByText(text: string | RegExp, options?: { exact?: boolean }): Locator;
-        locator(selector: string): Locator;
+        locator(selector: string, options?: LocatorOptions): Locator;
+        keyboard: { press(key: string): Promise<void> };
         goto(url: string): Promise<unknown>;
         on(event: 'pageerror', listener: (error: Error) => void): void;
         on(event: 'dialog', listener: (dialog: Dialog) => void): void;

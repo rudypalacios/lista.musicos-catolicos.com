@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Sync;
 
+use App\Uuid;
+
 /**
  * One song as a client sends it: the whole record, stamped with the client's own clock. The
  * newest stamp wins (SongRepository), so an edit made offline on one device never overwrites a
@@ -17,8 +19,6 @@ final class SongChange
     public const MAX_BODY = 60000;
     /** A clock this far ahead is wrong; its stamp is pulled back so it cannot win forever */
     public const MAX_FUTURE_MS = 300000;
-
-    private const UUID = '~^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$~';
 
     public function __construct(
         public readonly string $id,
@@ -38,7 +38,7 @@ final class SongChange
     public static function fromArray(array $data, int $nowMs): self
     {
         $id = $data['id'] ?? null;
-        if (!is_string($id) || preg_match(self::UUID, $id) !== 1) {
+        if (!is_string($id) || !Uuid::isValid($id)) {
             throw new InvalidSong('Un canto no tiene un identificador válido.');
         }
 

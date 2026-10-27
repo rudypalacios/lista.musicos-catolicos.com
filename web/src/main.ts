@@ -3,11 +3,16 @@ import './sheet.css';
 import { api, ApiError } from './api.ts';
 import { App, signOut, type Status } from './app.ts';
 import { h, link } from './dom.ts';
-import { matchRoute, paths, type Route } from './router.ts';
+import { MASS_PARTS } from './mass.ts';
+import { matchRoute, paths, sectionOf, type Route } from './router.ts';
 import { showFatal, startUpdates } from './updates.ts';
+import { addView } from './views/add.ts';
 import { editView } from './views/edit.ts';
 import { importView } from './views/import.ts';
 import { listView } from './views/list.ts';
+import { listsView } from './views/lists.ts';
+import { performView } from './views/perform.ts';
+import { setlistView } from './views/setlist.ts';
 import { signInView } from './views/signin.ts';
 import type { Navigate, View } from './views/types.ts';
 import { viewView } from './views/view.ts';
@@ -25,6 +30,8 @@ if (root === null) {
 const app: HTMLElement = root;
 
 let current: View | null = null;
+/** The "Cantos | Listados" tabs under the header, once the person is in */
+let tabs: HTMLElement | null = null;
 
 function show(view: View): void {
     current?.dispose?.();
@@ -86,7 +93,13 @@ function mountShell(data: App, email: string, onSignedOut: () => void, onNeedsSi
 
     const brand = link(paths.list(), 'Listas', 'brand');
     const bar = h('header', { class: 'bar' }, h('h1', {}, brand), sync, renew, h('span', { class: 'who' }, email), out);
-    app.replaceChildren(bar, h('main', { id: 'view' }));
+    tabs = h(
+        'nav',
+        { class: 'tabs', 'aria-label': 'Secciones' },
+        h('a', { href: paths.list(), 'data-link': true, 'data-section': 'songs' }, 'Cantos'),
+        h('a', { href: paths.lists(), 'data-link': true, 'data-section': 'lists' }, 'Listados'),
+    );
+    app.replaceChildren(bar, tabs, h('main', { id: 'view' }));
 
     const paint = (status: Status): void => {
         const { text, className } = describe(status);
@@ -98,8 +111,43 @@ function mountShell(data: App, email: string, onSignedOut: () => void, onNeedsSi
     paint(data.status());
 }
 
+/** Marks the tab of the section on screen; while singing a list the tabs give their room to the song */
+function markSection(route: Route): void {
+    if (tabs === null) {
+        return;
+    }
+    const section = sectionOf(route);
+    for (const tab of Array.from(tabs.querySelectorAll('a'))) {
+        if (tab.dataset['section'] === section) {
+            tab.setAttribute('aria-current', 'page');
+        } else {
+            tab.removeAttribute('aria-current');
+        }
+    }
+    tabs.hidden = route.name === 'perform';
+}
+
 function routeView(data: App, route: Route, navigate: Navigate): Promise<View> {
     switch (route.name) {
+        case 'lists':
+            return Promise.resolve(listsView(data, navigate));
+        case 'setlist':
+        case 'add':
+        case 'perform':
+            return data.setlists.get(route.id).then((setlist) => {
+                if (setlist === undefined) {
+                    return notice('Este listado no existe (o se eliminó).');
+                }
+                if (route.name === 'setlist') {
+                    return setlistView(data, navigate, setlist);
+                }
+                if (route.name === 'perform') {
+                    return performView(data, navigate, setlist, route.n);
+                }
+                const part = MASS_PARTS.find((candidate) => candidate.id === route.part);
+
+                return part === undefined ? notice('Esta parte de la misa no existe.') : addView(data, navigate, setlist, part);
+            });
         case 'list':
             return Promise.resolve(listView(data));
         case 'new':
@@ -124,7 +172,9 @@ function runRouter(data: App): void {
     let token = 0;
     const render = (): void => {
         const mine = ++token;
-        void routeView(data, matchRoute(location.pathname), navigate).then((view) => {
+        const route = matchRoute(location.pathname);
+        markSection(route);
+        void routeView(data, route, navigate).then((view) => {
             if (mine === token) {
                 show(view);
             } else {
@@ -253,7 +303,13 @@ window.addEventListener('unhandledrejection', (event) => {
 });
 
 startUpdates();
-void App.create()
+void App.create(() => {
+    // Another window still runs the old version and holds the data: say what to do, not just wait
+    const waiting = document.querySelector('.splash p');
+    if (waiting !== null) {
+        waiting.textContent = 'Cierra las demás ventanas de la app para terminar de actualizarla…';
+    }
+})
     .then((data) => {
         data.watchConnection();
 

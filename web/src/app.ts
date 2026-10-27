@@ -2,6 +2,7 @@ import { api, errorKinds, remote } from './api.ts';
 import { IdbStore } from './data/idb-store.ts';
 import { Library, type SongDraft } from './data/library.ts';
 import { MemoryStore } from './data/memory-store.ts';
+import { Setlists } from './data/setlists.ts';
 import type { LocalStore } from './data/store.ts';
 import { SyncEngine, SyncStopped } from './data/sync.ts';
 import type { Song } from './data/types.ts';
@@ -10,7 +11,7 @@ export type SyncState = 'idle' | 'syncing' | 'offline' | 'signed-out' | 'error';
 
 export interface Status {
     state: SyncState;
-    /** Songs written on this device that the server does not have yet */
+    /** Songs and lists written on this device that the server does not have yet */
     pending: number;
     /** Of those, the ones the server refused */
     rejected: number;
@@ -19,13 +20,15 @@ export interface Status {
 }
 
 /**
- * The app's one set of things that live as long as the page: where the songs are kept, the
- * library, and the sync with the server. Views ask it for songs and tell it what the person
- * wrote; it saves locally first and syncs when it can.
+ * The app's one set of things that live as long as the page: where the songs and lists are
+ * kept, the library, the setlists, and the sync with the server. Views ask it for songs and
+ * lists and tell it what the person wrote; it saves locally first and syncs when it can.
  */
 export class App {
     private readonly store: LocalStore;
     private readonly library: Library;
+    /** The person's setlists: every change made through it is saved here and synced */
+    readonly setlists: Setlists;
     private readonly engine: SyncEngine;
     private readonly durable: boolean;
     private running: Promise<void> | null = null;
@@ -34,19 +37,24 @@ export class App {
     private state: SyncState = 'idle';
     private pendingCount = 0;
     private readonly statusListeners = new Set<(status: Status) => void>();
-    private readonly songListeners = new Set<() => void>();
+    private readonly dataListeners = new Set<() => void>();
 
     private constructor(store: LocalStore, durable: boolean) {
         this.store = store;
         this.durable = durable;
         this.library = new Library(store);
+        this.setlists = new Setlists(store, () => void this.afterWrite(undefined));
         this.engine = new SyncEngine(store, remote, errorKinds);
     }
 
-    /** Opens the device's store; without IndexedDB the app still works, but only until a reload */
-    static async create(): Promise<App> {
+    /**
+     * Opens the device's store; without IndexedDB the app still works, but only until a reload.
+     *
+     * @param onBlocked the store is waiting for another window of an older version to close
+     */
+    static async create(onBlocked?: () => void): Promise<App> {
         try {
-            const app = new App(await IdbStore.open(), true);
+            const app = new App(await IdbStore.open(indexedDB, 'lista', onBlocked), true);
             await app.refreshPending();
 
             return app;
@@ -74,12 +82,12 @@ export class App {
         }
         await this.store.setOwner(email);
         await this.refreshPending();
-        this.emitSongs();
+        this.emitData();
     }
 
-    /** How many songs would be lost by clearing this device (written here, never sent) */
-    async unsent(): Promise<number> {
-        return (await this.store.pending()).length;
+    /** How many songs and lists would be lost by clearing this device (written here, never sent) */
+    unsent(): Promise<number> {
+        return this.countPending();
     }
 
     /** Forgets everything on this device (sign out) */
@@ -87,7 +95,7 @@ export class App {
         await this.store.clear();
         this.rejected.clear();
         this.pendingCount = 0;
-        this.emitSongs();
+        this.emitData();
         this.emitStatus();
     }
 
@@ -116,7 +124,7 @@ export class App {
 
     private async afterWrite<T>(result: T): Promise<T> {
         await this.refreshPending();
-        this.emitSongs();
+        this.emitData();
         this.requestSync();
 
         return result;
@@ -154,7 +162,7 @@ export class App {
             this.rejected = new Set(result.rejected);
             this.state = 'idle';
             if (result.pulled > 0) {
-                this.emitSongs();
+                this.emitData();
             }
         } catch (error) {
             this.state = error instanceof SyncStopped ? (error.reason === 'offline' ? 'offline' : 'signed-out') : 'error';
@@ -172,11 +180,11 @@ export class App {
         return () => this.statusListeners.delete(listener);
     }
 
-    /** Called when the list of songs changes (a write here, or songs that arrived) */
-    onSongs(listener: () => void): () => void {
-        this.songListeners.add(listener);
+    /** Called when the songs or lists change (a write here, or records that arrived) */
+    onData(listener: () => void): () => void {
+        this.dataListeners.add(listener);
 
-        return () => this.songListeners.delete(listener);
+        return () => this.dataListeners.delete(listener);
     }
 
     /** After the session ended and the person signed in again */
@@ -202,8 +210,14 @@ export class App {
     }
 
     private async refreshPending(): Promise<void> {
-        this.pendingCount = (await this.store.pending()).length;
+        this.pendingCount = await this.countPending();
         this.emitStatus();
+    }
+
+    private async countPending(): Promise<number> {
+        const [songs, lists] = await Promise.all([this.store.pending('songs'), this.store.pending('setlists')]);
+
+        return songs.length + lists.length;
     }
 
     private emitStatus(): void {
@@ -211,12 +225,12 @@ export class App {
         this.statusListeners.forEach((listener) => listener(status));
     }
 
-    private emitSongs(): void {
-        this.songListeners.forEach((listener) => listener());
+    private emitData(): void {
+        this.dataListeners.forEach((listener) => listener());
     }
 }
 
-/** Whether signing out is safe, or songs written here and never sent would be lost */
+/** Whether signing out is safe, or songs and lists written here and never sent would be lost */
 export async function signOut(app: App, confirmLoss: (unsent: number) => boolean): Promise<boolean> {
     // Try to send what is waiting first
     await app.syncNow();
