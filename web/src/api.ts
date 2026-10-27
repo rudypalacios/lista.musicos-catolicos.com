@@ -1,14 +1,15 @@
 /** Thin client for the JSON API (src/Http). Every failure is an ApiError the UI can tell apart. */
 
 export class ApiError extends Error {
-    constructor(
-        /** HTTP status, or 0 when the request never reached the server (offline) */
-        readonly status: number,
-        readonly code: string,
-        message: string,
-    ) {
+    /** HTTP status, or 0 when the request never reached the server (offline) */
+    readonly status: number;
+    readonly code: string;
+
+    constructor(status: number, code: string, message: string) {
         super(message);
         this.name = 'ApiError';
+        this.status = status;
+        this.code = code;
     }
 
     get isOffline(): boolean {
