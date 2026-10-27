@@ -4,6 +4,7 @@ import { api, ApiError } from './api.ts';
 import { App, signOut, type Status } from './app.ts';
 import { h, link } from './dom.ts';
 import { matchRoute, paths, type Route } from './router.ts';
+import { showFatal, startUpdates } from './updates.ts';
 import { editView } from './views/edit.ts';
 import { importView } from './views/import.ts';
 import { listView } from './views/list.ts';
@@ -179,7 +180,25 @@ function enter(data: App, email: string): void {
     }
 }
 
+/**
+ * Starts the app. When this device already holds someone's songs it opens from them at once,
+ * with no network: whether the session is still good is found out in the background, and a
+ * slow or missing connection never keeps the person from their songs. Only a device with nothing
+ * on it has to ask the server who is there.
+ */
 async function begin(data: App): Promise<void> {
+    const owner = await data.owner();
+    if (owner !== null) {
+        enter(data, owner);
+        void verifySession(data, owner);
+
+        return;
+    }
+
+    app.replaceChildren(
+        h('header', { class: 'bar' }, h('h1', {}, 'Listas')),
+        h('main', { id: 'view' }, splash('Conectando…')),
+    );
     try {
         const me = await api.me();
         await data.adopt(me.email);
@@ -187,23 +206,10 @@ async function begin(data: App): Promise<void> {
         data.requestSync(0);
     } catch (failure: unknown) {
         if (failure instanceof ApiError && failure.isOffline) {
-            // No network: trust what this device holds, the server checks when it is back
-            const owner = await data.owner();
-            if (owner !== null) {
-                enter(data, owner);
-                data.requestSync(0);
-            } else {
-                app.replaceChildren(
-                    h('header', { class: 'bar' }, h('h1', {}, 'Listas')),
-                    h('main', { id: 'view' }, notice('Sin conexión. Conéctate una vez para iniciar sesión.').element),
-                );
-            }
+            show(notice('Sin conexión. Conéctate una vez para iniciar sesión.'));
+
             return;
         }
-        app.replaceChildren(
-            h('header', { class: 'bar' }, h('h1', {}, 'Listas')),
-            h('main', { id: 'view' }),
-        );
         show(signInView((email) => {
             void data.adopt(email).then(() => {
                 enter(data, email);
@@ -213,51 +219,44 @@ async function begin(data: App): Promise<void> {
     }
 }
 
-function offerUpdate(worker: ServiceWorker): void {
-    const button = h('button', { type: 'button', class: 'primary' }, 'Actualizar');
-    const banner = h('div', { class: 'update', role: 'status' }, h('span', {}, 'Hay una versión nueva. '), button);
-    button.addEventListener('click', () => worker.postMessage('skip-waiting'));
-    document.body.append(banner);
-}
-
-function registerServiceWorker(): void {
-    if (!('serviceWorker' in navigator)) {
-        return;
-    }
-    let reloading = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-        // Only after the person accepted an update, never on the very first install
-        if (!reloading && document.querySelector('.update') !== null) {
-            reloading = true;
-            location.reload();
+/** The person is already in; ask the server whether that is still true, and sync */
+async function verifySession(data: App, owner: string): Promise<void> {
+    try {
+        const me = await api.me();
+        if (me.email !== owner) {
+            // Another account signed in on this device elsewhere: its songs replace these
+            await data.adopt(me.email);
+            enter(data, me.email);
         }
-    });
-
-    navigator.serviceWorker
-        .register('/sw.js')
-        .then((registration) => {
-            if (registration.waiting !== null && navigator.serviceWorker.controller !== null) {
-                offerUpdate(registration.waiting);
-            }
-            registration.addEventListener('updatefound', () => {
-                const installing = registration.installing;
-                installing?.addEventListener('statechange', () => {
-                    if (installing.state === 'installed' && navigator.serviceWorker.controller !== null) {
-                        offerUpdate(installing);
-                    }
-                });
-            });
-        })
-        .catch(() => {
-            // Without a worker the app still runs online; there is nothing to tell the person
-        });
-
-    // Ask the browser to keep this origin's data (the songs) when it is short of space
-    void navigator.storage?.persist?.();
+        data.requestSync(0);
+    } catch {
+        // Offline, a stuck network, or the session ended: syncing reports which, in the header,
+        // and the songs on the device stay readable either way
+        data.requestSync(0);
+    }
 }
 
-registerServiceWorker();
-void App.create().then((data) => {
-    data.watchConnection();
-    return begin(data);
+function splash(text: string): HTMLElement {
+    return h('div', { class: 'splash', role: 'status' }, h('span', { class: 'spinner spinner--big', 'aria-hidden': 'true' }), h('p', {}, text));
+}
+
+// Whatever goes wrong while starting, say so instead of leaving a blank screen
+window.addEventListener('error', (event) => {
+    if (document.querySelector('.bar') === null) {
+        showFatal(app, event.error ?? event.message);
+    }
 });
+window.addEventListener('unhandledrejection', (event) => {
+    if (document.querySelector('.bar') === null) {
+        showFatal(app, event.reason);
+    }
+});
+
+startUpdates();
+void App.create()
+    .then((data) => {
+        data.watchConnection();
+
+        return begin(data);
+    })
+    .catch((error: unknown) => showFatal(app, error));
