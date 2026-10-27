@@ -102,6 +102,38 @@ personal data or publishes songs of others, tell the owner and propose the priva
 public site's policies (`musicos-catolicos`, `src/Templates/legal/`) must keep describing what
 the code really does.
 
+## Working with the owner
+
+- The owner works only from claude.ai: they cannot run scripts, so everything must be doable by the
+  app, the deploy or a SQL query in phpMyAdmin. Ask for one thing at a time, with the exact steps.
+- Claude runs every check; GitHub only deploys. Claude opens PRs and **never merges**: the owner merges
+  (squash). After a squash merge the work branch is brought up to date by merging `main` into it
+  (a force-push is blocked in the sandbox), then new work continues on it.
+- Production: cPanel shared host, PHP 8.3, MySQL (the database was created as plain `utf8`, migration
+  `0003` fixes the tables), FTPS deploy by the `production` environment; the site is
+  `lista.musicos-catolicos.com`. The public site and the admin (`musicos-catolicos`,
+  `mc.musicos-catolicos`) are separate repos; the public site's parser and printer are the reference.
+- Fixtures and tests use invented lyrics. The owner's real PDF is not in the repo and is not needed.
+
+## A fresh sandbox (nothing survives between sessions)
+
+```
+composer install && npm install
+# MySQL-compatible server for the SQL checks (MariaDB is what apt offers):
+apt-get update && apt-get install -y --no-install-recommends mariadb-server
+mkdir -p /run/mysqld && chown mysql:mysql /run/mysqld
+mysql_install_db --user=mysql --datadir=/var/lib/mysql; (mysqld_safe --user=mysql &) ; sleep 8
+mysql -e "CREATE DATABASE lista_test CHARACTER SET utf8mb4; CREATE DATABASE lista_utf8 CHARACTER SET utf8;
+  CREATE USER 'lista'@'127.0.0.1' IDENTIFIED BY 'lista';
+  GRANT ALL ON lista_test.* TO 'lista'@'127.0.0.1'; GRANT ALL ON lista_utf8.* TO 'lista'@'127.0.0.1';"
+# then: TEST_MYSQL_DSN='mysql:host=127.0.0.1;dbname=lista_utf8;charset=utf8mb4' vendor/bin/phpunit
+```
+
+Chromium and Playwright are preinstalled (the e2e scripts load Playwright with `createRequire`). The
+fixtures need the public site next to this repo (`add_repo` `rudypalacios/musicos-catolicos`, clone it as
+`../musicos-catolicos`). Do not `pkill -f` a pattern that appears in your own command line, and do not
+chain a force-push into a longer command: both end the shell.
+
 ## To-do list
 
 `TODO.md`. If a change closes or adds an item, update it in the same branch.
