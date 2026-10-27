@@ -60,11 +60,11 @@ export const SONGS: Record<string, string> = {
     multipleSpaces: '[G]Uno   dos    tres\n[D]  empieza con espacios',
     tabsInLyrics: '[G]Uno\tdos\t[D]tres',
     sectionsWithoutLabelsNumbered: 'Uno\n\nDos\n\nTres',
-    vienenConAlegria:
-        '{key: C}\n{c: Coro}\n[C]Vienen con alegría Señor,\ncantando vienen con ale[C7]gría Señor.\n'
-        + '[F]Los que cami[G]nan por la [Em]vida Se[Am]ñor,\nsem[Dm]brando tu [G]paz y a[C]mor. (BIS)\n\n'
-        + '{c: Verso 1}\n[C]Vienen trayendo la espe[Am]ran[Dm]za,\na un [G]mundo carga[Dm]do de ansie[C]dad.\n'
-        + 'Un mundo que busca y que no al[Am]can[Dm]za,\ncami[G]nos de a[F]mor y de ami[C]stad.',
+    caminamosConAlegria:
+        '{key: C}\n{c: Coro}\n[C]Caminamos con alegría, Señor,\ncantando vamos hacia tu ca[C7]sa.\n'
+        + '[F]Con el pan de [G]cada día, te [Em]traemos [Am]paz,\ntra[Dm]bajo de [G]todos y [C]vida. (BIS)\n\n'
+        + '{c: Verso 1}\n[C]Un pueblo que es[Am]pe[Dm]ra el mañana,\ny [G]sabe que [Dm]Dios está a[C]quí.\n'
+        + 'Un pueblo que [Am]can[Dm]ta y camina,\nsem[G]brando es[F]peranza y a[C]mor.',
     senorTenPiedad:
         '{key: Am}\n[Am]Seeee[Dm]ñor ten [G]piedad,\n[C]Señor ten [Am]piedad,\n[Dm]Señor ten [E]piedad, ten [Am]piedad\n\n'
         + '[Am]Cristo ten [Dm]piedad, ten piedad, ten [G]piedad',
@@ -74,9 +74,9 @@ export const SONGS: Record<string, string> = {
     cordero:
         '{c: Verso 1}\n[Rem]Cordero de [Sib]Dios,\nque quitas el [Solm]pecado del [La7]mundo.\n'
         + '[Rem]Ten piedad de [Do]nosotros [Rem]\n{ci: (2)}\n\n{c: Verso 2}\n[Rem]Cordero de [Sib]Dios',
-    comunion:
-        '{c: Coro}\n[Am]Donde hay cari[Dm]dad y a[Am]mor, a[G]llí es[G7]tá el Se[C]ñor,\n'
-        + '[Dm]allí [E]está el [Am]Señor. ([E] [Am])\n\n{c: Verso 1}\n[Am]Una sala y una [G]mesa, [G7]una [C]copa, [Dm]vino y pan,',
+    mesaCompartida:
+        '{c: Coro}\n[Am]Sobre la mesa com[Dm]partimos el [Am]pan, y [G]en [G7]ella está [C]Dios,\n'
+        + '[Dm]en ella [E]está el [Am]Señor. ([E] [Am])\n\n{c: Verso 1}\n[Am]Una mesa con [G]sillas, [G7]una [C]luz, [Dm]sencilla y viva,',
 };
 
 /** Chord names: roots, accidentals, qualities, slash chords, Latin input, and what is not a chord */

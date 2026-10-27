@@ -17,7 +17,13 @@ remember it.
 - [x] ChordPro parser, chords, notation, transposition and lyrics renderer ported from
       musicos-catolicos, checked against golden fixtures made by the PHP and `song.js`.
 - [x] Own songs: create, edit and delete, in ChordPro (private), kept on the device and synced.
-- [x] Importer: pasted "chords above the lyrics" text to ChordPro, with a review step.
+- [x] Importer: pasted "chords above the lyrics" text to ChordPro, with a review step. Handles a whole
+      Mass pasted at once (one song per page, or split at "PART:" headers), two-column pages, hanging
+      verse numbers and the zero-width characters Word leaves in PDFs.
+- [ ] Import straight from a PDF file (pdf.js, self-hosted): text items carry their x position, so
+      each chord can be matched to the exact letter instead of the approximate column that
+      `pdftotext -layout` gives (a letter or two off today). Needs the owner's go-ahead: a new
+      dependency (~1 MB, loaded only on the import screen, so not available offline).
 - [x] Viewer with transposition, Do/C notation, lyrics size and fit-to-screen (toggle per device;
       maximum 34px, minimum 13px, two columns on wide screens, then scroll).
 - [ ] **Owner, on the real devices** (`DEPLOY.md`, "Pruebas en los dispositivos"): write a song

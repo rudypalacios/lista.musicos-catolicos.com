@@ -17,10 +17,10 @@ describe('Library', () => {
     });
 
     it('creates a song with the clock and queues it', async () => {
-        const song = await library.create({ title: '  Vienen con alegría ', author: ' Anónimo ', body: '[C]Vienen' });
+        const song = await library.create({ title: '  Caminamos con alegría ', author: ' Anónimo ', body: '[C]Caminamos' });
 
         assert.deepEqual(song, {
-            id: 'id-0', title: 'Vienen con alegría', author: 'Anónimo', body: '[C]Vienen', updatedAt: 1000, deletedAt: null,
+            id: 'id-0', title: 'Caminamos con alegría', author: 'Anónimo', body: '[C]Caminamos', updatedAt: 1000, deletedAt: null,
         });
         assert.deepEqual(await store.pending(), [song]);
     });

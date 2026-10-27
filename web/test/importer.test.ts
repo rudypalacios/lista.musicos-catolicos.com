@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { chordOf, importChordsOverLyrics, isChordLine } from '../src/importer.ts';
+import { chordOf, importChordsOverLyrics, importMany, isChordLine } from '../src/importer.ts';
 import { isVerseLabel, parse } from '../src/chordpro/parser.ts';
 import { MASS_PARTS, plain } from '../src/mass.ts';
 
@@ -19,7 +19,7 @@ describe('chordOf', () => {
     }
 
     const words = [
-        'Vienen', 'Señor,', 'Amén', 'Aleluya', 'la', 'de', 'y', 'mi', 'sol', 'x2', '(BIS)', '(2)', 'Add', 'Dim', 'Bed',
+        'Caminamos', 'Señor,', 'Amén', 'Aleluya', 'la', 'de', 'y', 'mi', 'sol', 'x2', '(BIS)', '(2)', 'Add', 'Dim', 'Bed',
         'Dios', 'Santo,', 'Misa', 'Solo', '', '1.', '-', 'Gloria',
     ];
     for (const word of words) {
@@ -37,7 +37,7 @@ describe('isChordLine', () => {
     });
 
     it('is false for lyrics, even when they start with a note name or end in a chord letter', () => {
-        for (const line of ['Si me falta el amor', 'La la la', 'Sol y luna', 'A Dios', 'Vienen con alegría Señor,', 'Am  Dm  lalala']) {
+        for (const line of ['Si me falta el amor', 'La la la', 'Sol y luna', 'A Dios', 'Caminamos con alegría, Señor,', 'Am  Dm  lalala']) {
             assert.equal(isChordLine(line), false, line);
         }
     });
@@ -102,9 +102,9 @@ describe('importChordsOverLyrics: where the chords go', () => {
 
 describe('importChordsOverLyrics: structure', () => {
     it('turns verse numbers into labels and keeps the chords aligned to the text', () => {
-        const imported = importChordsOverLyrics('C          Am\n1.  Vienen trayendo\n');
+        const imported = importChordsOverLyrics('C          Am\n1.  Un pueblo que espera\n');
 
-        assert.equal(imported.body, '{c: Verso 1}\n[C]Vienen [Am]trayendo');
+        assert.equal(imported.body, '{c: Verso 1}\n[C]Un pueb[Am]lo que espera');
     });
 
     it('starts a new verse at each number even without a blank line', () => {
@@ -130,7 +130,7 @@ describe('importChordsOverLyrics: structure', () => {
     });
 
     it('leaves "(BIS)" and "(2)" in the lyrics', () => {
-        assert.equal(importChordsOverLyrics('C\nVienen con alegría. (BIS)').body, '[C]Vienen con alegría. (BIS)');
+        assert.equal(importChordsOverLyrics('C\nCaminamos con alegría. (BIS)').body, '[C]Caminamos con alegría. (BIS)');
     });
 
     it('collapses blank lines and trims the ends', () => {
@@ -147,11 +147,11 @@ describe('importChordsOverLyrics: structure', () => {
 
 describe('importChordsOverLyrics: the header', () => {
     it('takes the song after "PART:"', () => {
-        const imported = importChordsOverLyrics('ENTRADA: Vienen con alegría\n\nC\nVienen');
+        const imported = importChordsOverLyrics('ENTRADA: Caminamos con alegría\n\nC\nCaminamos');
 
-        assert.equal(imported.title, 'Vienen con alegría');
+        assert.equal(imported.title, 'Caminamos con alegría');
         assert.equal(imported.part, 'entrada');
-        assert.equal(imported.body, '[C]Vienen');
+        assert.equal(imported.body, '[C]Caminamos');
     });
 
     it('knows the sheet names of the parts, not only the standard ones', () => {
@@ -185,10 +185,10 @@ describe('importChordsOverLyrics: the header', () => {
     });
 
     it('does not take a lyric for a header', () => {
-        const imported = importChordsOverLyrics('C\nVienen con alegría\n\nG\nSeñor');
+        const imported = importChordsOverLyrics('C\nCaminamos con alegría\n\nG\nSeñor');
 
         assert.equal(imported.title, '');
-        assert.equal(imported.body, '[C]Vienen con alegría\n\n[G]Señor');
+        assert.equal(imported.body, '[C]Caminamos con alegría\n\n[G]Señor');
     });
 
     it('takes a lone first line as the title when chords follow after a blank line', () => {
@@ -216,95 +216,172 @@ describe('importChordsOverLyrics: chord names and warnings', () => {
     });
 });
 
-/** The owner's own sheets (September–October), as they paste from the PDF */
-describe('importChordsOverLyrics: songs from the owner\'s PDF', () => {
-    const wordsOf = (text: string): string[] => text.replace(/\[[^\]]*\]/g, '').split(/\s+/).filter((w) => w !== '');
+/**
+ * Sheets laid out the way a PDF exported from Word or Docs comes out of `pdftotext -layout`:
+ * hanging verse numbers, zero-width characters, one song per page, two columns. The words are
+ * invented for the tests; the layout is the real thing.
+ */
+describe('importChordsOverLyrics: sheets as a PDF gives them', () => {
+    const ZW = '​';
+    const wordsOf = (text: string): string => text.replace(/\[[^\]]*\]/g, '').replace(/\s+/g, '');
 
-    const songs: Record<string, { input: string; title: string; part: string; labels: string[] }> = {
-        vienen: {
-            title: 'Vienen con alegría', part: 'entrada', labels: ['Verso 1', 'Verso 2'],
-            input: 'ENTRADA: Vienen con alegría\n\nC\nVienen con alegría Señor,\n'
-                + '                                C7\ncantando vienen con alegría Señor.\n'
-                + 'F               G                  Em     Am\nLos que caminan  por la vida Señor,\n'
-                + '        Dm          G          C\nsembrando tu paz y amor. (BIS)\n\n'
-                + 'C                          Am    Dm\n1.  Vienen trayendo la esperanza,\n'
-                + '          G          Dm                 C\na un mundo cargado de ansiedad.\n\n'
-                + 'C                          Am    Dm\n2.  Vienen trayendo entre sus manos\n'
-                + '          G          Dm                 C\nesfuerzos de hermanos por la paz,\n',
-        },
-        kyrie: {
-            title: 'Piedad Kyrie', part: 'senor-ten-piedad', labels: [],
-            input: 'Piedad Kyrie:\n\nA-        D-             G\nSeeeeeñor ten piedad,\nC                A-\nSeñor ten piedad,\n'
-                + 'D-               E                 A-\nSeñor ten piedad, ten piedad\n\n'
-                + 'A-                 D-                              G\nCristo ten piedad, ten piedad, ten piedad\n\nSeeeeeeñor…..\n',
-        },
-        padreNuestro: {
-            title: 'Padre nuestro', part: 'padre-nuestro', labels: [],
-            input: 'PADRE NUESTRO: Martín Valverde (C2)\n\nRE SOL RE\nPadre nuestro que estás en el cielo\n'
-                + 'SOL MIm LA\nSantificado sea tu nombre\nSOL FA# SIm\nVenga a nosotros tu reino\n'
-                + 'RE RE7 SOL SOLm\nNo nos dejes caer en la tentación\nSOLm RE\ndel mal\n',
-        },
-        cordero: {
-            title: 'CORDERO DE DIOS Misa Rítmica Mejía', part: 'cordero', labels: ['Verso 1'],
-            input: 'CORDERO DE DIOS   Misa Rítmica Mejía.\n\nRem          Sib\n1.  Cordero de Dios,\n'
-                + '    Solm                    La7\nque quitas el pecado del mundo.\nRem    Do        Rem\nTen piedad de nosotros\n'
-                + '        Do          Rem\nTen piedad de nosotros. (2)\n',
-        },
-        ofrendas: {
-            title: 'En torno al pan', part: 'ofertorio', labels: ['Coro'],
-            input: 'OFRENDAS: En torno al pan\n\n  Em                    C                    G\nLas fuerzas se rehacen en la mesa,\n\n'
-                + 'CORO\n\n  Em         C          G\nLAS FUERZAS SE REHACEN EN LA MESA,\n',
-        },
-    };
+    const sheet = [
+        'ENTRADA: Caminamos con alegría',
+        '',
+        '  C',
+        '  Caminamos con alegría, Señor,',
+        '                         G7',
+        '  cantando vamos hacia tu casa.',
+        '  F        G            Am',
+        '  Con el pan de cada día,',
+        '     F       G      C',
+        '  te traemos nuestra paz. (BIS)',
+        '',
+        '    C       Am    Dm',
+        '1.  Un pueblo que espera el mañana,',
+        '        G         C',
+        '    y sabe que Dios está aquí.',
+        '',
+        '    C       Am',
+        '2.  Un pueblo que canta y camina,',
+        '        G         C',
+        '    sembrando esperanza y amor.',
+        '',
+        '3.  Un pueblo que reza y trabaja,',
+        '    levanta su voz hacia ti.',
+    ].join('\n');
 
-    for (const [name, song] of Object.entries(songs)) {
-        it(`${name}: header, labels and chords`, () => {
-            const imported = importChordsOverLyrics(song.input);
+    it('puts the chords of a numbered verse on the words, not on the number', () => {
+        const body = importChordsOverLyrics(sheet).body;
 
-            assert.equal(imported.title, song.title);
-            assert.equal(imported.part, song.part);
-            const sheet = parse(imported.body);
-            assert.ok(sheet.hasChords);
-            assert.deepEqual(sheet.sections.filter((s) => s.label !== null).map((s) => s.label), song.labels);
-        });
-
-        it(`${name}: every word of the lyrics survives`, () => {
-            const imported = importChordsOverLyrics(song.input);
-            const lyricLines = song.input
-                .split('\n')
-                .slice(1)
-                .filter((line) => line.trim() !== '' && !isChordLine(line))
-                .map((line) => line.replace(/^\s*\d+\.\s+/, '').replace(/^CORO$/, ''));
-            const original = wordsOf(lyricLines.join(' '));
-            const body = imported.body
-                .split('\n')
-                .filter((line) => !line.startsWith('{'))
-                .join(' ');
-
-            // Chords may split a word ("espe[Am]ranza"), so compare the letters, not the words
-            assert.equal(wordsOf(body).join('').replace(/\[[^\]]*\]/g, ''), original.join(''));
-        });
-    }
-
-    it('Vienen con alegría: the chords are where the syllables are', () => {
-        const body = importChordsOverLyrics(songs['vienen']?.input ?? '').body;
-
-        assert.match(body, /^\[C\]Vienen con alegría Señor,\n/);
-        assert.match(body, /\{c: Verso 1\}\n\[C\]Vienen trayendo la espe\[Am\]ranza,/);
+        assert.match(body, /\{c: Verso 1\}\n\[C\]Un puebl\[Am\]o que \[Dm\]espera el mañana,\n {4}y sa\[G\]be que Dio\[C\]s está aquí/);
+        assert.match(body, /\{c: Verso 2\}\n\[C\]Un puebl\[Am\]o que canta/);
     });
 
-    it('Padre nuestro: chords-only lines of capitals become chords before each line', () => {
-        const body = importChordsOverLyrics(songs['padreNuestro']?.input ?? '').body;
+    it('reads the header, the labels and the chords of a whole sheet', () => {
+        const imported = importChordsOverLyrics(sheet);
+        const parsed = parse(imported.body);
 
-        assert.match(body, /\[D\]Pad.*\n.*\[Em\]/);
-        assert.ok(!body.includes('SOL') && !body.includes('MIm'));
+        assert.equal(imported.title, 'Caminamos con alegría');
+        assert.equal(imported.part, 'entrada');
+        assert.ok(parsed.hasChords);
+        assert.deepEqual(parsed.sections.filter((s) => s.label !== null).map((s) => s.label), ['Verso 1', 'Verso 2', 'Verso 3']);
     });
 
-    it('the labels it writes are the ones the public site reads as verses and choruses', () => {
-        const sheet = parse(importChordsOverLyrics(songs['ofrendas']?.input ?? '').body);
+    it('does not lose a letter of the lyrics', () => {
+        const imported = importChordsOverLyrics(sheet);
+        const lyrics = sheet
+            .split('\n')
+            .slice(1)
+            .filter((line) => line.trim() !== '' && !isChordLine(line))
+            .map((line) => line.replace(/^\d\.\s+/, ''))
+            .join('');
 
-        assert.equal(sheet.sections.find((s) => s.label === 'Coro')?.kind, 'chorus');
-        assert.ok(isVerseLabel('Verso 1'));
+        assert.equal(wordsOf(imported.body.split('\n').filter((l) => !l.startsWith('{')).join('')), wordsOf(lyrics));
+    });
+
+    it('ignores the zero-width characters Word leaves between letters', () => {
+        const noisy = sheet.replace(/ {2}/g, ` ${ZW} `).replace('1.', `1.${ZW}`);
+
+        assert.equal(importChordsOverLyrics(noisy).body, importChordsOverLyrics(sheet).body);
+    });
+
+    describe('two columns', () => {
+        const left = [
+            'C           G',
+            '1.  Cantamos al amanecer',
+            '    con la luz de un nuevo día',
+            '',
+            'C           G',
+            '2.  Cantamos al caer la tarde',
+            '    con la paz de nuestro hogar',
+            '',
+            'C           G',
+            '3.  Cantamos en el campo',
+            '    con la fuerza de la tierra',
+        ];
+        const right = [
+            'Am          F',
+            '4.  Cantamos en la noche',
+            '    con la fe de nuestra gente',
+            '',
+            'Am          F',
+            '5.  Cantamos con los niños',
+            '    y con todos los que vienen',
+            '',
+            'Am          F',
+            '6.  Cantamos sin cansarnos',
+            '    hasta el fin de nuestros días',
+        ];
+        const twoColumns = left.map((line, i) => line.padEnd(44) + (right[i] ?? '')).join('\n');
+
+        it('reads the left column and then the right', () => {
+            const imported = importChordsOverLyrics(twoColumns);
+
+            assert.deepEqual(
+                parse(imported.body).sections.map((s) => s.label),
+                ['Verso 1', 'Verso 2', 'Verso 3', 'Verso 4', 'Verso 5', 'Verso 6'],
+            );
+            assert.match(imported.body, /\{c: Verso 4\}\n\[Am\]Cantamos \[F\]en la noche/);
+            assert.ok(imported.warnings.some((w) => w.includes('dos columnas')));
+        });
+
+        it('keeps the chords of each column with its own words', () => {
+            const imported = importChordsOverLyrics(twoColumns);
+
+            assert.match(imported.body, /\{c: Verso 1\}\n\[C\]Cantamos \[G\]al amanecer/);
+            assert.match(imported.body, /\{c: Verso 5\}\n\[Am\]Cantamos \[F\]con los niños/);
+        });
+
+        it('leaves a one-column sheet alone', () => {
+            assert.ok(!importChordsOverLyrics(sheet).warnings.some((w) => w.includes('columnas')));
+        });
+    });
+});
+
+describe('importMany', () => {
+    const one = (header: string, chords: string, words: string): string => `${header}\n\n${chords}\n${words}\n`;
+
+    it('gives one song per page when the text has page breaks', () => {
+        const text = [
+            one('ENTRADA: Uno', 'C', 'Letra uno'),
+            one('GLORIA', 'Dm', 'Gloria a Dios'),
+            one('SALIDA: Tres', 'G', 'Letra tres'),
+        ].join('\f');
+
+        const songs = importMany(text);
+
+        assert.deepEqual(songs.map((s) => s.title), ['Uno', 'Gloria', 'Tres']);
+        assert.deepEqual(songs.map((s) => s.part), ['entrada', 'gloria', 'salida']);
+    });
+
+    it('ignores an empty page, as in a document with a stray blank sheet', () => {
+        const text = [one('ENTRADA: Uno', 'C', 'Letra'), '  \n', one('SALIDA: Dos', 'G', 'Letra')].join('\f');
+
+        assert.equal(importMany(text).length, 2);
+    });
+
+    it('splits without page breaks where a part is named with a colon', () => {
+        const text = one('ENTRADA: Uno', 'C', 'Letra uno') + '\n' + one('OFRENDAS: Dos', 'G', 'Letra dos');
+
+        assert.deepEqual(importMany(text).map((s) => s.title), ['Uno', 'Dos']);
+    });
+
+    it('does not take a lyric that starts with a part name for a new song', () => {
+        const text = 'SANTO: Alegre\n\nE   A\nSanto, Santo, Santo\nB     E\nSanto es el Señor (2)\n\nA\nSanto es el que viene';
+
+        assert.equal(importMany(text).length, 1);
+    });
+
+    it('splits at a title set apart with chords below, like "Santo Alegre"', () => {
+        const text = one('ENTRADA: Uno', 'C', 'Letra uno') + '\nSanto Alegre\nE   A\nSanto en el cielo\n';
+
+        assert.deepEqual(importMany(text).map((s) => s.title), ['Uno', 'Santo Alegre']);
+    });
+
+    it('is a single song when there is no sign of more', () => {
+        assert.equal(importMany('C\nUna sola letra\n').length, 1);
+        assert.deepEqual(importMany('  \n'), []);
     });
 });
 

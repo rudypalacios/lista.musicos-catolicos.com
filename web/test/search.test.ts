@@ -6,7 +6,7 @@ import type { Song } from '../src/data/types.ts';
 const song = (title: string, author = ''): Song => ({
     id: title, title, author, body: '', updatedAt: 1, deletedAt: null,
 });
-const songs = [song('Vienen con alegría'), song('Ángel de Dios', 'Anónimo'), song('Dijiste Sí'), song('Padre nuestro', 'Martín Valverde')];
+const songs = [song('Caminamos con alegría'), song('Ángel de Dios', 'Anónimo'), song('Dijiste Sí'), song('Padre nuestro', 'Martín Valverde')];
 
 describe('filterSongs', () => {
     it('returns everything for an empty search', () => {
@@ -15,7 +15,7 @@ describe('filterSongs', () => {
     });
 
     it('ignores accents and case', () => {
-        assert.deepEqual(filterSongs(songs, 'ALEGRIA').map((s) => s.title), ['Vienen con alegría']);
+        assert.deepEqual(filterSongs(songs, 'ALEGRIA').map((s) => s.title), ['Caminamos con alegría']);
         assert.deepEqual(filterSongs(songs, 'angel').map((s) => s.title), ['Ángel de Dios']);
         assert.deepEqual(filterSongs(songs, 'si').map((s) => s.title), ['Dijiste Sí']);
     });

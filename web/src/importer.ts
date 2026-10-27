@@ -3,10 +3,10 @@
  * words (from a document, a PDF or a chat), into ChordPro: the chords go inside the line, at
  * the column they were over.
  *
- *     ENTRADA: Vienen con alegría          →  title "Vienen con alegría", part "entrada"
+ *     ENTRADA: Caminamos con alegría       →  title "Caminamos con alegría", part "entrada"
  *     C            Am
- *     1. Vienen trayendo la esperanza,     →  {c: Verso 1}
- *                                              [C]Vienen trayendo [Am]la esperanza,
+ *     1. Un pueblo que espera el mañana,   →  {c: Verso 1}
+ *                                              [C]Un pueblo que [Am]espera el mañana,
  *
  * It is a best effort and says so: a chord's column is only as good as the spaces the paste
  * kept (a proportional font shifts them), so the result is shown for the person to fix before
@@ -52,7 +52,12 @@ interface Row {
 
 export function importChordsOverLyrics(source: string): Imported {
     const warnings: string[] = [];
-    const rows = classify(source.split(/\r\n|[\n\r\u2028\u2029]/).map(prepare));
+    const prepared = source.split(/\r\n|[\n\r\u2028\u2029]/).map(prepare);
+    const columns = splitColumns(prepared);
+    if (columns.split) {
+        warnings.push('La hoja tenía dos columnas: leí primero la izquierda y después la derecha.');
+    }
+    const rows = classify(columns.lines);
 
     const header = takeHeader(rows);
     const lines: string[] = [];
@@ -104,8 +109,10 @@ export function importChordsOverLyrics(source: string): Imported {
         if (verse !== null) {
             blank();
             lines.push(`{c: Verso ${verse[2]}}`);
-            offset = verse[0].length;
-            text = text.slice(offset);
+            // The number hangs in the margin: the chords above are aligned to where the words
+            // start on the page, which the other lines of the verse show (they are indented)
+            offset = hangingIndent(rows, i, verse[0].length) ?? verse[0].length;
+            text = text.slice(verse[0].length);
         }
 
         if (chordRow === null) {
@@ -142,11 +149,15 @@ export function importChordsOverLyrics(source: string): Imported {
     return { title: header.title, author: header.author, part: header.part, body: lines.join('\n'), warnings };
 }
 
-/** Tabs to spaces (4-column stops, so columns still line up), no non-breaking spaces, no trailing space */
+/**
+ * Tabs to spaces (4-column stops, so columns still line up), no non-breaking spaces, no trailing
+ * space, and none of the zero-width characters that Word, Docs and PDFs leave between letters:
+ * they take a place in the text and no place on the page, so they would shift every column.
+ */
 function prepare(line: string): string {
     let column = 0;
     let out = '';
-    for (const char of line.replace(/ /g, ' ')) {
+    for (const char of line.replace(/[\u200B-\u200D\u2060\uFEFF]/g, '').replace(/\u00A0/g, ' ')) {
         if (char === '\t') {
             const spaces = 4 - (column % 4);
             out += ' '.repeat(spaces);
@@ -194,7 +205,7 @@ export function chordOf(token: string): string | null {
 }
 
 /**
- * The first line, if it says what the song is: "ENTRADA: Vienen con alegría", "GLORIA",
+ * The first line, if it says what the song is: "ENTRADA: Caminamos con alegría", "GLORIA",
  * "CORDERO DE DIOS   Misa Rítmica Mejía.". Removed from `rows` when it is a header.
  */
 function takeHeader(rows: Row[]): { title: string; author: string; part: string | null; capo: string | null } {
@@ -227,7 +238,7 @@ function takeHeader(rows: Row[]): { title: string; author: string; part: string 
         title = MASS_PARTS.find((part) => part.id === match)?.name ?? line;
         author = after;
     } else if (match !== null && after !== '') {
-        // "ENTRADA: Vienen con alegría": the song is what follows the colon
+        // "ENTRADA: Caminamos con alegría": the song is what follows the colon
         title = after;
     } else {
         // "GLORIA", "Piedad Kyrie:", "ALELUYA Junto a ti Jesús": no colon, the whole line is the title
@@ -327,4 +338,132 @@ function snap(lyric: string, at: number): number {
     const next = lyric.slice(at).search(/\S/);
 
     return next === -1 ? lyric.length : at + next;
+}
+
+/**
+ * Where the words of a numbered verse start on the page: the indent of the other lines of the
+ * verse ("    a un mundo…" under "1. Un pueblo…"), when it is a little more than the number itself.
+ */
+function hangingIndent(rows: Row[], from: number, prefix: number): number | null {
+    const indents: number[] = [];
+    for (let j = from + 1; j < rows.length; j++) {
+        const row = rows[j];
+        if (row === undefined || row.kind === 'blank') {
+            break;
+        }
+        if (row.kind === 'text' && !VERSE_NUMBER.test(row.text)) {
+            indents.push(row.text.length - row.text.trimStart().length);
+        }
+    }
+    const indent = indents.length > 0 ? Math.min(...indents) : null;
+
+    return indent !== null && indent >= prefix && indent <= prefix + 6 ? indent : null;
+}
+
+/**
+ * A sheet laid out in two columns (some songs are printed that way): the lines of both columns
+ * come joined, chords included. Finds the gutter, a run of at least three columns where no
+ * line has anything, and reads the left column and then the right. Without such a gutter, or
+ * when one side is nearly empty, the lines are left alone.
+ */
+function splitColumns(lines: string[]): { lines: string[]; split: boolean } {
+    const filled = lines.filter((line) => line.trim() !== '');
+    const width = Math.max(0, ...lines.map((line) => line.length));
+    if (filled.length < 8 || width < 40) {
+        return { lines, split: false };
+    }
+
+    const used = new Array<number>(width).fill(0);
+    for (const line of filled) {
+        for (let i = 0; i < line.length; i++) {
+            if (line.charAt(i) !== ' ') {
+                used[i] = (used[i] ?? 0) + 1;
+            }
+        }
+    }
+
+    let gutter: { start: number; end: number } | null = null;
+    for (let i = Math.floor(width * 0.3); i < Math.ceil(width * 0.7); ) {
+        if (used[i] !== 0) {
+            i++;
+            continue;
+        }
+        let end = i;
+        while (end < width && used[end] === 0) {
+            end++;
+        }
+        if (end - i >= 3 && (gutter === null || end - i > gutter.end - gutter.start)) {
+            gutter = { start: i, end };
+        }
+        i = end;
+    }
+    if (gutter === null) {
+        return { lines, split: false };
+    }
+
+    const { start, end } = gutter;
+    const left = filled.filter((line) => line.slice(0, start).trim() !== '').length;
+    const right = filled.filter((line) => line.slice(end).trim() !== '').length;
+    if (left < filled.length * 0.3 || right < filled.length * 0.3) {
+        return { lines, split: false };
+    }
+
+    const side = (cut: (line: string) => string): string[] => {
+        const part = lines.map((line) => cut(line).replace(/\s+$/, ''));
+        while (part.length > 0 && part[part.length - 1] === '') {
+            part.pop();
+        }
+
+        return part;
+    };
+
+    return { lines: [...side((line) => line.slice(0, start)), '', ...side((line) => line.slice(end))], split: true };
+}
+
+/**
+ * Several songs in one text (a whole Mass printed one song per page): split where a page ends
+ * (form feed, which PDF text carries) or, without page marks, where a line is plainly a header:
+ * "PART:" with a colon, or a part's name alone on a line. "Santo, Santo, Santo" is a lyric, not
+ * a header; a header never has a comma.
+ */
+export function splitSongs(source: string): string[] {
+    const pages = source.split('\f').filter((page) => page.trim() !== '');
+    if (pages.length > 1) {
+        return pages;
+    }
+
+    const lines = (pages[0] ?? '').split(/\r\n|[\n\r\u2028\u2029]/);
+    const songs: string[][] = [];
+    lines.forEach((line, index) => {
+        if (isStrongHeader(line, lines, index) && songs.length > 0 && (songs[songs.length - 1] ?? []).some((l) => l.trim() !== '')) {
+            songs.push([]);
+        }
+        if (songs.length === 0) {
+            songs.push([]);
+        }
+        songs[songs.length - 1]?.push(line);
+    });
+
+    return songs.map((song) => song.join('\n')).filter((song) => song.trim() !== '');
+}
+
+/** A line that opens a song: a part's name with a colon, alone, or after a blank with chords below */
+function isStrongHeader(line: string, lines: string[], index: number): boolean {
+    const text = prepare(line).trim();
+    if (text === '' || text.includes(',') || isChordLine(text) || partOf(text) === null) {
+        return false;
+    }
+    if (/^[^:]{2,30}:/.test(text) || MASS_PARTS.some((part) => part.aliases.includes(plain(text)))) {
+        return true;
+    }
+    // "Santo Alegre": no colon, but set apart: a blank line above and chords right below
+    const above = lines[index - 1];
+    const below = lines.slice(index + 1).find((l) => l.trim() !== '');
+
+    return (index === 0 || above?.trim() === '') && below !== undefined && isChordLine(prepare(below)) && text.length <= 60;
+}
+
+/** Every song in a text: one per page of a PDF, or one if there is no sign of more */
+export function importMany(source: string): Imported[] {
+    return splitSongs(source).map((song) => importChordsOverLyrics(song));
 }
