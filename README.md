@@ -22,7 +22,7 @@ Offline-first PWA to plan the music of a Mass. Private for now, built to be fold
 
 ## Develop
 
-Requires PHP 8.1+, Composer, Node 22.18+.
+Requires PHP 8.3+, Composer, Node 22.18+.
 
 ```
 composer install && npm install

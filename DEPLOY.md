@@ -24,7 +24,7 @@ cada deploy (`migrations/`). No hay nada que ejecutar en el servidor.
    principal (no `public/`: el `.htaccess` raíz envía todo a `public/`).
 2. Activar **HTTPS** para el subdominio (*SSL/TLS Status → Run AutoSSL*). Sin HTTPS no se puede
    instalar la app ni funciona el modo sin conexión.
-3. *MultiPHP Manager*: PHP **8.1** para el subdominio, con la extensión `pdo_mysql` activa
+3. *MultiPHP Manager*: PHP **8.3** para el subdominio, con la extensión `pdo_mysql` activa
    (*Select PHP Version → Extensions*).
 4. *MySQL Databases*: crear una base de datos y un usuario nuevos, y darle **todos los
    privilegios** sobre esa base (la app crea tablas). No reutilices la base del sitio principal.
@@ -39,12 +39,15 @@ cada deploy (`migrations/`). No hay nada que ejecutar en el servidor.
    DB_USERNAME=<usuario creado en el paso 4>
    DB_PASSWORD=<contraseña>
    OWNER_EMAIL=<tu correo>
-   OWNER_PASSWORD=<la contraseña con la que vas a entrar a la app>
+   OWNER_PASSWORD_HASH='<hash bcrypt de tu contraseña>'
    ```
 
-   La cuenta se crea en la primera petición que no encuentra usuarios. **Después de entrar
-   la primera vez, borra la línea `OWNER_PASSWORD` del `.env`**: la contraseña ya quedó
-   guardada de forma segura (hash) y no tiene por qué seguir en texto.
+   La cuenta se crea en la primera petición que no encuentra usuarios. El hash es **bcrypt**
+   (empieza con `$2y$`, 60 caracteres, generado con `password_hash($contraseña, PASSWORD_BCRYPT)`
+   de PHP) y va **entre comillas simples**, porque contiene `$`. Genéralo donde la contraseña
+   no pase por un sitio ajeno (la terminal de cPanel o tu computadora, no un generador en línea).
+   Alternativa: `OWNER_PASSWORD=<contraseña>` en texto; se convierte en hash en la primera
+   petición y hay que borrarla del `.env` después de entrar.
 
 7. Crear (o completar) `<carpeta-del-sitio>/.htaccess` con el contenido del `.htaccess` de la
    raíz del repo. Si cPanel ya creó uno con la versión de PHP, **no lo borres**: agrega el
@@ -73,7 +76,7 @@ cada deploy (`migrations/`). No hay nada que ejecutar en el servidor.
 1. `https://lista.musicos-catolicos.com/api/health` debe responder
    `{"status":"ok","schema":"0001_create_users"}`. Si responde HTML o 404, falta el `.htaccess`
    (paso 7); si responde 500, revisa el `.env` y el usuario de la base.
-2. Abre `https://lista.musicos-catolicos.com/`, inicia sesión y borra `OWNER_PASSWORD` del `.env`.
+2. Abre `https://lista.musicos-catolicos.com/` e inicia sesión (si usaste `OWNER_PASSWORD`, bórrala del `.env`).
 3. Si ves "La aplicación no está compilada", el deploy no corrió el build: revisa el job en *Actions*.
 
 ## Pruebas en los dispositivos

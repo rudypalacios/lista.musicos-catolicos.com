@@ -6,12 +6,11 @@ remember it.
 ## Phase 0: skeleton and pipeline (this branch)
 
 - [x] Build, API with login, migrations, offline shell, deploy workflow, tests.
-- [ ] **Owner, in cPanel:** subdomain, HTTPS, PHP 8.1, MySQL, FTP account, `.env`, root
+- [ ] **Owner, in cPanel:** subdomain, HTTPS, PHP 8.3, MySQL, FTP account, `.env`, root
       `.htaccess` (`DEPLOY.md`).
 - [ ] **Owner, in GitHub:** `production` environment with the FTP secrets.
 - [ ] First deploy, then the checks on the real devices (`DEPLOY.md`, "Pruebas en los
       dispositivos"): Android Chrome and iPad Safari, installed, in airplane mode.
-- [ ] Delete `OWNER_PASSWORD` from the server's `.env` after the first sign-in.
 
 ## Phase 1: songs and viewer
 
