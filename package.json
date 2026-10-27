@@ -10,7 +10,7 @@
     "typecheck": "tsc -p web/tsconfig.json --noEmit && tsc -p web/tsconfig.sw.json --noEmit && tsc -p scripts/tsconfig.json --noEmit",
     "test": "node --test \"web/test/**/*.test.ts\"",
     "check": "npm run typecheck && npm test",
-    "e2e": "node tests/e2e/offline.ts",
+    "e2e": "node tests/e2e/offline.ts && node tests/e2e/songs.ts",
     "fixtures": "node scripts/fixtures/generate.ts"
   },
   "devDependencies": {

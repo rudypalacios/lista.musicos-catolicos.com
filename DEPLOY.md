@@ -77,7 +77,12 @@ cada deploy (`migrations/`). No hay nada que ejecutar en el servidor.
    `{"status":"ok","schema":"<última migración>"}` (por ejemplo `0002_create_songs`). Si responde HTML o 404, falta el `.htaccess`
    (paso 7); si responde 500, revisa el `.env` y el usuario de la base.
 2. Abre `https://lista.musicos-catolicos.com/` e inicia sesión (si usaste `OWNER_PASSWORD`, bórrala del `.env`).
-3. Si ves "La aplicación no está compilada", el deploy no corrió el build: revisa el job en *Actions*.
+3. **Codificación de la base.** En phpMyAdmin (pestaña *SQL* de la base) ejecuta
+   `SELECT DEFAULT_CHARACTER_SET_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = DATABASE();`.
+   Debe decir `utf8mb4`. Si dice `latin1`, los símbolos fuera del español (♯, ♭, emoji) se
+   corromperían al guardar un canto: ejecuta `ALTER TABLE songs CONVERT TO CHARACTER SET utf8mb4;`
+   (y lo mismo con `users`, `sessions`, `login_attempts`, `sync_state`) antes de usar la app en serio.
+4. Si ves "La aplicación no está compilada", el deploy no corrió el build: revisa el job en *Actions*.
 
 ## Pruebas en los dispositivos
 
@@ -95,6 +100,18 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    visita en 7 días, y eso no aplica a una app instalada en la pantalla de inicio.
 3. Modo avión, cierra la app (deslizar hacia arriba) y ábrela desde el ícono: debe abrir.
 4. Repite al día siguiente y a los 8 días sin abrirla, para confirmar que no se borra.
+
+**Cantos (fase 1), en los dos dispositivos**
+1. Crea un canto con acordes (o impórtalo pegando uno de tu PDF) y ábrelo. Prueba `−`/`+` del
+   tono, `Do → C` y `Ajustar`: el canto entero debe caber en la pantalla sin hacer scroll (si es
+   muy largo, en dos columnas en la tablet). Gira la tablet: se vuelve a ajustar.
+2. Modo avión. Cierra la app y ábrela: el canto debe seguir ahí. Escribe uno nuevo sin conexión:
+   arriba debe decir "Sin conexión · 1 sin enviar". Quita el modo avión: pasa a "Sincronizado".
+3. Entra con la misma cuenta en el otro dispositivo: ve los mismos cantos. Edita uno en un
+   dispositivo y comprueba que aparece en el otro (puede tardar hasta que vuelvas a abrir la app).
+4. En el iPad, repite el paso 2 después de 8 días sin abrir la app: los cantos deben seguir.
+5. Cuéntame cualquier acorde que el importador haya puesto lejos de su sílaba y el formato de la
+   hoja de donde venía, para ajustarlo.
 
 **Actualizaciones.** Después de un deploy con cambios, la app muestra "Hay una versión nueva"
 con un botón *Actualizar*. No se actualiza sola mientras la estás usando.

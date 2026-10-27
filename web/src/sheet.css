@@ -1,0 +1,100 @@
+/*
+ * The lyrics of a song, as the public site shows them (musicos-catolicos, public/css/site.css,
+ * "Lyrics (ChordSheet)"): each word is a row of segments, a chord over the text sung from it;
+ * lines wrap between words only. Keep the two in step; the markup is made by sheet.ts.
+ *
+ * The size comes from the element that holds the song (--lyric-size, set by "ajustar a la
+ * pantalla" or left at its default, plus --lyric-step for the A− / A+ buttons).
+ */
+.song-sheet {
+    display: flex;
+    flex-direction: column;
+    gap: 1.4em;
+    padding-top: 0.6em;
+}
+
+.song-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    break-inside: avoid;
+}
+
+.song-section__label {
+    align-self: flex-start;
+    margin: 0;
+    padding: 0.2em 0.6em;
+    background: var(--surface-2);
+    border-radius: 8px;
+    font-size: 0.7em;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+/* The label sits close to its first line; the space before it (between sections) stays */
+.song-section__label + * {
+    margin-top: -0.3em;
+}
+
+/* Chorus: a rule at its left instead of a box, so it takes no extra room. Bridge, intro,
+   final… (other): an italic label. */
+.song-section--chorus {
+    padding-left: 0.6em;
+    border-left: 3px solid var(--accent-rule);
+}
+
+.song-section--other .song-section__label {
+    font-style: italic;
+}
+
+.song-sheet .line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    line-height: 1.35;
+}
+
+.song-sheet .line--plain {
+    display: block;
+}
+
+/* An annotation in the stanza ({ci: x2}) */
+.song-sheet .line--note {
+    display: block;
+    font-size: 0.8em;
+    font-style: italic;
+    color: var(--faint);
+}
+
+.song-sheet .w {
+    display: inline-flex;
+    align-items: flex-end;
+}
+
+.song-sheet .seg {
+    display: inline-flex;
+    flex-direction: column;
+}
+
+.song-sheet .lyr {
+    white-space: pre;
+}
+
+.song-sheet .ch {
+    min-height: 1.2em;
+    padding-right: 0.35em;
+    font-size: 0.85em;
+    font-weight: 700;
+    color: var(--accent);
+    white-space: nowrap;
+}
+
+/* The syllable the chord falls on */
+.song-sheet .syl {
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.2em;
+}
