@@ -77,11 +77,11 @@ cada deploy (`migrations/`). No hay nada que ejecutar en el servidor.
    `{"status":"ok","schema":"<última migración>"}` (por ejemplo `0002_create_songs`). Si responde HTML o 404, falta el `.htaccess`
    (paso 7); si responde 500, revisa el `.env` y el usuario de la base.
 2. Abre `https://lista.musicos-catolicos.com/` e inicia sesión (si usaste `OWNER_PASSWORD`, bórrala del `.env`).
-3. **Codificación de la base.** En phpMyAdmin (pestaña *SQL* de la base) ejecuta
-   `SELECT DEFAULT_CHARACTER_SET_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = DATABASE();`.
-   Debe decir `utf8mb4`. Si dice `latin1`, los símbolos fuera del español (♯, ♭, emoji) se
-   corromperían al guardar un canto: ejecuta `ALTER TABLE songs CONVERT TO CHARACTER SET utf8mb4;`
-   (y lo mismo con `users`, `sessions`, `login_attempts`, `sync_state`) antes de usar la app en serio.
+3. **Codificación de la base.** No tienes que hacer nada: la migración `0003_utf8mb4.mysql.sql`
+   convierte sola las tablas a `utf8mb4` (una base creada como `utf8` a secas no guarda emoji).
+   Para comprobarlo, en phpMyAdmin ejecuta
+   `SELECT TABLE_NAME, TABLE_COLLATION FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE();`:
+   todas deben empezar con `utf8mb4_`.
 4. Si ves "La aplicación no está compilada", el deploy no corrió el build: revisa el job en *Actions*.
 
 ## Pruebas en los dispositivos

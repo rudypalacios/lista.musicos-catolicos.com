@@ -13,7 +13,7 @@ const server = await startServer(18081);
 const { pass, count } = reporter();
 const BASE = server.base;
 
-const SHORT = '{c: Coro}\n[C]Vienen con alegría Señor,\ncantando vienen con a[G]legría Señor.';
+const SHORT = '{c: Coro}\n[C]Caminamos con alegría, Señor,\ncantando vamos hacia tu ca[G]sa.';
 
 /** A song as long as `stanzas` stanzas of four lines say */
 function longSong(stanzas: number): string {
@@ -94,15 +94,15 @@ async function serverSongs(page: Page): Promise<{ id: string; title: string; del
     });
 }
 
-const IMPORTED = `OFRENDAS: En torno al pan
+const IMPORTED = `OFRENDAS: Sobre la mesa
 
   Em                    C                    G
-Las fuerzas se rehacen en la mesa,
+Compartimos el pan y el vino en la mesa,
 
 CORO
 
   Em         C          G
-LAS FUERZAS SE REHACEN EN LA MESA,
+COMPARTIMOS EL PAN Y EL VINO EN LA MESA,
 `;
 
 const browser = await chromium.launch();
@@ -118,14 +118,14 @@ try {
 
     // ----- writing -----
     await page.getByRole('link', { name: 'Nuevo canto' }).click();
-    await page.getByLabel('Título').fill('Vienen con alegría');
+    await page.getByLabel('Título').fill('Caminamos con alegría');
     await page.getByLabel('Letra con acordes').fill(SHORT);
     assert.deepEqual(await page.locator('.preview .ch').allTextContents(), ['Do', 'Sol']);
     await page.getByText('Tono Do').first().waitFor();
     pass('the editor previews the song as it will be read, with the key');
 
     await page.getByRole('button', { name: 'Guardar' }).click();
-    await page.getByRole('heading', { name: 'Vienen con alegría' }).waitFor();
+    await page.getByRole('heading', { name: 'Caminamos con alegría' }).waitFor();
     await synced(page);
     assert.equal((await serverSongs(page)).length, 1);
     pass('a saved song reaches the server');
@@ -201,7 +201,7 @@ try {
     assert.ok(phone.fits || phone.scroll);
     assert.ok(!phone.columns, 'a phone never uses two columns');
     console.log(`      (three stanzas on a phone: ${phone.size}px, ${phone.scroll ? 'scroll' : 'fits'})`);
-    await openFromList(page, 'Vienen con alegría');
+    await openFromList(page, 'Caminamos con alegría');
     const phoneShort = await measure(page);
     assert.ok(phoneShort.fits && phoneShort.size > phone.size);
     pass(`fit to screen on a phone: the short song at ${phoneShort.size}px, no columns`);
@@ -215,19 +215,19 @@ try {
     await page.setViewportSize({ width: 820, height: 1180 });
 
     // ----- editing -----
-    await openFromList(page, 'Vienen con alegría');
+    await openFromList(page, 'Caminamos con alegría');
     await page.getByRole('link', { name: 'Editar' }).click();
-    await page.getByLabel('Título').fill('Vienen con alegría (v2)');
+    await page.getByLabel('Título').fill('Caminamos con alegría (v2)');
     await page.getByRole('button', { name: 'Guardar' }).click();
-    await page.getByRole('heading', { name: 'Vienen con alegría (v2)' }).waitFor();
+    await page.getByRole('heading', { name: 'Caminamos con alegría (v2)' }).waitFor();
     await synced(page);
-    assert.ok((await serverSongs(page)).some((song) => song.title === 'Vienen con alegría (v2)'));
+    assert.ok((await serverSongs(page)).some((song) => song.title === 'Caminamos con alegría (v2)'));
     pass('editing a song updates it on the server');
 
     // ----- offline -----
     await ipad.setOffline(true);
     await page.reload();
-    await page.getByRole('heading', { name: 'Vienen con alegría (v2)' }).waitFor();
+    await page.getByRole('heading', { name: 'Caminamos con alegría (v2)' }).waitFor();
     assert.deepEqual(await chordNames(page), ['Do', 'Sol']);
     pass('offline: a song opens from the device after a reload, chords and all');
 
@@ -284,18 +284,36 @@ try {
 
     // ----- importing -----
     await page.goto(BASE + '/cantos/importar');
-    await page.getByLabel('Canto', { exact: true }).fill(IMPORTED);
+    await page.getByLabel('O pegar el texto').fill(IMPORTED);
     await page.getByRole('button', { name: 'Convertir' }).click();
     await page.getByRole('heading', { name: 'Revisa el resultado' }).waitFor();
-    assert.equal(await page.getByLabel('Título').inputValue(), 'En torno al pan');
+    assert.equal(await page.getByLabel('Título').inputValue(), 'Sobre la mesa');
     const converted = await page.getByLabel('Letra con acordes (ChordPro)').inputValue();
     assert.match(converted, /\[Em\]/);
     assert.match(converted, /\{c: Coro\}/);
     await page.getByText('Parte de la misa que dice el encabezado: Ofertorio.').waitFor();
     await page.getByRole('button', { name: 'Guardar canto' }).click();
-    await page.getByRole('heading', { name: 'En torno al pan' }).waitFor();
+    await page.getByRole('heading', { name: 'Sobre la mesa' }).waitFor();
     assert.ok((await chordNames(page)).length >= 6);
     pass('importing: chords above the words become a song, reviewed before saving');
+
+    // A whole Mass, one song per page (a form feed between pages, as PDF text has)
+    const mass = [
+        'ENTRADA: Canto de apertura\n\n  C        G\nAbrimos la puerta de casa\n',
+        'GLORIA\n\nDm\nGloria a Dios en el cielo\n',
+        'SALIDA: Canto de despedida\n\n  G        D\nVamos en paz a servir\n',
+    ].join('\f');
+    await page.goto(BASE + '/cantos/importar');
+    await page.getByLabel('O pegar el texto').fill(mass);
+    await page.getByRole('button', { name: 'Convertir' }).click();
+    await page.getByRole('heading', { name: /Se encontraron 3 cantos/ }).waitFor();
+    assert.equal(await page.locator('.import-card').count(), 3);
+    await page.getByRole('button', { name: 'Guardar 3 cantos' }).click();
+    await page.locator('.song-list').waitFor();
+    for (const title of ['Canto de apertura', 'Gloria', 'Canto de despedida']) {
+        await page.getByRole('link', { name: title }).waitFor();
+    }
+    pass('importing: a whole Mass with a song per page becomes one song each');
 
     // ----- signing out -----
     await synced(page);

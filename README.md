@@ -15,7 +15,7 @@ Offline-first PWA to plan the music of a Mass. Private for now, built to be fold
 | `web/src/` | The app: `main.ts` (shell, router), `views/` (list, editor, importer, viewer), `app.ts` (store, sync) |
 | `web/src/chordpro/` | ChordPro parser, chords, transposition, lyrics renderer: ports of the public site's PHP and `song.js` |
 | `web/src/data/` | Songs on the device (IndexedDB), the queue of unsent songs, the sync engine |
-| `web/src/` (others) | `importer.ts` (chords above the words → ChordPro), `fit.ts` (fit to the screen), `mass.ts` (parts of the Mass), `sw.ts` (service worker) |
+| `web/src/` (others) | `importer.ts` (chords above the words → ChordPro; one song or a whole Mass), `fit.ts` (fit to the screen), `mass.ts` (parts of the Mass), `sw.ts` (service worker) |
 | `web/test/` | Unit tests of the client (`node --test`); `fixtures/golden.json` is what the PHP answered |
 | `scripts/` | The build, and `fixtures/` that regenerates the golden file from musicos-catolicos |
 | `src/` | PHP: `Http/` (actions, middleware), `Auth/`, `Sync/` (songs and their changes), `Database/` |
@@ -66,3 +66,9 @@ Errors: `{error: "<code>", message: "<texto en español>"}`.
 - [`DEPLOY.md`](DEPLOY.md): hosting, first deploy, testing on the devices (Spanish).
 - [`TODO.md`](TODO.md): what is left.
 - [`CLAUDE.md`](CLAUDE.md): working rules for this repository.
+
+## Third-party code
+
+- [pdf.js](https://github.com/mozilla/pdf.js) (`pdfjs-dist`, Apache-2.0), the legacy build, bundled
+  by `scripts/build.ts` and served from this origin: it reads the PDFs of the import screen in the
+  browser. The text never leaves the device. Its license banner is kept in the built files.

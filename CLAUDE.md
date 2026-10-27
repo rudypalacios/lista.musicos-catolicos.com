@@ -64,9 +64,23 @@ hand (`DEPLOY.md`, "Pruebas en los dispositivos").
 Migrations are numbered `.sql` files in `migrations/`, applied by the app itself on the first
 request after a deploy (the host has no shell and the CI only deploys). Never edit one that
 has been deployed; add a new file. Write for MySQL **and** SQLite (tests use SQLite): the
-common subset, one `;` per statement, idempotent (`IF NOT EXISTS`). Run the suite against a
+common subset, one `;` per statement, idempotent (`IF NOT EXISTS`). What the subset cannot say
+(table charsets) goes in a file named `NNNN_name.mysql.sql` or `.sqlite.sql`, which only that
+database applies. Every new MySQL table needs a `.mysql.sql` follow-up that makes it `utf8mb4`:
+the host's database may default to 3-byte `utf8`. Run the suite against a
 MySQL-compatible server (`TEST_MYSQL_DSN`, see `tests/Support/TestDatabase.php`; MariaDB is what the
 sandbox can install, production is MySQL) whenever a migration or a query changes.
+
+## PDF import
+
+`web/src/pdf/layout.ts` (pure, tested) turns the text items of a PDF page into the text the importer
+reads, putting every chord over the syllable it is over by its x position; `read.ts` is the pdf.js
+glue, loaded lazily. pdf.js must work inside the page's CSP: no eval, no WebAssembly (`useWasm:
+false`), its worker is a file of this origin (built first, its URL injected as `__PDF_WORKER_URL__`).
+`tests/e2e/pdf.ts` makes a real PDF with Chromium, imports it under the production policy
+(`enforcePolicy` in `tests/e2e/lib.ts`, which reads it from `public/.htaccess`) and checks every
+chord. The built app splits code (esbuild `splitting`): everything `main` imports statically must be
+precached (the build follows the imports), what loads on demand must not be.
 
 ## Public repository
 

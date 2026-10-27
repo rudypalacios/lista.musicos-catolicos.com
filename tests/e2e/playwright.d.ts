@@ -15,6 +15,18 @@ declare module 'playwright' {
         locator(selector: string): Locator;
         press(key: string): Promise<void>;
         evaluate<T>(callback: (element: HTMLElement) => T): Promise<T>;
+        setInputFiles(path: string): Promise<void>;
+    }
+    interface ConsoleMessage {
+        type(): string;
+        text(): string;
+    }
+    interface ApiResponse {
+        headers(): Record<string, string>;
+    }
+    interface Route {
+        fetch(): Promise<ApiResponse>;
+        fulfill(options: { response: ApiResponse; headers?: Record<string, string> }): Promise<void>;
     }
     interface Dialog {
         message(): string;
@@ -23,6 +35,10 @@ declare module 'playwright' {
     }
     interface Page {
         evaluate<T>(callback: () => T | Promise<T>): Promise<T>;
+        evaluate<T, A>(callback: (argument: A) => T | Promise<T>, argument: A): Promise<T>;
+        setContent(html: string): Promise<void>;
+        pdf(options?: { format?: string; printBackground?: boolean; preferCSSPageSize?: boolean }): Promise<Uint8Array>;
+        on(event: 'console', listener: (message: ConsoleMessage) => void): void;
         getByLabel(text: string, options?: { exact?: boolean }): Locator;
         getByRole(role: string, options: { name: string | RegExp; exact?: boolean }): Locator;
         getByText(text: string | RegExp, options?: { exact?: boolean }): Locator;
@@ -42,10 +58,14 @@ declare module 'playwright' {
         newPage(): Promise<Page>;
         setOffline(offline: boolean): Promise<void>;
         close(): Promise<void>;
+        route(url: string | RegExp, handler: (route: Route) => unknown): Promise<void>;
     }
     interface Browser {
         close(): Promise<void>;
-        newContext(options: { viewport: { width: number; height: number } }): Promise<BrowserContext>;
+        newContext(options: {
+            viewport: { width: number; height: number };
+            serviceWorkers?: 'allow' | 'block';
+        }): Promise<BrowserContext>;
     }
     export const chromium: { launch(): Promise<Browser> };
 }

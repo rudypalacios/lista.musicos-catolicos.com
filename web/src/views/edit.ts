@@ -9,11 +9,11 @@ import { transpose } from '../chordpro/chord.ts';
 import { readNotation } from '../prefs.ts';
 import type { Navigate, View } from './types.ts';
 
-const HELP = `[C]Vienen con a[G]legría Señor,
-cantando vienen con [Am]alegría.
+const HELP = `[C]Caminamos con a[G]legría, Señor,
+cantando vamos hacia tu [Am]casa.
 
 {c: Verso 1}
-[C]Un mundo que [F]busca
+[C]Un pueblo que es[F]pera
 {ci: x2}
 
 {soc}

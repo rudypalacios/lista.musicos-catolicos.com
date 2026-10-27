@@ -17,13 +17,20 @@ remember it.
 - [x] ChordPro parser, chords, notation, transposition and lyrics renderer ported from
       musicos-catolicos, checked against golden fixtures made by the PHP and `song.js`.
 - [x] Own songs: create, edit and delete, in ChordPro (private), kept on the device and synced.
-- [x] Importer: pasted "chords above the lyrics" text to ChordPro, with a review step.
+- [x] Importer: pasted "chords above the lyrics" text to ChordPro, with a review step. Handles a whole
+      Mass pasted at once (one song per page, or split at "PART:" headers), two-column pages, hanging
+      verse numbers and the zero-width characters Word leaves in PDFs.
+- [x] Import straight from a PDF file (pdf.js, bundled and served from this origin): every chord is
+      matched to the syllable it is over by its x position on the page; a whole Mass (one song per
+      page), two-column pages and hanging verse numbers work. The reader loads only on the import
+      screen (about 1.7 MB the first time, then cached by the browser), so importing wants a
+      connection once; reading and writing songs do not.
 - [x] Viewer with transposition, Do/C notation, lyrics size and fit-to-screen (toggle per device;
       maximum 34px, minimum 13px, two columns on wide screens, then scroll).
 - [ ] **Owner, on the real devices** (`DEPLOY.md`, "Pruebas en los dispositivos"): write a song
       offline on the iPad, reload, sync; read it fitted on the iPad and the phone; import a
       real sheet from the September–October PDF and see how far off the chords land.
-- [ ] **Owner:** check the database is `utf8mb4` (`DEPLOY.md`, "Comprobar el primer deploy", step 3).
+- [ ] **Owner:** after the deploy, check the tables are `utf8mb4` (migration `0003`; `DEPLOY.md`, "Comprobar el primer deploy", step 3).
 - [ ] Tune the fit limits (`DEFAULT_LIMITS` in `web/src/fit.ts`) after seeing it on the devices.
 - [ ] Keep the screen awake while a song is open (Screen Wake Lock; iPad Safari 16.4+).
 

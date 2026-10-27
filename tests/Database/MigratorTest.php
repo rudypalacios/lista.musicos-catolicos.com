@@ -31,6 +31,40 @@ final class MigratorTest extends TestCase
         }
     }
 
+    public function testAFileNamedForOneDatabaseIsSkippedByTheOther(): void
+    {
+        $dir = sys_get_temp_dir() . '/migrations-' . bin2hex(random_bytes(4));
+        mkdir($dir);
+        file_put_contents($dir . '/0001_a.sql', 'CREATE TABLE a (id INTEGER);');
+        file_put_contents($dir . '/0002_only_mysql.mysql.sql', 'ALTER TABLE a CONVERT TO CHARACTER SET utf8mb4;');
+        file_put_contents($dir . '/0003_only_sqlite.sqlite.sql', 'CREATE TABLE b (id INTEGER);');
+        $pdo = new PDO('sqlite::memory:', null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+
+        $applied = (new Migrator($pdo, $dir))->migrate();
+
+        $this->assertSame(['0001_a', '0003_only_sqlite.sqlite'], $applied, 'the MySQL file is not even tried');
+        $this->assertTrue(TestDatabase::hasTable($pdo, 'b'));
+
+        array_map('unlink', glob($dir . '/*.sql') ?: []);
+        rmdir($dir);
+    }
+
+    public function testEveryTableEndsUpUtf8mb4OnMysql(): void
+    {
+        if (!TestDatabase::isMysql()) {
+            $this->markTestSkipped('Table charsets only exist on MySQL: run with TEST_MYSQL_DSN');
+        }
+
+        $collations = TestDatabase::migrated()
+            ->query('SELECT TABLE_NAME, TABLE_COLLATION FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE()')
+            ->fetchAll(PDO::FETCH_KEY_PAIR);
+
+        $this->assertNotEmpty($collations);
+        foreach ($collations as $table => $collation) {
+            $this->assertStringStartsWith('utf8mb4_', (string) $collation, (string) $table);
+        }
+    }
+
     public function testCommentsAndSeveralStatementsPerFileAreHandled(): void
     {
         $dir = sys_get_temp_dir() . '/migrations-' . bin2hex(random_bytes(4));

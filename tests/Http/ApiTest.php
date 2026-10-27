@@ -79,7 +79,7 @@ final class ApiTest extends TestCase
     private function song(array $override = []): array
     {
         return $override + [
-            'id' => self::SONG_ID, 'title' => 'Vienen con alegría', 'author' => '', 'body' => '[C]Vienen',
+            'id' => self::SONG_ID, 'title' => 'Caminamos con alegría', 'author' => '', 'body' => '[C]Caminamos',
             'updatedAt' => 1_700_000_000_000, 'deleted' => false,
         ];
     }
@@ -101,7 +101,7 @@ final class ApiTest extends TestCase
         $this->assertSame([self::SONG_ID], $this->body($push)['applied']);
         $this->assertSame([], $this->body($push)['ignored']);
         $body = $this->body($pull);
-        $this->assertSame('Vienen con alegría', $body['songs'][0]['title']);
+        $this->assertSame('Caminamos con alegría', $body['songs'][0]['title']);
         $this->assertSame(1, $body['cursor']);
         $this->assertFalse($body['hasMore']);
     }
@@ -190,7 +190,7 @@ final class ApiTest extends TestCase
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame('ok', $this->body($response)['status']);
-        $this->assertMatchesRegularExpression('~^\d{4}_\w+$~', $this->body($response)['schema']);
+        $this->assertMatchesRegularExpression('~^\d{4}_[\w.]+$~', $this->body($response)['schema']);
         $this->assertSame('no-store', $response->getHeaderLine('Cache-Control'));
     }
 

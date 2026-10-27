@@ -1763,8 +1763,8 @@
    "key": null
   },
   {
-   "name": "vienenConAlegria",
-   "input": "{key: C}\n{c: Coro}\n[C]Vienen con alegría Señor,\ncantando vienen con ale[C7]gría Señor.\n[F]Los que cami[G]nan por la [Em]vida Se[Am]ñor,\nsem[Dm]brando tu [G]paz y a[C]mor. (BIS)\n\n{c: Verso 1}\n[C]Vienen trayendo la espe[Am]ran[Dm]za,\na un [G]mundo carga[Dm]do de ansie[C]dad.\nUn mundo que busca y que no al[Am]can[Dm]za,\ncami[G]nos de a[F]mor y de ami[C]stad.",
+   "name": "caminamosConAlegria",
+   "input": "{key: C}\n{c: Coro}\n[C]Caminamos con alegría, Señor,\ncantando vamos hacia tu ca[C7]sa.\n[F]Con el pan de [G]cada día, te [Em]traemos [Am]paz,\ntra[Dm]bajo de [G]todos y [C]vida. (BIS)\n\n{c: Verso 1}\n[C]Un pueblo que es[Am]pe[Dm]ra el mañana,\ny [G]sabe que [Dm]Dios está a[C]quí.\nUn pueblo que [Am]can[Dm]ta y camina,\nsem[G]brando es[F]peranza y a[C]mor.",
    "sheet": {
     "sections": [
      {
@@ -1774,53 +1774,53 @@
        [
         {
          "chord": "C",
-         "text": "Vienen con alegría Señor,"
+         "text": "Caminamos con alegría, Señor,"
         }
        ],
        [
         {
          "chord": null,
-         "text": "cantando vienen con ale"
+         "text": "cantando vamos hacia tu ca"
         },
         {
          "chord": "C7",
-         "text": "gría Señor."
+         "text": "sa."
         }
        ],
        [
         {
          "chord": "F",
-         "text": "Los que cami"
+         "text": "Con el pan de "
         },
         {
          "chord": "G",
-         "text": "nan por la "
+         "text": "cada día, te "
         },
         {
          "chord": "Em",
-         "text": "vida Se"
+         "text": "traemos "
         },
         {
          "chord": "Am",
-         "text": "ñor,"
+         "text": "paz,"
         }
        ],
        [
         {
          "chord": null,
-         "text": "sem"
+         "text": "tra"
         },
         {
          "chord": "Dm",
-         "text": "brando tu "
+         "text": "bajo de "
         },
         {
          "chord": "G",
-         "text": "paz y a"
+         "text": "todos y "
         },
         {
          "chord": "C",
-         "text": "mor. (BIS)"
+         "text": "vida. (BIS)"
         }
        ]
       ]
@@ -1832,39 +1832,39 @@
        [
         {
          "chord": "C",
-         "text": "Vienen trayendo la espe"
+         "text": "Un pueblo que es"
         },
         {
          "chord": "Am",
-         "text": "ran"
+         "text": "pe"
         },
         {
          "chord": "Dm",
-         "text": "za,"
+         "text": "ra el mañana,"
         }
        ],
        [
         {
          "chord": null,
-         "text": "a un "
+         "text": "y "
         },
         {
          "chord": "G",
-         "text": "mundo carga"
+         "text": "sabe que "
         },
         {
          "chord": "Dm",
-         "text": "do de ansie"
+         "text": "Dios está a"
         },
         {
          "chord": "C",
-         "text": "dad."
+         "text": "quí."
         }
        ],
        [
         {
          "chord": null,
-         "text": "Un mundo que busca y que no al"
+         "text": "Un pueblo que "
         },
         {
          "chord": "Am",
@@ -1872,25 +1872,25 @@
         },
         {
          "chord": "Dm",
-         "text": "za,"
+         "text": "ta y camina,"
         }
        ],
        [
         {
          "chord": null,
-         "text": "cami"
+         "text": "sem"
         },
         {
          "chord": "G",
-         "text": "nos de a"
+         "text": "brando es"
         },
         {
          "chord": "F",
-         "text": "mor y de ami"
+         "text": "peranza y a"
         },
         {
          "chord": "C",
-         "text": "stad."
+         "text": "mor."
         }
        ]
       ]
@@ -1902,7 +1902,7 @@
     "hasChords": true,
     "firstChord": "C"
    },
-   "html": "<div class=\"song-section song-section--chorus\"><h3 class=\"song-section__label\">Coro</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">Vie</span>nen </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">con </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">alegría </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">Señor,</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">cantando </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">vienen </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">con </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">ale</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"C7\">Do7</span><span class=\"lyr\"><span class=\"syl\">grí</span>a </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">Señor.</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"F\">Fa</span><span class=\"lyr\"><span class=\"syl\">Los</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">que </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">cami</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">nan</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">por </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">la </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Em\">Mim</span><span class=\"lyr\"><span class=\"syl\">vi</span>da </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">Se</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">ñor</span>,</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">sem</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"><span class=\"syl\">bran</span>do </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">tu </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">paz</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">y </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">a</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">mor</span>. </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">(BIS)</span></span></span></div></div><div class=\"song-section song-section--verse\"><h3 class=\"song-section__label song-section__label--verse\">Verso 1</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">Vie</span>nen </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">trayendo </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">la </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">espe</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">ran</span></span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"><span class=\"syl\">za</span>,</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">a </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">un </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">mun</span>do </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">carga</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"><span class=\"syl\">do</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">de </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">ansie</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">dad</span>.</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">Un </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">mundo </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">que </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">busca </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">y </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">que </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">no </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">al</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">can</span></span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"><span class=\"syl\">za</span>,</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">cami</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">nos</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">de </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">a</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"F\">Fa</span><span class=\"lyr\"><span class=\"syl\">mor</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">y </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">de </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">ami</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">stad</span>.</span></span></span></div></div>",
+   "html": "<div class=\"song-section song-section--chorus\"><h3 class=\"song-section__label\">Coro</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">Ca</span>minamos </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">con </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">alegría, </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">Señor,</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">cantando </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">vamos </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">hacia </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">tu </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">ca</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"C7\">Do7</span><span class=\"lyr\"><span class=\"syl\">sa</span>.</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"F\">Fa</span><span class=\"lyr\"><span class=\"syl\">Con</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">el </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">pan </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">de </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">ca</span>da </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">día, </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">te </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Em\">Mim</span><span class=\"lyr\"><span class=\"syl\">tra</span>emos </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">paz</span>,</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">tra</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"><span class=\"syl\">ba</span>jo </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">de </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">to</span>dos </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">y </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">vi</span>da. </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">(BIS)</span></span></span></div></div><div class=\"song-section song-section--verse\"><h3 class=\"song-section__label song-section__label--verse\">Verso 1</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">Un</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">pueblo </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">que </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">es</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">pe</span></span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"><span class=\"syl\">ra</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">el </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">mañana,</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">y </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">sa</span>be </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">que </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"><span class=\"syl\">Dios</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">está </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">a</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">quí</span>.</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">Un </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">pueblo </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">que </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">can</span></span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"><span class=\"syl\">ta</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">y </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">camina,</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">sem</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">bran</span>do </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">es</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"F\">Fa</span><span class=\"lyr\"><span class=\"syl\">pe</span>ranza </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">y </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">a</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">mor</span>.</span></span></span></div></div>",
    "key": "C"
   },
   {
@@ -2126,8 +2126,8 @@
    "key": "Dm"
   },
   {
-   "name": "comunion",
-   "input": "{c: Coro}\n[Am]Donde hay cari[Dm]dad y a[Am]mor, a[G]llí es[G7]tá el Se[C]ñor,\n[Dm]allí [E]está el [Am]Señor. ([E] [Am])\n\n{c: Verso 1}\n[Am]Una sala y una [G]mesa, [G7]una [C]copa, [Dm]vino y pan,",
+   "name": "mesaCompartida",
+   "input": "{c: Coro}\n[Am]Sobre la mesa com[Dm]partimos el [Am]pan, y [G]en [G7]ella está [C]Dios,\n[Dm]en ella [E]está el [Am]Señor. ([E] [Am])\n\n{c: Verso 1}\n[Am]Una mesa con [G]sillas, [G7]una [C]luz, [Dm]sencilla y viva,",
    "sheet": {
     "sections": [
      {
@@ -2137,33 +2137,33 @@
        [
         {
          "chord": "Am",
-         "text": "Donde hay cari"
+         "text": "Sobre la mesa com"
         },
         {
          "chord": "Dm",
-         "text": "dad y a"
+         "text": "partimos el "
         },
         {
          "chord": "Am",
-         "text": "mor, a"
+         "text": "pan, y "
         },
         {
          "chord": "G",
-         "text": "llí es"
+         "text": "en "
         },
         {
          "chord": "G7",
-         "text": "tá el Se"
+         "text": "ella está "
         },
         {
          "chord": "C",
-         "text": "ñor,"
+         "text": "Dios,"
         }
        ],
        [
         {
          "chord": "Dm",
-         "text": "allí "
+         "text": "en ella "
         },
         {
          "chord": "E",
@@ -2191,11 +2191,11 @@
        [
         {
          "chord": "Am",
-         "text": "Una sala y una "
+         "text": "Una mesa con "
         },
         {
          "chord": "G",
-         "text": "mesa, "
+         "text": "sillas, "
         },
         {
          "chord": "G7",
@@ -2203,11 +2203,11 @@
         },
         {
          "chord": "C",
-         "text": "copa, "
+         "text": "luz, "
         },
         {
          "chord": "Dm",
-         "text": "vino y pan,"
+         "text": "sencilla y viva,"
         }
        ]
       ]
@@ -2217,7 +2217,7 @@
     "hasChords": true,
     "firstChord": "Am"
    },
-   "html": "<div class=\"song-section song-section--chorus\"><h3 class=\"song-section__label\">Coro</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">Don</span>de </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">hay </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">cari</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"><span class=\"syl\">dad</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">y </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">a</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">mor</span>, </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">a</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">llí</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">es</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"G7\">Sol7</span><span class=\"lyr\"><span class=\"syl\">tá</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">el </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">Se</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">ñor</span>,</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"><span class=\"syl\">a</span>llí </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"E\">Mi</span><span class=\"lyr\"><span class=\"syl\">es</span>tá </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">el </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">Se</span>ñor. </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">(</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"E\">Mi</span><span class=\"lyr\"> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\">)</span></span></span></div></div><div class=\"song-section song-section--verse\"><h3 class=\"song-section__label song-section__label--verse\">Verso 1</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">U</span>na </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">sala </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">y </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">una </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">me</span>sa, </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G7\">Sol7</span><span class=\"lyr\"><span class=\"syl\">u</span>na </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">co</span>pa, </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"><span class=\"syl\">vi</span>no </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">y </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">pan,</span></span></span></div></div>",
+   "html": "<div class=\"song-section song-section--chorus\"><h3 class=\"song-section__label\">Coro</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">So</span>bre </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">la </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">mesa </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">com</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"><span class=\"syl\">par</span>timos </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">el </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">pan</span>, </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">y </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">en</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G7\">Sol7</span><span class=\"lyr\"><span class=\"syl\">e</span>lla </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">está </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">Dios</span>,</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"><span class=\"syl\">en</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">ella </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"E\">Mi</span><span class=\"lyr\"><span class=\"syl\">es</span>tá </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">el </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">Se</span>ñor. </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">(</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"E\">Mi</span><span class=\"lyr\"> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\">)</span></span></span></div></div><div class=\"song-section song-section--verse\"><h3 class=\"song-section__label song-section__label--verse\">Verso 1</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">U</span>na </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">mesa </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">con </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">si</span>llas, </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G7\">Sol7</span><span class=\"lyr\"><span class=\"syl\">u</span>na </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">luz</span>, </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"><span class=\"syl\">sen</span>cilla </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">y </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">viva,</span></span></span></div></div>",
    "key": "Am"
   }
  ],

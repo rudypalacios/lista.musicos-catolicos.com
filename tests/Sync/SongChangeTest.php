@@ -21,8 +21,8 @@ final class SongChangeTest extends TestCase
     private function data(array $override = []): array
     {
         return $override + [
-            'id' => self::ID, 'title' => 'Vienen con alegría', 'author' => 'Anónimo',
-            'body' => '[C]Vienen', 'updatedAt' => self::NOW - 1000, 'deleted' => false,
+            'id' => self::ID, 'title' => 'Caminamos con alegría', 'author' => 'Anónimo',
+            'body' => '[C]Caminamos', 'updatedAt' => self::NOW - 1000, 'deleted' => false,
         ];
     }
 
@@ -30,7 +30,7 @@ final class SongChangeTest extends TestCase
     {
         $change = SongChange::fromArray($this->data(), self::NOW);
 
-        $this->assertSame('Vienen con alegría', $change->title);
+        $this->assertSame('Caminamos con alegría', $change->title);
         $this->assertSame(self::NOW - 1000, $change->updatedAt);
         $this->assertFalse($change->deleted);
     }

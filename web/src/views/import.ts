@@ -3,79 +3,106 @@ import { parse } from '../chordpro/parser.ts';
 import { sheetHtml } from '../chordpro/sheet.ts';
 import { ValidationError } from '../data/library.ts';
 import { h, link, setSheet } from '../dom.ts';
-import { importChordsOverLyrics } from '../importer.ts';
+import { importMany, type Imported } from '../importer.ts';
 import { MASS_PARTS } from '../mass.ts';
 import { paths } from '../router.ts';
 import type { Navigate, View } from './types.ts';
 
+/** One song found in the pasted text, with the fields the person can still change */
+interface Card {
+    element: HTMLElement;
+    include: HTMLInputElement;
+    title: HTMLInputElement;
+    author: HTMLInputElement;
+    body: HTMLTextAreaElement;
+    error: HTMLElement;
+}
+
 /**
- * Bringing in a song written with the chords above the words: paste it, check what came out,
- * fix it, save. The check is not optional politeness: a chord's column depends on the spaces
- * the paste kept, so it is often a letter or two off.
+ * Bringing in songs written with the chords above the words: paste the text (one song, or a
+ * whole Mass with one song per page), check what came out, fix it, save. The check is not
+ * optional politeness: a chord's column depends on the spaces the paste kept, so it is often
+ * a letter or two off.
  */
 export function importView(app: App, navigate: Navigate): View {
     const paste = h('textarea', {
         id: 'paste', class: 'mono', spellcheck: 'false', autocapitalize: 'off', wrap: 'off',
-        placeholder: 'ENTRADA: Vienen con alegría\n\nC            Am\nVienen trayendo la esperanza,\n',
+        placeholder: 'ENTRADA: Caminamos con alegría\n\nC            Am\n1.  Un pueblo que espera el mañana,\n',
     });
     const convert = h('button', { type: 'button', class: 'button button--primary' }, 'Convertir');
+    const pasteError = h('p', { class: 'error', role: 'alert' });
+    const pdf = h('input', { id: 'pdf', type: 'file', accept: 'application/pdf,.pdf' });
+    const pdfStatus = h('p', { class: 'help', role: 'status' });
 
-    const title = h('input', { id: 'i-title', type: 'text', autocomplete: 'off' });
-    const author = h('input', { id: 'i-author', type: 'text', autocomplete: 'off' });
-    const body = h('textarea', { id: 'i-body', class: 'mono', spellcheck: 'false', autocapitalize: 'off' });
-    const part = h('p', { class: 'help' });
-    const notes = h('ul', { class: 'notes' });
-    const sheet = h('div', { class: 'song-sheet' });
-    const error = h('p', { class: 'error', role: 'alert' });
-    const save = h('button', { type: 'submit', class: 'button button--primary' }, 'Guardar canto');
+    // A PDF is read where the chords really are (their position on the page), which a paste cannot say
+    pdf.addEventListener('change', () => {
+        const file = pdf.files?.[0];
+        if (file === undefined) {
+            return;
+        }
+        pasteError.textContent = '';
+        pdfStatus.textContent = 'Leyendo el PDF…';
+        void import('../pdf/read.ts')
+            .then((reader) => reader.readPdf(file))
+            .then((text) => {
+                paste.value = text;
+                pdfStatus.textContent = `Leído: ${file.name}`;
+                convert.click();
+            })
+            .catch((failure: unknown) => {
+                pdfStatus.textContent = '';
+                pasteError.textContent = failure instanceof Error && failure.name === 'PdfError'
+                    ? failure.message
+                    : 'No se pudo cargar el lector de PDF. Se necesita conexión la primera vez.';
+            })
+            .finally(() => {
+                pdf.value = '';
+            });
+    });
 
+    const heading = h('h2', {}, 'Revisa el resultado');
+    const cards = h('div', { class: 'cards' });
+    const saveError = h('p', { class: 'error', role: 'alert' });
+    const save = h('button', { type: 'submit', class: 'button button--primary' }, 'Guardar');
     const review = h(
         'form',
         { class: 'form', hidden: true, novalidate: true },
-        h('h2', {}, 'Revisa el resultado'),
-        part,
-        notes,
-        h('label', { for: 'i-title' }, 'Título'),
-        title,
-        h('label', { for: 'i-author' }, 'Autor (opcional)'),
-        author,
-        h('label', { for: 'i-body' }, 'Letra con acordes (ChordPro)'),
-        body,
-        h('section', { class: 'preview', 'aria-label': 'Vista previa' }, h('h3', {}, 'Vista previa'), sheet),
-        error,
+        heading,
+        cards,
+        saveError,
         h('div', { class: 'actions' }, save, link(paths.list(), 'Cancelar', 'button')),
     );
 
-    const drawPreview = (): void => setSheet(sheet, sheetHtml(parse(body.value)));
-    body.addEventListener('input', drawPreview);
+    let current: Card[] = [];
 
     convert.addEventListener('click', () => {
-        const imported = importChordsOverLyrics(paste.value);
-        if (imported.body === '') {
-            error.textContent = 'Pega primero el canto.';
-            review.hidden = false;
+        const imported = importMany(paste.value).filter((song) => song.body !== '');
+        if (imported.length === 0) {
+            pasteError.textContent = 'Pega primero el canto.';
+            review.hidden = true;
             return;
         }
-        error.textContent = '';
-        title.value = imported.title;
-        author.value = imported.author;
-        body.value = imported.body;
-        const found = MASS_PARTS.find((p) => p.id === imported.part);
-        part.textContent = found !== undefined ? `Parte de la misa que dice el encabezado: ${found.name}.` : '';
-        notes.replaceChildren(...imported.warnings.map((warning) => h('li', {}, warning)));
-        drawPreview();
+        pasteError.textContent = '';
+        saveError.textContent = '';
+        current = imported.map((song, index) => card(song, index, imported.length));
+        cards.replaceChildren(...current.map((c) => c.element));
+        heading.textContent = imported.length === 1 ? 'Revisa el resultado' : `Se encontraron ${imported.length} cantos: revisa el resultado`;
+        save.textContent = imported.length === 1 ? 'Guardar canto' : `Guardar ${imported.length} cantos`;
         review.hidden = false;
         review.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 
     review.addEventListener('submit', (event) => {
         event.preventDefault();
-        error.textContent = '';
+        saveError.textContent = '';
         save.disabled = true;
-        app.create({ title: title.value, author: author.value, body: body.value })
-            .then((song) => navigate(paths.view(song.id)))
+        void saveAll(app, current)
+            .then((saved) => {
+                const only = saved.length === 1 ? saved[0] : undefined;
+                navigate(only !== undefined ? paths.view(only) : paths.list());
+            })
             .catch((failure: unknown) => {
-                error.textContent = failure instanceof ValidationError || failure instanceof Error ? failure.message : 'No se pudo guardar.';
+                saveError.textContent = failure instanceof Error ? failure.message : 'No se pudo guardar.';
                 save.disabled = false;
             });
     });
@@ -83,13 +110,88 @@ export function importView(app: App, navigate: Navigate): View {
     const element = h(
         'div',
         { class: 'page' },
-        h('h2', {}, 'Importar un canto'),
-        h('p', {}, 'Pega el canto como lo tienes escrito, con los acordes en una línea arriba de la letra. Se convierte a ChordPro y lo revisas antes de guardarlo.'),
-        h('label', { for: 'paste' }, 'Canto'),
+        h('h2', {}, 'Importar cantos'),
+        h('p', {}, 'Sube un PDF (lo más exacto: lee dónde está cada acorde en la hoja) o pega el texto, con los acordes en una línea arriba de la letra. Si hay varios cantos (una misa con un canto por hoja), se separan solos. Se convierten a ChordPro y los revisas antes de guardarlos.'),
+        h('p', { class: 'help' }, 'El PDF se lee en tu dispositivo: no se envía a ningún servidor.'),
+        h('label', { for: 'pdf' }, 'Subir un PDF'),
+        pdf,
+        pdfStatus,
+        h('label', { for: 'paste' }, 'O pegar el texto'),
         paste,
+        pasteError,
         h('div', { class: 'actions' }, convert),
         review,
     );
 
     return { element };
+}
+
+/** Saves the checked cards in order; a card with a problem is marked and nothing after it is lost */
+async function saveAll(app: App, cards: Card[]): Promise<string[]> {
+    const saved: string[] = [];
+    for (const card of cards) {
+        card.error.textContent = '';
+        if (!card.include.checked) {
+            continue;
+        }
+        try {
+            const song = await app.create({ title: card.title.value, author: card.author.value, body: card.body.value });
+            saved.push(song.id);
+            // Saved: it must not be saved again if a later one fails and the person tries again
+            card.include.checked = false;
+            card.include.disabled = true;
+        } catch (failure) {
+            card.error.textContent = failure instanceof ValidationError || failure instanceof Error ? failure.message : 'No se pudo guardar.';
+            throw new Error(`Hay un problema en “${card.title.value || 'un canto sin título'}”. Corrígelo y vuelve a guardar.`);
+        }
+    }
+    if (saved.length === 0) {
+        throw new Error('No hay ningún canto marcado para guardar.');
+    }
+
+    return saved;
+}
+
+function card(song: Imported, index: number, total: number): Card {
+    const id = `card-${index}`;
+    const include = h('input', { type: 'checkbox', id: `${id}-include`, checked: true, 'aria-label': 'Guardar este canto' });
+    const title = h('input', { id: `${id}-title`, type: 'text', autocomplete: 'off' });
+    const author = h('input', { id: `${id}-author`, type: 'text', autocomplete: 'off' });
+    const body = h('textarea', { id: `${id}-body`, class: 'mono', spellcheck: 'false', autocapitalize: 'off' });
+    title.value = song.title;
+    author.value = song.author;
+    body.value = song.body;
+    const error = h('p', { class: 'error', role: 'alert' });
+
+    const part = MASS_PARTS.find((p) => p.id === song.part);
+    const notes = h('ul', { class: 'notes' }, ...song.warnings.map((warning) => h('li', {}, warning)));
+    const sheet = h('div', { class: 'song-sheet' });
+    const draw = (): void => setSheet(sheet, sheetHtml(parse(body.value)));
+    body.addEventListener('input', draw);
+    draw();
+
+    const details = h(
+        'details',
+        { class: 'help', ...(total === 1 ? { open: true } : {}) },
+        h('summary', {}, 'Revisar la letra y la vista previa'),
+        h('label', { for: `${id}-body` }, 'Letra con acordes (ChordPro)'),
+        body,
+        h('section', { class: 'preview', 'aria-label': 'Vista previa' }, h('h3', {}, 'Vista previa'), sheet),
+    );
+
+    const element = h(
+        'section',
+        { class: 'import-card' },
+        total > 1 ? h('label', { class: 'include' }, include, ' Importar este canto') : h('span', { hidden: true }, include),
+        part !== undefined ? h('p', { class: 'help' }, `Parte de la misa que dice el encabezado: ${part.name}.`) : h('span', {}),
+        notes,
+        h('label', { for: `${id}-title` }, 'Título'),
+        title,
+        h('label', { for: `${id}-author` }, 'Autor (opcional)'),
+        author,
+        details,
+        error,
+    );
+
+    return { element, include, title, author, body, error };
 }
