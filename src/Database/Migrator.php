@@ -10,6 +10,8 @@ use RuntimeException;
 
 /**
  * Applies the numbered .sql files of migrations/ that the database has not seen, in order.
+ * A file named "0003_name.mysql.sql" (or ".sqlite.sql") is for that database only and is
+ * skipped by the other: the common subset covers most things, not table charsets.
  *
  * The site is on shared hosting with no shell and the CI only deploys, so the app migrates
  * itself on the first request after a deploy. MySQL commits DDL on its own, so a file is
@@ -64,10 +66,15 @@ final class Migrator
     {
         $paths = glob($this->directory . '/*.sql') ?: [];
         sort($paths);
+        $driver = (string) $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
 
         $files = [];
         foreach ($paths as $path) {
-            $files[basename($path, '.sql')] = $path;
+            $version = basename($path, '.sql');
+            if (preg_match('~\.(mysql|sqlite)$~', $version, $only) === 1 && $only[1] !== $driver) {
+                continue;
+            }
+            $files[$version] = $path;
         }
 
         return $files;

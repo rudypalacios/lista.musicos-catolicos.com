@@ -313,7 +313,7 @@ describe('mass parts', () => {
         assert.deepEqual(
             MASS_PARTS.map((part) => part.id),
             ['entrada', 'senor-ten-piedad', 'gloria', 'salmo', 'aclamacion', 'ofertorio', 'santo', 'memorial', 'amen',
-                'padre-nuestro', 'cordero', 'comunion', 'accion-de-gracias', 'salida'],
+                'padre-nuestro', 'paz', 'cordero', 'comunion', 'accion-de-gracias', 'salida'],
         );
     });
 
@@ -326,6 +326,25 @@ describe('mass parts', () => {
                 seen.set(alias, part.id);
             }
         }
+    });
+
+    it('has the sign of peace as an optional slot that explains itself', () => {
+        const peace = MASS_PARTS.find((part) => part.id === 'paz');
+
+        assert.equal(peace?.optional, true);
+        assert.match(peace?.note ?? '', /No es parte de la misa/);
+        assert.match(peace?.note ?? '', /en algunas parroquias se incluye/);
+    });
+
+    it('marks as optional only the parts a Mass can do without', () => {
+        assert.deepEqual(
+            MASS_PARTS.filter((part) => part.optional).map((part) => part.id),
+            ['salmo', 'memorial', 'amen', 'paz', 'accion-de-gracias'],
+        );
+    });
+
+    it('recognises the sign of peace on a sheet', () => {
+        assert.equal(importChordsOverLyrics('PAZ: Shalom\n\nC\nLetra').part, 'paz');
     });
 
     it('compares names without accents or case', () => {

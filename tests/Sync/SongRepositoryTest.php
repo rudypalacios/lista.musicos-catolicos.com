@@ -94,6 +94,17 @@ final class SongRepositoryTest extends TestCase
         $this->assertSame('Uno de nuevo', $row['title']);
     }
 
+    public function testCharactersOfFourBytesSurvive(): void
+    {
+        $body = "[C]Gloria 𝄞 ♯ ♭ 🎵 ñandú — «sí»";
+
+        $this->songs->apply(self::ME, new SongChange(self::SONG, 'Canto 🎶', 'Anónimo', $body, 1000, false));
+
+        $row = $this->songs->changedSince(self::ME, 0, 10)[0];
+        $this->assertSame($body, $row['body']);
+        $this->assertSame('Canto 🎶', $row['title']);
+    }
+
     public function testSomeoneElsesSongIsNeitherReadNorOverwritten(): void
     {
         $this->songs->apply(self::OTHER, $this->change('De otro', 1000));

@@ -17,6 +17,10 @@ export interface MassPart {
      * title. For the others (entrada, ofertorio, comunión…) it is the title of the song.
      */
     fixedText?: true;
+    /** The Mass can be celebrated without a song here (the template shows the slot as optional) */
+    optional?: true;
+    /** A tooltip explaining the slot, when the person might wonder why it is there */
+    note?: string;
 }
 
 export const MASS_PARTS: readonly MassPart[] = [
@@ -26,7 +30,7 @@ export const MASS_PARTS: readonly MassPart[] = [
         name: 'Señor, ten piedad',
         aliases: ['senor ten piedad', 'piedad kyrie', 'kyrie', 'piedad', 'acto penitencial'], fixedText: true },
     { id: 'gloria', name: 'Gloria', aliases: ['gloria'], fixedText: true },
-    { id: 'salmo', name: 'Salmo responsorial', aliases: ['salmo responsorial', 'salmo'] },
+    { id: 'salmo', name: 'Salmo responsorial', aliases: ['salmo responsorial', 'salmo'], optional: true },
     {
         id: 'aclamacion',
         name: 'Aclamación antes del Evangelio',
@@ -44,12 +48,19 @@ export const MASS_PARTS: readonly MassPart[] = [
     {
         id: 'memorial',
         name: 'Aclamación memorial',
-        aliases: ['aclamacion despues de la consagracion', 'aclamacion memorial', 'memorial'], fixedText: true },
-    { id: 'amen', name: 'Amén', aliases: ['gran amen', 'amen'], fixedText: true },
+        aliases: ['aclamacion despues de la consagracion', 'aclamacion memorial', 'memorial'], fixedText: true, optional: true },
+    { id: 'amen', name: 'Amén', aliases: ['gran amen', 'amen'], fixedText: true, optional: true },
     { id: 'padre-nuestro', name: 'Padre nuestro', aliases: ['padre nuestro'], fixedText: true },
+    {
+        id: 'paz',
+        name: 'Rito de la paz',
+        aliases: ['rito de la paz', 'saludo de paz', 'canto de paz', 'paz'],
+        optional: true,
+        note: 'No es parte de la misa: el Misal no prescribe un canto para el saludo de la paz, aunque en algunas parroquias se incluye.',
+    },
     { id: 'cordero', name: 'Cordero de Dios', aliases: ['cordero de dios', 'cordero'], fixedText: true },
     { id: 'comunion', name: 'Canto de comunión', aliases: ['canto de comunion', 'comunion'] },
-    { id: 'accion-de-gracias', name: 'Acción de gracias', aliases: ['accion de gracias'] },
+    { id: 'accion-de-gracias', name: 'Acción de gracias', aliases: ['accion de gracias'], optional: true },
     {
         id: 'salida',
         name: 'Canto de salida',

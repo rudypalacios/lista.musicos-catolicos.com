@@ -190,7 +190,7 @@ final class ApiTest extends TestCase
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame('ok', $this->body($response)['status']);
-        $this->assertMatchesRegularExpression('~^\d{4}_\w+$~', $this->body($response)['schema']);
+        $this->assertMatchesRegularExpression('~^\d{4}_[\w.]+$~', $this->body($response)['schema']);
         $this->assertSame('no-store', $response->getHeaderLine('Cache-Control'));
     }
 

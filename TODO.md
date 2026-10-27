@@ -23,7 +23,7 @@ remember it.
 - [ ] **Owner, on the real devices** (`DEPLOY.md`, "Pruebas en los dispositivos"): write a song
       offline on the iPad, reload, sync; read it fitted on the iPad and the phone; import a
       real sheet from the September–October PDF and see how far off the chords land.
-- [ ] **Owner:** check the database is `utf8mb4` (`DEPLOY.md`, "Comprobar el primer deploy", step 3).
+- [ ] **Owner:** after the deploy, check the tables are `utf8mb4` (migration `0003`; `DEPLOY.md`, "Comprobar el primer deploy", step 3).
 - [ ] Tune the fit limits (`DEFAULT_LIMITS` in `web/src/fit.ts`) after seeing it on the devices.
 - [ ] Keep the screen awake while a song is open (Screen Wake Lock; iPad Safari 16.4+).
 
