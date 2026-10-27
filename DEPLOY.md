@@ -113,8 +113,18 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
 5. Cuéntame cualquier acorde que el importador haya puesto lejos de su sílaba y el formato de la
    hoja de donde venía, para ajustarlo.
 
-**Actualizaciones.** Después de un deploy con cambios, la app muestra "Hay una versión nueva"
-con un botón *Actualizar*. No se actualiza sola mientras la estás usando.
+**Actualizaciones.** Después de un deploy con cambios, la app descarga la versión nueva en segundo
+plano ("Descargando la versión nueva…"), avisa "Hay una versión nueva" con un botón *Actualizar*, y
+no se actualiza sola mientras la estás usando. Al tocar *Actualizar* aparece "Actualizando la app…"
+hasta que se recarga, y al volver dice "✓ App actualizada". Si tarda más de unos segundos ofrece
+*Reintentar* y *Reiniciar la app* (borra la copia de la app y la descarga de nuevo; necesita
+conexión; los cantos no se tocan). Una app abierta busca versiones nuevas cada hora y al volver a
+primer plano.
+
+**Arranque.** La app abre siempre desde lo guardado en el dispositivo, sin esperar a la red: si el
+servidor tarda o no responde, entras igual a tus cantos y el encabezado dice "Sin conexión". Si algo
+falla al iniciar, muestra una pantalla con *Recargar* y *Reiniciar la app* en vez de quedarse en
+negro.
 
 ## Desarrollo local
 

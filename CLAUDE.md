@@ -58,6 +58,11 @@ hand (`DEPLOY.md`, "Pruebas en los dispositivos").
 - Records are created with client-generated UUIDs and synced from a queue, so everything
   works offline. Until synced, the device holds the only copy: say so in the UI.
 - The server is the source of truth; a device that loses its storage must be able to recover.
+- **Never a blank screen, never a silent wait.** The page carries a splash until the app draws; a
+  device that holds songs opens from them without waiting for the network and checks the session in
+  the background; every API request has a timeout; an error while starting shows `showFatal`. An
+  update says what it is doing at each step (`web/src/updates.ts`, its states are a tested pure
+  function). Anything slower than a moment shows a spinner and a sentence.
 
 ## Database
 

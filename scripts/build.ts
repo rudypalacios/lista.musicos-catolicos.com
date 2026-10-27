@@ -88,7 +88,11 @@ const js = toUrl(mainPath);
 const css = toUrl(cssPath);
 const scripts = [...loaded].map(toUrl);
 
-const html = readFileSync(join(root, 'web/index.html'), 'utf8').replace('%JS%', js).replace('%CSS%', css);
+// LISTA_BUILD_NOTE changes the page and so the shell's version: the update test builds twice with it
+const note = process.env['LISTA_BUILD_NOTE'];
+const html =
+    readFileSync(join(root, 'web/index.html'), 'utf8').replace('%JS%', js).replace('%CSS%', css) +
+    (note !== undefined ? `<!-- build: ${note.replace(/[^\w .-]/g, '')} -->\n` : '');
 writeFileSync(join(publicDir, 'index.html'), html);
 
 const shellUrls = ['/index.html', ...scripts, css, ...STATIC_SHELL];
