@@ -36,21 +36,21 @@ export class Library {
 
     /** The songs that are not deleted, by title (Spanish order: "Ángel" among the A's) */
     async list(): Promise<Song[]> {
-        const songs = (await this.store.allSongs()).filter((song) => song.deletedAt === null);
+        const songs = (await this.store.all('songs')).filter((song) => song.deletedAt === null);
 
         return songs.sort((a, b) => a.title.localeCompare(b.title, 'es', { sensitivity: 'base' }));
     }
 
     /** A song, or undefined if it does not exist or was deleted */
     async get(id: string): Promise<Song | undefined> {
-        const song = await this.store.getSong(id);
+        const song = await this.store.get('songs', id);
 
         return song !== undefined && song.deletedAt === null ? song : undefined;
     }
 
     async create(draft: SongDraft): Promise<Song> {
         const song: Song = { ...clean(draft), id: this.newId(), updatedAt: this.now(), deletedAt: null };
-        await this.store.saveSong(song);
+        await this.store.save('songs', song);
 
         return song;
     }
@@ -62,19 +62,19 @@ export class Library {
             throw new Error('La canción ya no existe.');
         }
         const song: Song = { ...current, ...clean(draft), updatedAt: this.stamp(current) };
-        await this.store.saveSong(song);
+        await this.store.save('songs', song);
 
         return song;
     }
 
     async remove(id: string): Promise<void> {
-        const current = await this.store.getSong(id);
+        const current = await this.store.get('songs', id);
         if (current === undefined || current.deletedAt !== null) {
             return;
         }
         const at = this.stamp(current);
         // The lyrics go; the title stays so a tombstone can still be told apart in a pinch
-        await this.store.saveSong({ ...current, body: '', updatedAt: at, deletedAt: at });
+        await this.store.save('songs', { ...current, body: '', updatedAt: at, deletedAt: at });
     }
 
     /** Strictly after the version it replaces, even if this device's clock is behind */

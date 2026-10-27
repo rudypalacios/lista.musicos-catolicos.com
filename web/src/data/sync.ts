@@ -1,12 +1,12 @@
 import type { LocalStore } from './store.ts';
-import { LIMITS, type Remote, type Song } from './types.ts';
+import { COLLECTIONS, LIMITS, type Collection, type Records, type Remote } from './types.ts';
 
 export interface SyncResult {
-    /** Songs the server stored */
+    /** Records (songs and setlists) the server stored */
     pushed: number;
-    /** Songs that came from the server */
+    /** Records that came from the server */
     pulled: number;
-    /** Songs the server refused (they stay on the device, marked, and do not block the rest) */
+    /** Records the server refused (they stay on the device, marked, and do not block the rest) */
     rejected: string[];
 }
 
@@ -26,19 +26,20 @@ export class SyncStopped extends Error {
 export interface ErrorKinds {
     isOffline(error: unknown): boolean;
     isSignedOut(error: unknown): boolean;
-    /** The server refused the content of a song (HTTP 400) */
+    /** The server refused the content of a record (HTTP 400) */
     isRefusal(error: unknown): boolean;
 }
 
 /**
  * Sends what was written on this device and brings what was written elsewhere:
  *
- * 1. push the songs waiting in the queue, in batches. A batch the server refuses is retried
- *    song by song, so one bad song cannot keep the others from ever arriving.
+ * 1. push what waits in the queues (songs, then setlists), in batches. A batch the server
+ *    refuses is retried record by record, so one bad record cannot keep the others from ever
+ *    arriving.
  * 2. pull from the cursor, page by page, merging each page and moving the cursor with it.
  *
- * It can stop at any point and be run again: the queue only loses a song once the server has
- * it, and the cursor only moves together with the songs it covers.
+ * It can stop at any point and be run again: a queue only loses a record once the server has
+ * it, and the cursor only moves together with the records it covers.
  */
 export class SyncEngine {
     private readonly store: LocalStore;
@@ -73,33 +74,43 @@ export class SyncEngine {
     }
 
     private async push(result: SyncResult): Promise<void> {
-        const waiting = await this.store.pending();
+        for (const collection of COLLECTIONS) {
+            await this.pushCollection(collection, result);
+        }
+    }
+
+    private async pushCollection<C extends Collection>(collection: C, result: SyncResult): Promise<void> {
+        const waiting = await this.store.pending(collection);
         for (let from = 0; from < waiting.length; from += LIMITS.batch) {
             const batch = waiting.slice(from, from + LIMITS.batch);
             try {
-                await this.send(batch, result);
+                await this.send(collection, batch, result);
             } catch (error) {
                 if (!this.errors.isRefusal(error)) {
                     throw error;
                 }
-                for (const song of batch) {
+                for (const record of batch) {
                     try {
-                        await this.send([song], result);
+                        await this.send(collection, [record], result);
                     } catch (single) {
                         if (!this.errors.isRefusal(single)) {
                             throw single;
                         }
-                        result.rejected.push(song.id);
+                        result.rejected.push(record.id);
                     }
                 }
             }
         }
     }
 
-    private async send(songs: readonly Song[], result: SyncResult): Promise<void> {
-        const answer = await this.remote.push(songs);
+    private async send<C extends Collection>(
+        collection: C,
+        records: readonly Records[C][],
+        result: SyncResult,
+    ): Promise<void> {
+        const answer = await this.remote.push(collection, records);
         // Applied or ignored, the server has the winner: this copy no longer needs to travel
-        await this.store.clearPending(songs);
+        await this.store.clearPending(collection, records);
         result.pushed += answer.applied.length;
     }
 
@@ -107,8 +118,8 @@ export class SyncEngine {
         let cursor = await this.store.cursor();
         for (;;) {
             const page = await this.remote.pull(cursor);
-            await this.store.mergeRemote(page.songs, page.cursor);
-            result.pulled += page.songs.length;
+            await this.store.mergeRemote(page, page.cursor);
+            result.pulled += page.songs.length + page.setlists.length;
             if (!page.hasMore || page.cursor <= cursor) {
                 return;
             }

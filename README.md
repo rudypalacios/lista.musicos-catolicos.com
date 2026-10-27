@@ -12,16 +12,16 @@ Offline-first PWA to plan the music of a Mass. Private for now, built to be fold
 
 | Path | What |
 |---|---|
-| `web/src/` | The app: `main.ts` (shell, router), `views/` (list, editor, importer, viewer), `app.ts` (store, sync) |
+| `web/src/` | The app: `main.ts` (shell, tabs, router), `views/` (songs: list, editor, importer, viewer; setlists: `lists`, `setlist`, `add`, `perform`; `reader` is the song reader both viewers share), `app.ts` (store, sync) |
 | `web/src/chordpro/` | ChordPro parser, chords, transposition, lyrics renderer: ports of the public site's PHP and `song.js` |
-| `web/src/data/` | Songs on the device (IndexedDB), the queue of unsent songs, the sync engine |
+| `web/src/data/` | Songs and setlists on the device (IndexedDB, one store contract for both collections), the queues of unsent records, the sync engine; `library.ts` and `setlists.ts` are the operations on each |
 | `web/src/` (others) | `importer.ts` (chords above the words → ChordPro; one song or a whole Mass), `fit.ts` (fit to the screen), `mass.ts` (parts of the Mass), `sw.ts` (service worker) |
 | `web/test/` | Unit tests of the client (`node --test`); `fixtures/golden.json` is what the PHP answered |
 | `scripts/` | The build, and `fixtures/` that regenerates the golden file from musicos-catolicos |
-| `src/` | PHP: `Http/` (actions, middleware), `Auth/`, `Sync/` (songs and their changes), `Database/` |
+| `src/` | PHP: `Http/` (actions, middleware), `Auth/`, `Sync/` (songs, setlists, the shared change counter and the combined feed), `Database/` |
 | `migrations/` | Numbered SQL files, applied by the app on its first request after a deploy |
 | `public/` | Web root: `index.php`, `.htaccess`, icons, manifest; the build adds the rest |
-| `tests/` | PHPUnit tests, and `e2e/` (Chromium: sign-in and offline, songs and sync between two devices) |
+| `tests/` | PHPUnit tests, and `e2e/` (Chromium: sign-in and offline, songs and sync between two devices, setlists) |
 
 ## Develop
 
@@ -56,8 +56,12 @@ All JSON, Spanish messages, `Cache-Control: no-store`. Requests that change data
 | `POST /api/login` `{email, password}` | `200 {email}` + cookie · `400` · `401` · `429` |
 | `POST /api/logout` | `200 {ok}` and clears the cookie |
 | `GET /api/me` | `200 {email}` · `401` |
-| `GET /api/sync?since=N` | `200 {songs, cursor, hasMore}`: songs changed after change number N, tombstones included · `400` · `401` |
-| `POST /api/sync` `{songs: [{id, title, author, body, updatedAt, deleted}]}` | `200 {applied, ignored}`; the newest `updatedAt` (client clock, epoch ms) wins · `400` (nothing stored) · `401` |
+| `GET /api/sync?since=N` | `200 {songs, setlists, cursor, hasMore}`: songs and setlists changed after change number N (one counter for both), tombstones included · `400` · `401` |
+| `POST /api/sync` `{songs?: [{id, title, author, body, updatedAt, deleted}], setlists?: [{id, title, eventDate, notes, items, updatedAt, deleted}]}` | `200 {applied, ignored}`; the newest `updatedAt` (client clock, epoch ms) wins · `400` (nothing stored; `invalid_song` or `invalid_setlist`) · `401` |
+
+A setlist is one record: `items` is a list of at most 80 `{id, part, songId, transpose, note}` (a song in a
+part of the Mass, with its key in semitones for that list only) and travels inside it. The whole list is the
+unit of the newest-edit-wins rule.
 
 Errors: `{error: "<code>", message: "<texto en español>"}`.
 

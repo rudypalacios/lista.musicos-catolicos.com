@@ -74,11 +74,12 @@ cada deploy (`migrations/`). No hay nada que ejecutar en el servidor.
 ## Comprobar el primer deploy
 
 1. `https://lista.musicos-catolicos.com/api/health` debe responder
-   `{"status":"ok","schema":"<última migración>"}` (por ejemplo `0002_create_songs`). Si responde HTML o 404, falta el `.htaccess`
+   `{"status":"ok","schema":"<última migración>"}` (por ejemplo `0005_setlists_utf8mb4.mysql`). Si responde HTML o 404, falta el `.htaccess`
    (paso 7); si responde 500, revisa el `.env` y el usuario de la base.
 2. Abre `https://lista.musicos-catolicos.com/` e inicia sesión (si usaste `OWNER_PASSWORD`, bórrala del `.env`).
-3. **Codificación de la base.** No tienes que hacer nada: la migración `0003_utf8mb4.mysql.sql`
-   convierte sola las tablas a `utf8mb4` (una base creada como `utf8` a secas no guarda emoji).
+3. **Codificación de la base.** No tienes que hacer nada: las migraciones `0003_utf8mb4.mysql.sql` y
+   `0005_setlists_utf8mb4.mysql.sql` convierten solas las tablas (incluida `setlists`) a `utf8mb4`
+   (una base creada como `utf8` a secas no guarda emoji).
    Para comprobarlo, en phpMyAdmin ejecuta
    `SELECT TABLE_NAME, TABLE_COLLATION FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE();`:
    todas deben empezar con `utf8mb4_`.
@@ -112,6 +113,28 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
 4. En el iPad, repite el paso 2 después de 8 días sin abrir la app: los cantos deben seguir.
 5. Cuéntame cualquier acorde que el importador haya puesto lejos de su sílaba y el formato de la
    hoja de donde venía, para ajustarlo.
+
+**Listados (fase 2), en los dos dispositivos**
+1. Toca *Listados* y *Nuevo listado*: se crea para hoy, con el título "Misa del … de …". Deben salir las
+   15 partes de la misa en orden, cinco marcadas "opcional". Toca el botón ⓘ de "Rito de la paz": debe
+   explicar que no es parte de la misa (en la tablet no hay "pasar el dedo por encima": por eso es un botón).
+2. En una parte toca *Agregar canto*, busca por título y elige uno: vuelves al listado y el canto está
+   en esa parte. Agrega dos cantos a la comunión y sube uno con ↑.
+3. Cambia el tono de un canto con `−` / `+` (aparece, por ejemplo, "Re ↺"; el ↺ vuelve al tono original).
+   Abre ese mismo canto desde *Cantos*: debe seguir en su tono de siempre. El cambio es solo del listado.
+4. Toca *Cantar*. Debe abrir el primer canto, en el tono del listado, con el nombre de la parte arriba.
+   Cambia de canto con `‹` `›`, con el dedo (deslizar a izquierda o derecha) y, si tienes teclado, con las
+   flechas. Cambia el tono ahí mismo: se guarda en el listado. Gira la tablet: se vuelve a ajustar.
+5. Modo avión. Cierra la app, ábrela, entra al listado y toca *Cantar*: todo debe funcionar. Cambia un
+   tono sin conexión: arriba debe decir "Sin conexión · 1 sin enviar"; al quitar el modo avión, "Sincronizado".
+6. En el otro dispositivo abre *Listados*: el mismo listado, con los mismos tonos y notas.
+7. Elimina un canto que esté en un listado: la app avisa en cuáles está. Después, ese listado muestra
+   "Canto eliminado" en su lugar (y se puede quitar con *Quitar*).
+8. Cuéntame si algo no cabe, se corta o cuesta tocarlo con el dedo.
+
+**Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
+versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
+Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.
 
 **Actualizaciones.** Después de un deploy con cambios, la app descarga la versión nueva en segundo
 plano ("Descargando la versión nueva…"), avisa "Hay una versión nueva" con un botón *Actualizar*, y

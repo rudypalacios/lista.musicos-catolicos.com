@@ -1,9 +1,17 @@
 import { shouldTakeRemote, supersedes } from './merge.ts';
 import type { LocalStore } from './store.ts';
-import type { Song } from './types.ts';
+import { COLLECTIONS, type Collection, type Pulled, type Records } from './types.ts';
 
-const SONGS = 'songs';
-const PENDING = 'pending';
+/**
+ * IndexedDB schema versions:
+ * 1. `songs`, `pending` (the queue of songs), `meta`.
+ * 2. adds `setlists` and `pending-setlists`; the cursor is reset (see `open`).
+ */
+const VERSION = 2;
+
+/** The object store of each collection's records, and of its queue of unsent ones */
+const DATA: Readonly<Record<Collection, string>> = { songs: 'songs', setlists: 'setlists' };
+const QUEUE: Readonly<Record<Collection, string>> = { songs: 'pending', setlists: 'pending-setlists' };
 const META = 'meta';
 const CURSOR = 'cursor';
 const OWNER = 'owner';
@@ -21,27 +29,44 @@ function done<T>(request: IDBRequest<T>): Promise<T> {
     });
 }
 
-/** The songs of the device in IndexedDB: what is kept offline, and survives a new app version */
+/** The songs and setlists of the device in IndexedDB: what is kept offline, and survives a new app version */
 export class IdbStore implements LocalStore {
     private readonly db: IDBDatabase;
 
     private constructor(db: IDBDatabase) {
         this.db = db;
+        // A later version of the app (another tab) wants to upgrade the database: let it
+        db.onversionchange = () => db.close();
     }
 
     /**
      * @param factory the IndexedDB to use (the browser's, or a fake in tests)
      * @param name    one database per name, so tests never meet each other
+     * @param onBlocked called when an upgrade has to wait because another window still has the
+     *                  database open with an older version of the app; it goes on by itself when
+     *                  that window is closed
      */
-    static open(factory: IDBFactory = indexedDB, name = 'lista'): Promise<IdbStore> {
+    static open(factory: IDBFactory = indexedDB, name = 'lista', onBlocked?: () => void): Promise<IdbStore> {
         return new Promise((resolve, reject) => {
-            const request = factory.open(name, 1);
-            request.onupgradeneeded = () => {
+            const request = factory.open(name, VERSION);
+            request.onupgradeneeded = (event) => {
                 const db = request.result;
-                db.createObjectStore(SONGS, { keyPath: 'id' });
-                db.createObjectStore(PENDING, { keyPath: 'id' });
-                db.createObjectStore(META, { keyPath: 'key' });
+                for (const store of [...Object.values(DATA), ...Object.values(QUEUE)]) {
+                    if (!db.objectStoreNames.contains(store)) {
+                        db.createObjectStore(store, { keyPath: 'id' });
+                    }
+                }
+                if (!db.objectStoreNames.contains(META)) {
+                    db.createObjectStore(META, { keyPath: 'key' });
+                }
+                // Before version 2 the server's answers carried songs only, so a cursor
+                // from then may have moved past setlists this version has never seen. Start
+                // the next pull from zero; songs already held are merged by the same rules.
+                if (event.oldVersion >= 1 && event.oldVersion < 2) {
+                    request.transaction?.objectStore(META).delete(CURSOR);
+                }
             };
+            request.onblocked = () => onBlocked?.();
             request.onsuccess = () => resolve(new IdbStore(request.result));
             request.onerror = () => reject(request.error ?? new Error('Cannot open IndexedDB'));
         });
@@ -75,48 +100,58 @@ export class IdbStore implements LocalStore {
         });
     }
 
-    allSongs(): Promise<Song[]> {
-        return this.transaction([SONGS], 'readonly', (open) => done(open(SONGS).getAll() as IDBRequest<Song[]>));
+    all<C extends Collection>(collection: C): Promise<Records[C][]> {
+        return this.transaction([DATA[collection]], 'readonly', (open) =>
+            done(open(DATA[collection]).getAll() as IDBRequest<Records[C][]>),
+        );
     }
 
-    getSong(id: string): Promise<Song | undefined> {
-        return this.transaction([SONGS], 'readonly', (open) => done(open(SONGS).get(id) as IDBRequest<Song | undefined>));
+    get<C extends Collection>(collection: C, id: string): Promise<Records[C] | undefined> {
+        return this.transaction([DATA[collection]], 'readonly', (open) =>
+            done(open(DATA[collection]).get(id) as IDBRequest<Records[C] | undefined>),
+        );
     }
 
-    saveSong(song: Song): Promise<void> {
-        return this.transaction([SONGS, PENDING], 'readwrite', async (open) => {
-            await done(open(SONGS).put(song));
-            await done(open(PENDING).put(song));
+    save<C extends Collection>(collection: C, record: Records[C]): Promise<void> {
+        return this.transaction([DATA[collection], QUEUE[collection]], 'readwrite', async (open) => {
+            await done(open(DATA[collection]).put(record));
+            await done(open(QUEUE[collection]).put(record));
         });
     }
 
-    pending(): Promise<Song[]> {
-        return this.transaction([PENDING], 'readonly', (open) => done(open(PENDING).getAll() as IDBRequest<Song[]>));
+    pending<C extends Collection>(collection: C): Promise<Records[C][]> {
+        return this.transaction([QUEUE[collection]], 'readonly', (open) =>
+            done(open(QUEUE[collection]).getAll() as IDBRequest<Records[C][]>),
+        );
     }
 
-    clearPending(sent: readonly Song[]): Promise<void> {
-        return this.transaction([PENDING], 'readwrite', async (open) => {
-            const queue = open(PENDING);
-            for (const song of sent) {
-                const queued = (await done(queue.get(song.id))) as Song | undefined;
-                if (queued?.updatedAt === song.updatedAt) {
-                    await done(queue.delete(song.id));
+    clearPending<C extends Collection>(collection: C, sent: readonly Records[C][]): Promise<void> {
+        return this.transaction([QUEUE[collection]], 'readwrite', async (open) => {
+            const queue = open(QUEUE[collection]);
+            for (const record of sent) {
+                const queued = (await done(queue.get(record.id))) as Records[C] | undefined;
+                if (queued?.updatedAt === record.updatedAt) {
+                    await done(queue.delete(record.id));
                 }
             }
         });
     }
 
-    mergeRemote(songs: readonly Song[], cursor: number): Promise<void> {
-        return this.transaction([SONGS, PENDING, META], 'readwrite', async (open) => {
-            const store = open(SONGS);
-            const queue = open(PENDING);
-            for (const remote of songs) {
-                const local = (await done(store.get(remote.id))) as Song | undefined;
-                const pending = (await done(queue.get(remote.id))) as Song | undefined;
-                if (shouldTakeRemote(local, pending, remote)) {
-                    await done(store.put(remote));
-                    if (supersedes(remote, pending)) {
-                        await done(queue.delete(remote.id));
+    mergeRemote(page: Pick<Pulled, 'songs' | 'setlists'>, cursor: number): Promise<void> {
+        const stores = [META, ...Object.values(DATA), ...Object.values(QUEUE)];
+
+        return this.transaction(stores, 'readwrite', async (open) => {
+            for (const collection of COLLECTIONS) {
+                const records = open(DATA[collection]);
+                const queue = open(QUEUE[collection]);
+                for (const remote of page[collection]) {
+                    const local = (await done(records.get(remote.id))) as Records[typeof collection] | undefined;
+                    const pending = (await done(queue.get(remote.id))) as Records[typeof collection] | undefined;
+                    if (shouldTakeRemote(local, pending, remote)) {
+                        await done(records.put(remote));
+                        if (supersedes(remote, pending)) {
+                            await done(queue.delete(remote.id));
+                        }
                     }
                 }
             }
@@ -150,10 +185,12 @@ export class IdbStore implements LocalStore {
     }
 
     clear(): Promise<void> {
-        return this.transaction([SONGS, PENDING, META], 'readwrite', async (open) => {
-            await done(open(SONGS).clear());
-            await done(open(PENDING).clear());
-            await done(open(META).clear());
+        const stores = [META, ...Object.values(DATA), ...Object.values(QUEUE)];
+
+        return this.transaction(stores, 'readwrite', async (open) => {
+            for (const store of stores) {
+                await done(open(store).clear());
+            }
         });
     }
 }

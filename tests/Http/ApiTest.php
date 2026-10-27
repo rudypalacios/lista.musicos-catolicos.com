@@ -84,10 +84,149 @@ final class ApiTest extends TestCase
         ];
     }
 
+    private const SETLIST_ID = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+
+    /**
+     * @param array<string, mixed> $override
+     *
+     * @return array<string, mixed>
+     */
+    private function setlist(array $override = []): array
+    {
+        return $override + [
+            'id' => self::SETLIST_ID, 'title' => 'Misa del domingo', 'eventDate' => '2026-11-01', 'notes' => 'Tarde',
+            'items' => [[
+                'id' => 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee', 'part' => 'comunion', 'songId' => self::SONG_ID,
+                'transpose' => -2, 'note' => 'Con flauta 🎶',
+            ]],
+            'updatedAt' => 1_700_000_000_000, 'deleted' => false,
+        ];
+    }
+
     public function testSyncNeedsASession(): void
     {
         $this->assertSame(401, $this->call('GET', '/api/sync')->getStatusCode());
         $this->assertSame(401, $this->call('POST', '/api/sync', ['songs' => []])->getStatusCode());
+        $this->assertSame(401, $this->call('POST', '/api/sync', ['setlists' => []])->getStatusCode());
+    }
+
+    public function testASetlistPushedCanBePulledBackWithItsItems(): void
+    {
+        $cookies = [SessionCookie::NAME => $this->signIn()];
+
+        $push = $this->call('POST', '/api/sync', ['setlists' => [$this->setlist()]], $cookies);
+        $body = $this->body($this->call('GET', '/api/sync?since=0', null, $cookies));
+
+        $this->assertSame(200, $push->getStatusCode());
+        $this->assertSame([self::SETLIST_ID], $this->body($push)['applied']);
+        $this->assertSame([], $body['songs']);
+        $this->assertCount(1, $body['setlists']);
+        $list = $body['setlists'][0];
+        $this->assertSame('Misa del domingo', $list['title']);
+        $this->assertSame('2026-11-01', $list['eventDate']);
+        $this->assertSame('Tarde', $list['notes']);
+        $this->assertSame(-2, $list['items'][0]['transpose']);
+        $this->assertSame('Con flauta 🎶', $list['items'][0]['note']);
+        $this->assertNull($list['deletedAt']);
+        $this->assertSame(1, $body['cursor']);
+    }
+
+    public function testSongsAndSetlistsCanTravelInOneRequestAndShareTheCursor(): void
+    {
+        $cookies = [SessionCookie::NAME => $this->signIn()];
+
+        $both = ['songs' => [$this->song()], 'setlists' => [$this->setlist()]];
+        $push = $this->call('POST', '/api/sync', $both, $cookies);
+        $body = $this->body($this->call('GET', '/api/sync?since=0', null, $cookies));
+
+        $this->assertEqualsCanonicalizing([self::SONG_ID, self::SETLIST_ID], $this->body($push)['applied']);
+        $this->assertCount(1, $body['songs']);
+        $this->assertCount(1, $body['setlists']);
+        $this->assertSame(2, $body['cursor']);
+        $this->assertSame([], $this->body($this->call('GET', '/api/sync?since=2', null, $cookies))['setlists']);
+    }
+
+    public function testAnOlderSetlistIsReportedAsIgnored(): void
+    {
+        $cookies = [SessionCookie::NAME => $this->signIn()];
+        $newer = $this->setlist(['updatedAt' => 2_000_000_000_000 - 1]);
+        $this->call('POST', '/api/sync', ['setlists' => [$newer]], $cookies);
+
+        $older = $this->setlist(['updatedAt' => 5]);
+        $body = $this->body($this->call('POST', '/api/sync', ['setlists' => [$older]], $cookies));
+
+        $this->assertSame([], $body['applied']);
+        $this->assertSame([self::SETLIST_ID], $body['ignored']);
+    }
+
+    public function testADeletedSetlistComesBackAsATombstone(): void
+    {
+        $cookies = [SessionCookie::NAME => $this->signIn()];
+        $this->call('POST', '/api/sync', ['setlists' => [$this->setlist()]], $cookies);
+        $deletion = $this->setlist(['updatedAt' => 1_700_000_000_500, 'deleted' => true]);
+        $this->call('POST', '/api/sync', ['setlists' => [$deletion]], $cookies);
+
+        $list = $this->body($this->call('GET', '/api/sync?since=0', null, $cookies))['setlists'][0];
+
+        $this->assertSame(1_700_000_000_500, $list['deletedAt']);
+        $this->assertSame([], $list['items']);
+    }
+
+    public function testOneInvalidSetlistStoresNoneOfTheRequest(): void
+    {
+        $cookies = [SessionCookie::NAME => $this->signIn()];
+        $bad = $this->setlist(['id' => 'dddddddd-dddd-4ddd-8ddd-dddddddddddd', 'eventDate' => '31/12/2026']);
+
+        $request = ['songs' => [$this->song()], 'setlists' => [$this->setlist(), $bad]];
+
+        $push = $this->call('POST', '/api/sync', $request, $cookies);
+
+        $this->assertSame(400, $push->getStatusCode());
+        $this->assertSame('invalid_setlist', $this->body($push)['error']);
+        $this->assertStringContainsString('fecha', $this->body($push)['message']);
+        $pulled = $this->body($this->call('GET', '/api/sync?since=0', null, $cookies));
+        $this->assertSame([], $pulled['songs']);
+        $this->assertSame([], $pulled['setlists']);
+    }
+
+    public function testAnInvalidSongOrSetlistInTheOtherListStillStoresNothing(): void
+    {
+        $cookies = [SessionCookie::NAME => $this->signIn()];
+
+        $request = ['songs' => [$this->song(['title' => ''])], 'setlists' => [$this->setlist()]];
+
+        $push = $this->call('POST', '/api/sync', $request, $cookies);
+
+        $this->assertSame('invalid_song', $this->body($push)['error']);
+        $this->assertSame([], $this->body($this->call('GET', '/api/sync?since=0', null, $cookies))['setlists']);
+    }
+
+    public function testSetlistsAndSongsArePagedTogether(): void
+    {
+        $cookies = [SessionCookie::NAME => $this->signIn()];
+        // 150 songs and 100 setlists interleaved by the order of the pushes: 250 changes
+        $songs = [];
+        for ($i = 0; $i < 100; $i++) {
+            $songs[] = $this->song(['id' => sprintf('eeeeeeee-eeee-4eee-8eee-%012d', $i)]);
+        }
+        $this->call('POST', '/api/sync', ['songs' => $songs], $cookies);
+        $setlists = [];
+        for ($i = 0; $i < 100; $i++) {
+            $setlists[] = $this->setlist(['id' => sprintf('ffffffff-ffff-4fff-8fff-%012d', $i)]);
+        }
+        $this->call('POST', '/api/sync', ['setlists' => $setlists], $cookies);
+        $last = $this->song(['id' => sprintf('eeeeeeee-eeee-4eee-8eee-%012d', 100)]);
+        $this->call('POST', '/api/sync', ['songs' => [$last]], $cookies);
+
+        $first = $this->body($this->call('GET', '/api/sync?since=0', null, $cookies));
+        $second = $this->body($this->call('GET', '/api/sync?since=' . $first['cursor'], null, $cookies));
+
+        $this->assertCount(100, $first['songs']);
+        $this->assertCount(100, $first['setlists']);
+        $this->assertSame(200, $first['cursor']);
+        $this->assertTrue($first['hasMore']);
+        $this->assertCount(1, $second['songs']);
+        $this->assertFalse($second['hasMore']);
     }
 
     public function testASongPushedCanBePulledBack(): void
@@ -145,11 +284,19 @@ final class ApiTest extends TestCase
     {
         $cookies = [SessionCookie::NAME => $this->signIn()];
 
-        foreach ([[], ['songs' => 'x'], ['songs' => ['a' => 1]], ['songs' => ['x']]] as $payload) {
+        $payloads = [
+            [], ['songs' => 'x'], ['songs' => ['a' => 1]], ['songs' => ['x']],
+            ['setlists' => 'x'], ['setlists' => ['a' => 1]], ['setlists' => ['x']], ['songs' => [], 'setlists' => 5],
+            ['other' => []],
+        ];
+        foreach ($payloads as $payload) {
             $this->assertSame(400, $this->call('POST', '/api/sync', $payload, $cookies)->getStatusCode());
         }
         $tooMany = array_fill(0, 101, $this->song());
         $this->assertSame(400, $this->call('POST', '/api/sync', ['songs' => $tooMany], $cookies)->getStatusCode());
+        $tooManyLists = array_fill(0, 101, $this->setlist());
+        $response = $this->call('POST', '/api/sync', ['setlists' => $tooManyLists], $cookies);
+        $this->assertSame(400, $response->getStatusCode());
     }
 
     public function testASinceThatIsNotANumberIs400(): void

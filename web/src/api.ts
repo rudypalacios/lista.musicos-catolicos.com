@@ -1,6 +1,6 @@
 /** Thin client for the JSON API (src/Http). Every failure is an ApiError the UI can tell apart. */
 import type { ErrorKinds } from './data/sync.ts';
-import type { Pulled, Pushed, Remote, Song } from './data/types.ts';
+import type { Collection, Pulled, Pushed, Records, Remote, Setlist, Song, Stamped } from './data/types.ts';
 
 export class ApiError extends Error {
     /** HTTP status, or 0 when the request never reached the server (offline) */
@@ -63,23 +63,48 @@ export interface Me {
     email: string;
 }
 
+/** What a pull sends: the records as stored, plus the server's own counter, which the app does not keep */
+interface PulledPage {
+    songs: (Song & { seq?: number })[];
+    setlists: (Setlist & { seq?: number })[];
+    cursor: number;
+    hasMore: boolean;
+}
+
+const pickSong = ({ id, title, author, body, updatedAt, deletedAt }: Song): Song => ({
+    id, title, author, body, updatedAt, deletedAt,
+});
+
+const pickSetlist = ({ id, title, eventDate, notes, items, updatedAt, deletedAt }: Setlist): Setlist => ({
+    id,
+    title,
+    eventDate,
+    notes,
+    items: items.map(({ id: itemId, part, songId, transpose, note }) => ({ id: itemId, part, songId, transpose, note })),
+    updatedAt,
+    deletedAt,
+});
+
+/** A record as the server takes it: `deletedAt` becomes the `deleted` flag */
+function toWire(record: Stamped): object {
+    const { deletedAt, ...rest } = record;
+
+    return { ...rest, deleted: deletedAt !== null };
+}
+
 export const api = {
     me: (): Promise<Me> => request<Me>('GET', '/api/me'),
     login: (email: string, password: string): Promise<Me> => request<Me>('POST', '/api/login', { email, password }),
     logout: (): Promise<unknown> => request('POST', '/api/logout', {}),
     pull: (since: number): Promise<Pulled> =>
-        request<Pulled & { songs: (Song & { seq?: number })[] }>('GET', `/api/sync?since=${since}`).then((page) => ({
+        request<PulledPage>('GET', `/api/sync?since=${since}`).then((page) => ({
             ...page,
-            songs: page.songs.map(({ id, title, author, body, updatedAt, deletedAt }) => ({
-                id, title, author, body, updatedAt, deletedAt,
-            })),
+            songs: page.songs.map(pickSong),
+            // A server from before setlists answers with songs only
+            setlists: (page.setlists ?? []).map(pickSetlist),
         })),
-    push: (songs: readonly Song[]): Promise<Pushed> =>
-        request<Pushed>('POST', '/api/sync', {
-            songs: songs.map(({ id, title, author, body, updatedAt, deletedAt }) => ({
-                id, title, author, body, updatedAt, deleted: deletedAt !== null,
-            })),
-        }),
+    push: <C extends Collection>(collection: C, records: readonly Records[C][]): Promise<Pushed> =>
+        request<Pushed>('POST', '/api/sync', { [collection]: records.map(toWire) }),
 };
 
 /** The server, as the sync engine sees it */

@@ -2,12 +2,24 @@ import type { App } from '../app.ts';
 import { parse, songKey } from '../chordpro/parser.ts';
 import { sheetHtml } from '../chordpro/sheet.ts';
 import { ValidationError } from '../data/library.ts';
-import type { Song } from '../data/types.ts';
+import type { Setlist, Song } from '../data/types.ts';
 import { h, link, setSheet } from '../dom.ts';
 import { paths } from '../router.ts';
 import { transpose } from '../chordpro/chord.ts';
 import { readNotation } from '../prefs.ts';
 import type { Navigate, View } from './types.ts';
+
+/** What the confirmation says before deleting a song, naming the lists it is in */
+function deleteMessage(song: Song, lists: readonly Setlist[]): string {
+    const base = `¿Eliminar “${song.title}”? No se puede deshacer.`;
+    if (lists.length === 0) {
+        return base;
+    }
+    const names = lists.map((list) => `“${list.title}”`).join(', ');
+    const where = lists.length === 1 ? `el listado ${names}` : `${lists.length} listados (${names})`;
+
+    return `${base}\n\nEste canto está en ${where}. Ahí aparecerá como «Canto eliminado» hasta que lo quites.`;
+}
 
 const HELP = `[C]Caminamos con a[G]legría, Señor,
 cantando vamos hacia tu [Am]casa.
@@ -52,9 +64,12 @@ export function editView(app: App, navigate: Navigate, existing?: Song): View {
     if (existing !== undefined) {
         const remove = h('button', { type: 'button', class: 'button button--danger' }, 'Eliminar');
         remove.addEventListener('click', () => {
-            if (confirm(`¿Eliminar “${existing.title}”? No se puede deshacer.`)) {
-                void app.remove(existing.id).then(() => navigate(paths.list()));
-            }
+            // A song in a list stays there as "Canto eliminado": say so before it happens
+            void app.setlists.using(existing.id).then((lists) => {
+                if (confirm(deleteMessage(existing, lists))) {
+                    void app.remove(existing.id).then(() => navigate(paths.list()));
+                }
+            });
         });
         actions.append(remove);
     }

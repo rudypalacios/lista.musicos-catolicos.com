@@ -10,6 +10,14 @@ namespace App;
  */
 final class Uuid
 {
+    private const PATTERN = '~^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$~';
+
+    /** Whether `$value` is written like a UUID (any version, lower case): what a client may send as an id */
+    public static function isValid(mixed $value): bool
+    {
+        return is_string($value) && preg_match(self::PATTERN, $value) === 1;
+    }
+
     public static function v4(): string
     {
         $bytes = random_bytes(16);
