@@ -1,0 +1,83 @@
+name: Deploy
+
+# The only workflow: it builds and uploads. Tests run where the code is written, before
+# every commit (see CLAUDE.md), not here. The repository is public, so these minutes are free.
+on:
+    push:
+        branches: [main]
+    workflow_dispatch:
+
+# Never run two deploys at the same time
+concurrency:
+    group: deploy-production
+    cancel-in-progress: false
+
+jobs:
+    deploy:
+        # Pinned: ubuntu-latest moves to Ubuntu 26 on 2026-10-19; upgrade deliberately
+        runs-on: ubuntu-24.04
+        environment: production
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+
+            - name: Set up PHP 8.1
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.1'
+                  coverage: none
+
+            - name: Install production dependencies
+              run: composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+
+            - name: Set up Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: npm
+
+            - name: Build the app
+              run: |
+                  npm ci
+                  npm run build
+
+            # The app migrates its own database on the first request after the upload
+            # (migrations/), so there is nothing to run on the server.
+            - name: Upload application
+              uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+              with:
+                  server: ${{ secrets.FTP_SERVER }}
+                  username: ${{ secrets.FTP_USERNAME }}
+                  password: ${{ secrets.FTP_PASSWORD }}
+                  protocol: ${{ vars.FTP_PROTOCOL || 'ftps' }}
+                  local-dir: ./
+                  server-dir: ${{ secrets.FTP_SERVER_DIR }}
+                  # .env and the error logs only live on the server and are never uploaded nor
+                  # deleted. The root .htaccess is excluded because cPanel writes the PHP
+                  # version handler into it. Patterns without a slash match the file name in
+                  # any folder (matchBase), so ".htaccess" alone would also skip
+                  # public/.htaccess: "!public/.htaccess" keeps it in every deploy.
+                  exclude: |
+                      **/.git*
+                      **/.git*/**
+                      **/node_modules/**
+                      .github/**
+                      tests/**
+                      web/**
+                      scripts/**
+                      var/**
+                      .env
+                      .env.*
+                      error_log
+                      .htaccess
+                      !public/.htaccess
+                      package.json
+                      package-lock.json
+                      tsconfig*.json
+                      phpcs.xml
+                      phpstan.neon.dist
+                      phpunit.xml
+                      CLAUDE.md
+                      TODO.md
+                      README.md
+                      DEPLOY.md

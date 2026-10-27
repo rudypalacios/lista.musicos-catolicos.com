@@ -1,0 +1,28 @@
+# Root .htaccess. The site's folder is the repository root, so everything is sent to public/.
+# The deploy never uploads this file (cPanel also writes the PHP version handler here):
+# if you change it in the repo, copy the change to the server by hand.
+Options All -Indexes
+
+<Files .htaccess>
+  order allow,deny
+  deny from all
+</Files>
+
+# Nothing outside public/ is ever served, but in case this file is lost or bypassed, secrets
+# and sources must not be downloadable.
+<FilesMatch "^(\.env.*|composer\.(json|lock)|package(-lock)?\.json|.*\.(sql|md|ts))$">
+  order allow,deny
+  deny from all
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # HTTPS only: service workers and installing the app need it. Enable AutoSSL for the
+  # subdomain in cPanel first.
+  RewriteCond %{HTTPS} off
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+  RewriteCond %{REQUEST_URI} !^/public/
+  RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>

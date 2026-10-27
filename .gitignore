@@ -1,0 +1,24 @@
+# Dependencies
+/vendor/
+node_modules/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Built by `npm run build` (the deploy builds it again)
+/public/assets/
+/public/index.html
+/public/sw.js
+
+# Local database and logs
+/var/
+error_log
+public/error_log
+.phpunit.result.cache
+
+# Editors
+.idea/
+.vscode/
+.DS_Store

@@ -1,0 +1,52 @@
+Options All -Indexes
+AddDefaultCharset UTF-8
+AddType application/manifest+json .webmanifest
+
+<Files .htaccess>
+  order allow,deny
+  deny from all
+</Files>
+
+#
+# This is a private app: keep it out of search engines, and out of frames
+#
+<IfModule mod_headers.c>
+  Header always set X-Robots-Tag "noindex, nofollow"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "same-origin"
+  # Everything comes from this origin: no CDNs, fonts or scripts from elsewhere. If a change
+  # needs another domain, widen this on purpose (and check the privacy policy first).
+  Header always set Content-Security-Policy "default-src 'self'; img-src 'self' data:; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
+</IfModule>
+
+#
+# Compression
+#
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css text/javascript application/javascript application/json application/manifest+json image/svg+xml
+</IfModule>
+
+#
+# Cache. The build gives JS and CSS a content hash in the name (main-AB12CD34.js), so those
+# never change under the same URL. The files that name them must always be revalidated: the
+# service worker, the shell and the manifest.
+#
+<IfModule mod_headers.c>
+  <FilesMatch "-[A-Z0-9]{8}\.(js|css)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  <FilesMatch "^(sw\.js|index\.html|manifest\.webmanifest)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Real files (assets, the worker, icons) are served as they are; everything else goes to
+  # index.php, which answers the API and gives the app shell to any other URL.
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^ index.php [QSA,L]
+</IfModule>

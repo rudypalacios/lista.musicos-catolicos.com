@@ -1,0 +1,102 @@
+# Deploy
+
+Cada merge a `main` (o *Actions → Deploy → Run workflow*) ejecuta `.github/workflows/deploy.yml`:
+instala las dependencias de producción, compila la app (`npm run build`) y sube por FTPS **solo
+los archivos que cambiaron**. Los tests **no** corren en GitHub: se corren antes de cada commit
+(ver `CLAUDE.md`). El repositorio es público, así que esos minutos no se gastan de tu plan.
+
+El deploy nunca sube ni borra: `.env`, los `error_log` ni los archivos de desarrollo.
+Tampoco toca el `.htaccess` raíz, porque cPanel guarda ahí la versión de PHP. Si cambias
+`.htaccess` en el repo, actualízalo a mano en el servidor.
+
+**Base de datos:** la app crea y actualiza sus tablas sola, en la primera petición después de
+cada deploy (`migrations/`). No hay nada que ejecutar en el servidor.
+
+> Este repositorio es público: aquí solo van **marcadores** como `<carpeta-del-sitio>`.
+> Contraseñas, usuarios y rutas reales van únicamente en cPanel y en los *secrets* de GitHub.
+
+## Configuración inicial (una sola vez)
+
+### cPanel
+
+1. Crear el subdominio **`lista.musicos-catolicos.com`** con su propia carpeta
+   (`<carpeta-del-sitio>`). Esa carpeta es la raíz del repositorio, igual que en el sitio
+   principal (no `public/`: el `.htaccess` raíz envía todo a `public/`).
+2. Activar **HTTPS** para el subdominio (*SSL/TLS Status → Run AutoSSL*). Sin HTTPS no se puede
+   instalar la app ni funciona el modo sin conexión.
+3. *MultiPHP Manager*: PHP **8.1** para el subdominio, con la extensión `pdo_mysql` activa
+   (*Select PHP Version → Extensions*).
+4. *MySQL Databases*: crear una base de datos y un usuario nuevos, y darle **todos los
+   privilegios** sobre esa base (la app crea tablas). No reutilices la base del sitio principal.
+5. Crear una **cuenta FTP** con su directorio limitado a `<carpeta-del-sitio>`. No reutilices
+   la del sitio principal.
+6. Crear `<carpeta-del-sitio>/.env` a partir de `.env.example`:
+
+   ```dotenv
+   APP_ENV=production
+   DB_HOST=localhost
+   DB_NAME=<base creada en el paso 4>
+   DB_USERNAME=<usuario creado en el paso 4>
+   DB_PASSWORD=<contraseña>
+   OWNER_EMAIL=<tu correo>
+   OWNER_PASSWORD=<la contraseña con la que vas a entrar a la app>
+   ```
+
+   La cuenta se crea en la primera petición que no encuentra usuarios. **Después de entrar
+   la primera vez, borra la línea `OWNER_PASSWORD` del `.env`**: la contraseña ya quedó
+   guardada de forma segura (hash) y no tiene por qué seguir en texto.
+
+7. Crear (o completar) `<carpeta-del-sitio>/.htaccess` con el contenido del `.htaccess` de la
+   raíz del repo. Si cPanel ya creó uno con la versión de PHP, **no lo borres**: agrega el
+   contenido del repo debajo. Si falta este paso, todo da **404**.
+
+### GitHub
+
+1. Crear el environment **`production`** (*Settings → Environments → New environment*),
+   limitado a la rama `main` (*Deployment branches and tags → Selected branches → `main`*).
+2. Agregar como **Environment secrets**:
+
+   | Secret | Valor |
+   |---|---|
+   | `FTP_SERVER` | Host FTP (el mismo servidor que el sitio principal) |
+   | `FTP_USERNAME` | Usuario de la cuenta FTP del paso 5 |
+   | `FTP_PASSWORD` | Contraseña de esa cuenta |
+   | `FTP_SERVER_DIR` | Carpeta del sitio vista desde esa cuenta FTP, **terminada en `/`** (`./` si la cuenta ya está limitada a ella) |
+
+   Variable opcional: `FTP_PROTOCOL` (por defecto `ftps`; `ftp` solo si el hosting no acepta FTPS).
+
+   En un repositorio público los secrets siguen siendo privados, y los workflows de forks no
+   tienen acceso a ellos.
+
+## Comprobar el primer deploy
+
+1. `https://lista.musicos-catolicos.com/api/health` debe responder
+   `{"status":"ok","schema":"0001_create_users"}`. Si responde HTML o 404, falta el `.htaccess`
+   (paso 7); si responde 500, revisa el `.env` y el usuario de la base.
+2. Abre `https://lista.musicos-catolicos.com/`, inicia sesión y borra `OWNER_PASSWORD` del `.env`.
+3. Si ves "La aplicación no está compilada", el deploy no corrió el build: revisa el job en *Actions*.
+
+## Pruebas en los dispositivos
+
+Chromium se prueba aquí, pero **Safari/WebKit no**, y es justo donde está el riesgo. Hazlo una
+vez después del primer deploy, y otra vez antes de confiar en la app para una misa.
+
+**Android (Chrome)**
+1. Abre la URL, inicia sesión, menú ⋮ → *Instalar aplicación*.
+2. Ábrela desde el ícono. Modo avión. Ciérrala del todo y ábrela otra vez: debe abrir, mostrar
+   tu sesión y la etiqueta "Sin conexión".
+
+**iPad (Safari)**
+1. Abre la URL en Safari, inicia sesión, *Compartir → Añadir a pantalla de inicio*.
+2. **Usa siempre el ícono**, no la pestaña de Safari: Safari borra los datos de los sitios que no
+   visita en 7 días, y eso no aplica a una app instalada en la pantalla de inicio.
+3. Modo avión, cierra la app (deslizar hacia arriba) y ábrela desde el ícono: debe abrir.
+4. Repite al día siguiente y a los 8 días sin abrirla, para confirmar que no se borra.
+
+**Actualizaciones.** Después de un deploy con cambios, la app muestra "Hay una versión nueva"
+con un botón *Actualizar*. No se actualiza sola mientras la estás usando.
+
+## Desarrollo local
+
+Ver `README.md`. Crea `.env.development` (tiene prioridad sobre `.env` y está en `.gitignore`)
+con `DB_DRIVER=sqlite` para no necesitar MySQL.
