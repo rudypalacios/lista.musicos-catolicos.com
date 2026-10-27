@@ -69,13 +69,128 @@ final class ApiTest extends TestCase
         return $m[1];
     }
 
+    private const SONG_ID = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
+
+    /**
+     * @param array<string, mixed> $override
+     *
+     * @return array<string, mixed>
+     */
+    private function song(array $override = []): array
+    {
+        return $override + [
+            'id' => self::SONG_ID, 'title' => 'Vienen con alegría', 'author' => '', 'body' => '[C]Vienen',
+            'updatedAt' => 1_700_000_000_000, 'deleted' => false,
+        ];
+    }
+
+    public function testSyncNeedsASession(): void
+    {
+        $this->assertSame(401, $this->call('GET', '/api/sync')->getStatusCode());
+        $this->assertSame(401, $this->call('POST', '/api/sync', ['songs' => []])->getStatusCode());
+    }
+
+    public function testASongPushedCanBePulledBack(): void
+    {
+        $cookies = [SessionCookie::NAME => $this->signIn()];
+
+        $push = $this->call('POST', '/api/sync', ['songs' => [$this->song()]], $cookies);
+        $pull = $this->call('GET', '/api/sync?since=0', null, $cookies);
+
+        $this->assertSame(200, $push->getStatusCode());
+        $this->assertSame([self::SONG_ID], $this->body($push)['applied']);
+        $this->assertSame([], $this->body($push)['ignored']);
+        $body = $this->body($pull);
+        $this->assertSame('Vienen con alegría', $body['songs'][0]['title']);
+        $this->assertSame(1, $body['cursor']);
+        $this->assertFalse($body['hasMore']);
+    }
+
+    public function testPullingFromTheCursorReturnsNothingNew(): void
+    {
+        $cookies = [SessionCookie::NAME => $this->signIn()];
+        $this->call('POST', '/api/sync', ['songs' => [$this->song()]], $cookies);
+
+        $body = $this->body($this->call('GET', '/api/sync?since=1', null, $cookies));
+
+        $this->assertSame([], $body['songs']);
+        $this->assertSame(1, $body['cursor'], 'the cursor stays where it was');
+    }
+
+    public function testAnOlderSongIsReportedAsIgnored(): void
+    {
+        $cookies = [SessionCookie::NAME => $this->signIn()];
+        $this->call('POST', '/api/sync', ['songs' => [$this->song(['updatedAt' => 2_000_000_000_000 - 1])]], $cookies);
+
+        $body = $this->body($this->call('POST', '/api/sync', ['songs' => [$this->song(['updatedAt' => 5])]], $cookies));
+
+        $this->assertSame([], $body['applied']);
+        $this->assertSame([self::SONG_ID], $body['ignored']);
+    }
+
+    public function testOneInvalidSongStoresNoneOfTheBatch(): void
+    {
+        $cookies = [SessionCookie::NAME => $this->signIn()];
+        $good = $this->song();
+        $bad = $this->song(['id' => 'dddddddd-dddd-4ddd-8ddd-dddddddddddd', 'title' => '']);
+
+        $push = $this->call('POST', '/api/sync', ['songs' => [$good, $bad]], $cookies);
+
+        $this->assertSame(400, $push->getStatusCode());
+        $this->assertSame('invalid_song', $this->body($push)['error']);
+        $this->assertSame([], $this->body($this->call('GET', '/api/sync?since=0', null, $cookies))['songs']);
+    }
+
+    public function testMalformedPayloadsAre400(): void
+    {
+        $cookies = [SessionCookie::NAME => $this->signIn()];
+
+        foreach ([[], ['songs' => 'x'], ['songs' => ['a' => 1]], ['songs' => ['x']]] as $payload) {
+            $this->assertSame(400, $this->call('POST', '/api/sync', $payload, $cookies)->getStatusCode());
+        }
+        $tooMany = array_fill(0, 101, $this->song());
+        $this->assertSame(400, $this->call('POST', '/api/sync', ['songs' => $tooMany], $cookies)->getStatusCode());
+    }
+
+    public function testASinceThatIsNotANumberIs400(): void
+    {
+        $cookies = [SessionCookie::NAME => $this->signIn()];
+
+        foreach (['abc', '-1', '1.5', '', '99999999999999999999'] as $since) {
+            $response = $this->call('GET', '/api/sync?since=' . $since, null, $cookies);
+            $this->assertSame(400, $response->getStatusCode(), "since=$since");
+        }
+    }
+
+    public function testPullsComeInPages(): void
+    {
+        $cookies = [SessionCookie::NAME => $this->signIn()];
+        // 201 songs, pushed in batches of at most 100
+        foreach ([[0, 100], [100, 200], [200, 201]] as [$from, $to]) {
+            $songs = [];
+            for ($i = $from; $i < $to; $i++) {
+                $songs[] = $this->song(['id' => sprintf('eeeeeeee-eeee-4eee-8eee-%012d', $i), 'title' => "Canto $i"]);
+            }
+            $this->assertSame(200, $this->call('POST', '/api/sync', ['songs' => $songs], $cookies)->getStatusCode());
+        }
+
+        $first = $this->body($this->call('GET', '/api/sync?since=0', null, $cookies));
+        $second = $this->body($this->call('GET', '/api/sync?since=' . $first['cursor'], null, $cookies));
+
+        $this->assertCount(200, $first['songs']);
+        $this->assertTrue($first['hasMore']);
+        $this->assertSame(200, $first['cursor']);
+        $this->assertCount(1, $second['songs']);
+        $this->assertFalse($second['hasMore']);
+    }
+
     public function testHealthReportsTheSchema(): void
     {
         $response = $this->call('GET', '/api/health');
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame('ok', $this->body($response)['status']);
-        $this->assertSame('0001_create_users', $this->body($response)['schema']);
+        $this->assertMatchesRegularExpression('~^\d{4}_\w+$~', $this->body($response)['schema']);
         $this->assertSame('no-store', $response->getHeaderLine('Cache-Control'));
     }
 

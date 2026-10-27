@@ -22,14 +22,12 @@ final class MigratorTest extends TestCase
         $this->assertSame(end($first), $migrator->currentVersion());
     }
 
-    public function testItCreatesTheAuthTables(): void
+    public function testItCreatesTheTables(): void
     {
-        $tables = TestDatabase::migrated()
-            ->query("SELECT name FROM sqlite_master WHERE type = 'table'")
-            ->fetchAll(PDO::FETCH_COLUMN);
+        $pdo = TestDatabase::migrated();
 
-        foreach (['users', 'sessions', 'login_attempts', 'schema_migrations'] as $table) {
-            $this->assertContains($table, $tables);
+        foreach (['users', 'sessions', 'login_attempts', 'songs', 'sync_state', 'schema_migrations'] as $table) {
+            $this->assertTrue(TestDatabase::hasTable($pdo, $table), $table);
         }
     }
 

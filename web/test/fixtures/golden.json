@@ -1,0 +1,9923 @@
+{
+ "songs": [
+  {
+   "name": "empty",
+   "input": "",
+   "sheet": {
+    "sections": [],
+    "meta": {},
+    "hasChords": false,
+    "firstChord": null
+   },
+   "html": "",
+   "key": null
+  },
+  {
+   "name": "blankOnly",
+   "input": "  \n\n \t\n",
+   "sheet": {
+    "sections": [],
+    "meta": {},
+    "hasChords": false,
+    "firstChord": null
+   },
+   "html": "",
+   "key": null
+  },
+  {
+   "name": "plainLyrics",
+   "input": "Uno\nDos\n\n\nTres",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": null,
+         "text": "Uno"
+        }
+       ],
+       [
+        {
+         "chord": null,
+         "text": "Dos"
+        }
+       ]
+      ]
+     },
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": null,
+         "text": "Tres"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": false,
+    "firstChord": null
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first line--plain\">Uno</div><div class=\"line line--plain\">Dos</div></div><div class=\"song-section song-section--verse\"><div class=\"line line--first line--plain\">Tres</div></div>",
+   "key": null
+  },
+  {
+   "name": "chordsAndMeta",
+   "input": "{title: Ignorado}\n{key: G}\n{capo: 2}\n{tempo: 72}\n{time: 4/4}\n\n{c: Verso 1}\n\n[G]Primera línea [D/F#]del verso\nSegunda sin acordes\n\n{soc}\n[C]Coro\n{eoc}\n# nota del editor\n{chorus}\nFinal",
+   "sheet": {
+    "sections": [
+     {
+      "label": "Verso 1",
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": "Primera línea "
+        },
+        {
+         "chord": "D/F#",
+         "text": "del verso"
+        }
+       ],
+       [
+        {
+         "chord": null,
+         "text": "Segunda sin acordes"
+        }
+       ]
+      ]
+     },
+     {
+      "label": "Coro",
+      "kind": "chorus",
+      "lines": [
+       [
+        {
+         "chord": "C",
+         "text": "Coro"
+        }
+       ]
+      ]
+     },
+     {
+      "label": "Coro",
+      "kind": "chorus",
+      "lines": []
+     },
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": null,
+         "text": "Final"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {
+     "key": "G",
+     "capo": "2",
+     "tempo": "72",
+     "time": "4/4"
+    },
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><h3 class=\"song-section__label song-section__label--verse\">Verso 1</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">Pri</span>mera </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">línea </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"D/F#\">Re/Fa#</span><span class=\"lyr\"><span class=\"syl\">del</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">verso</span></span></span></div><div class=\"line line--plain\">Segunda sin acordes</div></div><div class=\"song-section song-section--chorus\"><h3 class=\"song-section__label\">Coro</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">Co</span>ro</span></span></span></div></div><div class=\"song-section song-section--chorus\"><h3 class=\"song-section__label\">Coro</h3></div><div class=\"song-section song-section--verse\"><div class=\"line line--first line--plain\">Final</div></div>",
+   "key": "G"
+  },
+  {
+   "name": "latinChords",
+   "input": "[Sol]Uno [Re/Fa#]dos []tres",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": "Uno "
+        },
+        {
+         "chord": "D/F#",
+         "text": "dos tres"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">U</span>no </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"D/F#\">Re/Fa#</span><span class=\"lyr\"><span class=\"syl\">dos</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">tres</span></span></span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "keyLatin",
+   "input": "{key: Sol}\n[C]Uno",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "C",
+         "text": "Uno"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {
+     "key": "Sol"
+    },
+    "hasChords": true,
+    "firstChord": "C"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">U</span>no</span></span></span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "keyMinor",
+   "input": "{key: Am}\n[C]Uno",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "C",
+         "text": "Uno"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {
+     "key": "Am"
+    },
+    "hasChords": true,
+    "firstChord": "C"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">U</span>no</span></span></span></div></div>",
+   "key": "Am"
+  },
+  {
+   "name": "firstChordMinor",
+   "input": "[Em7]Uno [C]dos",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "Em7",
+         "text": "Uno "
+        },
+        {
+         "chord": "C",
+         "text": "dos"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "Em7"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Em7\">Mim7</span><span class=\"lyr\"><span class=\"syl\">U</span>no </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">dos</span></span></span></span></div></div>",
+   "key": "Em"
+  },
+  {
+   "name": "emptyKey",
+   "input": "{key:}\n{capo: }\n[D]Uno",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "D",
+         "text": "Uno"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "D"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"D\">Re</span><span class=\"lyr\"><span class=\"syl\">U</span>no</span></span></span></div></div>",
+   "key": "D"
+  },
+  {
+   "name": "htmlEscaping",
+   "input": "{c: Coro}\n[G]Cuánto he es[D]perado <b> & \"comillas\" 'simples'\nSin acordes <i>",
+   "sheet": {
+    "sections": [
+     {
+      "label": "Coro",
+      "kind": "chorus",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": "Cuánto he es"
+        },
+        {
+         "chord": "D",
+         "text": "perado <b> & \"comillas\" 'simples'"
+        }
+       ],
+       [
+        {
+         "chord": null,
+         "text": "Sin acordes <i>"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--chorus\"><h3 class=\"song-section__label\">Coro</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">Cuán</span>to </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">he </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">es</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"D\">Re</span><span class=\"lyr\"><span class=\"syl\">pe</span>rado </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">&lt;b&gt; </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">&amp; </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">&quot;comillas&quot; </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">&apos;simples&apos;</span></span></span></div><div class=\"line line--plain\">Sin acordes &lt;i&gt;</div></div>",
+   "key": "G"
+  },
+  {
+   "name": "chorusEnvironment",
+   "input": "{soc}\n[G]Primera\n\n[D]Segunda estrofa del coro\n{eoc}\n[C]Verso suelto",
+   "sheet": {
+    "sections": [
+     {
+      "label": "Coro",
+      "kind": "chorus",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": "Primera"
+        }
+       ]
+      ]
+     },
+     {
+      "label": null,
+      "kind": "chorus",
+      "lines": [
+       [
+        {
+         "chord": "D",
+         "text": "Segunda estrofa del coro"
+        }
+       ]
+      ]
+     },
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "C",
+         "text": "Verso suelto"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--chorus\"><h3 class=\"song-section__label\">Coro</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">Pri</span>mera</span></span></span></div></div><div class=\"song-section song-section--chorus\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"D\">Re</span><span class=\"lyr\"><span class=\"syl\">Se</span>gunda </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">estrofa </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">del </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">coro</span></span></span></div></div><div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">Ver</span>so </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">suelto</span></span></span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "startOfChorusLabelled",
+   "input": "{start_of_chorus: Coro 2}\n[G]Uno\n{end_of_chorus}\nDos",
+   "sheet": {
+    "sections": [
+     {
+      "label": "Coro 2",
+      "kind": "chorus",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": "Uno"
+        }
+       ]
+      ]
+     },
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": null,
+         "text": "Dos"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--chorus\"><h3 class=\"song-section__label\">Coro 2</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">U</span>no</span></span></span></div></div><div class=\"song-section song-section--verse\"><div class=\"line line--first line--plain\">Dos</div></div>",
+   "key": "G"
+  },
+  {
+   "name": "bridge",
+   "input": "{sob}\n[Am]Puente\n{eob}\n{start_of_bridge: Puente largo}\n[F]Otro\n{end_of_bridge}",
+   "sheet": {
+    "sections": [
+     {
+      "label": "Puente",
+      "kind": "other",
+      "lines": [
+       [
+        {
+         "chord": "Am",
+         "text": "Puente"
+        }
+       ]
+      ]
+     },
+     {
+      "label": "Puente largo",
+      "kind": "other",
+      "lines": [
+       [
+        {
+         "chord": "F",
+         "text": "Otro"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "Am"
+   },
+   "html": "<div class=\"song-section song-section--other\"><h3 class=\"song-section__label\">Puente</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">Puen</span>te</span></span></span></div></div><div class=\"song-section song-section--other\"><h3 class=\"song-section__label\">Puente largo</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"F\">Fa</span><span class=\"lyr\"><span class=\"syl\">O</span>tro</span></span></span></div></div>",
+   "key": "Am"
+  },
+  {
+   "name": "verseEnvironment",
+   "input": "{sov: Solista}\n[G]Canta uno\n{eov}\n{start_of_verse}\n[C]Canta otro\n{end_of_verse}",
+   "sheet": {
+    "sections": [
+     {
+      "label": "Solista",
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": "Canta uno"
+        }
+       ]
+      ]
+     },
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "C",
+         "text": "Canta otro"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><h3 class=\"song-section__label\">Solista</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">Can</span>ta </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">uno</span></span></span></div></div><div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">Can</span>ta </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">otro</span></span></span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "labelsByKind",
+   "input": "{c: Coro}\n[G]Uno\n\n{c: Estribillo}\n[D]Dos\n\n{c: Intro}\n[C]Tres\n\n{c: Introducción}\n[F]Cuatro\n\n{c: Interludio instrumental}\n[Am]Cinco\n\n{c: Precoro}\n[G]Seis\n\n{c: Final}\n[C]Siete\n\n{c: Verso 2}\nOcho\n\n{c: Estrofa 3}\nNueve\n\n{c: Todos}\nDiez\n\n{c: Solo de guitarra}\n[E]Once",
+   "sheet": {
+    "sections": [
+     {
+      "label": "Coro",
+      "kind": "chorus",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": "Uno"
+        }
+       ]
+      ]
+     },
+     {
+      "label": "Estribillo",
+      "kind": "chorus",
+      "lines": [
+       [
+        {
+         "chord": "D",
+         "text": "Dos"
+        }
+       ]
+      ]
+     },
+     {
+      "label": "Intro",
+      "kind": "other",
+      "lines": [
+       [
+        {
+         "chord": "C",
+         "text": "Tres"
+        }
+       ]
+      ]
+     },
+     {
+      "label": "Introducción",
+      "kind": "other",
+      "lines": [
+       [
+        {
+         "chord": "F",
+         "text": "Cuatro"
+        }
+       ]
+      ]
+     },
+     {
+      "label": "Interludio instrumental",
+      "kind": "other",
+      "lines": [
+       [
+        {
+         "chord": "Am",
+         "text": "Cinco"
+        }
+       ]
+      ]
+     },
+     {
+      "label": "Precoro",
+      "kind": "other",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": "Seis"
+        }
+       ]
+      ]
+     },
+     {
+      "label": "Final",
+      "kind": "other",
+      "lines": [
+       [
+        {
+         "chord": "C",
+         "text": "Siete"
+        }
+       ]
+      ]
+     },
+     {
+      "label": "Verso 2",
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": null,
+         "text": "Ocho"
+        }
+       ]
+      ]
+     },
+     {
+      "label": "Estrofa 3",
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": null,
+         "text": "Nueve"
+        }
+       ]
+      ]
+     },
+     {
+      "label": "Todos",
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": null,
+         "text": "Diez"
+        }
+       ]
+      ]
+     },
+     {
+      "label": "Solo de guitarra",
+      "kind": "other",
+      "lines": [
+       [
+        {
+         "chord": "E",
+         "text": "Once"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--chorus\"><h3 class=\"song-section__label\">Coro</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">U</span>no</span></span></span></div></div><div class=\"song-section song-section--chorus\"><h3 class=\"song-section__label\">Estribillo</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"D\">Re</span><span class=\"lyr\"><span class=\"syl\">Dos</span></span></span></span></div></div><div class=\"song-section song-section--other\"><h3 class=\"song-section__label\">Intro</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">Tres</span></span></span></span></div></div><div class=\"song-section song-section--other\"><h3 class=\"song-section__label\">Introducción</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"F\">Fa</span><span class=\"lyr\"><span class=\"syl\">Cua</span>tro</span></span></span></div></div><div class=\"song-section song-section--other\"><h3 class=\"song-section__label\">Interludio instrumental</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">Cin</span>co</span></span></span></div></div><div class=\"song-section song-section--other\"><h3 class=\"song-section__label\">Precoro</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">Seis</span></span></span></span></div></div><div class=\"song-section song-section--other\"><h3 class=\"song-section__label\">Final</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">Sie</span>te</span></span></span></div></div><div class=\"song-section song-section--verse\"><h3 class=\"song-section__label song-section__label--verse\">Verso 2</h3><div class=\"line line--first line--plain\">Ocho</div></div><div class=\"song-section song-section--verse\"><h3 class=\"song-section__label song-section__label--verse\">Estrofa 3</h3><div class=\"line line--first line--plain\">Nueve</div></div><div class=\"song-section song-section--verse\"><h3 class=\"song-section__label\">Todos</h3><div class=\"line line--first line--plain\">Diez</div></div><div class=\"song-section song-section--other\"><h3 class=\"song-section__label\">Solo de guitarra</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"E\">Mi</span><span class=\"lyr\"><span class=\"syl\">On</span>ce</span></span></span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "labelAlternatives",
+   "input": "{comment: Coro}\nUno\n{cb: Puente}\nDos\n{comment_box: Verso 1}\nTres",
+   "sheet": {
+    "sections": [
+     {
+      "label": "Coro",
+      "kind": "chorus",
+      "lines": [
+       [
+        {
+         "chord": null,
+         "text": "Uno"
+        }
+       ]
+      ]
+     },
+     {
+      "label": "Puente",
+      "kind": "other",
+      "lines": [
+       [
+        {
+         "chord": null,
+         "text": "Dos"
+        }
+       ]
+      ]
+     },
+     {
+      "label": "Verso 1",
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": null,
+         "text": "Tres"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": false,
+    "firstChord": null
+   },
+   "html": "<div class=\"song-section song-section--chorus\"><h3 class=\"song-section__label\">Coro</h3><div class=\"line line--first line--plain\">Uno</div></div><div class=\"song-section song-section--other\"><h3 class=\"song-section__label\">Puente</h3><div class=\"line line--first line--plain\">Dos</div></div><div class=\"song-section song-section--verse\"><h3 class=\"song-section__label song-section__label--verse\">Verso 1</h3><div class=\"line line--first line--plain\">Tres</div></div>",
+   "key": null
+  },
+  {
+   "name": "annotations",
+   "input": "{c: Coro}\n[G]Hosanna\n{ci: x2}\n\n{comment_italic: Repetir coro}\n\nSin sección {ci: ignorada}",
+   "sheet": {
+    "sections": [
+     {
+      "label": "Coro",
+      "kind": "chorus",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": "Hosanna"
+        }
+       ],
+       "x2"
+      ]
+     },
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       "Repetir coro"
+      ]
+     },
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": null,
+         "text": "Sin sección {ci: ignorada}"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--chorus\"><h3 class=\"song-section__label\">Coro</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">Ho</span>sanna</span></span></span></div><div class=\"line line--note\">x2</div></div><div class=\"song-section song-section--verse\"><div class=\"line line--note\">Repetir coro</div></div><div class=\"song-section song-section--verse\"><div class=\"line line--first line--plain\">Sin sección {ci: ignorada}</div></div>",
+   "key": "G"
+  },
+  {
+   "name": "annotationFirst",
+   "input": "{ci: antes de todo}\n[G]Luego la letra",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       "antes de todo",
+       [
+        {
+         "chord": "G",
+         "text": "Luego la letra"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--note\">antes de todo</div><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">Lue</span>go </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">la </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">letra</span></span></span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "annotationEmptyValue",
+   "input": "{ci}\n{c}\n[G]Uno",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": "Uno"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">U</span>no</span></span></span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "chorusRepeat",
+   "input": "{soc}\n[G]Coro\n{eoc}\nVerso\n{chorus}\n{chorus: Repetir el coro}\nFin",
+   "sheet": {
+    "sections": [
+     {
+      "label": "Coro",
+      "kind": "chorus",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": "Coro"
+        }
+       ]
+      ]
+     },
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": null,
+         "text": "Verso"
+        }
+       ]
+      ]
+     },
+     {
+      "label": "Coro",
+      "kind": "chorus",
+      "lines": []
+     },
+     {
+      "label": "Repetir el coro",
+      "kind": "chorus",
+      "lines": []
+     },
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": null,
+         "text": "Fin"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--chorus\"><h3 class=\"song-section__label\">Coro</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">Co</span>ro</span></span></span></div></div><div class=\"song-section song-section--verse\"><div class=\"line line--first line--plain\">Verso</div></div><div class=\"song-section song-section--chorus\"><h3 class=\"song-section__label\">Coro</h3></div><div class=\"song-section song-section--chorus\"><h3 class=\"song-section__label\">Repetir el coro</h3></div><div class=\"song-section song-section--verse\"><div class=\"line line--first line--plain\">Fin</div></div>",
+   "key": "G"
+  },
+  {
+   "name": "labelThenBlank",
+   "input": "{c: Coro}\n\n[G]Después de la línea en blanco",
+   "sheet": {
+    "sections": [
+     {
+      "label": "Coro",
+      "kind": "chorus",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": "Después de la línea en blanco"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--chorus\"><h3 class=\"song-section__label\">Coro</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">Des</span>pués </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">de </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">la </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">línea </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">en </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">blanco</span></span></span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "uppercaseDirectives",
+   "input": "{SOC}\n[G]Uno\n{EOC}\n{Key: C}\n{C: Verso}\nDos",
+   "sheet": {
+    "sections": [
+     {
+      "label": "Coro",
+      "kind": "chorus",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": "Uno"
+        }
+       ]
+      ]
+     },
+     {
+      "label": "Verso",
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": null,
+         "text": "Dos"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {
+     "key": "C"
+    },
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--chorus\"><h3 class=\"song-section__label\">Coro</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">U</span>no</span></span></span></div></div><div class=\"song-section song-section--verse\"><h3 class=\"song-section__label song-section__label--verse\">Verso</h3><div class=\"line line--first line--plain\">Dos</div></div>",
+   "key": "C"
+  },
+  {
+   "name": "indentedDirectives",
+   "input": "   {soc}  \n  [G]Uno\n  {eoc}\n\t{c:  Verso 9  }\nDos",
+   "sheet": {
+    "sections": [
+     {
+      "label": "Coro",
+      "kind": "chorus",
+      "lines": [
+       [
+        {
+         "chord": null,
+         "text": "  "
+        },
+        {
+         "chord": "G",
+         "text": "Uno"
+        }
+       ]
+      ]
+     },
+     {
+      "label": "Verso 9",
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": null,
+         "text": "Dos"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--chorus\"><h3 class=\"song-section__label\">Coro</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">  </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">U</span>no</span></span></span></div></div><div class=\"song-section song-section--verse\"><h3 class=\"song-section__label song-section__label--verse\">Verso 9</h3><div class=\"line line--first line--plain\">Dos</div></div>",
+   "key": "G"
+  },
+  {
+   "name": "unknownDirectives",
+   "input": "{title: X}\n{artist: Y}\n{define: G base-fret 1}\n[G]Uno\n{unknown_thing: z}\n{notadirective\nDos",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": "Uno"
+        }
+       ],
+       [
+        {
+         "chord": null,
+         "text": "{notadirective"
+        }
+       ],
+       [
+        {
+         "chord": null,
+         "text": "Dos"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">U</span>no</span></span></span></div><div class=\"line line--plain\">{notadirective</div><div class=\"line line--plain\">Dos</div></div>",
+   "key": "G"
+  },
+  {
+   "name": "comments",
+   "input": "# comentario\n  # otro con sangría\n[G]Letra\n#[D]no es acorde",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": "Letra"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">Le</span>tra</span></span></span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "crlf",
+   "input": "{c: Coro}\r\n[G]Uno\r\n\r\n[D]Dos\r\n",
+   "sheet": {
+    "sections": [
+     {
+      "label": "Coro",
+      "kind": "chorus",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": "Uno"
+        }
+       ]
+      ]
+     },
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "D",
+         "text": "Dos"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--chorus\"><h3 class=\"song-section__label\">Coro</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">U</span>no</span></span></span></div></div><div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"D\">Re</span><span class=\"lyr\"><span class=\"syl\">Dos</span></span></span></span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "oldMacLineBreaks",
+   "input": "[G]Uno\r[D]Dos",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": "Uno"
+        }
+       ],
+       [
+        {
+         "chord": "D",
+         "text": "Dos"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">U</span>no</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"D\">Re</span><span class=\"lyr\"><span class=\"syl\">Dos</span></span></span></span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "nonBreakingSpaces",
+   "input": "[G] Uno \n \n[D]Dos",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": " Uno "
+        }
+       ],
+       [
+        {
+         "chord": null,
+         "text": " "
+        }
+       ],
+       [
+        {
+         "chord": "D",
+         "text": "Dos"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">Uno </span></span></span></div><div class=\"line line--plain\"> </div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"D\">Re</span><span class=\"lyr\"><span class=\"syl\">Dos</span></span></span></span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "trailingSpacesAndTabs",
+   "input": "[G]Uno  \t \n[D]Dos\t",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": "Uno"
+        }
+       ],
+       [
+        {
+         "chord": "D",
+         "text": "Dos"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">U</span>no</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"D\">Re</span><span class=\"lyr\"><span class=\"syl\">Dos</span></span></span></span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "unicodeLyrics",
+   "input": "[Em]Señor, ¿qué ñandú comió? Ünder ÁÉÍÓÚ — «guión» …",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "Em",
+         "text": "Señor, ¿qué ñandú comió? Ünder ÁÉÍÓÚ — «guión» …"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "Em"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Em\">Mim</span><span class=\"lyr\"><span class=\"syl\">Se</span>ñor, </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">¿qué </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">ñandú </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">comió? </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">Ünder </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">ÁÉÍÓÚ </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">— </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">«guión» </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">…</span></span></span></div></div>",
+   "key": "Em"
+  },
+  {
+   "name": "emptyBrackets",
+   "input": "[]Sin acorde [G]con uno [] y vacío al final []",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": null,
+         "text": "Sin acorde "
+        },
+        {
+         "chord": "G",
+         "text": "con uno  y vacío al final "
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">Sin </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">acorde </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">con</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">uno  </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">y </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">vacío </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">al </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">final </span></span></span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "spacedChords",
+   "input": "[ G ]Uno [  D/F#  ]dos",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": "Uno "
+        },
+        {
+         "chord": "D/F#",
+         "text": "dos"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">U</span>no </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"D/F#\">Re/Fa#</span><span class=\"lyr\"><span class=\"syl\">dos</span></span></span></span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "unmatchedBracket",
+   "input": "[G]Uno [D dos",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": "Uno [D dos"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">U</span>no </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">[D </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">dos</span></span></span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "notAChord",
+   "input": "[N.C.]Silencio [x2]repetir [Fadd9]Fa [Faug]aum [Fa#m7]latín",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "N.C.",
+         "text": "Silencio "
+        },
+        {
+         "chord": "x2",
+         "text": "repetir "
+        },
+        {
+         "chord": "Fadd9",
+         "text": "Fa "
+        },
+        {
+         "chord": "Faug",
+         "text": "aum "
+        },
+        {
+         "chord": "F#m7",
+         "text": "latín"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "N.C."
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"N.C.\">N.C.</span><span class=\"lyr\"><span class=\"syl\">Si</span>lencio </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"x2\">x2</span><span class=\"lyr\"><span class=\"syl\">re</span>petir </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Fadd9\">Faadd9</span><span class=\"lyr\"><span class=\"syl\">Fa</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Faug\">Faaug</span><span class=\"lyr\"><span class=\"syl\">aum</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"F#m7\">Fa#m7</span><span class=\"lyr\"><span class=\"syl\">la</span>tín</span></span></span></div></div>",
+   "key": null
+  },
+  {
+   "name": "chordOnly",
+   "input": "[G] [D] [Em] [C]",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": " "
+        },
+        {
+         "chord": "D",
+         "text": " "
+        },
+        {
+         "chord": "Em",
+         "text": " "
+        },
+        {
+         "chord": "C",
+         "text": ""
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first line--chords\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"D\">Re</span><span class=\"lyr\"> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Em\">Mim</span><span class=\"lyr\"> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"> </span></span></span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "introLine",
+   "input": "{c: Intro}\n[G] [D] [Em] [C]\n\n{c: Verso}\n[G]Letra",
+   "sheet": {
+    "sections": [
+     {
+      "label": "Intro",
+      "kind": "other",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": " "
+        },
+        {
+         "chord": "D",
+         "text": " "
+        },
+        {
+         "chord": "Em",
+         "text": " "
+        },
+        {
+         "chord": "C",
+         "text": ""
+        }
+       ]
+      ]
+     },
+     {
+      "label": "Verso",
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": "Letra"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--other\"><h3 class=\"song-section__label\">Intro</h3><div class=\"line line--first line--chords\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"D\">Re</span><span class=\"lyr\"> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Em\">Mim</span><span class=\"lyr\"> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"> </span></span></span></div></div><div class=\"song-section song-section--verse\"><h3 class=\"song-section__label song-section__label--verse\">Verso</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">Le</span>tra</span></span></span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "chordsAfterLastWord",
+   "input": "[G]Así [D] [Em]\n[C]Vamos [G]ya [D]",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": "Así "
+        },
+        {
+         "chord": "D",
+         "text": " "
+        },
+        {
+         "chord": "Em",
+         "text": ""
+        }
+       ],
+       [
+        {
+         "chord": "C",
+         "text": "Vamos "
+        },
+        {
+         "chord": "G",
+         "text": "ya "
+        },
+        {
+         "chord": "D",
+         "text": ""
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">A</span>sí </span></span></span><span class=\"w w--tail\"><span class=\"seg\"><span class=\"ch\" data-chord=\"D\">Re</span><span class=\"lyr\"> </span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"Em\">Mim</span><span class=\"lyr\"> </span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">Va</span>mos </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">ya</span> </span></span></span><span class=\"w w--tail\"><span class=\"seg\"><span class=\"ch\" data-chord=\"D\">Re</span><span class=\"lyr\"> </span></span></span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "twoChordsInARow",
+   "input": "[G][D]más [Em][C]allá",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": ""
+        },
+        {
+         "chord": "D",
+         "text": "más "
+        },
+        {
+         "chord": "Em",
+         "text": ""
+        },
+        {
+         "chord": "C",
+         "text": "allá"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"> </span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"D\">Re</span><span class=\"lyr\"><span class=\"syl\">más</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Em\">Mim</span><span class=\"lyr\"> </span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">a</span>llá</span></span></span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "chordMidWord",
+   "input": "pa[D]labra y pru[Am]eba",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": null,
+         "text": "pa"
+        },
+        {
+         "chord": "D",
+         "text": "labra y pru"
+        },
+        {
+         "chord": "Am",
+         "text": "eba"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "D"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">pa</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"D\">Re</span><span class=\"lyr\"><span class=\"syl\">la</span>bra </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">y </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">pru</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">e</span>ba</span></span></span></div></div>",
+   "key": "D"
+  },
+  {
+   "name": "chordAtLineEnd",
+   "input": "Hasta el final [G]",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": null,
+         "text": "Hasta el final "
+        },
+        {
+         "chord": "G",
+         "text": ""
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">Hasta </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">el </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">final </span></span></span><span class=\"w w--tail\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"> </span></span></span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "chordOverSpace",
+   "input": "[G] Uno [D] dos",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": " Uno "
+        },
+        {
+         "chord": "D",
+         "text": " dos"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">Uno </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"D\">Re</span><span class=\"lyr\"> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">dos</span></span></span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "chordOverPunctuation",
+   "input": "[G], Uno [D]. dos [Em]¡Hey!",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": ", Uno "
+        },
+        {
+         "chord": "D",
+         "text": ". dos "
+        },
+        {
+         "chord": "Em",
+         "text": "¡Hey!"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\">, </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">Uno </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"D\">Re</span><span class=\"lyr\">. </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">dos </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Em\">Mim</span><span class=\"lyr\">¡Hey!</span></span></span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "syllableAcrossSegments",
+   "input": "es[G]pe[D]rado ha[Em]blar hom[C]bre",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": null,
+         "text": "es"
+        },
+        {
+         "chord": "G",
+         "text": "pe"
+        },
+        {
+         "chord": "D",
+         "text": "rado ha"
+        },
+        {
+         "chord": "Em",
+         "text": "blar hom"
+        },
+        {
+         "chord": "C",
+         "text": "bre"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">es</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">pe</span></span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"D\">Re</span><span class=\"lyr\"><span class=\"syl\">ra</span>do </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">ha</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"Em\">Mim</span><span class=\"lyr\"><span class=\"syl\">blar</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">hom</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">bre</span></span></span></span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "longWordsAndClusters",
+   "input": "[G]Construir [D]perro [Em]queremos [C]guitarra [Am]poeta [F]Dios [G]rey",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": "Construir "
+        },
+        {
+         "chord": "D",
+         "text": "perro "
+        },
+        {
+         "chord": "Em",
+         "text": "queremos "
+        },
+        {
+         "chord": "C",
+         "text": "guitarra "
+        },
+        {
+         "chord": "Am",
+         "text": "poeta "
+        },
+        {
+         "chord": "F",
+         "text": "Dios "
+        },
+        {
+         "chord": "G",
+         "text": "rey"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">Cons</span>truir </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"D\">Re</span><span class=\"lyr\"><span class=\"syl\">pe</span>rro </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Em\">Mim</span><span class=\"lyr\"><span class=\"syl\">que</span>remos </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">gui</span>tarra </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">po</span>eta </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"F\">Fa</span><span class=\"lyr\"><span class=\"syl\">Dios</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">rey</span></span></span></span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "multipleSpaces",
+   "input": "[G]Uno   dos    tres\n[D]  empieza con espacios",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": "Uno   dos    tres"
+        }
+       ],
+       [
+        {
+         "chord": "D",
+         "text": "  empieza con espacios"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">U</span>no   </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">dos    </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">tres</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"D\">Re</span><span class=\"lyr\">  </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">empieza </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">con </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">espacios</span></span></span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "tabsInLyrics",
+   "input": "[G]Uno\tdos\t[D]tres",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": "Uno\tdos\t"
+        },
+        {
+         "chord": "D",
+         "text": "tres"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">U</span>no\t</span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">dos\t</span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"D\">Re</span><span class=\"lyr\"><span class=\"syl\">tres</span></span></span></span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "sectionsWithoutLabelsNumbered",
+   "input": "Uno\n\nDos\n\nTres",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": null,
+         "text": "Uno"
+        }
+       ]
+      ]
+     },
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": null,
+         "text": "Dos"
+        }
+       ]
+      ]
+     },
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": null,
+         "text": "Tres"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": false,
+    "firstChord": null
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first line--plain\">Uno</div></div><div class=\"song-section song-section--verse\"><div class=\"line line--first line--plain\">Dos</div></div><div class=\"song-section song-section--verse\"><div class=\"line line--first line--plain\">Tres</div></div>",
+   "key": null
+  },
+  {
+   "name": "vienenConAlegria",
+   "input": "{key: C}\n{c: Coro}\n[C]Vienen con alegría Señor,\ncantando vienen con ale[C7]gría Señor.\n[F]Los que cami[G]nan por la [Em]vida Se[Am]ñor,\nsem[Dm]brando tu [G]paz y a[C]mor. (BIS)\n\n{c: Verso 1}\n[C]Vienen trayendo la espe[Am]ran[Dm]za,\na un [G]mundo carga[Dm]do de ansie[C]dad.\nUn mundo que busca y que no al[Am]can[Dm]za,\ncami[G]nos de a[F]mor y de ami[C]stad.",
+   "sheet": {
+    "sections": [
+     {
+      "label": "Coro",
+      "kind": "chorus",
+      "lines": [
+       [
+        {
+         "chord": "C",
+         "text": "Vienen con alegría Señor,"
+        }
+       ],
+       [
+        {
+         "chord": null,
+         "text": "cantando vienen con ale"
+        },
+        {
+         "chord": "C7",
+         "text": "gría Señor."
+        }
+       ],
+       [
+        {
+         "chord": "F",
+         "text": "Los que cami"
+        },
+        {
+         "chord": "G",
+         "text": "nan por la "
+        },
+        {
+         "chord": "Em",
+         "text": "vida Se"
+        },
+        {
+         "chord": "Am",
+         "text": "ñor,"
+        }
+       ],
+       [
+        {
+         "chord": null,
+         "text": "sem"
+        },
+        {
+         "chord": "Dm",
+         "text": "brando tu "
+        },
+        {
+         "chord": "G",
+         "text": "paz y a"
+        },
+        {
+         "chord": "C",
+         "text": "mor. (BIS)"
+        }
+       ]
+      ]
+     },
+     {
+      "label": "Verso 1",
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "C",
+         "text": "Vienen trayendo la espe"
+        },
+        {
+         "chord": "Am",
+         "text": "ran"
+        },
+        {
+         "chord": "Dm",
+         "text": "za,"
+        }
+       ],
+       [
+        {
+         "chord": null,
+         "text": "a un "
+        },
+        {
+         "chord": "G",
+         "text": "mundo carga"
+        },
+        {
+         "chord": "Dm",
+         "text": "do de ansie"
+        },
+        {
+         "chord": "C",
+         "text": "dad."
+        }
+       ],
+       [
+        {
+         "chord": null,
+         "text": "Un mundo que busca y que no al"
+        },
+        {
+         "chord": "Am",
+         "text": "can"
+        },
+        {
+         "chord": "Dm",
+         "text": "za,"
+        }
+       ],
+       [
+        {
+         "chord": null,
+         "text": "cami"
+        },
+        {
+         "chord": "G",
+         "text": "nos de a"
+        },
+        {
+         "chord": "F",
+         "text": "mor y de ami"
+        },
+        {
+         "chord": "C",
+         "text": "stad."
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {
+     "key": "C"
+    },
+    "hasChords": true,
+    "firstChord": "C"
+   },
+   "html": "<div class=\"song-section song-section--chorus\"><h3 class=\"song-section__label\">Coro</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">Vie</span>nen </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">con </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">alegría </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">Señor,</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">cantando </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">vienen </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">con </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">ale</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"C7\">Do7</span><span class=\"lyr\"><span class=\"syl\">grí</span>a </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">Señor.</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"F\">Fa</span><span class=\"lyr\"><span class=\"syl\">Los</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">que </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">cami</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">nan</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">por </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">la </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Em\">Mim</span><span class=\"lyr\"><span class=\"syl\">vi</span>da </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">Se</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">ñor</span>,</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">sem</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"><span class=\"syl\">bran</span>do </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">tu </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">paz</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">y </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">a</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">mor</span>. </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">(BIS)</span></span></span></div></div><div class=\"song-section song-section--verse\"><h3 class=\"song-section__label song-section__label--verse\">Verso 1</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">Vie</span>nen </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">trayendo </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">la </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">espe</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">ran</span></span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"><span class=\"syl\">za</span>,</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">a </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">un </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">mun</span>do </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">carga</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"><span class=\"syl\">do</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">de </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">ansie</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">dad</span>.</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">Un </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">mundo </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">que </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">busca </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">y </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">que </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">no </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">al</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">can</span></span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"><span class=\"syl\">za</span>,</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">cami</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">nos</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">de </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">a</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"F\">Fa</span><span class=\"lyr\"><span class=\"syl\">mor</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">y </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">de </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">ami</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">stad</span>.</span></span></span></div></div>",
+   "key": "C"
+  },
+  {
+   "name": "senorTenPiedad",
+   "input": "{key: Am}\n[Am]Seeee[Dm]ñor ten [G]piedad,\n[C]Señor ten [Am]piedad,\n[Dm]Señor ten [E]piedad, ten [Am]piedad\n\n[Am]Cristo ten [Dm]piedad, ten piedad, ten [G]piedad",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "Am",
+         "text": "Seeee"
+        },
+        {
+         "chord": "Dm",
+         "text": "ñor ten "
+        },
+        {
+         "chord": "G",
+         "text": "piedad,"
+        }
+       ],
+       [
+        {
+         "chord": "C",
+         "text": "Señor ten "
+        },
+        {
+         "chord": "Am",
+         "text": "piedad,"
+        }
+       ],
+       [
+        {
+         "chord": "Dm",
+         "text": "Señor ten "
+        },
+        {
+         "chord": "E",
+         "text": "piedad, ten "
+        },
+        {
+         "chord": "Am",
+         "text": "piedad"
+        }
+       ]
+      ]
+     },
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "Am",
+         "text": "Cristo ten "
+        },
+        {
+         "chord": "Dm",
+         "text": "piedad, ten piedad, ten "
+        },
+        {
+         "chord": "G",
+         "text": "piedad"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {
+     "key": "Am"
+    },
+    "hasChords": true,
+    "firstChord": "Am"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">Se</span>eee</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"><span class=\"syl\">ñor</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">ten </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">pie</span>dad,</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">Se</span>ñor </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">ten </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">pie</span>dad,</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"><span class=\"syl\">Se</span>ñor </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">ten </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"E\">Mi</span><span class=\"lyr\"><span class=\"syl\">pie</span>dad, </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">ten </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">pie</span>dad</span></span></span></div></div><div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">Cris</span>to </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">ten </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"><span class=\"syl\">pie</span>dad, </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">ten </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">piedad, </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">ten </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">pie</span>dad</span></span></span></div></div>",
+   "key": "Am"
+  },
+  {
+   "name": "padreNuestro",
+   "input": "{c: Padre Nuestro}\n{capo: 2}\n[Re]Padre nuestro [Sol]que estás en el [Re]cielo\n[Sol]Santificado [Mim]sea tu nombre [La]\n[Re]No nos dejes [Re7]caer [Sol]en la [Solm]tentación",
+   "sheet": {
+    "sections": [
+     {
+      "label": "Padre Nuestro",
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "D",
+         "text": "Padre nuestro "
+        },
+        {
+         "chord": "G",
+         "text": "que estás en el "
+        },
+        {
+         "chord": "D",
+         "text": "cielo"
+        }
+       ],
+       [
+        {
+         "chord": "G",
+         "text": "Santificado "
+        },
+        {
+         "chord": "Em",
+         "text": "sea tu nombre "
+        },
+        {
+         "chord": "A",
+         "text": ""
+        }
+       ],
+       [
+        {
+         "chord": "D",
+         "text": "No nos dejes "
+        },
+        {
+         "chord": "D7",
+         "text": "caer "
+        },
+        {
+         "chord": "G",
+         "text": "en la "
+        },
+        {
+         "chord": "Gm",
+         "text": "tentación"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {
+     "capo": "2"
+    },
+    "hasChords": true,
+    "firstChord": "D"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><h3 class=\"song-section__label\">Padre Nuestro</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"D\">Re</span><span class=\"lyr\"><span class=\"syl\">Pa</span>dre </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">nuestro </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">que</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">estás </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">en </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">el </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"D\">Re</span><span class=\"lyr\"><span class=\"syl\">cie</span>lo</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">San</span>tificado </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Em\">Mim</span><span class=\"lyr\"><span class=\"syl\">se</span>a </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">tu </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">nombre </span></span></span><span class=\"w w--tail\"><span class=\"seg\"><span class=\"ch\" data-chord=\"A\">La</span><span class=\"lyr\"> </span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"D\">Re</span><span class=\"lyr\"><span class=\"syl\">No</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">nos </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">dejes </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"D7\">Re7</span><span class=\"lyr\"><span class=\"syl\">ca</span>er </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">en</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">la </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Gm\">Solm</span><span class=\"lyr\"><span class=\"syl\">ten</span>tación</span></span></span></div></div>",
+   "key": "D"
+  },
+  {
+   "name": "cordero",
+   "input": "{c: Verso 1}\n[Rem]Cordero de [Sib]Dios,\nque quitas el [Solm]pecado del [La7]mundo.\n[Rem]Ten piedad de [Do]nosotros [Rem]\n{ci: (2)}\n\n{c: Verso 2}\n[Rem]Cordero de [Sib]Dios",
+   "sheet": {
+    "sections": [
+     {
+      "label": "Verso 1",
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "Dm",
+         "text": "Cordero de "
+        },
+        {
+         "chord": "Bb",
+         "text": "Dios,"
+        }
+       ],
+       [
+        {
+         "chord": null,
+         "text": "que quitas el "
+        },
+        {
+         "chord": "Gm",
+         "text": "pecado del "
+        },
+        {
+         "chord": "A7",
+         "text": "mundo."
+        }
+       ],
+       [
+        {
+         "chord": "Dm",
+         "text": "Ten piedad de "
+        },
+        {
+         "chord": "C",
+         "text": "nosotros "
+        },
+        {
+         "chord": "Dm",
+         "text": ""
+        }
+       ],
+       "(2)"
+      ]
+     },
+     {
+      "label": "Verso 2",
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "Dm",
+         "text": "Cordero de "
+        },
+        {
+         "chord": "Bb",
+         "text": "Dios"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "Dm"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><h3 class=\"song-section__label song-section__label--verse\">Verso 1</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"><span class=\"syl\">Cor</span>dero </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">de </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Bb\">Sib</span><span class=\"lyr\"><span class=\"syl\">Dios</span>,</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">que </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">quitas </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">el </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Gm\">Solm</span><span class=\"lyr\"><span class=\"syl\">pe</span>cado </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">del </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"A7\">La7</span><span class=\"lyr\"><span class=\"syl\">mun</span>do.</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"><span class=\"syl\">Ten</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">piedad </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">de </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">no</span>sotros </span></span></span><span class=\"w w--tail\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"> </span></span></span></div><div class=\"line line--note\">(2)</div></div><div class=\"song-section song-section--verse\"><h3 class=\"song-section__label song-section__label--verse\">Verso 2</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"><span class=\"syl\">Cor</span>dero </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">de </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Bb\">Sib</span><span class=\"lyr\"><span class=\"syl\">Dios</span></span></span></span></div></div>",
+   "key": "Dm"
+  },
+  {
+   "name": "comunion",
+   "input": "{c: Coro}\n[Am]Donde hay cari[Dm]dad y a[Am]mor, a[G]llí es[G7]tá el Se[C]ñor,\n[Dm]allí [E]está el [Am]Señor. ([E] [Am])\n\n{c: Verso 1}\n[Am]Una sala y una [G]mesa, [G7]una [C]copa, [Dm]vino y pan,",
+   "sheet": {
+    "sections": [
+     {
+      "label": "Coro",
+      "kind": "chorus",
+      "lines": [
+       [
+        {
+         "chord": "Am",
+         "text": "Donde hay cari"
+        },
+        {
+         "chord": "Dm",
+         "text": "dad y a"
+        },
+        {
+         "chord": "Am",
+         "text": "mor, a"
+        },
+        {
+         "chord": "G",
+         "text": "llí es"
+        },
+        {
+         "chord": "G7",
+         "text": "tá el Se"
+        },
+        {
+         "chord": "C",
+         "text": "ñor,"
+        }
+       ],
+       [
+        {
+         "chord": "Dm",
+         "text": "allí "
+        },
+        {
+         "chord": "E",
+         "text": "está el "
+        },
+        {
+         "chord": "Am",
+         "text": "Señor. ("
+        },
+        {
+         "chord": "E",
+         "text": " "
+        },
+        {
+         "chord": "Am",
+         "text": ")"
+        }
+       ]
+      ]
+     },
+     {
+      "label": "Verso 1",
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "Am",
+         "text": "Una sala y una "
+        },
+        {
+         "chord": "G",
+         "text": "mesa, "
+        },
+        {
+         "chord": "G7",
+         "text": "una "
+        },
+        {
+         "chord": "C",
+         "text": "copa, "
+        },
+        {
+         "chord": "Dm",
+         "text": "vino y pan,"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "Am"
+   },
+   "html": "<div class=\"song-section song-section--chorus\"><h3 class=\"song-section__label\">Coro</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">Don</span>de </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">hay </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">cari</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"><span class=\"syl\">dad</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">y </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">a</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">mor</span>, </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">a</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">llí</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">es</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"G7\">Sol7</span><span class=\"lyr\"><span class=\"syl\">tá</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">el </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">Se</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">ñor</span>,</span></span></span></div><div class=\"line\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"><span class=\"syl\">a</span>llí </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"E\">Mi</span><span class=\"lyr\"><span class=\"syl\">es</span>tá </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">el </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">Se</span>ñor. </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">(</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"E\">Mi</span><span class=\"lyr\"> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\">)</span></span></span></div></div><div class=\"song-section song-section--verse\"><h3 class=\"song-section__label song-section__label--verse\">Verso 1</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Am\">Lam</span><span class=\"lyr\"><span class=\"syl\">U</span>na </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">sala </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">y </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">una </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">me</span>sa, </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G7\">Sol7</span><span class=\"lyr\"><span class=\"syl\">u</span>na </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">co</span>pa, </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"Dm\">Rem</span><span class=\"lyr\"><span class=\"syl\">vi</span>no </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">y </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">pan,</span></span></span></div></div>",
+   "key": "Am"
+  }
+ ],
+ "labels": [
+  {
+   "label": "Coro",
+   "kind": "chorus",
+   "isVerseLabel": false
+  },
+  {
+   "label": "Coro 2",
+   "kind": "chorus",
+   "isVerseLabel": false
+  },
+  {
+   "label": "Estribillo",
+   "kind": "chorus",
+   "isVerseLabel": false
+  },
+  {
+   "label": "Intro",
+   "kind": "other",
+   "isVerseLabel": false
+  },
+  {
+   "label": "Introducción",
+   "kind": "other",
+   "isVerseLabel": false
+  },
+  {
+   "label": "INTRODUCCIÓN",
+   "kind": "other",
+   "isVerseLabel": false
+  },
+  {
+   "label": "Interludio",
+   "kind": "other",
+   "isVerseLabel": false
+  },
+  {
+   "label": "Puente",
+   "kind": "other",
+   "isVerseLabel": false
+  },
+  {
+   "label": "Precoro",
+   "kind": "other",
+   "isVerseLabel": false
+  },
+  {
+   "label": "Pre-coro",
+   "kind": "other",
+   "isVerseLabel": false
+  },
+  {
+   "label": "Final",
+   "kind": "other",
+   "isVerseLabel": false
+  },
+  {
+   "label": "Verso 1",
+   "kind": "verse",
+   "isVerseLabel": true
+  },
+  {
+   "label": "Estrofa 2",
+   "kind": "verse",
+   "isVerseLabel": true
+  },
+  {
+   "label": "Estr. 3",
+   "kind": "verse",
+   "isVerseLabel": true
+  },
+  {
+   "label": "Solista",
+   "kind": "verse",
+   "isVerseLabel": false
+  },
+  {
+   "label": "Todos",
+   "kind": "verse",
+   "isVerseLabel": false
+  },
+  {
+   "label": "Solo de guitarra",
+   "kind": "other",
+   "isVerseLabel": false
+  },
+  {
+   "label": "Verse",
+   "kind": "verse",
+   "isVerseLabel": true
+  },
+  {
+   "label": "Chorus",
+   "kind": "chorus",
+   "isVerseLabel": false
+  },
+  {
+   "label": "Refrain",
+   "kind": "chorus",
+   "isVerseLabel": false
+  },
+  {
+   "label": "Bridge",
+   "kind": "other",
+   "isVerseLabel": false
+  },
+  {
+   "label": "Outro",
+   "kind": "other",
+   "isVerseLabel": false
+  },
+  {
+   "label": "Coda",
+   "kind": "other",
+   "isVerseLabel": false
+  },
+  {
+   "label": "Tag",
+   "kind": "other",
+   "isVerseLabel": false
+  },
+  {
+   "label": "Interlude",
+   "kind": "other",
+   "isVerseLabel": false
+  },
+  {
+   "label": "Instrumental",
+   "kind": "other",
+   "isVerseLabel": false
+  },
+  {
+   "label": "Ending",
+   "kind": "other",
+   "isVerseLabel": false
+  },
+  {
+   "label": "Stanza",
+   "kind": "verse",
+   "isVerseLabel": true
+  },
+  {
+   "label": "Prechorus",
+   "kind": "other",
+   "isVerseLabel": false
+  },
+  {
+   "label": "Coro-final",
+   "kind": "chorus",
+   "isVerseLabel": false
+  },
+  {
+   "label": "¡Coro!",
+   "kind": "chorus",
+   "isVerseLabel": false
+  },
+  {
+   "label": "1. Verso",
+   "kind": "verse",
+   "isVerseLabel": true
+  },
+  {
+   "label": "ÚLTIMO CORO",
+   "kind": "verse",
+   "isVerseLabel": false
+  },
+  {
+   "label": "coro",
+   "kind": "chorus",
+   "isVerseLabel": false
+  },
+  {
+   "label": "CORO",
+   "kind": "chorus",
+   "isVerseLabel": false
+  },
+  {
+   "label": "Ñandú",
+   "kind": "verse",
+   "isVerseLabel": false
+  },
+  {
+   "label": "",
+   "kind": "verse",
+   "isVerseLabel": false
+  },
+  {
+   "label": "  ",
+   "kind": "verse",
+   "isVerseLabel": false
+  },
+  {
+   "label": "Repetir coro",
+   "kind": "verse",
+   "isVerseLabel": false
+  }
+ ],
+ "chords": [
+  {
+   "input": "C",
+   "english": "C",
+   "latin": "Do",
+   "key": "C"
+  },
+  {
+   "input": "C#",
+   "english": "C#",
+   "latin": "Do#",
+   "key": "C#"
+  },
+  {
+   "input": "Db",
+   "english": "Db",
+   "latin": "Reb",
+   "key": "Db"
+  },
+  {
+   "input": "D",
+   "english": "D",
+   "latin": "Re",
+   "key": "D"
+  },
+  {
+   "input": "D#",
+   "english": "D#",
+   "latin": "Re#",
+   "key": "D#"
+  },
+  {
+   "input": "Eb",
+   "english": "Eb",
+   "latin": "Mib",
+   "key": "Eb"
+  },
+  {
+   "input": "E",
+   "english": "E",
+   "latin": "Mi",
+   "key": "E"
+  },
+  {
+   "input": "F",
+   "english": "F",
+   "latin": "Fa",
+   "key": "F"
+  },
+  {
+   "input": "F#",
+   "english": "F#",
+   "latin": "Fa#",
+   "key": "F#"
+  },
+  {
+   "input": "Gb",
+   "english": "Gb",
+   "latin": "Solb",
+   "key": "Gb"
+  },
+  {
+   "input": "G",
+   "english": "G",
+   "latin": "Sol",
+   "key": "G"
+  },
+  {
+   "input": "G#",
+   "english": "G#",
+   "latin": "Sol#",
+   "key": "G#"
+  },
+  {
+   "input": "Ab",
+   "english": "Ab",
+   "latin": "Lab",
+   "key": "Ab"
+  },
+  {
+   "input": "A",
+   "english": "A",
+   "latin": "La",
+   "key": "A"
+  },
+  {
+   "input": "A#",
+   "english": "A#",
+   "latin": "La#",
+   "key": "A#"
+  },
+  {
+   "input": "Bb",
+   "english": "Bb",
+   "latin": "Sib",
+   "key": "Bb"
+  },
+  {
+   "input": "B",
+   "english": "B",
+   "latin": "Si",
+   "key": "B"
+  },
+  {
+   "input": "Am",
+   "english": "Am",
+   "latin": "Lam",
+   "key": "Am"
+  },
+  {
+   "input": "F#m",
+   "english": "F#m",
+   "latin": "Fa#m",
+   "key": "F#m"
+  },
+  {
+   "input": "Bbm",
+   "english": "Bbm",
+   "latin": "Sibm",
+   "key": "Bbm"
+  },
+  {
+   "input": "Em7",
+   "english": "Em7",
+   "latin": "Mim7",
+   "key": "Em"
+  },
+  {
+   "input": "Cmaj7",
+   "english": "Cmaj7",
+   "latin": "Domaj7",
+   "key": "C"
+  },
+  {
+   "input": "Cm7b5",
+   "english": "Cm7b5",
+   "latin": "Dom7b5",
+   "key": "Cm"
+  },
+  {
+   "input": "G7",
+   "english": "G7",
+   "latin": "Sol7",
+   "key": "G"
+  },
+  {
+   "input": "D7sus4",
+   "english": "D7sus4",
+   "latin": "Re7sus4",
+   "key": "D"
+  },
+  {
+   "input": "Asus2",
+   "english": "Asus2",
+   "latin": "Lasus2",
+   "key": "A"
+  },
+  {
+   "input": "Csus4",
+   "english": "Csus4",
+   "latin": "Dosus4",
+   "key": "C"
+  },
+  {
+   "input": "Fadd9",
+   "english": "Fadd9",
+   "latin": "Faadd9",
+   "key": "F"
+  },
+  {
+   "input": "Faug",
+   "english": "Faug",
+   "latin": "Faaug",
+   "key": "F"
+  },
+  {
+   "input": "Cdim",
+   "english": "Cdim",
+   "latin": "Dodim",
+   "key": "C"
+  },
+  {
+   "input": "E5",
+   "english": "E5",
+   "latin": "Mi5",
+   "key": "E"
+  },
+  {
+   "input": "D/F#",
+   "english": "D/F#",
+   "latin": "Re/Fa#",
+   "key": "D"
+  },
+  {
+   "input": "G/B",
+   "english": "G/B",
+   "latin": "Sol/Si",
+   "key": "G"
+  },
+  {
+   "input": "C/E",
+   "english": "C/E",
+   "latin": "Do/Mi",
+   "key": "C"
+  },
+  {
+   "input": "Am/G",
+   "english": "Am/G",
+   "latin": "Lam/Sol",
+   "key": "Am"
+  },
+  {
+   "input": "F#m7/C#",
+   "english": "F#m7/C#",
+   "latin": "Fa#m7/Do#",
+   "key": "F#m"
+  },
+  {
+   "input": "Bb/D",
+   "english": "Bb/D",
+   "latin": "Sib/Re",
+   "key": "Bb"
+  },
+  {
+   "input": "C/Bb",
+   "english": "C/Bb",
+   "latin": "Do/Sib",
+   "key": "C"
+  },
+  {
+   "input": "E/G#",
+   "english": "E/G#",
+   "latin": "Mi/Sol#",
+   "key": "E"
+  },
+  {
+   "input": "Do",
+   "english": "C",
+   "latin": "Reo",
+   "key": "D"
+  },
+  {
+   "input": "Re",
+   "english": "D",
+   "latin": "Re",
+   "key": null
+  },
+  {
+   "input": "Mi",
+   "english": "E",
+   "latin": "Mi",
+   "key": null
+  },
+  {
+   "input": "Fa",
+   "english": "F",
+   "latin": "Faa",
+   "key": "F"
+  },
+  {
+   "input": "Sol",
+   "english": "G",
+   "latin": "Sol",
+   "key": null
+  },
+  {
+   "input": "La",
+   "english": "A",
+   "latin": "La",
+   "key": null
+  },
+  {
+   "input": "Si",
+   "english": "B",
+   "latin": "Si",
+   "key": null
+  },
+  {
+   "input": "Do#",
+   "english": "C#",
+   "latin": "Reo#",
+   "key": "D"
+  },
+  {
+   "input": "Reb",
+   "english": "Db",
+   "latin": "Reb",
+   "key": null
+  },
+  {
+   "input": "Fa#m7",
+   "english": "F#m7",
+   "latin": "Faa#m7",
+   "key": "F"
+  },
+  {
+   "input": "Sibmaj7",
+   "english": "Bbmaj7",
+   "latin": "Sibmaj7",
+   "key": null
+  },
+  {
+   "input": "Re/Fa#",
+   "english": "D/F#",
+   "latin": "Re/Fa#",
+   "key": null
+  },
+  {
+   "input": "sol",
+   "english": "G",
+   "latin": "sol",
+   "key": null
+  },
+  {
+   "input": "SOL",
+   "english": "G",
+   "latin": "SOL",
+   "key": null
+  },
+  {
+   "input": "MIm",
+   "english": "Em",
+   "latin": "MIm",
+   "key": null
+  },
+  {
+   "input": "SIm",
+   "english": "Bm",
+   "latin": "SIm",
+   "key": null
+  },
+  {
+   "input": "Rem",
+   "english": "Dm",
+   "latin": "Rem",
+   "key": null
+  },
+  {
+   "input": "Solm",
+   "english": "Gm",
+   "latin": "Solm",
+   "key": null
+  },
+  {
+   "input": "La7",
+   "english": "A7",
+   "latin": "La7",
+   "key": null
+  },
+  {
+   "input": "Dosus4",
+   "english": "Csus4",
+   "latin": "Reosus4",
+   "key": "D"
+  },
+  {
+   "input": "Lam",
+   "english": "Am",
+   "latin": "Lam",
+   "key": null
+  },
+  {
+   "input": "Mi7",
+   "english": "E7",
+   "latin": "Mi7",
+   "key": null
+  },
+  {
+   "input": "Sib",
+   "english": "Bb",
+   "latin": "Sib",
+   "key": null
+  },
+  {
+   "input": "FA#",
+   "english": "F#",
+   "latin": "FaA#",
+   "key": "F"
+  },
+  {
+   "input": "RE7",
+   "english": "D7",
+   "latin": "RE7",
+   "key": null
+  },
+  {
+   "input": "mi/sol#",
+   "english": "E/G#",
+   "latin": "mi/sol#",
+   "key": null
+  },
+  {
+   "input": "N.C.",
+   "english": "N.C.",
+   "latin": "N.C.",
+   "key": null
+  },
+  {
+   "input": "x2",
+   "english": "x2",
+   "latin": "x2",
+   "key": null
+  },
+  {
+   "input": "",
+   "english": "",
+   "latin": "",
+   "key": null
+  },
+  {
+   "input": " G ",
+   "english": "G",
+   "latin": " G ",
+   "key": null
+  },
+  {
+   "input": "(G)",
+   "english": "(G)",
+   "latin": "(G)",
+   "key": null
+  },
+  {
+   "input": "A-",
+   "english": "A-",
+   "latin": "La-",
+   "key": "A"
+  },
+  {
+   "input": "D-",
+   "english": "D-",
+   "latin": "Re-",
+   "key": "D"
+  },
+  {
+   "input": "H",
+   "english": "H",
+   "latin": "H",
+   "key": null
+  },
+  {
+   "input": "G/",
+   "english": "G/",
+   "latin": "G/",
+   "key": null
+  },
+  {
+   "input": "/G",
+   "english": "/G",
+   "latin": "/G",
+   "key": null
+  },
+  {
+   "input": "Gmaj7/",
+   "english": "Gmaj7/",
+   "latin": "Gmaj7/",
+   "key": null
+  },
+  {
+   "input": "Xyz",
+   "english": "Xyz",
+   "latin": "Xyz",
+   "key": null
+  },
+  {
+   "input": "e",
+   "english": "e",
+   "latin": "e",
+   "key": null
+  },
+  {
+   "input": "a",
+   "english": "a",
+   "latin": "a",
+   "key": null
+  },
+  {
+   "input": "Cb",
+   "english": "Cb",
+   "latin": "Dob",
+   "key": "Cb"
+  },
+  {
+   "input": "E#",
+   "english": "E#",
+   "latin": "Mi#",
+   "key": "E#"
+  },
+  {
+   "input": "B#",
+   "english": "B#",
+   "latin": "Si#",
+   "key": "B#"
+  },
+  {
+   "input": "Fb",
+   "english": "Fb",
+   "latin": "Fab",
+   "key": "Fb"
+  }
+ ],
+ "words": [
+  {
+   "word": "primera",
+   "length": 3
+  },
+  {
+   "word": "esperado",
+   "length": 2
+  },
+  {
+   "word": "cuanto",
+   "length": 4
+  },
+  {
+   "word": "Dios",
+   "length": 4
+  },
+  {
+   "word": "ía",
+   "length": 1
+  },
+  {
+   "word": "poeta",
+   "length": 2
+  },
+  {
+   "word": "hablar",
+   "length": 2
+  },
+  {
+   "word": "hombre",
+   "length": 3
+  },
+  {
+   "word": "construir",
+   "length": 4
+  },
+  {
+   "word": "mucho",
+   "length": 2
+  },
+  {
+   "word": "perro",
+   "length": 2
+  },
+  {
+   "word": "queremos",
+   "length": 3
+  },
+  {
+   "word": "guitarra",
+   "length": 3
+  },
+  {
+   "word": "rey",
+   "length": 3
+  },
+  {
+   "word": "yo",
+   "length": 2
+  },
+  {
+   "word": "a",
+   "length": 1
+  },
+  {
+   "word": "Cuánto",
+   "length": 4
+  },
+  {
+   "word": "te amo",
+   "length": 2
+  },
+  {
+   "word": "sí, Señor",
+   "length": 2
+  },
+  {
+   "word": " del verso",
+   "length": 0
+  },
+  {
+   "word": ", amén",
+   "length": 0
+  },
+  {
+   "word": "",
+   "length": 0
+  },
+  {
+   "word": "alegría",
+   "length": 1
+  },
+  {
+   "word": "Señor",
+   "length": 2
+  },
+  {
+   "word": "cantando",
+   "length": 3
+  },
+  {
+   "word": "vienen",
+   "length": 3
+  },
+  {
+   "word": "trayendo",
+   "length": 3
+  },
+  {
+   "word": "esperanza",
+   "length": 2
+  },
+  {
+   "word": "mundo",
+   "length": 3
+  },
+  {
+   "word": "cargado",
+   "length": 3
+  },
+  {
+   "word": "ansiedad",
+   "length": 2
+  },
+  {
+   "word": "busca",
+   "length": 3
+  },
+  {
+   "word": "alcanza",
+   "length": 2
+  },
+  {
+   "word": "caminos",
+   "length": 2
+  },
+  {
+   "word": "amistad",
+   "length": 1
+  },
+  {
+   "word": "amor",
+   "length": 1
+  },
+  {
+   "word": "sembrando",
+   "length": 3
+  },
+  {
+   "word": "piedad",
+   "length": 3
+  },
+  {
+   "word": "Cristo",
+   "length": 4
+  },
+  {
+   "word": "Gloria",
+   "length": 3
+  },
+  {
+   "word": "Aleluya",
+   "length": 1
+  },
+  {
+   "word": "Hosanna",
+   "length": 2
+  },
+  {
+   "word": "bendito",
+   "length": 3
+  },
+  {
+   "word": "nombre",
+   "length": 3
+  },
+  {
+   "word": "cielo",
+   "length": 3
+  },
+  {
+   "word": "tentación",
+   "length": 3
+  },
+  {
+   "word": "líbranos",
+   "length": 2
+  },
+  {
+   "word": "mal",
+   "length": 3
+  },
+  {
+   "word": "Cordero",
+   "length": 3
+  },
+  {
+   "word": "quitas",
+   "length": 3
+  },
+  {
+   "word": "pecado",
+   "length": 2
+  },
+  {
+   "word": "nosotros",
+   "length": 2
+  },
+  {
+   "word": "danos",
+   "length": 2
+  },
+  {
+   "word": "paz",
+   "length": 3
+  },
+  {
+   "word": "comunión",
+   "length": 2
+  },
+  {
+   "word": "caridad",
+   "length": 2
+  },
+  {
+   "word": "allí",
+   "length": 1
+  },
+  {
+   "word": "sala",
+   "length": 2
+  },
+  {
+   "word": "mesa",
+   "length": 2
+  },
+  {
+   "word": "copa",
+   "length": 2
+  },
+  {
+   "word": "vino",
+   "length": 2
+  },
+  {
+   "word": "pan",
+   "length": 3
+  },
+  {
+   "word": "María",
+   "length": 2
+  },
+  {
+   "word": "tinieblas",
+   "length": 2
+  },
+  {
+   "word": "mediodía",
+   "length": 2
+  },
+  {
+   "word": "palabra",
+   "length": 2
+  },
+  {
+   "word": "labios",
+   "length": 2
+  },
+  {
+   "word": "alumbra",
+   "length": 1
+  },
+  {
+   "word": "doncella",
+   "length": 3
+  },
+  {
+   "word": "prometía",
+   "length": 3
+  },
+  {
+   "word": "volcán",
+   "length": 3
+  },
+  {
+   "word": "ternura",
+   "length": 3
+  },
+  {
+   "word": "divina",
+   "length": 2
+  },
+  {
+   "word": "primavera",
+   "length": 3
+  },
+  {
+   "word": "Redentor",
+   "length": 2
+  },
+  {
+   "word": "estalló",
+   "length": 2
+  },
+  {
+   "word": "tierra",
+   "length": 3
+  },
+  {
+   "word": "vientre",
+   "length": 4
+  },
+  {
+   "word": "latía",
+   "length": 2
+  },
+  {
+   "word": "Salvación",
+   "length": 3
+  },
+  {
+   "word": "hágase",
+   "length": 2
+  },
+  {
+   "word": "corazón",
+   "length": 2
+  },
+  {
+   "word": "voluntad",
+   "length": 2
+  },
+  {
+   "word": "cumplan",
+   "length": 3
+  },
+  {
+   "word": "sueños",
+   "length": 3
+  },
+  {
+   "word": "ñandú",
+   "length": 3
+  },
+  {
+   "word": "Ünder",
+   "length": 2
+  },
+  {
+   "word": "pingüino",
+   "length": 3
+  },
+  {
+   "word": "agüita",
+   "length": 1
+  },
+  {
+   "word": "quiero",
+   "length": 4
+  },
+  {
+   "word": "guerra",
+   "length": 3
+  },
+  {
+   "word": "águila",
+   "length": 1
+  },
+  {
+   "word": "cruz",
+   "length": 4
+  },
+  {
+   "word": "fuego",
+   "length": 3
+  },
+  {
+   "word": "ciudad",
+   "length": 3
+  },
+  {
+   "word": "reino",
+   "length": 3
+  },
+  {
+   "word": "seis",
+   "length": 4
+  },
+  {
+   "word": "aire",
+   "length": 2
+  },
+  {
+   "word": "peine",
+   "length": 3
+  },
+  {
+   "word": "baúl",
+   "length": 2
+  },
+  {
+   "word": "país",
+   "length": 2
+  },
+  {
+   "word": "maíz",
+   "length": 2
+  },
+  {
+   "word": "oído",
+   "length": 1
+  },
+  {
+   "word": "leer",
+   "length": 2
+  },
+  {
+   "word": "creer",
+   "length": 3
+  },
+  {
+   "word": "transformar",
+   "length": 5
+  },
+  {
+   "word": "obstáculo",
+   "length": 3
+  },
+  {
+   "word": "instrumento",
+   "length": 3
+  },
+  {
+   "word": "abstracto",
+   "length": 3
+  },
+  {
+   "word": "inscribir",
+   "length": 3
+  },
+  {
+   "word": "perspectiva",
+   "length": 4
+  },
+  {
+   "word": "extraordinario",
+   "length": 2
+  },
+  {
+   "word": "ay",
+   "length": 2
+  },
+  {
+   "word": "hoy",
+   "length": 3
+  },
+  {
+   "word": "muy",
+   "length": 3
+  },
+  {
+   "word": "y",
+   "length": 1
+  },
+  {
+   "word": "mayo",
+   "length": 2
+  },
+  {
+   "word": "yema",
+   "length": 2
+  },
+  {
+   "word": "ya",
+   "length": 2
+  },
+  {
+   "word": "Yahvé",
+   "length": 3
+  },
+  {
+   "word": "Jesús",
+   "length": 2
+  },
+  {
+   "word": "Jesucristo",
+   "length": 2
+  },
+  {
+   "word": "Espíritu",
+   "length": 2
+  },
+  {
+   "word": "Santo",
+   "length": 3
+  },
+  {
+   "word": "Padre",
+   "length": 2
+  },
+  {
+   "word": "123",
+   "length": 0
+  },
+  {
+   "word": "¡Hey!",
+   "length": 0
+  },
+  {
+   "word": "(BIS)",
+   "length": 0
+  },
+  {
+   "word": "x",
+   "length": 1
+  },
+  {
+   "word": "ç",
+   "length": 1
+  },
+  {
+   "word": "ß",
+   "length": 1
+  }
+ ],
+ "transpositions": [
+  {
+   "chord": "C",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si"
+   ],
+   "english": [
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B"
+   ]
+  },
+  {
+   "chord": "C#",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do"
+   ],
+   "english": [
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C"
+   ]
+  },
+  {
+   "chord": "Db",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Reb",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do"
+   ],
+   "english": [
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "Db",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C"
+   ]
+  },
+  {
+   "chord": "D",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#"
+   ],
+   "english": [
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#"
+   ]
+  },
+  {
+   "chord": "D#",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Re#",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re"
+   ],
+   "english": [
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "D#",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D"
+   ]
+  },
+  {
+   "chord": "Eb",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re"
+   ],
+   "english": [
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D"
+   ]
+  },
+  {
+   "chord": "E",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib"
+   ],
+   "english": [
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb"
+   ]
+  },
+  {
+   "chord": "F",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi"
+   ],
+   "english": [
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E"
+   ]
+  },
+  {
+   "chord": "F#",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa"
+   ],
+   "english": [
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F"
+   ]
+  },
+  {
+   "chord": "Gb",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Solb",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa"
+   ],
+   "english": [
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "Gb",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F"
+   ]
+  },
+  {
+   "chord": "G",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#"
+   ],
+   "english": [
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#"
+   ]
+  },
+  {
+   "chord": "G#",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Sol#",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol"
+   ],
+   "english": [
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "G#",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G"
+   ]
+  },
+  {
+   "chord": "Ab",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol"
+   ],
+   "english": [
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G"
+   ]
+  },
+  {
+   "chord": "A",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab"
+   ],
+   "english": [
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab"
+   ]
+  },
+  {
+   "chord": "A#",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "La#",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La"
+   ],
+   "english": [
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "A#",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A"
+   ]
+  },
+  {
+   "chord": "Bb",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La"
+   ],
+   "english": [
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A"
+   ]
+  },
+  {
+   "chord": "B",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib"
+   ],
+   "english": [
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb"
+   ]
+  },
+  {
+   "chord": "Am",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Sibm",
+    "Sim",
+    "Dom",
+    "Do#m",
+    "Rem",
+    "Mibm",
+    "Mim",
+    "Fam",
+    "Fa#m",
+    "Solm",
+    "Labm",
+    "Lam",
+    "Sibm",
+    "Sim",
+    "Dom",
+    "Do#m",
+    "Rem",
+    "Mibm",
+    "Mim",
+    "Fam",
+    "Fa#m",
+    "Solm",
+    "Labm"
+   ],
+   "english": [
+    "Bbm",
+    "Bm",
+    "Cm",
+    "C#m",
+    "Dm",
+    "Ebm",
+    "Em",
+    "Fm",
+    "F#m",
+    "Gm",
+    "Abm",
+    "Am",
+    "Bbm",
+    "Bm",
+    "Cm",
+    "C#m",
+    "Dm",
+    "Ebm",
+    "Em",
+    "Fm",
+    "F#m",
+    "Gm",
+    "Abm"
+   ]
+  },
+  {
+   "chord": "F#m",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Solm",
+    "Labm",
+    "Lam",
+    "Sibm",
+    "Sim",
+    "Dom",
+    "Do#m",
+    "Rem",
+    "Mibm",
+    "Mim",
+    "Fam",
+    "Fa#m",
+    "Solm",
+    "Labm",
+    "Lam",
+    "Sibm",
+    "Sim",
+    "Dom",
+    "Do#m",
+    "Rem",
+    "Mibm",
+    "Mim",
+    "Fam"
+   ],
+   "english": [
+    "Gm",
+    "Abm",
+    "Am",
+    "Bbm",
+    "Bm",
+    "Cm",
+    "C#m",
+    "Dm",
+    "Ebm",
+    "Em",
+    "Fm",
+    "F#m",
+    "Gm",
+    "Abm",
+    "Am",
+    "Bbm",
+    "Bm",
+    "Cm",
+    "C#m",
+    "Dm",
+    "Ebm",
+    "Em",
+    "Fm"
+   ]
+  },
+  {
+   "chord": "Bbm",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Sim",
+    "Dom",
+    "Do#m",
+    "Rem",
+    "Mibm",
+    "Mim",
+    "Fam",
+    "Fa#m",
+    "Solm",
+    "Labm",
+    "Lam",
+    "Sibm",
+    "Sim",
+    "Dom",
+    "Do#m",
+    "Rem",
+    "Mibm",
+    "Mim",
+    "Fam",
+    "Fa#m",
+    "Solm",
+    "Labm",
+    "Lam"
+   ],
+   "english": [
+    "Bm",
+    "Cm",
+    "C#m",
+    "Dm",
+    "Ebm",
+    "Em",
+    "Fm",
+    "F#m",
+    "Gm",
+    "Abm",
+    "Am",
+    "Bbm",
+    "Bm",
+    "Cm",
+    "C#m",
+    "Dm",
+    "Ebm",
+    "Em",
+    "Fm",
+    "F#m",
+    "Gm",
+    "Abm",
+    "Am"
+   ]
+  },
+  {
+   "chord": "Em7",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Fam7",
+    "Fa#m7",
+    "Solm7",
+    "Labm7",
+    "Lam7",
+    "Sibm7",
+    "Sim7",
+    "Dom7",
+    "Do#m7",
+    "Rem7",
+    "Mibm7",
+    "Mim7",
+    "Fam7",
+    "Fa#m7",
+    "Solm7",
+    "Labm7",
+    "Lam7",
+    "Sibm7",
+    "Sim7",
+    "Dom7",
+    "Do#m7",
+    "Rem7",
+    "Mibm7"
+   ],
+   "english": [
+    "Fm7",
+    "F#m7",
+    "Gm7",
+    "Abm7",
+    "Am7",
+    "Bbm7",
+    "Bm7",
+    "Cm7",
+    "C#m7",
+    "Dm7",
+    "Ebm7",
+    "Em7",
+    "Fm7",
+    "F#m7",
+    "Gm7",
+    "Abm7",
+    "Am7",
+    "Bbm7",
+    "Bm7",
+    "Cm7",
+    "C#m7",
+    "Dm7",
+    "Ebm7"
+   ]
+  },
+  {
+   "chord": "Cmaj7",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Do#maj7",
+    "Remaj7",
+    "Mibmaj7",
+    "Mimaj7",
+    "Famaj7",
+    "Fa#maj7",
+    "Solmaj7",
+    "Labmaj7",
+    "Lamaj7",
+    "Sibmaj7",
+    "Simaj7",
+    "Domaj7",
+    "Do#maj7",
+    "Remaj7",
+    "Mibmaj7",
+    "Mimaj7",
+    "Famaj7",
+    "Fa#maj7",
+    "Solmaj7",
+    "Labmaj7",
+    "Lamaj7",
+    "Sibmaj7",
+    "Simaj7"
+   ],
+   "english": [
+    "C#maj7",
+    "Dmaj7",
+    "Ebmaj7",
+    "Emaj7",
+    "Fmaj7",
+    "F#maj7",
+    "Gmaj7",
+    "Abmaj7",
+    "Amaj7",
+    "Bbmaj7",
+    "Bmaj7",
+    "Cmaj7",
+    "C#maj7",
+    "Dmaj7",
+    "Ebmaj7",
+    "Emaj7",
+    "Fmaj7",
+    "F#maj7",
+    "Gmaj7",
+    "Abmaj7",
+    "Amaj7",
+    "Bbmaj7",
+    "Bmaj7"
+   ]
+  },
+  {
+   "chord": "Cm7b5",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Do#m7b5",
+    "Rem7b5",
+    "Mibm7b5",
+    "Mim7b5",
+    "Fam7b5",
+    "Fa#m7b5",
+    "Solm7b5",
+    "Labm7b5",
+    "Lam7b5",
+    "Sibm7b5",
+    "Sim7b5",
+    "Dom7b5",
+    "Do#m7b5",
+    "Rem7b5",
+    "Mibm7b5",
+    "Mim7b5",
+    "Fam7b5",
+    "Fa#m7b5",
+    "Solm7b5",
+    "Labm7b5",
+    "Lam7b5",
+    "Sibm7b5",
+    "Sim7b5"
+   ],
+   "english": [
+    "C#m7b5",
+    "Dm7b5",
+    "Ebm7b5",
+    "Em7b5",
+    "Fm7b5",
+    "F#m7b5",
+    "Gm7b5",
+    "Abm7b5",
+    "Am7b5",
+    "Bbm7b5",
+    "Bm7b5",
+    "Cm7b5",
+    "C#m7b5",
+    "Dm7b5",
+    "Ebm7b5",
+    "Em7b5",
+    "Fm7b5",
+    "F#m7b5",
+    "Gm7b5",
+    "Abm7b5",
+    "Am7b5",
+    "Bbm7b5",
+    "Bm7b5"
+   ]
+  },
+  {
+   "chord": "G7",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Lab7",
+    "La7",
+    "Sib7",
+    "Si7",
+    "Do7",
+    "Do#7",
+    "Re7",
+    "Mib7",
+    "Mi7",
+    "Fa7",
+    "Fa#7",
+    "Sol7",
+    "Lab7",
+    "La7",
+    "Sib7",
+    "Si7",
+    "Do7",
+    "Do#7",
+    "Re7",
+    "Mib7",
+    "Mi7",
+    "Fa7",
+    "Fa#7"
+   ],
+   "english": [
+    "Ab7",
+    "A7",
+    "Bb7",
+    "B7",
+    "C7",
+    "C#7",
+    "D7",
+    "Eb7",
+    "E7",
+    "F7",
+    "F#7",
+    "G7",
+    "Ab7",
+    "A7",
+    "Bb7",
+    "B7",
+    "C7",
+    "C#7",
+    "D7",
+    "Eb7",
+    "E7",
+    "F7",
+    "F#7"
+   ]
+  },
+  {
+   "chord": "D7sus4",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Mib7sus4",
+    "Mi7sus4",
+    "Fa7sus4",
+    "Fa#7sus4",
+    "Sol7sus4",
+    "Lab7sus4",
+    "La7sus4",
+    "Sib7sus4",
+    "Si7sus4",
+    "Do7sus4",
+    "Do#7sus4",
+    "Re7sus4",
+    "Mib7sus4",
+    "Mi7sus4",
+    "Fa7sus4",
+    "Fa#7sus4",
+    "Sol7sus4",
+    "Lab7sus4",
+    "La7sus4",
+    "Sib7sus4",
+    "Si7sus4",
+    "Do7sus4",
+    "Do#7sus4"
+   ],
+   "english": [
+    "Eb7sus4",
+    "E7sus4",
+    "F7sus4",
+    "F#7sus4",
+    "G7sus4",
+    "Ab7sus4",
+    "A7sus4",
+    "Bb7sus4",
+    "B7sus4",
+    "C7sus4",
+    "C#7sus4",
+    "D7sus4",
+    "Eb7sus4",
+    "E7sus4",
+    "F7sus4",
+    "F#7sus4",
+    "G7sus4",
+    "Ab7sus4",
+    "A7sus4",
+    "Bb7sus4",
+    "B7sus4",
+    "C7sus4",
+    "C#7sus4"
+   ]
+  },
+  {
+   "chord": "Asus2",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Sibsus2",
+    "Sisus2",
+    "Dosus2",
+    "Do#sus2",
+    "Resus2",
+    "Mibsus2",
+    "Misus2",
+    "Fasus2",
+    "Fa#sus2",
+    "Solsus2",
+    "Labsus2",
+    "Lasus2",
+    "Sibsus2",
+    "Sisus2",
+    "Dosus2",
+    "Do#sus2",
+    "Resus2",
+    "Mibsus2",
+    "Misus2",
+    "Fasus2",
+    "Fa#sus2",
+    "Solsus2",
+    "Labsus2"
+   ],
+   "english": [
+    "Bbsus2",
+    "Bsus2",
+    "Csus2",
+    "C#sus2",
+    "Dsus2",
+    "Ebsus2",
+    "Esus2",
+    "Fsus2",
+    "F#sus2",
+    "Gsus2",
+    "Absus2",
+    "Asus2",
+    "Bbsus2",
+    "Bsus2",
+    "Csus2",
+    "C#sus2",
+    "Dsus2",
+    "Ebsus2",
+    "Esus2",
+    "Fsus2",
+    "F#sus2",
+    "Gsus2",
+    "Absus2"
+   ]
+  },
+  {
+   "chord": "Csus4",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Do#sus4",
+    "Resus4",
+    "Mibsus4",
+    "Misus4",
+    "Fasus4",
+    "Fa#sus4",
+    "Solsus4",
+    "Labsus4",
+    "Lasus4",
+    "Sibsus4",
+    "Sisus4",
+    "Dosus4",
+    "Do#sus4",
+    "Resus4",
+    "Mibsus4",
+    "Misus4",
+    "Fasus4",
+    "Fa#sus4",
+    "Solsus4",
+    "Labsus4",
+    "Lasus4",
+    "Sibsus4",
+    "Sisus4"
+   ],
+   "english": [
+    "C#sus4",
+    "Dsus4",
+    "Ebsus4",
+    "Esus4",
+    "Fsus4",
+    "F#sus4",
+    "Gsus4",
+    "Absus4",
+    "Asus4",
+    "Bbsus4",
+    "Bsus4",
+    "Csus4",
+    "C#sus4",
+    "Dsus4",
+    "Ebsus4",
+    "Esus4",
+    "Fsus4",
+    "F#sus4",
+    "Gsus4",
+    "Absus4",
+    "Asus4",
+    "Bbsus4",
+    "Bsus4"
+   ]
+  },
+  {
+   "chord": "Fadd9",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Fa#add9",
+    "Soladd9",
+    "Labadd9",
+    "Laadd9",
+    "Sibadd9",
+    "Siadd9",
+    "Doadd9",
+    "Do#add9",
+    "Readd9",
+    "Mibadd9",
+    "Miadd9",
+    "Faadd9",
+    "Fa#add9",
+    "Soladd9",
+    "Labadd9",
+    "Laadd9",
+    "Sibadd9",
+    "Siadd9",
+    "Doadd9",
+    "Do#add9",
+    "Readd9",
+    "Mibadd9",
+    "Miadd9"
+   ],
+   "english": [
+    "F#add9",
+    "Gadd9",
+    "Abadd9",
+    "Aadd9",
+    "Bbadd9",
+    "Badd9",
+    "Cadd9",
+    "C#add9",
+    "Dadd9",
+    "Ebadd9",
+    "Eadd9",
+    "Fadd9",
+    "F#add9",
+    "Gadd9",
+    "Abadd9",
+    "Aadd9",
+    "Bbadd9",
+    "Badd9",
+    "Cadd9",
+    "C#add9",
+    "Dadd9",
+    "Ebadd9",
+    "Eadd9"
+   ]
+  },
+  {
+   "chord": "Faug",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Fa#aug",
+    "Solaug",
+    "Labaug",
+    "Laaug",
+    "Sibaug",
+    "Siaug",
+    "Doaug",
+    "Do#aug",
+    "Reaug",
+    "Mibaug",
+    "Miaug",
+    "Faaug",
+    "Fa#aug",
+    "Solaug",
+    "Labaug",
+    "Laaug",
+    "Sibaug",
+    "Siaug",
+    "Doaug",
+    "Do#aug",
+    "Reaug",
+    "Mibaug",
+    "Miaug"
+   ],
+   "english": [
+    "F#aug",
+    "Gaug",
+    "Abaug",
+    "Aaug",
+    "Bbaug",
+    "Baug",
+    "Caug",
+    "C#aug",
+    "Daug",
+    "Ebaug",
+    "Eaug",
+    "Faug",
+    "F#aug",
+    "Gaug",
+    "Abaug",
+    "Aaug",
+    "Bbaug",
+    "Baug",
+    "Caug",
+    "C#aug",
+    "Daug",
+    "Ebaug",
+    "Eaug"
+   ]
+  },
+  {
+   "chord": "Cdim",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Do#dim",
+    "Redim",
+    "Mibdim",
+    "Midim",
+    "Fadim",
+    "Fa#dim",
+    "Soldim",
+    "Labdim",
+    "Ladim",
+    "Sibdim",
+    "Sidim",
+    "Dodim",
+    "Do#dim",
+    "Redim",
+    "Mibdim",
+    "Midim",
+    "Fadim",
+    "Fa#dim",
+    "Soldim",
+    "Labdim",
+    "Ladim",
+    "Sibdim",
+    "Sidim"
+   ],
+   "english": [
+    "C#dim",
+    "Ddim",
+    "Ebdim",
+    "Edim",
+    "Fdim",
+    "F#dim",
+    "Gdim",
+    "Abdim",
+    "Adim",
+    "Bbdim",
+    "Bdim",
+    "Cdim",
+    "C#dim",
+    "Ddim",
+    "Ebdim",
+    "Edim",
+    "Fdim",
+    "F#dim",
+    "Gdim",
+    "Abdim",
+    "Adim",
+    "Bbdim",
+    "Bdim"
+   ]
+  },
+  {
+   "chord": "E5",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Fa5",
+    "Fa#5",
+    "Sol5",
+    "Lab5",
+    "La5",
+    "Sib5",
+    "Si5",
+    "Do5",
+    "Do#5",
+    "Re5",
+    "Mib5",
+    "Mi5",
+    "Fa5",
+    "Fa#5",
+    "Sol5",
+    "Lab5",
+    "La5",
+    "Sib5",
+    "Si5",
+    "Do5",
+    "Do#5",
+    "Re5",
+    "Mib5"
+   ],
+   "english": [
+    "F5",
+    "F#5",
+    "G5",
+    "Ab5",
+    "A5",
+    "Bb5",
+    "B5",
+    "C5",
+    "C#5",
+    "D5",
+    "Eb5",
+    "E5",
+    "F5",
+    "F#5",
+    "G5",
+    "Ab5",
+    "A5",
+    "Bb5",
+    "B5",
+    "C5",
+    "C#5",
+    "D5",
+    "Eb5"
+   ]
+  },
+  {
+   "chord": "D/F#",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Mib/Sol",
+    "Mi/Lab",
+    "Fa/La",
+    "Fa#/Sib",
+    "Sol/Si",
+    "Lab/Do",
+    "La/Do#",
+    "Sib/Re",
+    "Si/Mib",
+    "Do/Mi",
+    "Do#/Fa",
+    "Re/Fa#",
+    "Mib/Sol",
+    "Mi/Lab",
+    "Fa/La",
+    "Fa#/Sib",
+    "Sol/Si",
+    "Lab/Do",
+    "La/Do#",
+    "Sib/Re",
+    "Si/Mib",
+    "Do/Mi",
+    "Do#/Fa"
+   ],
+   "english": [
+    "Eb/G",
+    "E/Ab",
+    "F/A",
+    "F#/Bb",
+    "G/B",
+    "Ab/C",
+    "A/C#",
+    "Bb/D",
+    "B/Eb",
+    "C/E",
+    "C#/F",
+    "D/F#",
+    "Eb/G",
+    "E/Ab",
+    "F/A",
+    "F#/Bb",
+    "G/B",
+    "Ab/C",
+    "A/C#",
+    "Bb/D",
+    "B/Eb",
+    "C/E",
+    "C#/F"
+   ]
+  },
+  {
+   "chord": "G/B",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Lab/Do",
+    "La/Do#",
+    "Sib/Re",
+    "Si/Mib",
+    "Do/Mi",
+    "Do#/Fa",
+    "Re/Fa#",
+    "Mib/Sol",
+    "Mi/Lab",
+    "Fa/La",
+    "Fa#/Sib",
+    "Sol/Si",
+    "Lab/Do",
+    "La/Do#",
+    "Sib/Re",
+    "Si/Mib",
+    "Do/Mi",
+    "Do#/Fa",
+    "Re/Fa#",
+    "Mib/Sol",
+    "Mi/Lab",
+    "Fa/La",
+    "Fa#/Sib"
+   ],
+   "english": [
+    "Ab/C",
+    "A/C#",
+    "Bb/D",
+    "B/Eb",
+    "C/E",
+    "C#/F",
+    "D/F#",
+    "Eb/G",
+    "E/Ab",
+    "F/A",
+    "F#/Bb",
+    "G/B",
+    "Ab/C",
+    "A/C#",
+    "Bb/D",
+    "B/Eb",
+    "C/E",
+    "C#/F",
+    "D/F#",
+    "Eb/G",
+    "E/Ab",
+    "F/A",
+    "F#/Bb"
+   ]
+  },
+  {
+   "chord": "C/E",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Do#/Fa",
+    "Re/Fa#",
+    "Mib/Sol",
+    "Mi/Lab",
+    "Fa/La",
+    "Fa#/Sib",
+    "Sol/Si",
+    "Lab/Do",
+    "La/Do#",
+    "Sib/Re",
+    "Si/Mib",
+    "Do/Mi",
+    "Do#/Fa",
+    "Re/Fa#",
+    "Mib/Sol",
+    "Mi/Lab",
+    "Fa/La",
+    "Fa#/Sib",
+    "Sol/Si",
+    "Lab/Do",
+    "La/Do#",
+    "Sib/Re",
+    "Si/Mib"
+   ],
+   "english": [
+    "C#/F",
+    "D/F#",
+    "Eb/G",
+    "E/Ab",
+    "F/A",
+    "F#/Bb",
+    "G/B",
+    "Ab/C",
+    "A/C#",
+    "Bb/D",
+    "B/Eb",
+    "C/E",
+    "C#/F",
+    "D/F#",
+    "Eb/G",
+    "E/Ab",
+    "F/A",
+    "F#/Bb",
+    "G/B",
+    "Ab/C",
+    "A/C#",
+    "Bb/D",
+    "B/Eb"
+   ]
+  },
+  {
+   "chord": "Am/G",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Sibm/Lab",
+    "Sim/La",
+    "Dom/Sib",
+    "Do#m/Si",
+    "Rem/Do",
+    "Mibm/Do#",
+    "Mim/Re",
+    "Fam/Mib",
+    "Fa#m/Mi",
+    "Solm/Fa",
+    "Labm/Fa#",
+    "Lam/Sol",
+    "Sibm/Lab",
+    "Sim/La",
+    "Dom/Sib",
+    "Do#m/Si",
+    "Rem/Do",
+    "Mibm/Do#",
+    "Mim/Re",
+    "Fam/Mib",
+    "Fa#m/Mi",
+    "Solm/Fa",
+    "Labm/Fa#"
+   ],
+   "english": [
+    "Bbm/Ab",
+    "Bm/A",
+    "Cm/Bb",
+    "C#m/B",
+    "Dm/C",
+    "Ebm/C#",
+    "Em/D",
+    "Fm/Eb",
+    "F#m/E",
+    "Gm/F",
+    "Abm/F#",
+    "Am/G",
+    "Bbm/Ab",
+    "Bm/A",
+    "Cm/Bb",
+    "C#m/B",
+    "Dm/C",
+    "Ebm/C#",
+    "Em/D",
+    "Fm/Eb",
+    "F#m/E",
+    "Gm/F",
+    "Abm/F#"
+   ]
+  },
+  {
+   "chord": "F#m7/C#",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Solm7/Re",
+    "Labm7/Mib",
+    "Lam7/Mi",
+    "Sibm7/Fa",
+    "Sim7/Fa#",
+    "Dom7/Sol",
+    "Do#m7/Lab",
+    "Rem7/La",
+    "Mibm7/Sib",
+    "Mim7/Si",
+    "Fam7/Do",
+    "Fa#m7/Do#",
+    "Solm7/Re",
+    "Labm7/Mib",
+    "Lam7/Mi",
+    "Sibm7/Fa",
+    "Sim7/Fa#",
+    "Dom7/Sol",
+    "Do#m7/Lab",
+    "Rem7/La",
+    "Mibm7/Sib",
+    "Mim7/Si",
+    "Fam7/Do"
+   ],
+   "english": [
+    "Gm7/D",
+    "Abm7/Eb",
+    "Am7/E",
+    "Bbm7/F",
+    "Bm7/F#",
+    "Cm7/G",
+    "C#m7/Ab",
+    "Dm7/A",
+    "Ebm7/Bb",
+    "Em7/B",
+    "Fm7/C",
+    "F#m7/C#",
+    "Gm7/D",
+    "Abm7/Eb",
+    "Am7/E",
+    "Bbm7/F",
+    "Bm7/F#",
+    "Cm7/G",
+    "C#m7/Ab",
+    "Dm7/A",
+    "Ebm7/Bb",
+    "Em7/B",
+    "Fm7/C"
+   ]
+  },
+  {
+   "chord": "Bb/D",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Si/Mib",
+    "Do/Mi",
+    "Do#/Fa",
+    "Re/Fa#",
+    "Mib/Sol",
+    "Mi/Lab",
+    "Fa/La",
+    "Fa#/Sib",
+    "Sol/Si",
+    "Lab/Do",
+    "La/Do#",
+    "Sib/Re",
+    "Si/Mib",
+    "Do/Mi",
+    "Do#/Fa",
+    "Re/Fa#",
+    "Mib/Sol",
+    "Mi/Lab",
+    "Fa/La",
+    "Fa#/Sib",
+    "Sol/Si",
+    "Lab/Do",
+    "La/Do#"
+   ],
+   "english": [
+    "B/Eb",
+    "C/E",
+    "C#/F",
+    "D/F#",
+    "Eb/G",
+    "E/Ab",
+    "F/A",
+    "F#/Bb",
+    "G/B",
+    "Ab/C",
+    "A/C#",
+    "Bb/D",
+    "B/Eb",
+    "C/E",
+    "C#/F",
+    "D/F#",
+    "Eb/G",
+    "E/Ab",
+    "F/A",
+    "F#/Bb",
+    "G/B",
+    "Ab/C",
+    "A/C#"
+   ]
+  },
+  {
+   "chord": "C/Bb",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Do#/Si",
+    "Re/Do",
+    "Mib/Do#",
+    "Mi/Re",
+    "Fa/Mib",
+    "Fa#/Mi",
+    "Sol/Fa",
+    "Lab/Fa#",
+    "La/Sol",
+    "Sib/Lab",
+    "Si/La",
+    "Do/Sib",
+    "Do#/Si",
+    "Re/Do",
+    "Mib/Do#",
+    "Mi/Re",
+    "Fa/Mib",
+    "Fa#/Mi",
+    "Sol/Fa",
+    "Lab/Fa#",
+    "La/Sol",
+    "Sib/Lab",
+    "Si/La"
+   ],
+   "english": [
+    "C#/B",
+    "D/C",
+    "Eb/C#",
+    "E/D",
+    "F/Eb",
+    "F#/E",
+    "G/F",
+    "Ab/F#",
+    "A/G",
+    "Bb/Ab",
+    "B/A",
+    "C/Bb",
+    "C#/B",
+    "D/C",
+    "Eb/C#",
+    "E/D",
+    "F/Eb",
+    "F#/E",
+    "G/F",
+    "Ab/F#",
+    "A/G",
+    "Bb/Ab",
+    "B/A"
+   ]
+  },
+  {
+   "chord": "E/G#",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Fa/La",
+    "Fa#/Sib",
+    "Sol/Si",
+    "Lab/Do",
+    "La/Do#",
+    "Sib/Re",
+    "Si/Mib",
+    "Do/Mi",
+    "Do#/Fa",
+    "Re/Fa#",
+    "Mib/Sol",
+    "Mi/Sol#",
+    "Fa/La",
+    "Fa#/Sib",
+    "Sol/Si",
+    "Lab/Do",
+    "La/Do#",
+    "Sib/Re",
+    "Si/Mib",
+    "Do/Mi",
+    "Do#/Fa",
+    "Re/Fa#",
+    "Mib/Sol"
+   ],
+   "english": [
+    "F/A",
+    "F#/Bb",
+    "G/B",
+    "Ab/C",
+    "A/C#",
+    "Bb/D",
+    "B/Eb",
+    "C/E",
+    "C#/F",
+    "D/F#",
+    "Eb/G",
+    "E/G#",
+    "F/A",
+    "F#/Bb",
+    "G/B",
+    "Ab/C",
+    "A/C#",
+    "Bb/D",
+    "B/Eb",
+    "C/E",
+    "C#/F",
+    "D/F#",
+    "Eb/G"
+   ]
+  },
+  {
+   "chord": "Do",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Mibo",
+    "Mio",
+    "Fao",
+    "Fa#o",
+    "Solo",
+    "Labo",
+    "Lao",
+    "Sibo",
+    "Sio",
+    "Doo",
+    "Do#o",
+    "Reo",
+    "Mibo",
+    "Mio",
+    "Fao",
+    "Fa#o",
+    "Solo",
+    "Labo",
+    "Lao",
+    "Sibo",
+    "Sio",
+    "Doo",
+    "Do#o"
+   ],
+   "english": [
+    "Ebo",
+    "Eo",
+    "Fo",
+    "F#o",
+    "Go",
+    "Abo",
+    "Ao",
+    "Bbo",
+    "Bo",
+    "Co",
+    "C#o",
+    "Do",
+    "Ebo",
+    "Eo",
+    "Fo",
+    "F#o",
+    "Go",
+    "Abo",
+    "Ao",
+    "Bbo",
+    "Bo",
+    "Co",
+    "C#o"
+   ]
+  },
+  {
+   "chord": "Re",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re"
+   ],
+   "english": [
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re",
+    "Re"
+   ]
+  },
+  {
+   "chord": "Mi",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi"
+   ],
+   "english": [
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi",
+    "Mi"
+   ]
+  },
+  {
+   "chord": "Fa",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Fa#a",
+    "Sola",
+    "Laba",
+    "Laa",
+    "Siba",
+    "Sia",
+    "Doa",
+    "Do#a",
+    "Rea",
+    "Miba",
+    "Mia",
+    "Faa",
+    "Fa#a",
+    "Sola",
+    "Laba",
+    "Laa",
+    "Siba",
+    "Sia",
+    "Doa",
+    "Do#a",
+    "Rea",
+    "Miba",
+    "Mia"
+   ],
+   "english": [
+    "F#a",
+    "Ga",
+    "Aba",
+    "Aa",
+    "Bba",
+    "Ba",
+    "Ca",
+    "C#a",
+    "Da",
+    "Eba",
+    "Ea",
+    "Fa",
+    "F#a",
+    "Ga",
+    "Aba",
+    "Aa",
+    "Bba",
+    "Ba",
+    "Ca",
+    "C#a",
+    "Da",
+    "Eba",
+    "Ea"
+   ]
+  },
+  {
+   "chord": "Sol",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol"
+   ],
+   "english": [
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol",
+    "Sol"
+   ]
+  },
+  {
+   "chord": "La",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La"
+   ],
+   "english": [
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La",
+    "La"
+   ]
+  },
+  {
+   "chord": "Si",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si"
+   ],
+   "english": [
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si",
+    "Si"
+   ]
+  },
+  {
+   "chord": "Do#",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Mibo#",
+    "Mio#",
+    "Fao#",
+    "Fa#o#",
+    "Solo#",
+    "Labo#",
+    "Lao#",
+    "Sibo#",
+    "Sio#",
+    "Doo#",
+    "Do#o#",
+    "Reo#",
+    "Mibo#",
+    "Mio#",
+    "Fao#",
+    "Fa#o#",
+    "Solo#",
+    "Labo#",
+    "Lao#",
+    "Sibo#",
+    "Sio#",
+    "Doo#",
+    "Do#o#"
+   ],
+   "english": [
+    "Ebo#",
+    "Eo#",
+    "Fo#",
+    "F#o#",
+    "Go#",
+    "Abo#",
+    "Ao#",
+    "Bbo#",
+    "Bo#",
+    "Co#",
+    "C#o#",
+    "Do#",
+    "Ebo#",
+    "Eo#",
+    "Fo#",
+    "F#o#",
+    "Go#",
+    "Abo#",
+    "Ao#",
+    "Bbo#",
+    "Bo#",
+    "Co#",
+    "C#o#"
+   ]
+  },
+  {
+   "chord": "Reb",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb"
+   ],
+   "english": [
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb",
+    "Reb"
+   ]
+  },
+  {
+   "chord": "Fa#m7",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Fa#a#m7",
+    "Sola#m7",
+    "Laba#m7",
+    "Laa#m7",
+    "Siba#m7",
+    "Sia#m7",
+    "Doa#m7",
+    "Do#a#m7",
+    "Rea#m7",
+    "Miba#m7",
+    "Mia#m7",
+    "Faa#m7",
+    "Fa#a#m7",
+    "Sola#m7",
+    "Laba#m7",
+    "Laa#m7",
+    "Siba#m7",
+    "Sia#m7",
+    "Doa#m7",
+    "Do#a#m7",
+    "Rea#m7",
+    "Miba#m7",
+    "Mia#m7"
+   ],
+   "english": [
+    "F#a#m7",
+    "Ga#m7",
+    "Aba#m7",
+    "Aa#m7",
+    "Bba#m7",
+    "Ba#m7",
+    "Ca#m7",
+    "C#a#m7",
+    "Da#m7",
+    "Eba#m7",
+    "Ea#m7",
+    "Fa#m7",
+    "F#a#m7",
+    "Ga#m7",
+    "Aba#m7",
+    "Aa#m7",
+    "Bba#m7",
+    "Ba#m7",
+    "Ca#m7",
+    "C#a#m7",
+    "Da#m7",
+    "Eba#m7",
+    "Ea#m7"
+   ]
+  },
+  {
+   "chord": "Sibmaj7",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7"
+   ],
+   "english": [
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7",
+    "Sibmaj7"
+   ]
+  },
+  {
+   "chord": "Re/Fa#",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#"
+   ],
+   "english": [
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#",
+    "Re/Fa#"
+   ]
+  },
+  {
+   "chord": "sol",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol"
+   ],
+   "english": [
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol",
+    "sol"
+   ]
+  },
+  {
+   "chord": "SOL",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL"
+   ],
+   "english": [
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL",
+    "SOL"
+   ]
+  },
+  {
+   "chord": "MIm",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm"
+   ],
+   "english": [
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm",
+    "MIm"
+   ]
+  },
+  {
+   "chord": "SIm",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm"
+   ],
+   "english": [
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm",
+    "SIm"
+   ]
+  },
+  {
+   "chord": "Rem",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem"
+   ],
+   "english": [
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem",
+    "Rem"
+   ]
+  },
+  {
+   "chord": "Solm",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm"
+   ],
+   "english": [
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm",
+    "Solm"
+   ]
+  },
+  {
+   "chord": "La7",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7"
+   ],
+   "english": [
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7",
+    "La7"
+   ]
+  },
+  {
+   "chord": "Dosus4",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Mibosus4",
+    "Miosus4",
+    "Faosus4",
+    "Fa#osus4",
+    "Solosus4",
+    "Labosus4",
+    "Laosus4",
+    "Sibosus4",
+    "Siosus4",
+    "Doosus4",
+    "Do#osus4",
+    "Reosus4",
+    "Mibosus4",
+    "Miosus4",
+    "Faosus4",
+    "Fa#osus4",
+    "Solosus4",
+    "Labosus4",
+    "Laosus4",
+    "Sibosus4",
+    "Siosus4",
+    "Doosus4",
+    "Do#osus4"
+   ],
+   "english": [
+    "Ebosus4",
+    "Eosus4",
+    "Fosus4",
+    "F#osus4",
+    "Gosus4",
+    "Abosus4",
+    "Aosus4",
+    "Bbosus4",
+    "Bosus4",
+    "Cosus4",
+    "C#osus4",
+    "Dosus4",
+    "Ebosus4",
+    "Eosus4",
+    "Fosus4",
+    "F#osus4",
+    "Gosus4",
+    "Abosus4",
+    "Aosus4",
+    "Bbosus4",
+    "Bosus4",
+    "Cosus4",
+    "C#osus4"
+   ]
+  },
+  {
+   "chord": "Lam",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam"
+   ],
+   "english": [
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam",
+    "Lam"
+   ]
+  },
+  {
+   "chord": "Mi7",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7"
+   ],
+   "english": [
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7",
+    "Mi7"
+   ]
+  },
+  {
+   "chord": "Sib",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib"
+   ],
+   "english": [
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib",
+    "Sib"
+   ]
+  },
+  {
+   "chord": "FA#",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Fa#A#",
+    "SolA#",
+    "LabA#",
+    "LaA#",
+    "SibA#",
+    "SiA#",
+    "DoA#",
+    "Do#A#",
+    "ReA#",
+    "MibA#",
+    "MiA#",
+    "FaA#",
+    "Fa#A#",
+    "SolA#",
+    "LabA#",
+    "LaA#",
+    "SibA#",
+    "SiA#",
+    "DoA#",
+    "Do#A#",
+    "ReA#",
+    "MibA#",
+    "MiA#"
+   ],
+   "english": [
+    "F#A#",
+    "GA#",
+    "AbA#",
+    "AA#",
+    "BbA#",
+    "BA#",
+    "CA#",
+    "C#A#",
+    "DA#",
+    "EbA#",
+    "EA#",
+    "FA#",
+    "F#A#",
+    "GA#",
+    "AbA#",
+    "AA#",
+    "BbA#",
+    "BA#",
+    "CA#",
+    "C#A#",
+    "DA#",
+    "EbA#",
+    "EA#"
+   ]
+  },
+  {
+   "chord": "RE7",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7"
+   ],
+   "english": [
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7",
+    "RE7"
+   ]
+  },
+  {
+   "chord": "mi/sol#",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#"
+   ],
+   "english": [
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#",
+    "mi/sol#"
+   ]
+  },
+  {
+   "chord": "N.C.",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C."
+   ],
+   "english": [
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C.",
+    "N.C."
+   ]
+  },
+  {
+   "chord": "x2",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2"
+   ],
+   "english": [
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2",
+    "x2"
+   ]
+  },
+  {
+   "chord": "",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "english": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "chord": " G ",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G "
+   ],
+   "english": [
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G ",
+    " G "
+   ]
+  },
+  {
+   "chord": "(G)",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)"
+   ],
+   "english": [
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)",
+    "(G)"
+   ]
+  },
+  {
+   "chord": "A-",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Sib-",
+    "Si-",
+    "Do-",
+    "Do#-",
+    "Re-",
+    "Mib-",
+    "Mi-",
+    "Fa-",
+    "Fa#-",
+    "Sol-",
+    "Lab-",
+    "La-",
+    "Sib-",
+    "Si-",
+    "Do-",
+    "Do#-",
+    "Re-",
+    "Mib-",
+    "Mi-",
+    "Fa-",
+    "Fa#-",
+    "Sol-",
+    "Lab-"
+   ],
+   "english": [
+    "Bb-",
+    "B-",
+    "C-",
+    "C#-",
+    "D-",
+    "Eb-",
+    "E-",
+    "F-",
+    "F#-",
+    "G-",
+    "Ab-",
+    "A-",
+    "Bb-",
+    "B-",
+    "C-",
+    "C#-",
+    "D-",
+    "Eb-",
+    "E-",
+    "F-",
+    "F#-",
+    "G-",
+    "Ab-"
+   ]
+  },
+  {
+   "chord": "D-",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Mib-",
+    "Mi-",
+    "Fa-",
+    "Fa#-",
+    "Sol-",
+    "Lab-",
+    "La-",
+    "Sib-",
+    "Si-",
+    "Do-",
+    "Do#-",
+    "Re-",
+    "Mib-",
+    "Mi-",
+    "Fa-",
+    "Fa#-",
+    "Sol-",
+    "Lab-",
+    "La-",
+    "Sib-",
+    "Si-",
+    "Do-",
+    "Do#-"
+   ],
+   "english": [
+    "Eb-",
+    "E-",
+    "F-",
+    "F#-",
+    "G-",
+    "Ab-",
+    "A-",
+    "Bb-",
+    "B-",
+    "C-",
+    "C#-",
+    "D-",
+    "Eb-",
+    "E-",
+    "F-",
+    "F#-",
+    "G-",
+    "Ab-",
+    "A-",
+    "Bb-",
+    "B-",
+    "C-",
+    "C#-"
+   ]
+  },
+  {
+   "chord": "H",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H"
+   ],
+   "english": [
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H",
+    "H"
+   ]
+  },
+  {
+   "chord": "G/",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/"
+   ],
+   "english": [
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/",
+    "G/"
+   ]
+  },
+  {
+   "chord": "/G",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G"
+   ],
+   "english": [
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G",
+    "/G"
+   ]
+  },
+  {
+   "chord": "Gmaj7/",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/"
+   ],
+   "english": [
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/",
+    "Gmaj7/"
+   ]
+  },
+  {
+   "chord": "Xyz",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz"
+   ],
+   "english": [
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz",
+    "Xyz"
+   ]
+  },
+  {
+   "chord": "e",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e"
+   ],
+   "english": [
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e",
+    "e"
+   ]
+  },
+  {
+   "chord": "a",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a"
+   ],
+   "english": [
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a"
+   ]
+  },
+  {
+   "chord": "Cb",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Dob",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib"
+   ],
+   "english": [
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "Cb",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb"
+   ]
+  },
+  {
+   "chord": "E#",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Mi#",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi"
+   ],
+   "english": [
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "E#",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "E"
+   ]
+  },
+  {
+   "chord": "B#",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Si#",
+    "Do#",
+    "Re",
+    "Mib",
+    "Mi",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si"
+   ],
+   "english": [
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "B#",
+    "C#",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B"
+   ]
+  },
+  {
+   "chord": "Fb",
+   "shifts": [
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "latin": [
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib",
+    "Fab",
+    "Fa",
+    "Fa#",
+    "Sol",
+    "Lab",
+    "La",
+    "Sib",
+    "Si",
+    "Do",
+    "Do#",
+    "Re",
+    "Mib"
+   ],
+   "english": [
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb",
+    "Fb",
+    "F",
+    "F#",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B",
+    "C",
+    "C#",
+    "D",
+    "Eb"
+   ]
+  }
+ ]
+}

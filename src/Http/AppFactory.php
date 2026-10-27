@@ -11,8 +11,11 @@ use App\Http\Actions\HealthAction;
 use App\Http\Actions\LoginAction;
 use App\Http\Actions\LogoutAction;
 use App\Http\Actions\MeAction;
+use App\Http\Actions\PullAction;
+use App\Http\Actions\PushAction;
 use App\Http\Middleware\JsonOnly;
 use App\Http\Middleware\RequireUser;
+use App\Sync\SongRepository;
 use PDO;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -36,16 +39,19 @@ final class AppFactory
     {
         $authenticator = new Authenticator($pdo);
         $migrator = new Migrator($pdo, $migrationsDir);
+        $songs = new SongRepository($pdo);
 
         $app = SlimFactory::create();
         $app->addBodyParsingMiddleware();
         $app->addRoutingMiddleware();
 
-        $app->group('/api', function (RouteCollectorProxy $api) use ($authenticator, $migrator): void {
+        $app->group('/api', function (RouteCollectorProxy $api) use ($authenticator, $migrator, $songs): void {
             $api->get('/health', new HealthAction($migrator));
             $api->post('/login', new LoginAction($authenticator));
             $api->post('/logout', new LogoutAction($authenticator));
             $api->get('/me', new MeAction())->add(new RequireUser($authenticator));
+            $api->get('/sync', new PullAction($songs))->add(new RequireUser($authenticator));
+            $api->post('/sync', new PushAction($songs))->add(new RequireUser($authenticator));
         })->add(new JsonOnly());
 
         // Errors answer in JSON; the details only outside production

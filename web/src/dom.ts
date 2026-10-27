@@ -20,3 +20,13 @@ export function h<K extends keyof HTMLElementTagNameMap>(
 
     return element;
 }
+
+/** An in-app link: the router handles the click (data-link), the href still works in a new tab */
+export function link(href: string, text: string, className = ''): HTMLAnchorElement {
+    return h('a', { href, 'data-link': true, ...(className !== '' ? { class: className } : {}) }, text);
+}
+
+/** HTML made by sheet.ts, where every piece of text was escaped (ChordSheet's contract) */
+export function setSheet(target: HTMLElement, html: string): void {
+    target.innerHTML = html;
+}

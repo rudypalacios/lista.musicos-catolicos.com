@@ -1,7 +1,7 @@
 /**
- * Browser test of the phase-0 promise: sign in, close the connection, reload, and the app
- * still opens. Runs the real PHP server on a throwaway SQLite database and drives Chromium
- * (Playwright) the way an installed PWA behaves.
+ * Browser test of the phase-0 promise, still the base of everything: sign in, close the
+ * connection, reload, and the app still opens. Runs the real PHP server on a throwaway SQLite
+ * database and drives Chromium (Playwright) the way an installed PWA behaves.
  *
  *     npm run build && npm run e2e
  *
@@ -10,61 +10,14 @@
  * hand on the iPad (see DEPLOY.md).
  */
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
-import { createRequire } from 'node:module';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { chromium, EMAIL, PASSWORD, reporter, startServer } from './lib.ts';
 
-// Playwright is installed globally in the dev container, not in package.json (it would
-// download browsers on every install). CommonJS resolution honours NODE_PATH; import does not.
-const { chromium } = createRequire(import.meta.url)('playwright') as typeof import('playwright');
+const server = await startServer(18080);
+const { pass, count } = reporter();
+const BASE = server.base;
 
-const PORT = 18080;
-const BASE = `http://127.0.0.1:${PORT}`;
-const EMAIL = 'owner@example.com';
-const PASSWORD = 'correct horse battery';
-
-const dir = mkdtempSync(join(tmpdir(), 'lista-e2e-'));
-const server = spawn(
-    'php',
-    ['-d', 'variables_order=EGPCS', '-S', `127.0.0.1:${PORT}`, '-t', 'public', 'public/index.php'],
-    {
-        env: {
-            ...process.env,
-            APP_ENV: 'development',
-            DB_DRIVER: 'sqlite',
-            DB_PATH: join(dir, 'e2e.sqlite'),
-            OWNER_EMAIL: EMAIL,
-            OWNER_PASSWORD: PASSWORD,
-        },
-        stdio: 'ignore',
-    },
-);
-
-async function waitForServer(): Promise<void> {
-    for (let attempt = 0; attempt < 50; attempt++) {
-        try {
-            if ((await fetch(`${BASE}/api/health`)).ok) {
-                return;
-            }
-        } catch {
-            // not listening yet
-        }
-        await new Promise((resolve) => setTimeout(resolve, 100));
-    }
-    throw new Error('The PHP server did not start');
-}
-
-const results: string[] = [];
-function pass(name: string): void {
-    results.push(name);
-    console.log('  ok  ' + name);
-}
-
+const browser = await chromium.launch();
 try {
-    await waitForServer();
-    const browser = await chromium.launch();
     // An iPad in portrait, the main device
     const context = await browser.newContext({ viewport: { width: 820, height: 1180 } });
     const page = await context.newPage();
@@ -83,7 +36,7 @@ try {
 
     await page.getByLabel('Contraseña').fill(PASSWORD);
     await page.getByRole('button', { name: 'Entrar' }).click();
-    await page.getByRole('heading', { name: 'Tus listados' }).waitFor();
+    await page.getByRole('heading', { name: 'Cantos' }).waitFor();
     pass('the right password signs in');
 
     await page.evaluate(() => navigator.serviceWorker.ready.then(() => undefined));
@@ -97,20 +50,18 @@ try {
     assert.match(cacheNames[0] ?? '', /^lista-shell-[0-9a-f]{12}$/);
     pass('one shell cache, named after the build');
 
-    const persisted = await page.evaluate(() => navigator.storage.persisted());
-    console.log(`      (storage persisted: ${persisted}; Chromium decides, it is not asserted)`);
-
     await context.setOffline(true);
     await page.reload();
-    await page.getByRole('heading', { name: 'Tus listados' }).waitFor();
+    await page.getByRole('heading', { name: 'Cantos' }).waitFor();
     await page.getByText('Sin conexión').first().waitFor();
-    pass('offline: the app reopens signed in, with the offline badge');
+    pass('offline: the app reopens signed in, with the offline status');
 
-    await page.goto(BASE + '/listados/algun-dia');
-    await page.getByRole('heading', { name: 'Tus listados' }).waitFor();
-    pass('offline: a deep link opens the shell too');
+    await page.goto(BASE + '/cantos/nuevo');
+    await page.getByRole('heading', { name: 'Nuevo canto' }).waitFor();
+    pass('offline: a deep link opens the shell and its screen');
 
     await context.setOffline(false);
+    await page.goto(BASE + '/');
     await page.getByRole('button', { name: 'Salir' }).click();
     await page.getByRole('heading', { name: 'Inicia sesión' }).waitFor();
     pass('back online: signing out returns to the sign-in form');
@@ -123,12 +74,11 @@ try {
     assert.deepEqual(problems, [], 'no uncaught errors in the page');
     pass('no uncaught errors in the page');
 
-    await browser.close();
-    console.log(`\n${results.length} checks passed`);
+    console.log(`\n${count()} checks passed`);
 } catch (error) {
     console.error('\nFAILED:', error);
     process.exitCode = 1;
 } finally {
-    server.kill();
-    rmSync(dir, { recursive: true, force: true });
+    await browser.close();
+    server.stop();
 }
