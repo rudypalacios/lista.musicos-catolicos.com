@@ -77,23 +77,6 @@ export function saveLyricColor(id: string): void {
     write(LYRIC_COLOR, id);
 }
 
-/**
- * How a list is sung. "rehearsal" shows every tool and lets the person write notes; "event" keeps
- * the tools in a slim bar so the lyrics get the room. Event is the default: the app is mostly
- * opened to sing.
- */
-export type Mode = 'rehearsal' | 'event';
-
-const MODE = 'lista:modo';
-
-export function readMode(): Mode {
-    return read(MODE) === 'ensayo' ? 'rehearsal' : 'event';
-}
-
-export function saveMode(mode: Mode): void {
-    write(MODE, mode === 'rehearsal' ? 'ensayo' : 'evento');
-}
-
 const LYRIC_SIZE = 'lista:tamano';
 
 /** How many A− / A+ steps the lyrics are away from their size (0 when never changed); the caller clamps it */

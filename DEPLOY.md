@@ -134,7 +134,7 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    "Canto eliminado" en su lugar (y se puede quitar con *Quitar*).
 8. Cuéntame si algo no cabe, se corta o cuesta tocarlo con el dedo.
 
-**Fases 4 y 5 (pulido, ajustes y modos), de momento solo en Android**
+**Fases 4 y 5 (pulido y ajustes), de momento solo en Android**
 1. Edita un listado: debe aparecer un aviso breve "Guardado en este dispositivo" y, al poco,
    "Guardado y sincronizado". En modo avión se queda en "en este dispositivo".
 2. En un listado largo, toca *Agregar canto* en una parte lejana y elige uno: vuelves a esa parte,
@@ -153,8 +153,8 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    letra: la barra se pliega a una franja delgada con el título, el tono y la posición (tócala, o sube un poco, y
    vuelve); la letra no debe moverse al plegarse. Abajo a la derecha hay una pastilla con el tono: tócala para
    `−` `+` `A−` `A+`; desaparece al bajar la letra. `⋯` abre un panel con tono, tamaño, `Do → C`, *Ajustar*,
-   columnas, el selector *Ensayo (para preparar) | Evento (para cantar)*, la nota, *Ajustes* y *Salir*. En
-   ensayo se escribe la nota del canto; en evento solo se lee (un punto en `⋯` avisa que hay una). El tamaño
+   columnas, la nota del canto (se escribe ahí mismo; un punto en `⋯` avisa que hay una), *Ajustes* y *Salir*.
+   Ya no hay modos Ensayo / Evento. El tamaño
    de letra que eliges con `A−`/`A+` se queda para los demás cantos y al volver a abrir la app. El último
    renglón debe quedar con aire debajo, sin pegarse al borde ni quedar bajo la pastilla. Con un panel abierto
    (`⋯` o «3/10 ▾»), el botón *atrás* del Android debe cerrar el panel, no salir de *Cantar*.

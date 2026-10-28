@@ -150,8 +150,7 @@ try {
     }
     await synced(page);
 
-    // ----- event mode: the default, one row of bar and everything else behind "⋯" -----
-    await setting(page, 'Modo evento: para cantar (las notas solo se leen)');
+    // ----- singing: one row of bar and everything else behind "⋯" -----
     await page.getByRole('link', { name: 'Listados', exact: true }).click();
     await page.locator('.song-list .song-item').first().click();
     await page.getByRole('link', { name: 'Cantar' }).click();
@@ -168,7 +167,7 @@ try {
     assert.match(await page.locator('.perform__sync').innerText(), /Sincronizado|Sincronizando/);
     await page.keyboard.press('Escape');
     await page.getByRole('button', { name: 'Ajustar' }).waitFor({ state: 'hidden' });
-    pass('singing has a one-row bar; the tools, the account and the mode are behind "⋯", and Escape closes it');
+    pass('singing has a one-row bar; the tools, the note and the account are behind "⋯", and Escape closes it');
 
     // The screen is kept on while singing, and the sheet says so
     const locks = (): Promise<number> => page.evaluate(() => (window as unknown as { __locks: { count: number } }).__locks.count);
@@ -244,40 +243,21 @@ try {
     await page.getByRole('button', { name: 'Tono y tamaño rápidos' }).waitFor();
     pass('the bar folds to a strip with the title when the lyrics scroll down, and comes back on scroll up or a tap');
 
-    // ----- rehearsal mode: notes can be written -----
+    // ----- the note of the song being sung is written behind "⋯" -----
     await page.setViewportSize({ width: 1280, height: 800 });
     await scrollStage(0);
     await page.getByRole('button', { name: 'Más herramientas' }).click();
-    assert.equal(await page.getByRole('button', { name: /Evento/ }).getAttribute('aria-pressed'), 'true');
-    assert.match(await page.locator('.perform__modes').innerText(), /para preparar[\s\S]*para cantar/i);
-    assert.equal(await page.getByLabel('Nota de este canto').count(), 0);
-    await page.getByRole('button', { name: /Ensayo/ }).click();
-    await page.locator('.perform__notefield').waitFor({ state: 'attached' });
-    await page.getByRole('button', { name: 'Más herramientas' }).click();
-    await page.locator('.perform__mode[aria-pressed="true"]', { hasText: 'Ensayo' }).waitFor();
+    assert.equal(await page.getByRole('button', { name: /Ensayo|Evento/ }).count(), 0, 'there are no modes');
     await page.getByLabel('Nota de este canto').fill('Tono alto, bajar medio tono');
     await page.getByLabel('Nota de este canto').blur();
     await page.locator('.toast', { hasText: 'Guardado' }).waitFor();
     await synced(page);
-    pass('rehearsal mode takes a note on the song being sung');
-
-    // The note is read, not edited, in event mode, and the list has it
-    await page.getByRole('button', { name: /Evento/ }).click();
-    await page.locator('.perform__notefield').waitFor({ state: 'detached' });
-    await page.getByRole('button', { name: 'Más herramientas' }).click();
-    assert.equal(await page.getByLabel('Nota de este canto').count(), 0);
-    await page.getByText('Tono alto, bajar medio tono').waitFor();
+    assert.equal(await page.locator('.perform__more.has-note').count(), 1);
     await page.keyboard.press('Escape');
     await page.locator('.sheet-layer.is-open').waitFor({ state: 'detached' });
     await page.getByRole('link', { name: 'Volver al listado' }).click();
     await page.getByRole('button', { name: 'Editar la nota de Camino largo' }).waitFor();
-    pass('in event mode the note is only read; the list shows what was written while rehearsing');
-
-    // The mode is a setting of the device: it is still event after a reload
-    await page.getByRole('link', { name: 'Cantar' }).click();
-    await page.reload();
-    await page.getByRole('button', { name: 'Más herramientas' }).waitFor();
-    pass('the mode is remembered on the device');
+    pass('the note is written while singing, and the list shows it');
 
     assert.deepEqual(problems, [], 'no uncaught errors in the page');
     pass('no uncaught errors in the page');

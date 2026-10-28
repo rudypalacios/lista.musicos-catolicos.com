@@ -94,7 +94,7 @@ async function swipe(page: Page, from: number, to: number): Promise<void> {
     }, [from, to]);
 }
 
-/** Opens the "⋯" sheet over the song (every tool, the mode, the note, the account) */
+/** Opens the "⋯" sheet over the song (every tool, the note, the account) */
 async function openTools(page: Page): Promise<void> {
     await page.getByRole('button', { name: 'Más herramientas' }).click();
     await page.locator('.sheet-layer.is-open').waitFor();
@@ -312,10 +312,10 @@ try {
 
     await page.keyboard.press('ArrowRight');
     await page.getByRole('heading', { name: 'Pan de vida' }).waitFor();
-    assert.equal(await page.locator('.perform__note').isVisible(), false, 'the note is out of the way');
+    assert.equal(await page.getByLabel('Nota de este canto').isVisible(), false, 'the note is out of the way');
     assert.equal(await page.locator('.perform__more.has-note').count(), 1, 'but a dot says there is one');
     await openTools(page);
-    assert.match(await page.locator('.perform__note').innerText(), /Sin el último coro/);
+    assert.match(await page.getByLabel('Nota de este canto').inputValue(), /Sin el último coro/);
     await closeSheet(page);
     await page.keyboard.press('ArrowLeft');
     await page.getByRole('heading', { name: 'Gloria sencilla' }).waitFor();

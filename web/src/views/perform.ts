@@ -4,7 +4,7 @@ import { LIMITS, type Setlist, type SetlistItem, type Song } from '../data/types
 import { h, link } from '../dom.ts';
 import { nextFold, type FoldState } from '../fold.ts';
 import { MASS_PARTS } from '../mass.ts';
-import { readKeepAwake, readMode, saveMode, type Mode } from '../prefs.ts';
+import { readKeepAwake } from '../prefs.ts';
 import { paths } from '../router.ts';
 import { dragOffset, isSwipe, swipeAxis, type Axis } from '../swipe.ts';
 import { describeAwake, screenKeeper } from '../wakelock.ts';
@@ -64,8 +64,6 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     }
     const item = order[position - 1] as SetlistItem;
     const song: Song | undefined = await app.get(item.songId);
-    const mode: Mode = readMode();
-    const event = mode === 'event';
     const title = song?.title ?? 'Canto eliminado';
     const countText = `${position}/${order.length}`;
 
@@ -143,22 +141,8 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
         dispose = reader.dispose;
     }
 
-    // --- "⋯": every tool, the mode, the note and the account ---
+    // --- "⋯": every tool, the note and the account ---
     const toolsSheet = createSheet('Herramientas');
-    const modeButton = (value: Mode, name: string, when: string): HTMLButtonElement => {
-        const button = h('button', { type: 'button', class: 'perform__mode', 'aria-pressed': String(mode === value) },
-            h('strong', {}, name), h('small', {}, when));
-        button.addEventListener('click', () => {
-            if (mode !== value) {
-                saveMode(value);
-                toolsSheet.close(() => navigate(paths.perform(setlist.id, position), { replace: true }));
-            }
-        });
-
-        return button;
-    };
-    const modes = h('div', { class: 'perform__modes', role: 'group', 'aria-label': 'Modo' },
-        modeButton('rehearsal', 'Ensayo', 'para preparar'), modeButton('event', 'Evento', 'para cantar'));
     const sync = h('span', { class: 'perform__sync', role: 'status' }, account.syncText());
     const stopSync = account.onSync((text) => {
         sync.textContent = text;
@@ -171,28 +155,22 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     });
     const signOut = h('button', { type: 'button', class: 'button button--danger' }, 'Salir');
     signOut.addEventListener('click', () => account.signOut());
+    // The note is written (and read) here, behind "⋯": out of the way of the lyrics, one tap from them
+    const field = h('input', {
+        type: 'text', class: 'perform__notefield', value: item.note, placeholder: 'Nota (opcional)',
+        'aria-label': 'Nota de este canto', maxlength: String(LIMITS.itemNote), autocomplete: 'off',
+    });
+    field.addEventListener('change', () => {
+        error.textContent = '';
+        moreButton.classList.toggle('has-note', field.value.trim() !== '');
+        app.setlists.setNote(setlist.id, item.id, field.value).catch((failure: unknown) => {
+            error.textContent = failure instanceof Error ? failure.message : 'No se pudo guardar la nota.';
+        });
+    });
     toolsSheet.body.append(
         ...(tools !== null ? [h('h3', {}, 'Tono y letra'), tools] : []),
-        h('h3', {}, 'Modo'), modes,
+        h('h3', {}, 'Nota'), field,
     );
-    if (!event) {
-        // Rehearsal: the note is written here, where the song is being tried
-        const field = h('input', {
-            type: 'text', class: 'perform__notefield', value: item.note, placeholder: 'Nota (opcional)',
-            'aria-label': 'Nota de este canto', maxlength: String(LIMITS.itemNote), autocomplete: 'off',
-        });
-        field.addEventListener('change', () => {
-            error.textContent = '';
-            moreButton.classList.toggle('has-note', field.value.trim() !== '');
-            app.setlists.setNote(setlist.id, item.id, field.value).catch((failure: unknown) => {
-                error.textContent = failure instanceof Error ? failure.message : 'No se pudo guardar la nota.';
-            });
-        });
-        toolsSheet.body.append(h('h3', {}, 'Nota'), field);
-    } else if (item.note !== '') {
-        // Event: the note is there when wanted and out of the way otherwise
-        toolsSheet.body.append(h('h3', {}, 'Nota'), h('p', { class: 'perform__note' }, `📝 ${item.note}`));
-    }
     // The screen stays on while a song is on screen, unless the person turned that off in Ajustes
     const keepAwake = readKeepAwake();
     const releaseScreen = keepAwake ? screenKeeper.hold() : (): void => undefined;

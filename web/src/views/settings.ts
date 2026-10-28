@@ -3,7 +3,7 @@ import { parse } from '../chordpro/parser.ts';
 import { sheetHtml } from '../chordpro/sheet.ts';
 import { h, setSheet } from '../dom.ts';
 import type { ColumnMode } from '../fit.ts';
-import { readColumns, readFit, readKeepAwake, readMode, readNotation, saveColumns, saveFit, saveKeepAwake, saveLyricColor, saveMode, saveNotation, type Mode } from '../prefs.ts';
+import { readColumns, readFit, readKeepAwake, readNotation, saveColumns, saveFit, saveKeepAwake, saveLyricColor, saveNotation } from '../prefs.ts';
 import { applyLyricColor, chosenLyricColor, LYRIC_COLORS } from '../settings.ts';
 import { showToast } from '../toast.ts';
 import type { View } from './types.ts';
@@ -13,7 +13,7 @@ const SAMPLE = '[C]Abrimos la [G]puerta de [Am]casa\n[F]Entra, her[G]mano, ven';
 
 /**
  * The settings of this device: how chords are named, the colour of the lyrics, whether the
- * song fits the screen, how many columns, and how a list is sung. They live on the device (a
+ * song fits the screen, how many columns, and whether the screen stays on. They live on the device (a
  * tablet on a stand wants other things than a phone) and apply at once.
  */
 export function settingsView(): View {
@@ -97,10 +97,6 @@ export function settingsView(): View {
             { value: 'one', label: 'Siempre una' },
             { value: 'two', label: 'Siempre dos' },
         ], saveColumns),
-        choice<Mode>('mode', 'Al cantar un listado', readMode(), [
-            { value: 'event', label: 'Modo evento: para cantar (las notas solo se leen)' },
-            { value: 'rehearsal', label: 'Modo ensayo: para preparar (se pueden escribir notas)' },
-        ], saveMode),
     );
 
     return { element };

@@ -74,11 +74,11 @@ Phase 4, quiet and quick (no schema change):
 
 Next, in this order (design agreed with the owner):
 
-- [x] Phase 5, settings and modes (this branch): an Ajustes screen per device (chord names, lyric colour,
-      fit, columns auto / 1 / 2, default way to sing); a columns button in the reader on wide screens;
-      rehearsal mode (notes written while singing) and event mode (notes only read). Event is the default.
+- [x] Phase 5, settings (this branch): an Ajustes screen per device (chord names, lyric colour,
+      fit, columns auto / 1 / 2, keep the screen on); a columns button in the reader on wide screens;
+      the Ensayo / Evento modes were dropped: the only difference was whether the note could be edited.
       Singing has one floating bar: a row with back, part and song, the position button (a list of the
-      songs to jump to) and "⋯" (a sheet with every tool, the mode, the note, Ajustes and Salir); it folds
+      songs to jump to) and "⋯" (a sheet with every tool, the note, Ajustes and Salir); it folds
       to a strip with the title and key while the lyrics scroll down and returns on scroll up or a tap;
       a small pill at the bottom keeps the key and A± at hand. The song follows the finger on a swipe;
       the lyric size is kept on the device. A± nudge the size the fit chose. Settings are not synced between
