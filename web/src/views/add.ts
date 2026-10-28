@@ -7,7 +7,11 @@ import { h, link } from '../dom.ts';
 import { readNotation } from '../prefs.ts';
 import { paths } from '../router.ts';
 import { filterSongs } from '../search.ts';
+import { showToast } from '../toast.ts';
 import type { Navigate, View } from './types.ts';
+
+/** How long (ms) the notice of a song placed twice stays: long enough to read while the list opens */
+const WARNING_TIME = 5000;
 
 /**
  * Picking a song of the library for one part of the Mass. Choosing one adds it at the end of
@@ -58,10 +62,9 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Ma
             text.append(h('span', { class: 'song-item__author' }, song.author));
         }
         const button = h('button', { type: 'button', class: 'song-item', 'data-song': song.id }, text);
-        // Not a block: a song can be sung twice in a Mass. Only a reminder, before choosing it.
-        const where = placed.get(song.id);
-        if (where !== undefined) {
-            button.append(h('span', { class: 'chip chip--changed' }, where.has(part.name) ? 'Ya está aquí' : `Ya está en ${[...where].join(', ')}`));
+        // Searching is not the moment to warn: the notice comes when the song is added (below)
+        if (placed.get(song.id)?.has(part.name) === true) {
+            button.append(h('span', { class: 'chip chip--changed' }, 'Ya está aquí'));
         }
         if (key !== null) {
             button.append(h('span', { class: 'chip' }, transpose(key, 0, readNotation())));
@@ -71,7 +74,14 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Ma
             error.textContent = '';
             app.setlists
                 .addItem(setlist.id, part.id, song.id)
-                .then(() => navigate(`${paths.setlist(setlist.id)}#parte-${part.id}`, { replace: true }))
+                .then(() => {
+                    navigate(`${paths.setlist(setlist.id)}#parte-${part.id}`, { replace: true });
+                    // Not a block: a song can be sung twice in a Mass. Only a word, once it is in.
+                    const elsewhere = [...(placed.get(song.id) ?? [])].filter((name) => name !== part.name);
+                    if (elsewhere.length > 0) {
+                        showToast(`“${song.title}” también está en: ${elsewhere.join(', ')}`, WARNING_TIME, true);
+                    }
+                })
                 .catch((failure: unknown) => {
                     error.textContent = failure instanceof Error ? failure.message : 'No se pudo agregar el canto.';
                     button.disabled = false;

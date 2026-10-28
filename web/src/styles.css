@@ -1172,32 +1172,59 @@ body {
 }
 
 .perform__reveal {
-    position: absolute;
-    top: 0.4rem;
-    right: 0.5rem;
-    z-index: 5;
-    width: 2.75rem;
-    height: 2.75rem;
-    color: var(--text);
+    display: block;
+    width: 100%;
+    min-height: 2.5rem;
+    color: var(--muted);
     background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 50%;
-    opacity: 0.85;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    font: inherit;
+    font-size: 0.9rem;
 }
 
 .perform__reveal[hidden] {
     display: none;
 }
 
-.perform__mode {
+.perform__putaway {
     min-height: 2.5rem;
     padding: 0 0.6rem;
-    color: var(--accent);
+    color: var(--muted);
     background: none;
-    border: 1px solid var(--border);
-    border-radius: 0.45rem;
+    border: 0;
     font: inherit;
     font-size: 0.9rem;
+}
+
+/* The two ways of singing, side by side, each saying what it is for */
+.perform__modes {
+    display: inline-flex;
+    border: 1px solid var(--border);
+    border-radius: 0.6rem;
+    overflow: hidden;
+}
+
+.perform__mode {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0.2rem 0.8rem;
+    color: var(--muted);
+    background: none;
+    border: 0;
+    font: inherit;
+    line-height: 1.2;
+}
+
+.perform__mode small {
+    font-size: 0.75rem;
+}
+
+.perform__mode[aria-pressed='true'] {
+    color: var(--text);
+    background: var(--accent-soft);
 }
 
 .perform__notefield {

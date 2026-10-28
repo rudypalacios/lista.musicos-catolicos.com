@@ -11,6 +11,9 @@ import type { Navigate, View } from './types.ts';
 /** Scrolling this far (px) down hides the tools in event mode, this far up brings them back */
 const HIDE_AFTER = 12;
 
+/** How long (ms) the stage takes to settle after the tools are shown or put away */
+const SETTLE_TIME = 450;
+
 /** A swipe is a mostly horizontal move at least this far (px) */
 const SWIPE_MIN = 60;
 
@@ -19,6 +22,9 @@ const SWIPE_MIN = 60;
  * anew for every song, so this has to outlive it; it is read once, by the view that follows.
  */
 let slideFrom: 'next' | 'previous' | null = null;
+
+/** Whether the tools were put away in event mode: it stays so from one song to the next */
+let collapsed = false;
 
 /** The part of the Mass an item belongs to, by name */
 function partName(item: SetlistItem): string {
@@ -69,15 +75,21 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     const mode: Mode = readMode();
     const event = mode === 'event';
     const info = h('div', { class: 'perform__info' }, h('strong', {}, partName(item)));
-    const switchMode = h('button', {
-        type: 'button', class: 'perform__mode',
-        'aria-label': event ? 'Modo evento. Cambiar a modo ensayo' : 'Modo ensayo. Cambiar a modo evento',
-    }, event ? 'Modo evento' : 'Modo ensayo');
-    switchMode.addEventListener('click', () => {
-        saveMode(event ? 'rehearsal' : 'event');
-        navigate(paths.perform(setlist.id, position), { replace: true });
-    });
-    info.append(' ', switchMode);
+    const modeButton = (value: Mode, name: string, when: string): HTMLButtonElement => {
+        const button = h('button', { type: 'button', class: 'perform__mode', 'aria-pressed': String(mode === value) },
+            h('strong', {}, name), h('small', {}, when));
+        button.addEventListener('click', () => {
+            if (mode !== value) {
+                saveMode(value);
+                navigate(paths.perform(setlist.id, position), { replace: true });
+            }
+        });
+
+        return button;
+    };
+    const modes = h('div', { class: 'perform__modes', role: 'group', 'aria-label': 'Modo' },
+        modeButton('rehearsal', 'Ensayo', 'para preparar'), modeButton('event', 'Evento', 'para cantar'));
+    info.append(' ', modes);
     if (!event) {
         // Rehearsal: the note can be written here, where the song is being tried
         const field = h('input', {
@@ -171,17 +183,34 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
         stage.classList.add(`slide-in-${slideFrom}`);
         slideFrom = null;
     }
-    // Event mode: the tools give way when the lyrics are scrolled, and come back on scrolling up
+    // Event mode: the tools can be put away (by hand, or by scrolling the lyrics down) to give the
+    // lyrics the room; a strip says how to bring them back and never covers the lyrics
     const chrome = h('div', { class: 'perform__chrome' }, h('div', { class: 'perform__chrome-inner' }, bar, info, error));
-    const reveal = h('button', { type: 'button', class: 'perform__reveal', hidden: true, 'aria-label': 'Mostrar las herramientas' }, '☰');
+    const reveal = h('button', { type: 'button', class: 'perform__reveal', hidden: true }, '▾ Mostrar herramientas');
+    const putAway = h('button', { type: 'button', class: 'perform__putaway', 'aria-label': 'Ocultar las herramientas' }, '▴ Ocultar');
+    let last = 0;
+    /** Showing or hiding the tools resizes the stage, which scrolls it by itself: that must not count as the person scrolling */
+    let settling = false;
     const collapse = (hide: boolean): void => {
+        collapsed = hide;
         chrome.classList.toggle('is-collapsed', hide);
         chrome.inert = hide;
         reveal.hidden = !hide;
+        settling = true;
+        setTimeout(() => {
+            settling = false;
+            last = stage.scrollTop;
+        }, SETTLE_TIME);
     };
     if (event) {
-        let last = 0;
+        info.append(putAway);
+        if (collapsed) {
+            collapse(true);
+        }
         stage.addEventListener('scroll', () => {
+            if (settling) {
+                return;
+            }
             const top = stage.scrollTop;
             const moved = top - last;
             if (moved > HIDE_AFTER && top > 80) {
@@ -194,6 +223,7 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
             }
         }, { passive: true });
         reveal.addEventListener('click', () => collapse(false));
+        putAway.addEventListener('click', () => collapse(true));
     }
     const element = h('div', { class: 'viewer perform' }, chrome, reveal, stage);
 

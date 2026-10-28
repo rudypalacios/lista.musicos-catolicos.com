@@ -63,7 +63,7 @@ Phase 4, quiet and quick (no schema change):
 - [x] After picking a song the list opens at that part with the new song marked; "back" from a song
       returns to the same place in the list.
 - [x] "Aclamación memorial" explains itself with the ⓘ button.
-- [x] The same song in two parts is allowed, with a quiet notice in the picker and on both rows.
+- [x] The same song in two parts is allowed, with a notice when it is added (not while searching) and on both rows.
 - [x] Notes of a list item are out of the way: a "Nota" button, one muted line when there is a note, a
       field only to edit it; while singing, a "Nota" button shows it.
 - [x] Swiping between songs: no browser rubber-band or sideways pull (`overscroll-behavior`,
