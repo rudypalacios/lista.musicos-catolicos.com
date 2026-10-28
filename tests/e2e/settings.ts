@@ -43,6 +43,9 @@ async function settled(page: Page): Promise<void> {
     await page.waitForTimeout(100);
 }
 
+const lyricSize = (page: Page): Promise<number> =>
+    page.locator('.viewer-content').evaluate((el) => parseFloat((el as HTMLElement).style.getPropertyValue('--lyric-size')));
+
 const has = (page: Page, selector: string): Promise<boolean> => page.evaluate((s) => document.querySelector(s) !== null, selector);
 
 const browser = await chromium.launch();
@@ -137,6 +140,28 @@ try {
     await page.getByRole('button', { name: /Columnas:/ }).waitFor({ state: 'hidden' });
     pass('and not on a phone, where two columns do not fit');
     await page.setViewportSize({ width: 1280, height: 800 });
+
+    // Auto: a song that fits in one column only at small letters goes in two when they get clearly bigger
+    const MEDIUM = Array.from({ length: 3 }, () =>
+        '[Dm]Señor, Dios [C]nuestro Pa[Dm]dre, Padre\n[Gm]Señor Dios [Dm]Hijo.\n[A7]Piedad, pie[Dm]dad, pie[A7]dad, Se[Dm]ñor.\n\n[F]Tú que quitas el [G]pecado del mundo:\n[A7]Escúchanos, [Dm]escúchanos.').join('\n\n');
+    await createSong(page, 'Largo medio', MEDIUM);
+    await page.setViewportSize({ width: 1376, height: 1032 });
+    await openSong(page, 'Largo medio');
+    await settled(page);
+    assert.equal(await has(page, '.viewer-content.is-columns'), true, 'auto uses two columns for a song that is small in one');
+    assert.ok(await lyricSize(page) >= 20, 'and the letters are comfortable');
+    await page.getByRole('button', { name: /Columnas: auto/ }).click();
+    await page.getByRole('button', { name: /Columnas: 2/ }).click();
+    await page.getByRole('button', { name: /Columnas: 1/ }).waitFor();
+    await settled(page);
+    assert.ok(await lyricSize(page) < 20, 'one column would have been small');
+    await page.getByRole('button', { name: /Columnas: 1/ }).click();
+    await page.getByRole('button', { name: /Columnas: auto/ }).waitFor();
+    await openSong(page, 'Puerta corta');
+    await settled(page);
+    assert.equal(await has(page, '.viewer-content.is-columns'), false, 'a short song stays in one column');
+    await page.setViewportSize({ width: 1280, height: 800 });
+    pass('auto picks two columns when the single column would be small, and keeps one when the letters are already big');
 
     // ----- the list to sing -----
     await page.getByRole('link', { name: 'Listados', exact: true }).click();

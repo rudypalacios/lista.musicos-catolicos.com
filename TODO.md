@@ -33,7 +33,7 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
 
 ## Small things to do when convenient
 
-- [ ] Tune the fit limits (`DEFAULT_LIMITS` in `web/src/fit.ts`) after seeing it on the devices.
+- [ ] Tune the fit limits (`DEFAULT_LIMITS`, `COMFORTABLE_SIZE`, `TWO_COLUMNS_GAIN` in `web/src/fit.ts`) after seeing it on the devices.
 - [x] Keep the screen awake while a song is open or a list is being sung (Screen Wake Lock, `web/src/wakelock.ts`;
       on by default, an Ajustes choice turns it off). **Owner's check:** Android and iPad (Safari 16.4+; a
       home-screen app only from iOS 18.4), see `DEPLOY.md`.
