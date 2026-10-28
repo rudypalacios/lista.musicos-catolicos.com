@@ -12,6 +12,7 @@ export type Route =
     | { name: 'setlist'; id: string }
     | { name: 'add'; id: string; part: string }
     | { name: 'perform'; id: string; n: number }
+    | { name: 'install' }
     | { name: 'not-found' };
 
 const ID = '([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|[\\w-]{1,64})';
@@ -54,6 +55,10 @@ export function matchRoute(path: string): Route {
         return { name: 'perform', id: perform[1], n: Number(perform[2]) };
     }
 
+    if (clean === '/ayuda/instalar') {
+        return { name: 'install' };
+    }
+
     return { name: 'not-found' };
 }
 
@@ -68,6 +73,7 @@ export const paths = {
     addToSetlist: (id: string, part: string): string => `/listados/${id}/agregar/${part}`,
     /** `n` counts from 1: the first song of the list in the order of the Mass */
     perform: (id: string, n: number): string => `/listados/${id}/cantar/${n}`,
+    install: (): string => '/ayuda/instalar',
 };
 
 /** The tab of the header a route belongs to */

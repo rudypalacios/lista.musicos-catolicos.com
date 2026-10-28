@@ -77,6 +77,8 @@ declare module 'playwright' {
         newContext(options: {
             viewport: { width: number; height: number };
             serviceWorkers?: 'allow' | 'block';
+            userAgent?: string;
+            hasTouch?: boolean;
         }): Promise<BrowserContext>;
     }
     export const chromium: { launch(): Promise<Browser> };

@@ -9,6 +9,7 @@ import { showFatal, startUpdates } from './updates.ts';
 import { addView } from './views/add.ts';
 import { editView } from './views/edit.ts';
 import { importView } from './views/import.ts';
+import { installView } from './views/install.ts';
 import { listView } from './views/list.ts';
 import { listsView } from './views/lists.ts';
 import { performView } from './views/perform.ts';
@@ -148,6 +149,8 @@ function routeView(data: App, route: Route, navigate: Navigate): Promise<View> {
 
                 return part === undefined ? notice('Esta parte de la misa no existe.') : addView(data, navigate, setlist, part);
             });
+        case 'install':
+            return Promise.resolve(installView());
         case 'list':
             return Promise.resolve(listView(data));
         case 'new':

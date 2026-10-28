@@ -896,3 +896,32 @@ button.info {
 .print-menu__status {
     margin: 0;
 }
+
+/* Install guide and the note that points to it */
+.help h3 {
+    margin: 1.5rem 0 0.5rem;
+}
+
+.steps {
+    margin: 0 0 0.75rem;
+    padding-left: 1.4rem;
+    line-height: 1.6;
+}
+
+.install-hint {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    margin: 0.75rem 0;
+}
+
+.install-hint p {
+    flex: 1 1 16rem;
+    margin: 0;
+}
+
+.help-link {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+}

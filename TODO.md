@@ -68,7 +68,11 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       Archivos) covers sharing a list. Questions to settle then: what "the whole system" includes (all
       users' data, the database, the `.env`?), where the copies go, how often, and how a restore is done
       without a shell (the host has none).
-- [ ] Install guidance for iPad (home-screen install keeps the data; a Safari tab can lose it).
+- [x] Install guide (`/ayuda/instalar`, also offline) for iPad, iPhone and Android, linked from the song list,
+      and a calm, closable note shown only to Safari on iOS (`web/src/install.ts`). It never says data is lost:
+      the account holds everything; only unsent changes depend on the device.
+- [ ] **Owner's check on the iPad, at the end:** the note appears in Safari, not in the installed app; "Ver cómo"
+      opens the guide.
 
 ## Later
 
