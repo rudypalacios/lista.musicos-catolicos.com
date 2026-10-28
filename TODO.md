@@ -53,8 +53,12 @@ tests run only when called or by hand (the free Actions minutes ran out).
 
 ## Phase 3: print and safety nets
 
-- [ ] Print a song or a whole list, one song per page, with the `PrintLayout` cascade ported
-      from musicos-catolicos.
+- [x] Print a song or a whole list, one song per page, with the `PrintLayout` cascade ported
+      from musicos-catolicos (`web/src/print/`): "Imprimir" → with chords / lyrics only, key of the list,
+      Letter paper like the public site. Checked against golden fixtures and Chromium's PDF printer.
+- [ ] **Owner's check on the iPad:** "Imprimir" opens the AirPrint sheet (also from the installed app), and
+      *Compartir → Guardar en Archivos* makes the PDF. If `window.print()` does nothing in the installed app,
+      the fallback is to build the PDF in the app (decision pending).
 - [ ] Export the list as a file (backup), and print to PDF for Drive.
 - [ ] Install guidance for iPad (home-screen install keeps the data; a Safari tab can lose it).
 

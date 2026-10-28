@@ -16,8 +16,10 @@ Offline-first PWA to plan the music of a Mass. Private for now, built to be fold
 | `web/src/chordpro/` | ChordPro parser, chords, transposition, lyrics renderer: ports of the public site's PHP and `song.js` |
 | `web/src/data/` | Songs and setlists on the device (IndexedDB, one store contract for both collections), the queues of unsent records, the sync engine; `library.ts` and `setlists.ts` are the operations on each |
 | `web/src/` (others) | `importer.ts` (chords above the words → ChordPro; one song or a whole Mass), `fit.ts` (fit to the screen), `mass.ts` (parts of the Mass), `sw.ts` (service worker) |
+| `web/src/print/` | Printing: `layout.ts` (the `PrintLayout.php` cascade, ported as it is), `plan.ts` (what a page prints: header, musical data, key), `print.ts` (fills `#print-root` and calls `window.print()`), `print.css` (copied from the public site's print rules) |
+| `web/fonts/` | The fonts the public site prints with (Atkinson Hyperlegible, Bricolage Grotesque; OFL), served from this origin so a printout looks the same and works offline |
 | `web/test/` | Unit tests of the client (`node --test`); `fixtures/golden.json` is what the PHP answered |
-| `scripts/` | The build, and `fixtures/` that regenerates the golden file from musicos-catolicos |
+| `scripts/` | The build, and `fixtures/` that regenerates the golden file from musicos-catolicos (parser, chords, syllables and the print cascade) |
 | `src/` | PHP: `Http/` (actions, middleware), `Auth/`, `Sync/` (songs, setlists, the shared change counter and the combined feed), `Database/` |
 | `migrations/` | Numbered SQL files, applied by the app on its first request after a deploy |
 | `public/` | Web root: `index.php`, `.htaccess`, icons, manifest; the build adds the rest |
@@ -73,6 +75,8 @@ Errors: `{error: "<code>", message: "<texto en español>"}`.
 
 ## Third-party code
 
+- Atkinson Hyperlegible and Bricolage Grotesque (SIL Open Font License, licenses in `web/fonts/`): the print
+  fonts, the same files the public site serves, bundled and served from this origin.
 - [pdf.js](https://github.com/mozilla/pdf.js) (`pdfjs-dist`, Apache-2.0), the legacy build, bundled
   by `scripts/build.ts` and served from this origin: it reads the PDFs of the import screen in the
   browser. The text never leaves the device. Its license banner is kept in the built files.

@@ -2,6 +2,8 @@ import type { App } from '../app.ts';
 import type { Song } from '../data/types.ts';
 import { h, link } from '../dom.ts';
 import { paths } from '../router.ts';
+import { planSheet } from '../print/plan.ts';
+import { printMenu } from './print-menu.ts';
 import { createReader } from './reader.ts';
 import type { View } from './types.ts';
 
@@ -27,7 +29,15 @@ function writeTransposition(t: number): void {
 export function viewView(app: App, song: Song): View {
     void app;
     const shift = readTransposition();
-    const reader = createReader(song, { shift, onShift: writeTransposition });
+    /** The key on screen, which is the one that prints */
+    let shown = shift;
+    const reader = createReader(song, {
+        shift,
+        onShift: (t) => {
+            shown = t;
+            writeTransposition(t);
+        },
+    });
     writeTransposition(shift);
 
     const bar = h(
@@ -35,6 +45,7 @@ export function viewView(app: App, song: Song): View {
         { class: 'viewer__bar' },
         link(paths.list(), '← Cantos', 'button back'),
         reader.toolbar,
+        printMenu((version, notation) => [planSheet(song, { version, shift: shown, notation })]),
         link(paths.edit(song.id), 'Editar', 'button edit'),
     );
 

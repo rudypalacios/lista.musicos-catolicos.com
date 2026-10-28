@@ -207,7 +207,8 @@ button.song-item {
 }
 
 a.button,
-button.button {
+button.button,
+summary.button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -859,4 +860,39 @@ button.info {
 
 .perform .error:empty {
     display: none;
+}
+
+/* Imprimir: a menu with the two sheets (print/print.css lays the pages out) */
+.print-menu {
+    position: relative;
+    display: inline-block;
+}
+
+.print-menu summary {
+    cursor: pointer;
+    list-style: none;
+}
+
+.print-menu summary::-webkit-details-marker {
+    display: none;
+}
+
+.print-menu__options {
+    position: absolute;
+    z-index: 5;
+    top: 100%;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 0.3rem;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    white-space: nowrap;
+}
+
+.print-menu__status {
+    margin: 0;
 }
