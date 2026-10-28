@@ -16,6 +16,9 @@ tests run only when called or by hand (the free Actions minutes ran out).
 
 ## Owner's checks (cannot be done from the sandbox: Safari, real devices, the host)
 
+**Deferred to the end of all the phases:** every iPad check below waits until then, when Claude writes
+the owner one complete list of what to try on the iPad. Until then only the Android is tested.
+
 - [ ] On the iPad and the Android, installed (`DEPLOY.md`, "Pruebas en los dispositivos", "Cantos (fase 1)"
       and "Listados (fase 2)"): write a song offline, reload, sync; fit-to-screen on the iPad and the
       phone; import the real PDF and see how it lands; the "Descargando… / Hay una versión nueva /
@@ -53,10 +56,23 @@ tests run only when called or by hand (the free Actions minutes ran out).
 
 ## Phase 3: print and safety nets
 
-- [ ] Print a song or a whole list, one song per page, with the `PrintLayout` cascade ported
-      from musicos-catolicos.
-- [ ] Export the list as a file (backup), and print to PDF for Drive.
-- [ ] Install guidance for iPad (home-screen install keeps the data; a Safari tab can lose it).
+- [x] Print a song or a whole list, one song per page, with the `PrintLayout` cascade ported
+      from musicos-catolicos (`web/src/print/`): "Imprimir" → with chords / lyrics only, key of the list,
+      Letter paper like the public site. Checked against golden fixtures and Chromium's PDF printer.
+- [ ] **Owner's check on the iPad** (deferred to the end: until then only the Android can be tested): "Imprimir" opens the AirPrint sheet (also from the installed app), and
+      *Compartir → Guardar en Archivos* makes the PDF. If `window.print()` does nothing in the installed app,
+      the fallback is to build the PDF in the app (decision pending).
+- [ ] **Backup and restore: decide at the end of all the phases.** The owner's idea is a server-side job
+      (cron on the host) that backs up the whole system, not only the owner's songs, and a way to restore it
+      complete. Until then there is no export file from the app; printing to PDF (Compartir → Guardar en
+      Archivos) covers sharing a list. Questions to settle then: what "the whole system" includes (all
+      users' data, the database, the `.env`?), where the copies go, how often, and how a restore is done
+      without a shell (the host has none).
+- [x] Install guide (`/ayuda/instalar`, also offline) for iPad, iPhone and Android, linked from the song list,
+      and a calm, closable note shown only to Safari on iOS (`web/src/install.ts`). It never says data is lost:
+      the account holds everything; only unsent changes depend on the device.
+- [ ] **Owner's check on the iPad, at the end:** the note appears in Safari, not in the installed app; "Ver cómo"
+      opens the guide.
 
 ## Later
 

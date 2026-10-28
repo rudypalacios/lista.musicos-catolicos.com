@@ -40,3 +40,14 @@ export function readFit(): boolean {
 export function saveFit(on: boolean): void {
     write(FIT, on ? 'si' : 'no');
 }
+
+const INSTALL_HINT = 'lista:instalar-aviso';
+
+/** Whether the person closed the "add it to the home screen" note on this device */
+export function readInstallHintClosed(): boolean {
+    return read(INSTALL_HINT) === 'si';
+}
+
+export function saveInstallHintClosed(): void {
+    write(INSTALL_HINT, 'si');
+}

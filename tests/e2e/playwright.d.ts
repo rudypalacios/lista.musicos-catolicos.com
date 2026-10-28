@@ -68,6 +68,7 @@ declare module 'playwright' {
     interface BrowserContext {
         newPage(): Promise<Page>;
         setOffline(offline: boolean): Promise<void>;
+        addInitScript(script: () => void): Promise<void>;
         close(): Promise<void>;
         route(url: string | RegExp, handler: (route: Route) => unknown): Promise<void>;
     }
@@ -76,6 +77,8 @@ declare module 'playwright' {
         newContext(options: {
             viewport: { width: number; height: number };
             serviceWorkers?: 'allow' | 'block';
+            userAgent?: string;
+            hasTouch?: boolean;
         }): Promise<BrowserContext>;
     }
     export const chromium: { launch(): Promise<Browser> };

@@ -14,6 +14,12 @@ describe('matchRoute', () => {
         assert.deepEqual(matchRoute(`/cantos/${ID}/editar`), { name: 'edit', id: ID });
     });
 
+    it('knows the install guide', () => {
+        assert.deepEqual(matchRoute('/ayuda/instalar'), { name: 'install' });
+        assert.deepEqual(matchRoute('/ayuda/instalar/'), { name: 'install' });
+        assert.equal(paths.install(), '/ayuda/instalar');
+    });
+
     it('ignores a trailing slash', () => {
         assert.deepEqual(matchRoute(`/cantos/${ID}/`), { name: 'view', id: ID });
     });

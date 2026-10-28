@@ -1,0 +1,398 @@
+/*
+ * What is printed: a song or a whole setlist, one song per page, as the public site prints a song
+ * (musicos-catolicos, public/css/site.css, "Print (song page)"). The sheet rules below are copied
+ * from there with `.song-page` read as `.print-page`; keep the two in step. PrintLayout decides
+ * which `song-sheet--{compact|columns|pages}-{chords|lyrics}` class a sheet gets (print/layout.ts).
+ *
+ * The pages live in #print-root, which print.ts fills just before window.print(). On screen it is
+ * hidden; on paper the app is.
+ */
+@font-face {
+    font-family: 'Atkinson Hyperlegible';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('../../fonts/atkinson-hyperlegible-v12-400-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Atkinson Hyperlegible';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('../../fonts/atkinson-hyperlegible-v12-400-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+    font-family: 'Atkinson Hyperlegible';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('../../fonts/atkinson-hyperlegible-v12-700-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Atkinson Hyperlegible';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('../../fonts/atkinson-hyperlegible-v12-700-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+    font-family: 'Bricolage Grotesque';
+    font-style: normal;
+    font-weight: 700 800;
+    font-display: swap;
+    src: url('../../fonts/bricolage-grotesque-v9-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Bricolage Grotesque';
+    font-style: normal;
+    font-weight: 700 800;
+    font-display: swap;
+    src: url('../../fonts/bricolage-grotesque-v9-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+#print-root {
+    display: none;
+}
+
+/* Letter less these margins is the 713pt PrintLayout plans for */
+@page {
+    margin: 12mm 12mm 16mm;
+}
+
+@media print {
+    /* Black on white, whatever the screen's theme: the same tokens the public site sets */
+    :root {
+        --bg: #fff;
+        --surface: #fff;
+        --surface-2: #fff;
+        --text: #000;
+        --muted: #333;
+        --faint: #333;
+        --accent: #000;
+        --accent-rule: #999;
+        --border: #999;
+    }
+
+    html,
+    body {
+        min-height: 0;
+        margin: 0;
+        padding: 0;
+        background: #fff;
+        color: #000;
+    }
+
+    #app {
+        display: none !important;
+    }
+
+    #print-root {
+        display: block;
+        font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+    }
+
+    /* One song per page. A page break before (not after) the next one: a break after the last
+       would open a blank page */
+    .print-page + .print-page {
+        break-before: page;
+    }
+
+    .print-page > * + * {
+        margin-top: 8pt;
+    }
+
+    /* Header: the title and the author (and the part of the Mass) on one row */
+    .print-page .page-head {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: baseline;
+        column-gap: 10pt;
+        row-gap: 2pt;
+    }
+
+    .print-page .page-title {
+        margin: 0;
+        font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 20pt;
+        line-height: 1;
+        letter-spacing: -0.03em;
+    }
+
+    .print-page .page-head__sub {
+        margin: 0;
+        font-size: 11pt;
+        color: var(--muted);
+    }
+
+    .song-note {
+        display: flex;
+        flex-wrap: wrap;
+        row-gap: 2px;
+        margin: 0;
+        padding: 0 0 6pt;
+        border-bottom: 1px solid var(--border);
+        font-size: 10pt;
+        line-height: 1.5;
+        color: var(--faint);
+    }
+
+    .song-note__item {
+        display: inline-flex;
+        gap: 5px;
+    }
+
+    /* The separator ends an item (never starts a wrapped line) */
+    .song-note__item:not(:last-child)::after {
+        content: '\00B7';
+        margin: 0 8px 0 3px;
+    }
+
+    .song-note dd {
+        margin: 0;
+        font-weight: 700;
+        color: var(--muted);
+    }
+
+    .song-section__label {
+        font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+        font-size: 13px;
+    }
+
+    /* ----- The sheet with chords (data-print="chords", and Ctrl+P) -----
+       A− / A+ (an inline --lyric-step) does not apply on paper. The chords, and the line
+       under their syllable, keep one color: a dark red that stands out without tiring the
+       eye (contrast 6.5:1 on white) and prints dark grey in black and white */
+    .song-sheet {
+        --chord-ink: #c00000;
+        counter-reset: verse;
+        gap: 12pt;
+        padding: 10pt 0 0 1.8em;
+        font-size: 13pt;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .song-section {
+        gap: 5pt;
+    }
+
+    .song-section__label + * {
+        margin-top: -2pt;
+    }
+
+    .song-sheet .line {
+        line-height: 1.15;
+    }
+
+    .song-sheet .ch {
+        min-height: 0;
+        font-size: 0.8em;
+        line-height: 1.1;
+        color: var(--chord-ink);
+    }
+
+    .song-sheet .syl {
+        text-decoration-color: var(--chord-ink);
+        text-decoration-thickness: 1px;
+        text-underline-offset: 0.15em;
+    }
+
+    /* A line of chords only (an intro) has no text row under them */
+    .song-sheet .line--chords .lyr {
+        display: none;
+    }
+
+    /* The labels are plain bold text on paper */
+    .song-section__label {
+        padding: 0;
+        background: none;
+        border-radius: 0;
+    }
+
+    .song-section--chorus {
+        padding-left: 1.2em;
+        border-left: 1.5pt solid var(--border);
+    }
+
+    /* Each verse stanza is numbered (1., 2.…) in a margin at the left of the lyrics, on the
+       row of the words of its first sung line (under the chords, if any); the text keeps its
+       place. A label that only says "Verso 1" is left out: the number says it in less room */
+    .song-section__label--verse {
+        display: none;
+    }
+
+    .song-section--verse .line--first {
+        counter-increment: verse;
+    }
+
+    .song-section--verse .line--first.line--plain,
+    .song-section--verse .line--first > .w:first-child > .seg:first-child > .lyr {
+        position: relative;
+    }
+
+    .song-section--verse .line--first.line--plain::before,
+    .song-section--verse .line--first > .w:first-child > .seg:first-child > .lyr::before {
+        content: counter(verse) ".";
+        position: absolute;
+        top: 0;
+        right: 100%;
+        padding-right: 0.5em;
+        font-style: normal;
+        font-weight: 700;
+    }
+
+    /* A stanza is never split between two pages */
+    .song-section {
+        break-inside: avoid;
+    }
+
+    /* ----- The sheet to hand out (data-print="lyrics", and songs without chords) -----
+       Lyrics only, larger (for every age), the chorus in bold as in hymn books; no musical
+       data, and no line that only had chords */
+    .print-page[data-print="lyrics"] .song-note,
+    .print-page[data-print="lyrics"] .song-sheet .ch,
+    .print-page[data-print="lyrics"] .song-sheet .line--chords {
+        display: none;
+    }
+
+    .print-page[data-print="lyrics"] .song-sheet {
+        display: block;
+        font-size: 16pt;
+    }
+
+    .print-page[data-print="lyrics"] .song-section {
+        gap: 2pt;
+    }
+
+    .print-page[data-print="lyrics"] .song-section + .song-section {
+        margin-top: 12pt;
+    }
+
+    /* A line too long for the width goes on indented, as in hymn books, so it does not read
+       as a new line */
+    .print-page[data-print="lyrics"] .song-sheet .line {
+        display: block;
+        padding-left: 1em;
+        text-indent: -1em;
+        line-height: 1.3;
+    }
+
+    .print-page[data-print="lyrics"] .song-sheet .w,
+    .print-page[data-print="lyrics"] .song-sheet .seg {
+        display: inline;
+    }
+
+    .print-page[data-print="lyrics"] .song-sheet .lyr {
+        white-space: normal;
+    }
+
+    .print-page[data-print="lyrics"] .song-sheet .syl {
+        text-decoration: none;
+    }
+
+    .print-page[data-print="lyrics"] .song-section--chorus {
+        font-weight: 700;
+    }
+
+    /* ----- When the sheet would not fit on a page (PrintLayout) -----
+       Compact: slightly smaller type, in one column. Columns: the same type in two columns on
+       one page, when even that does not fit. Pages: two columns over several pages */
+    .print-page[data-print="chords"] :is(.song-sheet--compact-chords, .song-sheet--columns-chords, .song-sheet--pages-chords) {
+        font-size: 12pt;
+    }
+
+    .print-page[data-print="chords"] :is(.song-sheet--compact-chords, .song-sheet--columns-chords, .song-sheet--pages-chords) .ch {
+        font-size: 0.75em;
+    }
+
+    .print-page[data-print="lyrics"] :is(.song-sheet--compact-lyrics, .song-sheet--columns-lyrics, .song-sheet--pages-lyrics) {
+        font-size: 14pt;
+    }
+
+    /* Two columns. A stanza never splits; the gap holds the numbers of the right column's
+       verses. The Chrome quirks decide the rest: in columns with an open height it adds a
+       blank page after the lyrics, unless the columns balance, and flex sections do the same */
+    .print-page[data-print="chords"] :is(.song-sheet--columns-chords, .song-sheet--pages-chords),
+    .print-page[data-print="lyrics"] :is(.song-sheet--columns-lyrics, .song-sheet--pages-lyrics) {
+        display: block;
+        columns: 2;
+        column-gap: 1.8em;
+    }
+
+    /* On one page: the first column fills down to the foot of the page, then the second
+       (column-fill: auto), so the song reads down the left first. That needs a height: one
+       page at most (100vh is the printed page, less room for the header). PrintLayout keeps
+       a wide margin, since an overflow would be cut */
+    .print-page[data-print="chords"] .song-sheet--columns-chords,
+    .print-page[data-print="lyrics"] .song-sheet--columns-lyrics {
+        column-fill: auto;
+    }
+
+    .print-page[data-print="chords"] .song-sheet--columns-chords {
+        max-height: calc(100vh - 140px);
+    }
+
+    .print-page[data-print="lyrics"] .song-sheet--columns-lyrics {
+        max-height: calc(100vh - 100px);
+    }
+
+    /* Over several pages: an open height, so nothing is ever cut; every page is full but
+       the last (column-fill: balance, which also avoids the blank page) */
+    .print-page[data-print="chords"] .song-sheet--pages-chords,
+    .print-page[data-print="lyrics"] .song-sheet--pages-lyrics {
+        column-fill: balance;
+    }
+
+    .print-page[data-print="chords"] :is(.song-sheet--columns-chords, .song-sheet--pages-chords) {
+        padding-left: 1.5em;
+    }
+
+    /* Block sections, spaced with margins between them: a margin after the last one, at the
+       foot of a full page, also opens a blank page */
+    .print-page[data-print="chords"] :is(.song-sheet--columns-chords, .song-sheet--pages-chords) .song-section,
+    .print-page[data-print="lyrics"] :is(.song-sheet--columns-lyrics, .song-sheet--pages-lyrics) .song-section {
+        display: block;
+        margin-bottom: 0;
+    }
+
+    .print-page[data-print="chords"] :is(.song-sheet--columns-chords, .song-sheet--pages-chords) .song-section + .song-section,
+    .print-page[data-print="lyrics"] :is(.song-sheet--columns-lyrics, .song-sheet--pages-lyrics) .song-section + .song-section {
+        margin-top: 12pt;
+    }
+
+    .print-page[data-print="chords"] :is(.song-sheet--columns-chords, .song-sheet--pages-chords) .song-section > * + * {
+        margin-top: 5pt;
+    }
+
+    .print-page[data-print="chords"] :is(.song-sheet--columns-chords, .song-sheet--pages-chords) .song-section__label + * {
+        margin-top: 3pt;
+    }
+
+    .print-page[data-print="lyrics"] :is(.song-sheet--columns-lyrics, .song-sheet--pages-lyrics) .song-section > * + * {
+        margin-top: 2pt;
+    }
+
+    .print-page[data-print="chords"] :is(.song-sheet--columns-chords, .song-sheet--pages-chords) .song-section--chorus {
+        padding-left: 0.6em;
+    }
+
+    /* Chords after the last word hang past the end of the line (into the gap) instead of
+       dropping to a row of their own */
+    .print-page[data-print="chords"] :is(.song-sheet--columns-chords, .song-sheet--pages-chords) .w--tail {
+        width: 0;
+        min-width: 0;
+    }
+}

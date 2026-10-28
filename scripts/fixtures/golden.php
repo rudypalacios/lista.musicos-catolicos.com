@@ -15,13 +15,14 @@ if ($site === null || $corpusFile === null) {
     exit(1);
 }
 
-foreach (['Chord', 'Syllable', 'ChordPro', 'ChordSheet'] as $class) {
+foreach (['Chord', 'Syllable', 'ChordPro', 'ChordSheet', 'PrintLayout'] as $class) {
     require $site . '/src/Application/Song/' . $class . '.php';
 }
 
 use App\Application\Song\Chord;
 use App\Application\Song\ChordPro;
 use App\Application\Song\ChordSheet;
+use App\Application\Song\PrintLayout;
 use App\Application\Song\Syllable;
 
 $corpus = json_decode((string) file_get_contents($corpusFile), true, 512, JSON_THROW_ON_ERROR);
@@ -63,7 +64,26 @@ foreach ($corpus['words'] as $word) {
     $words[] = ['word' => $word, 'length' => Syllable::firstLength($word)];
 }
 
+// The print cascade: the layout of every song under every heading, and the estimated heights
+$print = [];
+foreach ($corpus['printSongs'] as $name => $source) {
+    $sheet = ChordPro::parse($source);
+    $row = ['name' => $name, 'input' => $source, 'versions' => []];
+    foreach ([PrintLayout::CHORDS, PrintLayout::LYRICS] as $version) {
+        $row['versions'][$version] = [
+            'height' => PrintLayout::height($sheet, $version),
+            'compactHeight' => PrintLayout::height($sheet, $version, PrintLayout::COMPACT),
+            'columnHeight' => PrintLayout::height($sheet, $version, PrintLayout::COMPACT, true),
+            'layouts' => array_map(
+                fn (array $heading) => PrintLayout::layout($sheet, $version, $heading[0], $heading[1]),
+                $corpus['printHeadings']
+            ),
+        ];
+    }
+    $print[] = $row;
+}
+
 echo json_encode(
-    ['songs' => $songs, 'labels' => $labels, 'chords' => $chords, 'words' => $words],
+    ['songs' => $songs, 'labels' => $labels, 'chords' => $chords, 'words' => $words, 'print' => $print],
     JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR
 );

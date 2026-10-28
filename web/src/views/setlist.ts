@@ -5,8 +5,10 @@ import { LIMITS, type Setlist, type SetlistItem, type Song } from '../data/types
 import { inMassOrder, itemsOfPart, partIndex } from '../data/setlists.ts';
 import { h, link } from '../dom.ts';
 import { MASS_PARTS, type MassPart } from '../mass.ts';
+import { planSheet } from '../print/plan.ts';
 import { readNotation } from '../prefs.ts';
 import { paths } from '../router.ts';
+import { printMenu } from './print-menu.ts';
 import type { Navigate, View } from './types.ts';
 
 /**
@@ -29,6 +31,13 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
     const error = h('p', { class: 'error', role: 'alert' });
     const sing = h('a', { class: 'button button--primary', 'data-link': true, href: paths.perform(setlist.id, 1) }, 'Cantar');
     const count = h('span', { class: 'muted' });
+    const print = printMenu((version, notation) =>
+        inMassOrder(setlist.items).flatMap((item) => {
+            const song = songs.get(item.songId);
+            const part = MASS_PARTS.find((candidate) => candidate.id === item.part)?.name;
+
+            return song === undefined ? [] : [planSheet(song, { version, shift: item.transpose, notation, ...(part !== undefined ? { part } : {}) })];
+        }));
     const remove = h('button', { type: 'button', class: 'button button--danger' }, 'Eliminar listado');
     const slots = h('div', { class: 'slots' });
 
@@ -48,7 +57,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
         h('div', { class: 'actions' }, link(paths.lists(), '← Listados', 'button')),
         header,
         error,
-        h('div', { class: 'actions' }, sing, count, remove),
+        h('div', { class: 'actions' }, sing, print, count, remove),
         slots,
     );
 
@@ -85,6 +94,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
         slots.replaceChildren(...known, ...(strays.length > 0 ? [strangers(strays)] : []));
         count.textContent = rows.length === 1 ? '1 canto' : `${rows.length} cantos`;
         sing.hidden = rows.length === 0;
+        print.hidden = rows.length === 0;
         if (focused !== null) {
             slots.querySelector<HTMLElement>(`[data-focus="${CSS.escape(focused)}"]`)?.focus();
         }

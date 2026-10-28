@@ -105,3 +105,39 @@ export const WORDS: string[] = [
     'ay', 'hoy', 'muy', 'y', 'mayo', 'yema', 'ya', 'Yahvé', 'Jesús', 'Jesucristo', 'Espíritu', 'Santo', 'Padre',
     '123', '¡Hey!', '(BIS)', 'x', 'ç', 'ß',
 ];
+
+/**
+ * Songs and headings for the print cascade (PrintLayout). The sweeps walk a song from a few
+ * lines to many pages, so every threshold between normal, compact, columns and pages is crossed,
+ * with and without chords; the headings make the header take one, two and three rows.
+ */
+export const PRINT_SONGS: Record<string, string> = (() => {
+    const songs: Record<string, string> = { ...SONGS };
+    const withChords = '[G]Cuánto he espe[D]rado este mo[Em]mento\n';
+    const plain = 'Cuánto he esperado este momento\n';
+    for (let stanzas = 1; stanzas <= 40; stanzas++) {
+        songs[`sweepStanzasChords${stanzas}`] = Array(stanzas).fill(withChords.repeat(4)).join('\n');
+        songs[`sweepStanzasPlain${stanzas}`] = Array(stanzas).fill(plain.repeat(4)).join('\n');
+    }
+    for (let lines = 1; lines <= 90; lines += 1) {
+        songs[`sweepLinesChords${lines}`] = withChords.repeat(lines);
+        songs[`sweepLinesPlain${lines}`] = plain.repeat(lines);
+    }
+    // Rows that wrap: the same line, longer and longer
+    for (let words = 4; words <= 40; words += 4) {
+        songs[`sweepWrap${words}`] = ('[Am]Caminamos con ale[E]gría, Señor, '.repeat(words / 4) + '\n').repeat(12);
+    }
+    songs['verseLabelsAndChorus'] = '{c: Verso 1}\n' + withChords.repeat(6) + '\n{c: Coro}\n' + withChords.repeat(6)
+        + '\n{c: Verso 2}\n' + withChords.repeat(6) + '\n{c: Puente}\n' + withChords.repeat(6) + '\n{ci: x2}\n';
+    songs['introsAndAnnotations'] = '{c: Intro}\n[G] [D] [Em]\n\n{c: Verso}\n' + withChords.repeat(14) + '{ci: (BIS)}\n'.repeat(6);
+
+    return songs;
+})();
+
+/** [title, subtitle] pairs: a short header, and ones that wrap to a second and a third row */
+export const PRINT_HEADINGS: [string, string][] = [
+    ['', ''],
+    ['Cántico de la creación', 'Autor Conocido'],
+    ['Un título muy largo que se parte en dos filas de la cabecera', 'Un artista · Un disco con nombre largo (2024)'],
+    ['Ñandú '.repeat(30), 'Señor '.repeat(40)],
+];

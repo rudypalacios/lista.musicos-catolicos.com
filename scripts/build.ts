@@ -50,6 +50,9 @@ const app = await build({
     entryNames: '[name]-[hash]',
     // The PDF reader is a separate chunk, fetched only when a PDF is chosen (and not precached)
     chunkNames: 'chunk-[hash]',
+    // The print fonts (print.css) are files of this origin, hashed like the rest
+    loader: { '.woff2': 'file' },
+    assetNames: 'font-[hash]',
     splitting: true,
     bundle: true,
     minify: true,
@@ -87,6 +90,8 @@ const toUrl = (path: string): string => '/' + relative(publicDir, join(root, pat
 const js = toUrl(mainPath);
 const css = toUrl(cssPath);
 const scripts = [...loaded].map(toUrl);
+// The print fonts: printing has to work offline, so the shell holds them
+const fonts = Object.keys(outputs).filter((path) => path.endsWith('.woff2')).map(toUrl);
 
 // LISTA_BUILD_NOTE changes the page and so the shell's version: the update test builds twice with it
 const note = process.env['LISTA_BUILD_NOTE'];
@@ -95,7 +100,7 @@ const html =
     (note !== undefined ? `<!-- build: ${note.replace(/[^\w .-]/g, '')} -->\n` : '');
 writeFileSync(join(publicDir, 'index.html'), html);
 
-const shellUrls = ['/index.html', ...scripts, css, ...STATIC_SHELL];
+const shellUrls = ['/index.html', ...scripts, css, ...fonts, ...STATIC_SHELL];
 const files: ShellFile[] = shellUrls.map((url) => ({ url, content: readFileSync(join(publicDir, url)) }));
 const version = shellVersion(files);
 

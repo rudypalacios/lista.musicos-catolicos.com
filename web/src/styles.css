@@ -207,7 +207,8 @@ button.song-item {
 }
 
 a.button,
-button.button {
+button.button,
+summary.button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -859,4 +860,68 @@ button.info {
 
 .perform .error:empty {
     display: none;
+}
+
+/* Imprimir: a menu with the two sheets (print/print.css lays the pages out) */
+.print-menu {
+    position: relative;
+    display: inline-block;
+}
+
+.print-menu summary {
+    cursor: pointer;
+    list-style: none;
+}
+
+.print-menu summary::-webkit-details-marker {
+    display: none;
+}
+
+.print-menu__options {
+    position: absolute;
+    z-index: 5;
+    top: 100%;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 0.3rem;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    white-space: nowrap;
+}
+
+.print-menu__status {
+    margin: 0;
+}
+
+/* Install guide and the note that points to it */
+.help h3 {
+    margin: 1.5rem 0 0.5rem;
+}
+
+.steps {
+    margin: 0 0 0.75rem;
+    padding-left: 1.4rem;
+    line-height: 1.6;
+}
+
+.install-hint {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    margin: 0.75rem 0;
+}
+
+.install-hint p {
+    flex: 1 1 16rem;
+    margin: 0;
+}
+
+.help-link {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
 }
