@@ -158,6 +158,10 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    de letra que eliges con `A−`/`A+` se queda para los demás cantos y al volver a abrir la app. El último
    renglón debe quedar con aire debajo, sin pegarse al borde ni quedar bajo la pastilla. Con un panel abierto
    (`⋯` o «3/10 ▾»), el botón *atrás* del Android debe cerrar el panel, no salir de *Cantar*.
+8. **La pantalla no se apaga** mientras un canto está abierto (en *Cantar* o leyendo un canto): déjala quieta
+   un minuto o más del tiempo que tienes configurado para apagarla. `⋯` → *Pantalla* dice si se logró (si no,
+   "ahorro de batería" puede ser la causa). En *Ajustes* se puede apagar esta opción. En el iPad pide Safari
+   16.4 o más; instalada en la pantalla de inicio, iOS 18.4 o más.
 
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).

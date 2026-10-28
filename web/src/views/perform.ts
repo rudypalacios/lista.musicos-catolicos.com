@@ -4,9 +4,10 @@ import { LIMITS, type Setlist, type SetlistItem, type Song } from '../data/types
 import { h, link } from '../dom.ts';
 import { nextFold, type FoldState } from '../fold.ts';
 import { MASS_PARTS } from '../mass.ts';
-import { readMode, saveMode, type Mode } from '../prefs.ts';
+import { readKeepAwake, readMode, saveMode, type Mode } from '../prefs.ts';
 import { paths } from '../router.ts';
 import { dragOffset, isSwipe, swipeAxis, type Axis } from '../swipe.ts';
+import { describeAwake, screenKeeper } from '../wakelock.ts';
 import { createReader } from './reader.ts';
 import { createSheet } from './sheet.ts';
 import type { Account, Navigate, View } from './types.ts';
@@ -192,7 +193,15 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
         // Event: the note is there when wanted and out of the way otherwise
         toolsSheet.body.append(h('h3', {}, 'Nota'), h('p', { class: 'perform__note' }, `📝 ${item.note}`));
     }
+    // The screen stays on while a song is on screen, unless the person turned that off in Ajustes
+    const keepAwake = readKeepAwake();
+    const releaseScreen = keepAwake ? screenKeeper.hold() : (): void => undefined;
+    const awake = h('p', { class: 'perform__awake', role: 'status' }, describeAwake(keepAwake, screenKeeper.state()));
+    const stopAwake = screenKeeper.onChange((state) => {
+        awake.textContent = describeAwake(keepAwake, state);
+    });
     toolsSheet.body.append(
+        h('h3', {}, 'Pantalla'), awake,
         h('h3', {}, 'Cuenta'),
         h('div', { class: 'perform__account' }, settingsLink, signOut),
         sync,
@@ -331,6 +340,8 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
             toolsSheet.release();
             jumpSheet.release();
             stopSync();
+            stopAwake();
+            releaseScreen();
             dispose();
         },
     };

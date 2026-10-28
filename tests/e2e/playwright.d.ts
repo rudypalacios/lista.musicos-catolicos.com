@@ -8,6 +8,7 @@ declare module 'playwright' {
     interface Locator {
         click(): Promise<void>;
         check(): Promise<void>;
+        uncheck(): Promise<void>;
         fill(value: string): Promise<void>;
         blur(): Promise<void>;
         first(): Locator;

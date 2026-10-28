@@ -7,6 +7,7 @@ import { MASS_PARTS } from './mass.ts';
 import { matchRoute, paths, sectionOf, type Route } from './router.ts';
 import { applyLyricColor } from './settings.ts';
 import { showToast, type Toast } from './toast.ts';
+import { screenKeeper } from './wakelock.ts';
 import { showFatal, startUpdates } from './updates.ts';
 import { addView } from './views/add.ts';
 import { editView } from './views/edit.ts';
@@ -395,6 +396,12 @@ window.addEventListener('unhandledrejection', (event) => {
 });
 
 applyLyricColor();
+// The browser drops the screen lock whenever the page is hidden: ask again when it is back
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        screenKeeper.resume();
+    }
+});
 startUpdates();
 void App.create(() => {
     // Another window still runs the old version and holds the data: say what to do, not just wait

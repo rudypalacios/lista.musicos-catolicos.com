@@ -106,3 +106,14 @@ export function readLyricSize(): number {
 export function saveLyricSize(steps: number): void {
     write(LYRIC_SIZE, String(steps));
 }
+
+const KEEP_AWAKE = 'lista:pantalla-encendida';
+
+/** Keep the screen on while a song is open: on by default (a tablet on a stand must not go dark) */
+export function readKeepAwake(): boolean {
+    return read(KEEP_AWAKE) !== 'no';
+}
+
+export function saveKeepAwake(on: boolean): void {
+    write(KEEP_AWAKE, on ? 'si' : 'no');
+}

@@ -34,7 +34,9 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
 ## Small things to do when convenient
 
 - [ ] Tune the fit limits (`DEFAULT_LIMITS` in `web/src/fit.ts`) after seeing it on the devices.
-- [ ] Keep the screen awake while a song is open or a list is being sung (Screen Wake Lock; iPad Safari 16.4+).
+- [x] Keep the screen awake while a song is open or a list is being sung (Screen Wake Lock, `web/src/wakelock.ts`;
+      on by default, an Ajustes choice turns it off). **Owner's check:** Android and iPad (Safari 16.4+; a
+      home-screen app only from iOS 18.4), see `DEPLOY.md`.
 - [ ] Adding several songs to one part takes a round trip per song (the picker returns to the list).
       If that is slow in practice, let the picker stay open and show what has been added.
 - [ ] Duplicate a list ("copiar listado") to start next Sunday's from this Sunday's.

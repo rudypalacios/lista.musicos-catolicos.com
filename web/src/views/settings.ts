@@ -3,7 +3,7 @@ import { parse } from '../chordpro/parser.ts';
 import { sheetHtml } from '../chordpro/sheet.ts';
 import { h, setSheet } from '../dom.ts';
 import type { ColumnMode } from '../fit.ts';
-import { readColumns, readFit, readMode, readNotation, saveColumns, saveFit, saveLyricColor, saveMode, saveNotation, type Mode } from '../prefs.ts';
+import { readColumns, readFit, readKeepAwake, readMode, readNotation, saveColumns, saveFit, saveKeepAwake, saveLyricColor, saveMode, saveNotation, type Mode } from '../prefs.ts';
 import { applyLyricColor, chosenLyricColor, LYRIC_COLORS } from '../settings.ts';
 import { showToast } from '../toast.ts';
 import type { View } from './types.ts';
@@ -64,6 +64,13 @@ export function settingsView(): View {
         saved();
     });
 
+    const awake = h('input', { type: 'checkbox', id: 'setting-awake' });
+    awake.checked = readKeepAwake();
+    awake.addEventListener('change', () => {
+        saveKeepAwake(awake.checked);
+        saved();
+    });
+
     const element = h(
         'div',
         { class: 'page settings' },
@@ -84,6 +91,7 @@ export function settingsView(): View {
             applyLyricColor();
         }),
         h('div', { class: 'choice' }, h('label', { class: 'choice__option', for: 'setting-fit' }, fit, 'Ajustar la letra a la pantalla')),
+        h('div', { class: 'choice' }, h('label', { class: 'choice__option', for: 'setting-awake' }, awake, 'Mantener la pantalla encendida al leer o cantar un canto')),
         choice<ColumnMode>('columns', 'Columnas en pantallas anchas', readColumns(), [
             { value: 'auto', label: 'Automático (las que necesite el canto)' },
             { value: 'one', label: 'Siempre una' },
