@@ -37,6 +37,12 @@ async function setting(page: Page, label: string): Promise<void> {
     await page.getByLabel(label).check();
 }
 
+/** The fit runs on the frame after the song is drawn: look only once it has */
+async function settled(page: Page): Promise<void> {
+    await page.evaluate(() => new Promise<void>((done) => requestAnimationFrame(() => requestAnimationFrame(() => done()))));
+    await page.waitForTimeout(100);
+}
+
 const has = (page: Page, selector: string): Promise<boolean> => page.evaluate((s) => document.querySelector(s) !== null, selector);
 
 const browser = await chromium.launch();
@@ -76,13 +82,17 @@ try {
 
     // ----- columns on a wide screen -----
     await openSong(page, 'Puerta corta');
+    await settled(page);
     assert.equal(await has(page, '.viewer-content.is-columns'), false, 'a short song stays in one column on auto');
     await setting(page, 'Siempre dos');
     await openSong(page, 'Puerta corta');
+    await settled(page);
     assert.equal(await has(page, '.viewer-content.is-columns'), true, 'two columns even for a short song');
     await setting(page, 'Siempre una');
     await openSong(page, 'Camino largo');
+    await settled(page);
     assert.equal(await has(page, '.viewer-content.is-columns'), false, 'one column even for a long song');
+    await settled(page);
     assert.equal(await has(page, '.viewer-content.is-scroll'), true, 'and it scrolls instead');
     pass('the columns setting forces one or two columns on a wide screen');
 
@@ -91,9 +101,11 @@ try {
     await openSong(page, 'Puerta corta');
     await page.getByRole('button', { name: /Columnas: auto/ }).click();
     await page.getByRole('button', { name: /Columnas: 2/ }).waitFor();
+    await settled(page);
     assert.equal(await has(page, '.viewer-content.is-columns'), true);
     await page.getByRole('button', { name: /Columnas: 2/ }).click();
     await page.getByRole('button', { name: /Columnas: 1/ }).waitFor();
+    await settled(page);
     assert.equal(await has(page, '.viewer-content.is-columns'), false);
     await page.getByRole('button', { name: /Columnas: 1/ }).click();
     await page.getByRole('button', { name: /Columnas: auto/ }).waitFor();
@@ -158,19 +170,35 @@ try {
         }, top);
     await scrollStage(300);
     await page.waitForFunction(() => document.querySelector('.perform__chrome.is-collapsed') !== null);
-    assert.equal(await page.getByRole('button', { name: 'Mostrar las herramientas' }).isVisible(), true);
-    await page.getByRole('button', { name: 'Mostrar las herramientas' }).click();
+    assert.equal(await page.getByRole('button', { name: '▾ Mostrar herramientas' }).isVisible(), true);
+    await page.getByRole('button', { name: '▾ Mostrar herramientas' }).click();
     assert.equal(await has(page, '.perform__chrome.is-collapsed'), false);
+    await page.waitForTimeout(600); // the stage settles after the tools come back
     await scrollStage(600);
     await page.waitForFunction(() => document.querySelector('.perform__chrome.is-collapsed') !== null);
+    await page.waitForTimeout(600);
     await scrollStage(200);
     await page.waitForFunction(() => document.querySelector('.perform__chrome.is-collapsed') === null);
     pass('event mode hides the tools when the lyrics scroll down and brings them back on scroll up or a tap');
 
+    // By hand too: a song that fits has nothing to scroll, and the tools can still be put away
+    await page.getByRole('button', { name: 'Ocultar las herramientas' }).click();
+    await page.waitForFunction(() => document.querySelector('.perform__chrome.is-collapsed') !== null);
+    await page.waitForTimeout(600);
+    const roomWith = await page.locator('#stage').evaluate((el) => el.getBoundingClientRect().height);
+    await page.getByRole('button', { name: '▾ Mostrar herramientas' }).click();
+    await page.waitForFunction(() => document.querySelector('.perform__chrome.is-collapsed') === null);
+    await page.waitForTimeout(600);
+    const roomWithout = await page.locator('#stage').evaluate((el) => el.getBoundingClientRect().height);
+    assert.ok(roomWith > roomWithout + 60, `the lyrics gain room when the tools are away (${roomWith} vs ${roomWithout})`);
+    pass('the tools can also be put away by hand, and the strip brings them back');
+
     // ----- rehearsal mode: every tool, and notes -----
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.getByRole('button', { name: /Modo evento/ }).click();
-    await page.getByRole('button', { name: /Modo ensayo/ }).waitFor();
+    assert.equal(await page.getByRole('button', { name: /Evento/ }).getAttribute('aria-pressed'), 'true');
+    assert.match(await page.locator('.perform__modes').innerText(), /para preparar[\s\S]*para cantar/i);
+    await page.getByRole('button', { name: /Ensayo/ }).click();
+    await page.locator('.perform__mode[aria-pressed="true"]', { hasText: 'Ensayo' }).waitFor();
     assert.equal(await page.getByRole('button', { name: 'Ajustar' }).isVisible(), true);
     assert.equal(await page.getByRole('button', { name: 'Más herramientas' }).count(), 0);
     await page.getByRole('button', { name: '📝 Agregar nota' }).click();
@@ -181,8 +209,8 @@ try {
     pass('rehearsal mode shows every tool and takes a note on the song being sung');
 
     // The note is read, not edited, in event mode, and the list has it
-    await page.getByRole('button', { name: /Modo ensayo/ }).click();
-    await page.getByRole('button', { name: /Modo evento/ }).waitFor();
+    await page.getByRole('button', { name: /Evento/ }).click();
+    await page.locator('.perform__mode[aria-pressed="true"]', { hasText: 'Evento' }).waitFor();
     assert.equal(await page.getByLabel('Nota de este canto').count(), 0);
     await page.getByRole('button', { name: '📝 Nota' }).click();
     await page.getByText('Tono alto, bajar medio tono').waitFor();

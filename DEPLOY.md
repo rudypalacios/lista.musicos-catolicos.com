@@ -138,8 +138,8 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
 2. En un listado largo, toca *Agregar canto* en una parte lejana y elige uno: vuelves a esa parte,
    con el canto nuevo resaltado un momento. Entra a un canto desde el listado y vuelve con el botón
    atrás: debe quedar en el mismo lugar.
-3. Pon el mismo canto en dos partes: aparece "También está en…" en las dos filas y "Ya está en…" al
-   elegirlo. No debe impedir nada.
+3. Pon el mismo canto en dos partes: al agregarlo aparece un aviso "«…» también está en: …" (no al
+   buscarlo) y en las dos filas queda "También está en…". No debe impedir nada.
 4. Las notas: botón *Nota*; si ya hay una se ve como una línea tenue, y al tocarla se edita.
 5. En *Cantar*, desliza a izquierda y derecha: **la pantalla ya no debe "ensancharse"** en los bordes y el
    canto nuevo debe entrar deslizándose. (Esto solo se puede confirmar en el teléfono.)
@@ -147,9 +147,11 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    cambia al momento. Abre un canto: ya usa lo elegido. En la tablet, el botón *Columnas* del lector
    cambia entre automático, 2 y 1.
 7. *Cantar* en **modo evento** (el de siempre): barra mínima con tono, `A−`/`A+` y `⋯` para el resto. Con
-   un canto largo, baja la letra: las herramientas se esconden; sube un poco o toca ☰ y vuelven.
-   `A+` debe agrandar la letra incluso con *Ajustar* activo. *Modo evento* → *Modo ensayo*: todas las
-   herramientas y se pueden escribir notas en el canto que estás cantando.
+   un canto largo, baja la letra: las herramientas se esconden y queda una franja "▾ Mostrar herramientas"
+   (tócala, o sube un poco, y vuelven). También se pueden esconder a mano con "▴ Ocultar", incluso si el
+   canto cabe entero. `A+` debe agrandar la letra incluso con *Ajustar* activo. El selector *Ensayo (para
+   preparar) | Evento (para cantar)*: en ensayo salen todas las herramientas y se pueden escribir notas en el
+   canto que estás cantando.
 
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).

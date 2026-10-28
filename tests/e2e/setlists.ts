@@ -241,13 +241,15 @@ try {
     // The same song in two parts: allowed, with a quiet notice on both (and in the picker beforehand)
     await page.getByRole('link', { name: 'Agregar canto a Canto de salida' }).click();
     await page.getByLabel('Buscar cantos').fill('puerta');
-    await page.getByText('Ya está en Canto de entrada').waitFor();
+    await page.getByRole('button', { name: /Abrimos la puerta/ }).waitFor();
+    assert.equal(await page.getByText('Ya está en').count(), 0, 'searching does not warn');
     await page.getByRole('button', { name: /Abrimos la puerta/ }).click();
+    await page.locator('.toast', { hasText: '“Abrimos la puerta” también está en: Canto de entrada' }).waitFor();
     await slot(page, 'Canto de salida').locator('.item__title').waitFor();
     await slot(page, 'Canto de salida').getByText('También está en: Canto de entrada').waitFor();
     await slot(page, 'Canto de entrada').getByText('También está en: Canto de salida').waitFor();
     assert.equal(await slot(page, 'Canto de comunión').locator('.item__also').count(), 0);
-    pass('the same song in two parts is allowed, with a notice in the picker and on both rows');
+    pass('the same song in two parts is allowed: a notice when it is added (not while searching) and on both rows');
     await slot(page, 'Canto de salida').getByRole('button', { name: 'Quitar Abrimos la puerta del listado' }).click();
     await slot(page, 'Canto de salida').locator('.item').waitFor({ state: 'detached' });
     await slot(page, 'Canto de entrada').locator('.item__also').waitFor({ state: 'detached' });
