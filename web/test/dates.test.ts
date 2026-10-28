@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { isValidDate, longDate, shortDate, today } from '../src/dates.ts';
+import { isValidDate, longDate, shortDate, shortDay, today } from '../src/dates.ts';
 
 describe('isValidDate', () => {
     it('accepts real calendar days', () => {
@@ -33,5 +33,13 @@ describe('long and short dates', () => {
         assert.equal(longDate('2026-11-01'), 'domingo, 1 de noviembre de 2026');
         assert.equal(shortDate('2026-11-01'), '1 de noviembre');
         assert.equal(shortDate('2026-12-25'), '25 de diciembre');
+    });
+});
+
+describe('shortDay', () => {
+    it('is the weekday, the day and the month, abbreviated', () => {
+        assert.equal(shortDay('2026-11-01'), 'dom 1 nov');
+        assert.equal(shortDay('2026-09-06'), 'dom 6 sep');
+        assert.equal(shortDay('2026-12-31'), 'jue 31 dic');
     });
 });

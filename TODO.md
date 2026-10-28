@@ -39,7 +39,11 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       home-screen app only from iOS 18.4), see `DEPLOY.md`.
 - [ ] Adding several songs to one part takes a round trip per song (the picker returns to the list).
       If that is slow in practice, let the picker stay open and show what has been added.
-- [ ] Duplicate a list ("copiar listado") to start next Sunday's from this Sunday's.
+- [ ] Duplicate a list ("copiar listado") to start next Sunday's from this Sunday's (the "Nuevo listado" sheet with
+      "copy of the last one" was sketched with the owner; no schema change).
+- [ ] The setlist screen itself (`views/setlist.ts`) is still heavy: cards inside cards and five buttons per song.
+      Sketched with the owner as "option A": flat sections, the key stepper always visible, the other tools behind
+      a tap, and a compact header (title edited in place, the day as a chip, Imprimir/Eliminar under "⋯").
 
 ## Phase 2: setlists (done, awaiting the owner's devices)
 
@@ -85,7 +89,13 @@ Next, in this order (design agreed with the owner):
       it can come back later if wanted. A± nudge the size the fit chose. Settings are not synced between
       devices on purpose (a tablet on a stand and a phone want different things); sync them later if
       the owner asks.
-- [ ] **Owner's check on the Android** for phases 4 and 5 (`DEPLOY.md`, "Fases 4 y 5").
+- [x] The lists screen, lighter (`web/src/views/lists.ts`): flat rows with no cards, the starred lists first under
+      "★ Destacados" (by title) and the rest under "Recientes" (most recently edited first; the day of the Mass no
+      longer orders anything, so lists with no day work), a title search, and a 44px star on each row. The star is a
+      field of the list (`starred`, migration `0006`) and syncs between devices; an older copy of the app that sends
+      no value keeps the stored one. "＋ Nuevo" still creates a list at once. Left out on purpose: a cap on
+      "Recientes" with "Ver todos" (the search covers a long list), and "Crear «texto»" from an empty search.
+- [ ] **Owner's check on the Android** for phases 4 and 5 (`DEPLOY.md`, "Fases 4 y 5", item 9 for the lists screen).
 - [ ] Phase 6, templates and tags (schema change, migration): turn parts on and off per list, add own
       parts, a template manager (the Mass is the default); tags on songs, one per part by default; the
       picker of a part filters by its tag, with "Mostrar todos" always at hand and no filter when no

@@ -3,7 +3,7 @@ import { beforeEach, describe, it } from 'node:test';
 import { ValidationError } from '../../src/data/library.ts';
 import { MemoryStore } from '../../src/data/memory-store.ts';
 import {
-    defaultTitle, inMassOrder, itemsOfPart, newestFirst, partIndex, Setlists,
+    defaultTitle, inMassOrder, itemsOfPart, partIndex, recentFirst, Setlists, splitStarred,
 } from '../../src/data/setlists.ts';
 import { LIMITS, type Setlist, type SetlistItem } from '../../src/data/types.ts';
 import { MASS_PARTS } from '../../src/mass.ts';
@@ -36,7 +36,7 @@ describe('Setlists', () => {
             const list = await lists.create();
 
             assert.deepEqual(list, {
-                id: 'id-0', title: 'Misa del 1 de noviembre', eventDate: '2026-11-01', notes: '', items: [],
+                id: 'id-0', title: 'Misa del 1 de noviembre', eventDate: '2026-11-01', notes: '', starred: false, items: [],
                 updatedAt: NOV_1, deletedAt: null,
             });
             assert.deepEqual(await store.pending('setlists'), [list]);
@@ -57,21 +57,96 @@ describe('Setlists', () => {
     });
 
     describe('listing', () => {
-        it('shows the newest day first, undated lists last, and hides the deleted', async () => {
-            const old = await lists.create({ title: 'Antigua', eventDate: '2026-09-06' });
-            const recent = await lists.create({ title: 'Reciente', eventDate: '2026-11-01' });
+        it('shows the most recently edited first, with or without a day, and hides the deleted', async () => {
+            const first = await lists.create({ title: 'Primera', eventDate: '2026-12-25' });
+            now += 1_000;
             const undated = await lists.create({ title: 'Sin fecha', eventDate: null });
-            const gone = await lists.create({ title: 'Borrada', eventDate: '2026-12-25' });
+            now += 1_000;
+            const gone = await lists.create({ title: 'Borrada' });
             await lists.remove(gone.id);
+            now += 1_000;
+            await lists.update(first.id, { title: 'Primera, editada', eventDate: '2026-12-25', notes: '' });
 
-            assert.deepEqual((await lists.list()).map((l) => l.id), [recent.id, old.id, undated.id]);
+            assert.deepEqual((await lists.list()).map((l) => l.id), [first.id, undated.id]);
         });
 
-        it('breaks a tie of days by the latest edit', () => {
-            const a = setlist('a', 10, { eventDate: '2026-11-01' });
-            const b = setlist('b', 20, { eventDate: '2026-11-01' });
+        it('breaks a tie of edits by id, so the order never flips', () => {
+            const a = setlist('a', 10);
+            const b = setlist('b', 10);
 
-            assert.deepEqual([a, b].sort(newestFirst).map((l) => l.id), ['b', 'a']);
+            assert.deepEqual([b, a].sort(recentFirst).map((l) => l.id), ['a', 'b']);
+        });
+
+        it('splits the starred (by title) from the rest (most recent first)', () => {
+            const rosario = setlist('r', 5, { title: 'Rosario', starred: true });
+            const avivamiento = setlist('v', 9, { title: 'Avivamiento', starred: true });
+            const old = setlist('o', 1, { title: 'Misa vieja' });
+            const recent = setlist('n', 7, { title: 'Misa nueva' });
+
+            const { starred, others } = splitStarred([rosario, old, avivamiento, recent]);
+
+            assert.deepEqual(starred.map((l) => l.id), ['v', 'r']);
+            assert.deepEqual(others.map((l) => l.id), ['n', 'o']);
+        });
+
+        it('sorts starred titles the Spanish way (an accent is not after z)', () => {
+            const { starred } = splitStarred([
+                setlist('z', 1, { title: 'Zacarías', starred: true }),
+                setlist('a', 1, { title: 'Ángeles', starred: true }),
+                setlist('b', 1, { title: 'Bodas', starred: true }),
+            ]);
+
+            assert.deepEqual(starred.map((l) => l.id), ['a', 'b', 'z']);
+        });
+    });
+
+    describe('starring', () => {
+        it('stars and unstars with a newer stamp, and queues the change', async () => {
+            const list = await lists.create({ title: 'Rosario', eventDate: null });
+            now += 5_000;
+
+            const starred = await lists.setStarred(list.id, true);
+
+            assert.equal(starred.starred, true);
+            assert.equal(starred.updatedAt, NOV_1 + 5_000);
+            assert.equal((await lists.get(list.id))?.starred, true);
+            assert.equal((await store.pending('setlists'))[0]?.starred, true);
+
+            now += 1_000;
+            assert.equal((await lists.setStarred(list.id, false)).starred, false);
+        });
+
+        it('keeps the star through other edits of the list', async () => {
+            const list = await lists.create({ title: 'Rosario', eventDate: null });
+            await lists.setStarred(list.id, true);
+            now += 1_000;
+
+            await lists.update(list.id, { title: 'Rosario en familia', eventDate: null, notes: '' });
+            await lists.addItem(list.id, 'entrada', 's1');
+
+            assert.equal((await lists.get(list.id))?.starred, true);
+        });
+
+        it('reads a list saved before stars existed as not starred', async () => {
+            const { starred: _gone, ...legacy } = setlist('old', 1);
+            await store.save('setlists', legacy as Setlist);
+
+            assert.equal((await lists.get('old'))?.starred, false);
+            assert.equal((await lists.list())[0]?.starred, false);
+        });
+
+        it('says so for a list that no longer exists', async () => {
+            await assert.rejects(lists.setStarred('nope', true), /ya no existe/);
+        });
+
+        it('takes the star off a deleted list', async () => {
+            const list = await lists.create();
+            await lists.setStarred(list.id, true);
+            now += 1_000;
+
+            await lists.remove(list.id);
+
+            assert.equal((await store.get('setlists', list.id))?.starred, false);
         });
     });
 

@@ -131,6 +131,19 @@ final class ApiTest extends TestCase
         $this->assertSame(1, $body['cursor']);
     }
 
+    public function testTheStarOfASetlistTravelsBothWays(): void
+    {
+        $cookies = [SessionCookie::NAME => $this->signIn()];
+
+        $this->call('POST', '/api/sync', ['setlists' => [$this->setlist(['starred' => true])]], $cookies);
+        $list = $this->body($this->call('GET', '/api/sync?since=0', null, $cookies))['setlists'][0];
+        $this->assertTrue($list['starred']);
+
+        $invalid = $this->setlist(['starred' => 'sí', 'updatedAt' => 1_800_000_000_000]);
+        $bad = $this->call('POST', '/api/sync', ['setlists' => [$invalid]], $cookies);
+        $this->assertSame(400, $bad->getStatusCode());
+    }
+
     public function testSongsAndSetlistsCanTravelInOneRequestAndShareTheCursor(): void
     {
         $cookies = [SessionCookie::NAME => $this->signIn()];

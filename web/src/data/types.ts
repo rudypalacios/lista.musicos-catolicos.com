@@ -38,6 +38,8 @@ export interface Setlist {
     /** The day of the Mass, `YYYY-MM-DD`, or null */
     readonly eventDate: string | null;
     readonly notes: string;
+    /** A favourite: the lists screen shows the starred ones first. Synced with the rest of the list */
+    readonly starred: boolean;
     /** In the order they were added; the order within a part is the order here */
     readonly items: readonly SetlistItem[];
     readonly updatedAt: number;

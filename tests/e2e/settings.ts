@@ -177,7 +177,7 @@ try {
 
     // ----- singing: one row of bar and everything else behind "⋯" -----
     await page.getByRole('link', { name: 'Listados', exact: true }).click();
-    await page.locator('.song-list .song-item').first().click();
+    await page.locator('.lrow__link').first().click();
     await page.getByRole('link', { name: 'Cantar' }).click();
     await page.getByRole('heading', { name: 'Camino largo' }).waitFor();
     await page.getByRole('button', { name: 'Más herramientas' }).waitFor();

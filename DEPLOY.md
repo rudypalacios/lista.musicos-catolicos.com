@@ -74,7 +74,7 @@ cada deploy (`migrations/`). No hay nada que ejecutar en el servidor.
 ## Comprobar el primer deploy
 
 1. `https://lista.musicos-catolicos.com/api/health` debe responder
-   `{"status":"ok","schema":"<última migración>"}` (por ejemplo `0005_setlists_utf8mb4.mysql`). Si responde HTML o 404, falta el `.htaccess`
+   `{"status":"ok","schema":"<última migración>"}` (por ejemplo `0006_setlists_starred`). Si responde HTML o 404, falta el `.htaccess`
    (paso 7); si responde 500, revisa el `.env` y el usuario de la base.
 2. Abre `https://lista.musicos-catolicos.com/` e inicia sesión (si usaste `OWNER_PASSWORD`, bórrala del `.env`).
 3. **Codificación de la base.** No tienes que hacer nada: las migraciones `0003_utf8mb4.mysql.sql` y
@@ -168,6 +168,15 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    un minuto o más del tiempo que tienes configurado para apagarla. `⋯` → *Pantalla* dice si se logró (si no,
    "ahorro de batería" puede ser la causa). En *Ajustes* se puede apagar esta opción. En el iPad pide Safari
    16.4 o más; instalada en la pantalla de inicio, iOS 18.4 o más.
+9. **Pantalla *Listados* con destacados.** Una fila por listado, sin tarjetas: el título, y debajo «5 cantos»
+   (y el día, si lo tiene, como «dom 1 nov»). Toca la **estrella** de la derecha (☆): el listado sube a
+   «★ Destacados» (ordenados por título); los demás quedan en «Recientes», el último que editaste primero
+   (el día de la misa ya no ordena nada, así que sirven los listados sin fecha: rosario, avivamiento…).
+   Mientras no hay destacados, un aviso dice cómo hacerlo. Toca la fila (no la estrella) y abre el listado.
+   El buscador filtra por título y, mientras escribes, muestra una sola lista con los destacados primero.
+   «＋ Nuevo» sigue creando un listado al instante. **La estrella se sincroniza**: márcala en la tablet y mira
+   que aparezca en el teléfono. La primera vez después de este deploy, la app crea sola la columna
+   (migración `0006`); no hay que hacer nada en phpMyAdmin.
 
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
