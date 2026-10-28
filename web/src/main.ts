@@ -5,6 +5,8 @@ import { App, signOut, type Status } from './app.ts';
 import { h, link } from './dom.ts';
 import { MASS_PARTS } from './mass.ts';
 import { matchRoute, paths, sectionOf, type Route } from './router.ts';
+import { applyLyricColor } from './settings.ts';
+import { showToast, type Toast } from './toast.ts';
 import { showFatal, startUpdates } from './updates.ts';
 import { addView } from './views/add.ts';
 import { editView } from './views/edit.ts';
@@ -14,6 +16,7 @@ import { listView } from './views/list.ts';
 import { listsView } from './views/lists.ts';
 import { performView } from './views/perform.ts';
 import { setlistView } from './views/setlist.ts';
+import { settingsView } from './views/settings.ts';
 import { signInView } from './views/signin.ts';
 import type { Navigate, View } from './views/types.ts';
 import { viewView } from './views/view.ts';
@@ -72,6 +75,32 @@ function describe(status: Status): { text: string; className: string } {
     }
 }
 
+let savesWatched = false;
+
+/**
+ * Everything is saved as it is typed, so there is no "save" button to tell the person it worked:
+ * a toast does. It says where the change is ("en este dispositivo") and, once the server has it,
+ * that it is synced, so the person knows when the only copy is the one on this device.
+ */
+function watchSaves(data: App): void {
+    if (savesWatched) {
+        return;
+    }
+    savesWatched = true;
+    let last: Toast | null = null;
+    let waiting = false;
+    data.onSaved(() => {
+        last = showToast('Guardado en este dispositivo');
+        waiting = true;
+    });
+    data.onStatus((status) => {
+        if (waiting && status.state === 'idle' && status.pending === 0) {
+            waiting = false;
+            last?.update('Guardado y sincronizado');
+        }
+    });
+}
+
 /** The frame around every screen. Built once per sign-in. */
 function mountShell(data: App, email: string, onSignedOut: () => void, onNeedsSignIn: () => void): void {
     const sync = h('span', { class: 'sync', role: 'status', 'aria-live': 'polite' });
@@ -93,7 +122,8 @@ function mountShell(data: App, email: string, onSignedOut: () => void, onNeedsSi
     });
 
     const brand = link(paths.list(), 'Listas', 'brand');
-    const bar = h('header', { class: 'bar' }, h('h1', {}, brand), sync, renew, h('span', { class: 'who' }, email), out);
+    const settings = link(paths.settings(), 'Ajustes', 'link');
+    const bar = h('header', { class: 'bar' }, h('h1', {}, brand), sync, renew, h('span', { class: 'who' }, email), settings, out);
     tabs = h(
         'nav',
         { class: 'tabs', 'aria-label': 'Secciones' },
@@ -101,6 +131,7 @@ function mountShell(data: App, email: string, onSignedOut: () => void, onNeedsSi
         h('a', { href: paths.lists(), 'data-link': true, 'data-section': 'lists' }, 'Listados'),
     );
     app.replaceChildren(bar, tabs, h('main', { id: 'view' }));
+    watchSaves(data);
 
     const paint = (status: Status): void => {
         const { text, className } = describe(status);
@@ -151,6 +182,8 @@ function routeView(data: App, route: Route, navigate: Navigate): Promise<View> {
             });
         case 'install':
             return Promise.resolve(installView());
+        case 'settings':
+            return Promise.resolve(settingsView());
         case 'list':
             return Promise.resolve(listView(data));
         case 'new':
@@ -171,27 +204,59 @@ function routeView(data: App, route: Route, navigate: Navigate): Promise<View> {
     }
 }
 
+/** Puts the screen back where it was, waiting for a view that fills in after it is shown */
+function restoreScroll(top: number): void {
+    const container = document.getElementById('view');
+    if (container === null || top <= 0) {
+        return;
+    }
+    let tries = 0;
+    const apply = (): void => {
+        container.scrollTop = top;
+        if (container.scrollTop < top && ++tries < 8) {
+            setTimeout(apply, 100);
+        }
+    };
+    apply();
+}
+
 function runRouter(data: App): void {
     let token = 0;
-    const render = (): void => {
+    /** How far each screen was scrolled when the person left it, so "back" returns to the same place */
+    const scrolls = new Map<string, number>();
+    /** The address of the screen being shown */
+    let shown = location.pathname;
+    const rememberScroll = (): void => {
+        const container = document.getElementById('view');
+        if (container !== null) {
+            scrolls.set(shown, container.scrollTop);
+        }
+    };
+    const render = (restore: boolean): void => {
         const mine = ++token;
         const route = matchRoute(location.pathname);
+        const path = location.pathname;
         markSection(route);
         void routeView(data, route, navigate).then((view) => {
             if (mine === token) {
                 show(view);
+                shown = path;
+                if (restore) {
+                    restoreScroll(scrolls.get(path) ?? 0);
+                }
             } else {
                 view.dispose?.();
             }
         });
     };
     const navigate: Navigate = (path, options) => {
+        rememberScroll();
         if (options?.replace === true) {
             history.replaceState(null, '', path);
         } else {
             history.pushState(null, '', path);
         }
-        render();
+        render(false);
     };
 
     document.addEventListener('click', (event) => {
@@ -204,8 +269,11 @@ function runRouter(data: App): void {
             navigate(anchor.pathname + anchor.search);
         }
     });
-    window.addEventListener('popstate', render);
-    render();
+    window.addEventListener('popstate', () => {
+        rememberScroll();
+        render(true);
+    });
+    render(false);
 }
 
 let routerStarted = false;
@@ -305,6 +373,7 @@ window.addEventListener('unhandledrejection', (event) => {
     }
 });
 
+applyLyricColor();
 startUpdates();
 void App.create(() => {
     // Another window still runs the old version and holds the data: say what to do, not just wait

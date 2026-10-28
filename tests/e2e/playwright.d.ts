@@ -7,6 +7,7 @@ declare module 'playwright' {
     }
     interface Locator {
         click(): Promise<void>;
+        check(): Promise<void>;
         fill(value: string): Promise<void>;
         blur(): Promise<void>;
         first(): Locator;
@@ -59,9 +60,10 @@ declare module 'playwright' {
         on(event: 'dialog', listener: (dialog: Dialog) => void): void;
         once(event: 'dialog', listener: (dialog: Dialog) => void): void;
         reload(): Promise<unknown>;
+        goBack(): Promise<unknown>;
         url(): string;
         setViewportSize(size: { width: number; height: number }): Promise<void>;
-        waitForFunction(callback: () => unknown, options?: { timeout?: number }): Promise<unknown>;
+        waitForFunction<A = undefined>(callback: (arg: A) => unknown, arg?: A, options?: { timeout?: number }): Promise<unknown>;
         waitForTimeout(ms: number): Promise<void>;
         bringToFront(): Promise<void>;
     }

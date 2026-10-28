@@ -23,6 +23,8 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
     const explained = new Set<string>();
     /** Notes typed and not saved yet, by item id: saving waits for the end of the typing */
     const unsaved = new Map<string, () => Promise<unknown>>();
+    /** Items whose note is open for editing: it must stay open when the list is redrawn */
+    const noting = new Set<string>();
 
     // --- the header: title, day, notes ---
     const title = h('input', { id: 'title', type: 'text', autocomplete: 'off', maxlength: String(LIMITS.title) });
@@ -86,12 +88,16 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
     });
 
     // --- the slots ---
+    /** The slots are being replaced: fields taken off the page lose focus, which is not the person leaving */
+    let drawing = false;
     const draw = (): void => {
         const focused = document.activeElement?.getAttribute('data-focus') ?? null;
         const rows = inMassOrder(setlist.items);
         const known = MASS_PARTS.map((part) => slot(part));
         const strays = rows.filter((item) => partIndex(item.part) === MASS_PARTS.length);
+        drawing = true;
         slots.replaceChildren(...known, ...(strays.length > 0 ? [strangers(strays)] : []));
+        drawing = false;
         count.textContent = rows.length === 1 ? '1 canto' : `${rows.length} cantos`;
         sing.hidden = rows.length === 0;
         print.hidden = rows.length === 0;
@@ -105,7 +111,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
         if (part.optional === true) {
             head.append(h('span', { class: 'badge' }, 'opcional'));
         }
-        const section = h('section', { class: 'slot', 'data-part': part.id }, head);
+        const section = h('section', { class: 'slot', id: `parte-${part.id}`, 'data-part': part.id }, head);
         if (part.note !== undefined) {
             const note = h('p', { class: 'slot__note', hidden: !explained.has(part.id) }, part.note);
             const info = h('button', {
@@ -157,31 +163,66 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
                 main.append(h('span', { class: 'song-item__author' }, song.author));
             }
         }
+        // The same song in another part is allowed (a hymn can open and close), but worth a word
+        const elsewhere = song === undefined ? [] : otherParts(item, setlist.items);
+        if (elsewhere.length > 0) {
+            main.append(h('span', { class: 'item__also', role: 'note' }, `También está en: ${elsewhere.join(', ')}`));
+        }
         li.append(main);
 
         if (song !== undefined) {
             li.append(keyControls(item, song));
         }
 
-        const note = h('input', {
-            type: 'text', class: 'item__note', placeholder: 'Nota (opcional)', value: item.note,
-            'aria-label': `Nota para ${song?.title ?? 'este canto'}`, maxlength: String(LIMITS.itemNote), autocomplete: 'off',
-        });
-        const saveNote = (): Promise<unknown> => {
-            unsaved.delete(item.id);
-
-            return app.setlists.setNote(setlist.id, item.id, note.value).catch((failure: unknown) => fail(failure, 'No se pudo guardar la nota.'));
-        };
-        note.addEventListener('input', () => unsaved.set(item.id, saveNote));
-        note.addEventListener('change', () => void saveNote());
-        note.addEventListener('blur', () => {
-            // Typed and put back as it was: no "change" comes, but the screen must not stay frozen
-            if (unsaved.has(item.id) && note.value.trim() === item.note) {
+        const noteField = (): HTMLElement => {
+            const note = h('input', {
+                type: 'text', class: 'item__note', placeholder: 'Nota (opcional)', value: item.note,
+                'aria-label': `Nota para ${song?.title ?? 'este canto'}`, maxlength: String(LIMITS.itemNote), autocomplete: 'off',
+                'data-focus': `note:${item.id}`,
+            });
+            const saveNote = (): Promise<unknown> => {
                 unsaved.delete(item.id);
-                reload();
-            }
-        });
-        li.append(note);
+
+                return app.setlists.setNote(setlist.id, item.id, note.value).catch((failure: unknown) => fail(failure, 'No se pudo guardar la nota.'));
+            };
+            note.addEventListener('input', () => unsaved.set(item.id, saveNote));
+            note.addEventListener('change', () => void saveNote());
+            note.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    note.blur();
+                }
+            });
+            note.addEventListener('blur', () => {
+                // Not the person leaving: the list was redrawn and this field was taken off the page
+                if (drawing || !note.isConnected) {
+                    return;
+                }
+                // Leaving the field closes it (a note is the exception, not a form to keep open);
+                // what was typed is saved first, and a note put back as it was just closes
+                const done = unsaved.has(item.id) ? saveNote() : Promise.resolve();
+                void done.then(() => {
+                    noting.delete(item.id);
+                    reload();
+                });
+            });
+
+            return note;
+        };
+        if (noting.has(item.id)) {
+            li.append(noteField());
+        } else if (item.note !== '') {
+            // A note that exists is one quiet line; touching it opens it for editing
+            const line = h('button', {
+                type: 'button', class: 'item__noteline', 'aria-label': `Editar la nota de ${song?.title ?? 'este canto'}`,
+                'data-focus': `note:${item.id}`,
+            }, h('span', { 'aria-hidden': 'true' }, '📝 '), item.note);
+            line.addEventListener('click', () => {
+                noting.add(item.id);
+                draw();
+                slots.querySelector<HTMLElement>(`[data-focus="${CSS.escape(`note:${item.id}`)}"]`)?.focus();
+            });
+            li.append(line);
+        }
 
         const tools = h('div', { class: 'item__tools' });
         const move = (label: string, symbol: string, direction: -1 | 1, disabled: boolean): void => {
@@ -194,6 +235,18 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
         };
         move('Mover arriba', '↑', -1, index === 0);
         move('Mover abajo', '↓', 1, index === total - 1);
+        if (item.note === '' && !noting.has(item.id)) {
+            const addNote = h('button', {
+                type: 'button', class: 'button', 'aria-label': `Agregar una nota a ${song?.title ?? 'este canto'}`,
+                'data-focus': `addnote:${item.id}`,
+            }, 'Nota');
+            addNote.addEventListener('click', () => {
+                noting.add(item.id);
+                draw();
+                slots.querySelector<HTMLElement>(`[data-focus="${CSS.escape(`note:${item.id}`)}"]`)?.focus();
+            });
+            tools.append(addNote);
+        }
         const quit = h('button', { type: 'button', class: 'button button--danger', 'data-focus': `quit:${item.id}` }, 'Quitar');
         quit.setAttribute('aria-label', `Quitar ${song?.title ?? 'canto eliminado'} del listado`);
         quit.addEventListener('click', () => void app.setlists.removeItem(setlist.id, item.id));
@@ -226,6 +279,25 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             h('div', { class: 'group' }, step('−', 'Bajar un semitono', -1, 'down-key'), key, step('+', 'Subir un semitono', 1, 'up-key')));
     };
 
+    /**
+     * Coming back from picking a song the address names the part (`#parte-comunion`): show it
+     * and flash the song just added, so the person finds the place they left.
+     */
+    function revealPart(): void {
+        const target = location.hash.startsWith('#parte-') ? location.hash.slice(1) : '';
+        if (target === '') {
+            return;
+        }
+        // Once: a reload or a return to this address later must not jump again
+        history.replaceState(history.state, '', location.pathname + location.search);
+        requestAnimationFrame(() => {
+            const section = slots.querySelector<HTMLElement>(`#${CSS.escape(target)}`);
+            const added = section?.querySelector<HTMLElement>('.item:last-child');
+            section?.scrollIntoView({ block: 'center' });
+            added?.classList.add('is-new');
+        });
+    }
+
     // --- keeping it in step with the store ---
     const fill = (): void => {
         for (const [field, value] of [[title, setlist.title], [day, setlist.eventDate ?? ''], [notes, setlist.notes]] as const) {
@@ -240,6 +312,10 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             return;
         }
         void Promise.all([app.setlists.get(setlist.id), songsById(app)]).then(([latest, all]) => {
+            // A note began to be typed while this was reading: redrawing now would wipe it
+            if (unsaved.size > 0) {
+                return;
+            }
             if (latest === undefined) {
                 // Deleted on another device while it was open
                 if (!leaving) {
@@ -258,6 +334,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
 
     fill();
     draw();
+    revealPart();
 
     return {
         element,
@@ -277,6 +354,18 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             }
         },
     };
+}
+
+/** The names of the other parts of the Mass where the item's song is also placed */
+function otherParts(item: SetlistItem, items: readonly SetlistItem[]): string[] {
+    const names = new Set<string>();
+    for (const other of items) {
+        if (other.id !== item.id && other.songId === item.songId) {
+            names.add(MASS_PARTS.find((part) => part.id === other.part)?.name ?? 'otra parte');
+        }
+    }
+
+    return [...names];
 }
 
 /** The songs that exist, by id */

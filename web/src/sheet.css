@@ -98,3 +98,8 @@
     text-decoration-thickness: 2px;
     text-underline-offset: 0.2em;
 }
+
+/* The colour of the lyrics is the person's setting (settings.ts); chords keep the accent */
+.song-sheet {
+    color: var(--lyric-color, inherit);
+}

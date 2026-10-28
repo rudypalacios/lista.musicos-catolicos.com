@@ -38,6 +38,7 @@ export class App {
     private pendingCount = 0;
     private readonly statusListeners = new Set<(status: Status) => void>();
     private readonly dataListeners = new Set<() => void>();
+    private readonly savedListeners = new Set<() => void>();
 
     private constructor(store: LocalStore, durable: boolean) {
         this.store = store;
@@ -125,6 +126,7 @@ export class App {
     private async afterWrite<T>(result: T): Promise<T> {
         await this.refreshPending();
         this.emitData();
+        this.savedListeners.forEach((listener) => listener());
         this.requestSync();
 
         return result;
@@ -185,6 +187,13 @@ export class App {
         this.dataListeners.add(listener);
 
         return () => this.dataListeners.delete(listener);
+    }
+
+    /** Called after something the person wrote here is saved on the device (not for records that arrived) */
+    onSaved(listener: () => void): () => void {
+        this.savedListeners.add(listener);
+
+        return () => this.savedListeners.delete(listener);
     }
 
     /** After the session ended and the person signed in again */

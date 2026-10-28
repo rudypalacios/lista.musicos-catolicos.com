@@ -54,6 +54,41 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       the unsent queue and pulls everything again once, because a version-1 cursor may have gone past
       setlists it could not read.
 
+## Usage feedback (owner's list, in phases)
+
+Phase 4, quiet and quick (no schema change):
+
+- [x] A toast says a change was saved ("Guardado en este dispositivo", then "Guardado y sincronizado");
+      no save button, everything saves as it is typed (`web/src/toast.ts`).
+- [x] After picking a song the list opens at that part with the new song marked; "back" from a song
+      returns to the same place in the list.
+- [x] "Aclamación memorial" explains itself with the ⓘ button.
+- [x] The same song in two parts is allowed, with a quiet notice in the picker and on both rows.
+- [x] Notes of a list item are out of the way: a "Nota" button, one muted line when there is a note, a
+      field only to edit it; while singing, a "Nota" button shows it.
+- [x] Swiping between songs: no browser rubber-band or sideways pull (`overscroll-behavior`,
+      `touch-action`), and the next song slides in. **Owner's check on the Android:** the stretch is gone.
+- [x] Wide screens: parts in two columns, each song's tools on one line.
+
+Next, in this order (design agreed with the owner):
+
+- [x] Phase 5, settings and modes (this branch): an Ajustes screen per device (chord names, lyric colour,
+      fit, columns auto / 1 / 2, default way to sing); a columns button in the reader on wide screens;
+      rehearsal mode (all tools, notes written while singing) and event mode (key ± and A± in view, the
+      rest behind "⋯", the tools hide when the lyrics scroll down and come back on scroll up or a tap;
+      A± now nudge the size the fit chose). Event is the default. Settings are not synced between
+      devices on purpose (a tablet on a stand and a phone want different things); sync them later if
+      the owner asks.
+- [ ] **Owner's check on the Android** for phases 4 and 5 (`DEPLOY.md`, "Fases 4 y 5").
+- [ ] Phase 6, templates and tags (schema change, migration): turn parts on and off per list, add own
+      parts, a template manager (the Mass is the default); tags on songs, one per part by default; the
+      picker of a part filters by its tag, with "Mostrar todos" always at hand and no filter when no
+      song carries the tag; the PDF importer could tag by part.
+- [ ] Phase 7, ChordPro: the easy tier, first in `musicos-catolicos` (the reference), then ported here
+      with new golden fixtures: owner wants repeat marks like "bis" written as comments, and a chord in
+      parentheses such as `[(G)]` recognised (needs the owner's confirmation of the syntax and that the
+      public site changes too). Chord diagrams are not planned.
+
 ## Phase 3: print and safety nets
 
 - [x] Print a song or a whole list, one song per page, with the `PrintLayout` cascade ported

@@ -145,8 +145,20 @@ try {
     await page.getByText('No es parte de la misa: el Misal no prescribe').waitFor({ state: 'hidden' });
     pass('the sign of peace slot explains itself with a visible ⓘ button (and a title)');
 
+    // The memorial acclamation explains itself too (what it is, when it is sung)
+    await page.getByRole('button', { name: 'Qué es esto: Aclamación memorial' }).click();
+    await page.getByText('La canta la asamblea justo después de la consagración').waitFor();
+    await page.getByRole('button', { name: 'Qué es esto: Aclamación memorial' }).click();
+    pass('the memorial acclamation explains what it is with a visible ⓘ button');
+
     // ----- filling the slots -----
     await addToSlot(page, 'Canto de entrada', 'puerta');
+    // Choosing a song returns to the part it was added to, with the new song marked, and says it was saved
+    await page.waitForFunction(() => document.querySelector('#parte-entrada .item.is-new') !== null);
+    assert.equal(new URL(page.url()).hash, '', 'the address is cleaned once the part is shown');
+    await page.locator('.toast', { hasText: 'Guardado' }).waitFor();
+    pass('picking a song returns to its part with the new song marked, and a toast says it was saved');
+
     await addToSlot(page, 'Canto de comunión', 'Pan de vida');
     await addToSlot(page, 'Canto de comunión', 'Gloria');
     assert.deepEqual(await slot(page, 'Canto de comunión').locator('.item__title').allTextContents(), ['Pan de vida', 'Gloria sencilla']);
@@ -179,13 +191,18 @@ try {
     assert.equal(await comunion.getByRole('button', { name: 'Mover arriba: Gloria sencilla' }).isDisabled(), true);
     pass('a song moves up within its slot, and the first one cannot go higher');
 
+    // A note is out of the way until asked for: no field, just a "Nota" button
+    assert.equal(await comunion.getByLabel('Nota para Pan de vida').count(), 0);
+    await comunion.getByRole('button', { name: 'Agregar una nota a Pan de vida' }).click();
     await comunion.getByLabel('Nota para Pan de vida').fill('Sin el último coro');
-    await page.getByLabel('Título').click(); // leaving the field saves it
+    await page.getByLabel('Título').click(); // leaving the field saves it and closes it
+    await comunion.getByRole('button', { name: 'Editar la nota de Pan de vida' }).waitFor();
     await synced(page);
     await page.reload();
     await page.locator('section.slot').first().waitFor();
+    await slot(page, 'Canto de comunión').getByRole('button', { name: 'Editar la nota de Pan de vida' }).click();
     assert.equal(await slot(page, 'Canto de comunión').getByLabel('Nota para Pan de vida').inputValue(), 'Sin el último coro');
-    pass('a note on a song is kept (and survives a reload)');
+    pass('a note on a song is one quiet line, opens to edit, is kept (and survives a reload)');
 
     // A title cannot be emptied: it says so, in Spanish, and the list keeps the old one
     const oldTitle = await page.getByLabel('Título').inputValue();
@@ -196,6 +213,7 @@ try {
     await page.getByLabel('Título').fill(oldTitle);
 
     // Typing in a note and putting it back must not leave the screen frozen
+    await slot(page, 'Canto de comunión').getByRole('button', { name: 'Agregar una nota a Gloria sencilla' }).click();
     const quiet = slot(page, 'Canto de comunión').getByLabel('Nota para Gloria sencilla');
     await quiet.fill('x');
     await quiet.fill('');
@@ -220,6 +238,20 @@ try {
     ]);
     pass('title, day, notes, order, keys and notes reach the server');
 
+    // The same song in two parts: allowed, with a quiet notice on both (and in the picker beforehand)
+    await page.getByRole('link', { name: 'Agregar canto a Canto de salida' }).click();
+    await page.getByLabel('Buscar cantos').fill('puerta');
+    await page.getByText('Ya está en Canto de entrada').waitFor();
+    await page.getByRole('button', { name: /Abrimos la puerta/ }).click();
+    await slot(page, 'Canto de salida').locator('.item__title').waitFor();
+    await slot(page, 'Canto de salida').getByText('También está en: Canto de entrada').waitFor();
+    await slot(page, 'Canto de entrada').getByText('También está en: Canto de salida').waitFor();
+    assert.equal(await slot(page, 'Canto de comunión').locator('.item__also').count(), 0);
+    pass('the same song in two parts is allowed, with a notice in the picker and on both rows');
+    await slot(page, 'Canto de salida').getByRole('button', { name: 'Quitar Abrimos la puerta del listado' }).click();
+    await slot(page, 'Canto de salida').locator('.item').waitFor({ state: 'detached' });
+    await slot(page, 'Canto de entrada').locator('.item__also').waitFor({ state: 'detached' });
+
     // ----- singing the list -----
     await page.getByRole('link', { name: 'Cantar' }).click();
     await page.getByRole('heading', { name: 'Abrimos la puerta' }).waitFor();
@@ -239,14 +271,17 @@ try {
 
     await page.keyboard.press('ArrowRight');
     await page.getByRole('heading', { name: 'Pan de vida' }).waitFor();
+    assert.doesNotMatch(await page.locator('.perform__info').innerText(), /Sin el último coro/);
+    await page.getByRole('button', { name: '📝 Nota' }).click();
     assert.match(await page.locator('.perform__info').innerText(), /Sin el último coro/);
     assert.equal(await page.getByRole('button', { name: 'Canto siguiente' }).isDisabled(), true);
     await page.keyboard.press('ArrowLeft');
     await page.getByRole('heading', { name: 'Gloria sencilla' }).waitFor();
-    pass('the arrow keys move between songs, and the note of the item is shown');
+    pass('the arrow keys move between songs, and the note of the item is one tap away, not in the way');
 
     await swipe(page, 600, 200);
     await page.getByRole('heading', { name: 'Pan de vida' }).waitFor();
+    assert.ok(await page.locator('.stage.slide-in-next').count() > 0, 'the next song slides in');
     await swipe(page, 200, 600);
     await page.getByRole('heading', { name: 'Gloria sencilla' }).waitFor();
     await swipe(page, 300, 330); // too short to count
@@ -367,6 +402,30 @@ try {
             .map((el) => el.textContent || el.getAttribute('aria-label') || el.tagName));
     assert.deepEqual(tooSmall, [], 'every control is at least 40px tall');
     pass('on a phone the list does not scroll sideways and its controls are big enough to tap');
+
+    // Back from a song returns to the same place in the list (the list is long on a phone)
+    await page.evaluate(() => {
+        const view = document.querySelector('#view');
+        if (view !== null) {
+            view.scrollTop = 600;
+        }
+    });
+    const before = await page.evaluate(() => document.querySelector('#view')?.scrollTop ?? 0);
+    assert.ok(before > 0, 'the list is long enough to scroll');
+    await slot(page, 'Canto de salida').getByRole('link', { name: 'Abrimos la puerta' }).click();
+    await page.getByRole('heading', { name: 'Abrimos la puerta' }).waitFor();
+    await page.goBack();
+    await page.locator('section.slot').first().waitFor();
+    await page.waitForFunction((top) => (document.querySelector('#view')?.scrollTop ?? 0) >= top - 2, before);
+    pass('back from a song returns to the same place in the list');
+
+    // A desktop: the parts in two columns, the tools of each song on one line
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const columns = await page.evaluate(() => getComputedStyle(document.querySelector('.slots') as Element).gridTemplateColumns.split(' ').length);
+    assert.equal(columns, 2);
+    const rowHeight = await page.locator('#parte-salida .item').first().evaluate((el) => el.getBoundingClientRect().height);
+    assert.ok(rowHeight < 110, `a song takes one compact row on a desktop (got ${rowHeight}px)`);
+    pass('on a desktop the parts go in two columns and each song takes one compact row');
 
     assert.deepEqual(problems, [], 'no uncaught errors in the page');
     pass('no uncaught errors in the page');

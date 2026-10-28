@@ -48,7 +48,11 @@ export const MASS_PARTS: readonly MassPart[] = [
     {
         id: 'memorial',
         name: 'Aclamación memorial',
-        aliases: ['aclamacion despues de la consagracion', 'aclamacion memorial', 'memorial'], fixedText: true, optional: true },
+        aliases: ['aclamacion despues de la consagracion', 'aclamacion memorial', 'memorial'],
+        fixedText: true,
+        optional: true,
+        note: 'La canta la asamblea justo después de la consagración, cuando el sacerdote dice «Este es el Misterio de la fe». Por ejemplo: «Anunciamos tu muerte, proclamamos tu resurrección, ¡ven, Señor Jesús!».',
+    },
     { id: 'amen', name: 'Amén', aliases: ['gran amen', 'amen'], fixedText: true, optional: true },
     { id: 'padre-nuestro', name: 'Padre nuestro', aliases: ['padre nuestro'], fixedText: true },
     {

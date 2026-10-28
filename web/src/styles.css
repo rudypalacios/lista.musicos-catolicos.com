@@ -46,8 +46,19 @@ main {
 }
 
 .who {
+    min-width: 0;
+    overflow: hidden;
     color: var(--muted);
     font-size: 0.9rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* A phone: the header has room for the tools, not for the address as well */
+@media (max-width: 520px) {
+    .who {
+        display: none;
+    }
 }
 
 .badge {
@@ -117,11 +128,13 @@ button:disabled {
     cursor: default;
 }
 
-button.link {
+button.link,
+a.link {
     padding: 0 0.5rem;
     color: var(--accent);
     background: none;
     border: 0;
+    font-size: 0.9rem;
 }
 
 .error {
@@ -924,4 +937,281 @@ button.info {
 .help-link {
     margin-top: 1.5rem;
     font-size: 0.9rem;
+}
+
+/* ===== Saved messages ===== */
+.toasts {
+    position: fixed;
+    right: 0;
+    bottom: calc(1rem + env(safe-area-inset-bottom));
+    left: 0;
+    z-index: 50;
+    display: flex;
+    justify-content: center;
+    padding: 0 1rem;
+    pointer-events: none;
+}
+
+.toast {
+    margin: 0;
+    padding: 0.55rem 1rem;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+    font-size: 0.95rem;
+    animation: toast-in 160ms ease-out;
+}
+
+@keyframes toast-in {
+    from {
+        opacity: 0;
+        transform: translateY(0.5rem);
+    }
+}
+
+/* ===== A setlist, quieter ===== */
+.item__also {
+    margin-top: 0.15rem;
+    color: var(--changed);
+    font-size: 0.85rem;
+}
+
+/* A note that exists is one quiet line under the song; the field only appears to edit it */
+.item__noteline {
+    grid-column: 1 / -1;
+    min-height: 2.5rem;
+    padding: 0 0.25rem;
+    overflow: hidden;
+    color: var(--muted);
+    background: none;
+    border: 0;
+    font: inherit;
+    font-size: 0.9rem;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.item.is-new {
+    animation: item-new 1.6s ease-out;
+}
+
+@keyframes item-new {
+    from {
+        background: var(--accent-soft);
+        border-color: var(--accent);
+    }
+}
+
+/* ===== Singing: the note on demand, the slide between songs, no stretching ===== */
+.perform__notebutton {
+    min-height: 2.5rem;
+    padding: 0 0.6rem;
+    color: var(--muted);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 0.45rem;
+    font: inherit;
+    font-size: 0.9rem;
+}
+
+.perform__note {
+    margin: 0.4rem 0 0;
+}
+
+/*
+ * A swipe sideways is ours (next song, previous song): the browser must not also pull the page
+ * (the rubber-band or stretch at the edge, a sideways scroll). Zooming with two fingers stays.
+ */
+html,
+body {
+    overscroll-behavior: none;
+}
+
+.perform .stage {
+    overscroll-behavior-x: none;
+    touch-action: pan-y pinch-zoom;
+}
+
+.slide-in-next {
+    animation: slide-in-next 220ms ease-out;
+}
+
+.slide-in-previous {
+    animation: slide-in-previous 220ms ease-out;
+}
+
+@keyframes slide-in-next {
+    from {
+        opacity: 0;
+        transform: translateX(2.5rem);
+    }
+}
+
+@keyframes slide-in-previous {
+    from {
+        opacity: 0;
+        transform: translateX(-2.5rem);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .toast,
+    .item.is-new,
+    .slide-in-next,
+    .slide-in-previous {
+        animation: none;
+    }
+}
+
+/* ===== A wide screen: the list in two columns, each song's tools on one line ===== */
+@media (min-width: 1000px) {
+    .page:has(> .slots) {
+        max-width: 72rem;
+    }
+
+    .slots {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: start;
+    }
+
+    .item {
+        grid-template-columns: 1fr auto auto;
+    }
+
+    .item__tools {
+        grid-column: auto;
+        flex-wrap: nowrap;
+    }
+
+    .item__tools .button:last-child {
+        margin-left: 0;
+    }
+
+    .viewer-content.is-scroll {
+        max-width: 48em;
+        margin-inline: auto;
+    }
+}
+
+/* ===== Settings ===== */
+.settings .choice {
+    margin: 1rem 0 0;
+    padding: 0;
+    border: 0;
+}
+
+.settings legend {
+    margin-bottom: 0.25rem;
+    padding: 0;
+    font-weight: 700;
+}
+
+.choice__option {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 2.75rem;
+}
+
+.choice__option input {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 0;
+}
+
+.swatch {
+    width: 1.1rem;
+    height: 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+}
+
+.settings__sample {
+    margin: 1rem 0;
+    padding: 0.75rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    font-size: 1.2rem;
+}
+
+/* ===== Tools: the quick ones in view, the rest behind "⋯" ===== */
+.toolbar__extra {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.toolbar__extra[hidden] {
+    display: none;
+}
+
+/* ===== Singing in event mode: the tools give way to the lyrics ===== */
+.perform {
+    position: relative;
+}
+
+.perform__chrome {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows 180ms ease-out;
+}
+
+.perform__chrome.is-collapsed {
+    grid-template-rows: 0fr;
+}
+
+.perform__chrome-inner {
+    min-height: 0;
+    overflow: hidden;
+}
+
+.perform__reveal {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.5rem;
+    z-index: 5;
+    width: 2.75rem;
+    height: 2.75rem;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    opacity: 0.85;
+}
+
+.perform__reveal[hidden] {
+    display: none;
+}
+
+.perform__mode {
+    min-height: 2.5rem;
+    padding: 0 0.6rem;
+    color: var(--accent);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 0.45rem;
+    font: inherit;
+    font-size: 0.9rem;
+}
+
+.perform__notefield {
+    display: block;
+    width: 100%;
+    margin-top: 0.4rem;
+}
+
+.perform__notefield[hidden] {
+    display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .perform__chrome {
+        transition: none;
+    }
 }
