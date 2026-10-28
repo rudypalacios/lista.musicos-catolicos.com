@@ -97,6 +97,12 @@ Next, in this order (design agreed with the owner):
       "Recientes" with "Ver todos" (the search covers a long list), and "Crear «texto»" from an empty search.
       The "Toca ☆ para dejar un listado arriba" hint was removed on purpose (the owner finds the star natural);
       it can come back if people do not find it.
+- [x] Pull down to sync (`web/src/pull.ts`): at the top of a screen, a drag down and let go syncs now and says how it
+      ended ("Sincronizado", "Sin conexión", …). It does nothing on a short drag, on a screen that is scrolled, or while
+      singing (the stage has its own touches). The automatic sync is unchanged (back to the front, network back, every
+      5 minutes while open): the owner saw a change from the web take about a minute to arrive. **Owner's check on the
+      Android and the iPad** (`DEPLOY.md`, "Fases 4 y 5", item 10): the browser must not reload the page by itself.
+      Not done: a way to sync on a computer with no touch screen (tapping the sync line in the header would do).
 - [ ] **Owner's check on the Android** for phases 4 and 5 (`DEPLOY.md`, "Fases 4 y 5", item 9 for the lists screen).
 - [ ] Phase 6, templates and tags (schema change, migration): turn parts on and off per list, add own
       parts, a template manager (the Mass is the default); tags on songs, one per part by default; the

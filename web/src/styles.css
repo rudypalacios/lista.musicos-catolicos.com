@@ -1589,3 +1589,78 @@ body {
         transition: none;
     }
 }
+
+/* ===== Pull down to sync: the screen follows the finger and a strip opens above it ===== */
+main#view {
+    transition: transform 200ms ease-out;
+}
+
+main#view.is-pulling {
+    transition: none;
+}
+
+.pull {
+    position: fixed;
+    z-index: 5;
+    right: 0;
+    left: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    overflow: hidden;
+    pointer-events: none;
+    transition: height 200ms ease-out;
+}
+
+.pull.is-pulling {
+    transition: none;
+}
+
+.pull__pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    padding: 0.35rem 0.9rem;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 0.85rem;
+}
+
+.pull.is-armed .pull__pill {
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.pull__spinner {
+    display: none;
+    width: 0.9rem;
+    height: 0.9rem;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: pull-spin 800ms linear infinite;
+}
+
+.pull.is-busy .pull__spinner {
+    display: inline-block;
+}
+
+@keyframes pull-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    main#view,
+    .pull {
+        transition: none;
+    }
+
+    .pull__spinner {
+        animation: none;
+    }
+}

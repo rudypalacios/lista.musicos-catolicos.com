@@ -6,6 +6,7 @@ import { h, link } from './dom.ts';
 import { MASS_PARTS } from './mass.ts';
 import { matchRoute, paths, sectionOf, type Route } from './router.ts';
 import { applyLyricColor } from './settings.ts';
+import { createPullToRefresh } from './pull.ts';
 import { showToast, type Toast } from './toast.ts';
 import { screenKeeper } from './wakelock.ts';
 import { showFatal, startUpdates } from './updates.ts';
@@ -141,7 +142,17 @@ function mountShell(data: App, email: string, onSignedOut: () => void, onNeedsSi
         h('a', { href: paths.list(), 'data-link': true, 'data-section': 'songs' }, 'Cantos'),
         h('a', { href: paths.lists(), 'data-link': true, 'data-section': 'lists' }, 'Listados'),
     );
-    app.replaceChildren(bar, tabs, h('main', { id: 'view' }), installBanner.element);
+    const view = h('main', { id: 'view' });
+    // Pull down to sync now (not while singing: the stage has its own touches)
+    const pull = createPullToRefresh(view, {
+        enabled: () => matchRoute(location.pathname).name !== 'perform',
+        refresh: async () => {
+            await data.syncNow();
+
+            return data.status().state;
+        },
+    });
+    app.replaceChildren(bar, tabs, view, pull, installBanner.element);
     watchSaves(data);
 
     const paint = (status: Status): void => {
