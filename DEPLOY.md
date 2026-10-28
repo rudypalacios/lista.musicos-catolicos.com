@@ -156,7 +156,8 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    columnas, el selector *Ensayo (para preparar) | Evento (para cantar)*, la nota, *Ajustes* y *Salir*. En
    ensayo se escribe la nota del canto; en evento solo se lee (un punto en `⋯` avisa que hay una). El tamaño
    de letra que eliges con `A−`/`A+` se queda para los demás cantos y al volver a abrir la app. El último
-   renglón debe quedar con aire debajo, sin pegarse al borde ni quedar bajo la pastilla.
+   renglón debe quedar con aire debajo, sin pegarse al borde ni quedar bajo la pastilla. Con un panel abierto
+   (`⋯` o «3/10 ▾»), el botón *atrás* del Android debe cerrar el panel, no salir de *Cantar*.
 
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).

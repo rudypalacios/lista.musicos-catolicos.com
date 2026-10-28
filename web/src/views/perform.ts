@@ -150,7 +150,7 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
         button.addEventListener('click', () => {
             if (mode !== value) {
                 saveMode(value);
-                navigate(paths.perform(setlist.id, position), { replace: true });
+                toolsSheet.close(() => navigate(paths.perform(setlist.id, position), { replace: true }));
             }
         });
 
@@ -161,6 +161,12 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     const sync = h('span', { class: 'perform__sync', role: 'status' }, account.syncText());
     const stopSync = account.onSync((text) => {
         sync.textContent = text;
+    });
+    // Leave through the sheet's own close, so the history entry it holds is given back first
+    const settingsLink = link(paths.settings(), 'Ajustes', 'button');
+    settingsLink.addEventListener('click', (click) => {
+        click.preventDefault();
+        toolsSheet.close(() => navigate(paths.settings()));
     });
     const signOut = h('button', { type: 'button', class: 'button button--danger' }, 'Salir');
     signOut.addEventListener('click', () => account.signOut());
@@ -188,7 +194,7 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     }
     toolsSheet.body.append(
         h('h3', {}, 'Cuenta'),
-        h('div', { class: 'perform__account' }, link(paths.settings(), 'Ajustes', 'button'), signOut),
+        h('div', { class: 'perform__account' }, settingsLink, signOut),
         sync,
     );
     moreButton.addEventListener('click', toolsSheet.open);
@@ -204,10 +210,7 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
             if (index + 1 === position) {
                 choice.setAttribute('aria-current', 'true');
             }
-            choice.addEventListener('click', () => {
-                jumpSheet.close();
-                go(index + 1);
-            });
+            choice.addEventListener('click', () => jumpSheet.close(() => go(index + 1)));
 
             return h('li', {}, choice);
         }));
@@ -325,8 +328,8 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
         element: h('div', { class: 'viewer perform' }, stage, chrome, pill, jumpSheet.element, toolsSheet.element),
         dispose: () => {
             document.removeEventListener('keydown', onKey);
-            toolsSheet.close();
-            jumpSheet.close();
+            toolsSheet.release();
+            jumpSheet.release();
             stopSync();
             dispose();
         },

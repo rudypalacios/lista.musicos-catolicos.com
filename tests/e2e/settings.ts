@@ -147,6 +147,16 @@ try {
     await page.getByRole('button', { name: 'Ajustar' }).waitFor({ state: 'hidden' });
     pass('singing has a one-row bar; the tools, the account and the mode are behind "⋯", and Escape closes it');
 
+    // Leaving through the sheet (Ajustes) leaves no stray entry: back returns to the song, once
+    await page.getByRole('button', { name: 'Más herramientas' }).click();
+    await page.getByRole('link', { name: 'Ajustes' }).click();
+    await page.getByRole('heading', { name: 'Ajustes' }).waitFor();
+    await page.goBack();
+    await page.getByRole('heading', { name: 'Camino largo' }).waitFor();
+    await page.getByRole('button', { name: 'Más herramientas' }).waitFor();
+    assert.equal(await has(page, '.sheet-layer.is-open'), false);
+    pass('Ajustes from the sheet opens the settings and back returns to the song');
+
     // The pill keeps the key and the size one tap away, collapsed until tapped
     assert.equal(await page.getByRole('button', { name: 'Subir el tono' }).isVisible(), false);
     await page.getByRole('button', { name: 'Tono y tamaño rápidos' }).click();

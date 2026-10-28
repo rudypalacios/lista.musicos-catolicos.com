@@ -18,6 +18,7 @@ import { performView } from './views/perform.ts';
 import { setlistView } from './views/setlist.ts';
 import { settingsView } from './views/settings.ts';
 import { signInView } from './views/signin.ts';
+import { dismissSheetOnBack } from './views/sheet.ts';
 import type { Account, Navigate, View } from './views/types.ts';
 import { viewView } from './views/view.ts';
 
@@ -287,6 +288,9 @@ function runRouter(data: App): void {
         }
     });
     window.addEventListener('popstate', () => {
+        if (dismissSheetOnBack()) {
+            return;
+        }
         rememberScroll();
         render(true);
     });

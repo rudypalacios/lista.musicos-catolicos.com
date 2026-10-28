@@ -97,7 +97,7 @@ async function swipe(page: Page, from: number, to: number): Promise<void> {
 /** Opens the "⋯" sheet over the song (every tool, the mode, the note, the account) */
 async function openTools(page: Page): Promise<void> {
     await page.getByRole('button', { name: 'Más herramientas' }).click();
-    await page.getByRole('dialog', { name: 'Herramientas' }).waitFor();
+    await page.locator('.sheet-layer.is-open').waitFor();
 }
 
 /** Closes whichever sheet is open */
@@ -281,11 +281,27 @@ try {
     assert.equal(await page.locator('.tabs').isVisible(), false);
     assert.equal(await page.locator('header.bar').isVisible(), false, 'the app header gives its room to the song');
     await page.getByRole('button', { name: /Ir a otro canto/ }).click();
-    await page.getByRole('dialog', { name: 'Cantos del listado' }).waitFor();
+    await page.locator('.sheet-layer.is-open').waitFor();
     assert.equal(await page.locator('.perform__song-choice').count(), 3);
     assert.equal(await page.locator('.perform__song-choice[aria-current="true"]').innerText().then((text) => text.includes('Abrimos la puerta')), true);
     await closeSheet(page);
     pass('singing opens the first song in the key of the list, with its part, no tabs and no app header in the way');
+
+    // The Android back button closes a sheet instead of leaving the screen
+    const singingUrl = page.url();
+    await openTools(page);
+    await page.goBack();
+    await page.locator('.sheet-layer.is-open').waitFor({ state: 'detached' });
+    assert.equal(page.url(), singingUrl, 'back with a sheet open stays on the song');
+    await openTools(page);
+    await closeSheet(page);
+    await page.waitForFunction(() => history.state === null);
+    await page.getByRole('button', { name: /Ir a otro canto/ }).click();
+    await page.locator('.sheet-layer.is-open').waitFor();
+    await page.goBack();
+    await page.locator('.sheet-layer.is-open').waitFor({ state: 'detached' });
+    assert.equal(page.url(), singingUrl);
+    pass('back closes the sheet that is open and gives back its history entry when it is closed by hand');
 
     await jumpTo(page, 2);
     await page.getByRole('heading', { name: 'Gloria sencilla' }).waitFor();
