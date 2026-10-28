@@ -20,7 +20,6 @@ export function listsView(app: App, navigate: Navigate): View {
         autocomplete: 'off', enterkeyhint: 'search',
     });
     const error = h('p', { class: 'error lists__error', role: 'alert' });
-    const hint = h('p', { class: 'muted lists__hint', hidden: true }, 'Toca ☆ para dejar un listado arriba.');
     const groups = h('div', { class: 'lists' });
     const empty = h('p', { class: 'empty', hidden: true });
     const element = h(
@@ -29,7 +28,6 @@ export function listsView(app: App, navigate: Navigate): View {
         h('h2', {}, 'Listados'),
         h('div', { class: 'lists__top' }, search, create),
         error,
-        hint,
         groups,
         empty,
     );
@@ -101,7 +99,6 @@ export function listsView(app: App, navigate: Navigate): View {
                 : starred.length === 0 ? group(null, others)
                     : [...group('★ Destacados', starred), ...group('Recientes', others)]),
         );
-        hint.hidden = lists.length === 0 || query !== '' || lists.some((list) => list.starred);
         empty.hidden = shown.length > 0;
         empty.textContent = lists.length === 0
             ? 'Todavía no hay listados. Crea uno para preparar la música de una misa.'

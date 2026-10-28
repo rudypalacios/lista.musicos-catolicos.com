@@ -992,7 +992,7 @@ body:has(.update) .install-banner {
     display: flex;
     gap: 0.5rem;
     align-items: center;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.75rem;
 }
 
 .lists__top input {
@@ -1010,11 +1010,6 @@ body:has(.update) .install-banner {
     flex: none;
 }
 
-.lists__hint {
-    margin: 0.75rem 0 0;
-    font-size: 0.85rem;
-}
-
 .lgroup__label {
     margin: 1.1rem 0 0.15rem;
     color: var(--accent);
@@ -1025,7 +1020,7 @@ body:has(.update) .install-banner {
 }
 
 .lgroup:first-child .lgroup__label {
-    margin-top: 1rem;
+    margin-top: 0.25rem;
 }
 
 .lrows {

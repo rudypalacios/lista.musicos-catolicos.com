@@ -455,11 +455,11 @@ try {
     await page.getByLabel('Fecha de la misa').fill('');
     await page.getByLabel('Fecha de la misa').blur();
     await page.getByRole('link', { name: '← Listados' }).click();
-    await page.getByText('Toca ☆ para dejar un listado arriba.').waitFor();
+    await page.getByRole('button', { name: 'Destacar: Rosario en familia' }).waitFor();
     assert.equal(await page.getByRole('heading', { name: 'Recientes' }).count(), 0, 'no headings while nothing is starred');
     assert.equal(await page.locator('.lrow__title').first().textContent(), 'Rosario en familia', 'the list edited last comes first');
     assert.equal(await page.locator('.lrow__detail').first().textContent(), '0 cantos', 'a list with no day shows no day');
-    pass('with no stars the lists are one flat list, the most recently edited first, and a hint says how to star');
+    pass('with no stars the lists are one flat list, the most recently edited first, with no text explaining the star');
 
     await page.getByRole('button', { name: 'Destacar: Domingo, editado en la tablet' }).click();
     await page.getByRole('heading', { name: '★ Destacados' }).waitFor();
@@ -467,7 +467,6 @@ try {
     assert.equal(await page.locator('.lgroup').first().locator('.lrow__title').textContent(), 'Domingo, editado en la tablet');
     assert.equal(await page.getByRole('button', { name: 'Quitar de destacados: Domingo, editado en la tablet' }).getAttribute('aria-pressed'), 'true');
     assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-star') !== null), true, 'the focus stays on the star');
-    assert.equal(await page.getByText('Toca ☆ para dejar un listado arriba.').isVisible(), false, 'the hint goes once a list is starred');
     pass('starring a list moves it to "★ Destacados" and keeps the focus on its star');
 
     const star = await page.getByRole('button', { name: /^Quitar de destacados/ }).boundingBox();

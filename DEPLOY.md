@@ -172,7 +172,7 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    (y el día, si lo tiene, como «dom 1 nov»). Toca la **estrella** de la derecha (☆): el listado sube a
    «★ Destacados» (ordenados por título); los demás quedan en «Recientes», el último que editaste primero
    (el día de la misa ya no ordena nada, así que sirven los listados sin fecha: rosario, avivamiento…).
-   Mientras no hay destacados, un aviso dice cómo hacerlo. Toca la fila (no la estrella) y abre el listado.
+   Mientras no hay destacados, la lista es una sola, sin texto que explique la estrella. Toca la fila (no la estrella) y abre el listado.
    El buscador filtra por título y, mientras escribes, muestra una sola lista con los destacados primero.
    «＋ Nuevo» sigue creando un listado al instante. **La estrella se sincroniza**: márcala en la tablet y mira
    que aparezca en el teléfono. La primera vez después de este deploy, la app crea sola la columna
