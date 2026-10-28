@@ -34,7 +34,9 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
 ## Small things to do when convenient
 
 - [ ] Tune the fit limits (`DEFAULT_LIMITS` in `web/src/fit.ts`) after seeing it on the devices.
-- [ ] Keep the screen awake while a song is open or a list is being sung (Screen Wake Lock; iPad Safari 16.4+).
+- [x] Keep the screen awake while a song is open or a list is being sung (Screen Wake Lock, `web/src/wakelock.ts`;
+      on by default, an Ajustes choice turns it off). **Owner's check:** Android and iPad (Safari 16.4+; a
+      home-screen app only from iOS 18.4), see `DEPLOY.md`.
 - [ ] Adding several songs to one part takes a round trip per song (the picker returns to the list).
       If that is slow in practice, let the picker stay open and show what has been added.
 - [ ] Duplicate a list ("copiar listado") to start next Sunday's from this Sunday's.
@@ -72,11 +74,14 @@ Phase 4, quiet and quick (no schema change):
 
 Next, in this order (design agreed with the owner):
 
-- [x] Phase 5, settings and modes (this branch): an Ajustes screen per device (chord names, lyric colour,
-      fit, columns auto / 1 / 2, default way to sing); a columns button in the reader on wide screens;
-      rehearsal mode (all tools, notes written while singing) and event mode (key ± and A± in view, the
-      rest behind "⋯", the tools hide when the lyrics scroll down and come back on scroll up or a tap;
-      A± now nudge the size the fit chose). Event is the default. Settings are not synced between
+- [x] Phase 5, settings (this branch): an Ajustes screen per device (chord names, lyric colour,
+      fit, columns auto / 1 / 2, keep the screen on); a columns button in the reader on wide screens;
+      the Ensayo / Evento modes were dropped: the only difference was whether the note could be edited.
+      Singing has one floating bar: a row with back, part and song, the position button (a list of the
+      songs to jump to) and "⋯" (a sheet with every tool, the note, Ajustes and Salir); it folds
+      to a strip with the title and key while the lyrics scroll down and returns on scroll up or a tap;
+      a small pill at the bottom keeps the key and A± at hand. The song follows the finger on a swipe;
+      the lyric size is kept on the device. A± nudge the size the fit chose. Settings are not synced between
       devices on purpose (a tablet on a stand and a phone want different things); sync them later if
       the owner asks.
 - [ ] **Owner's check on the Android** for phases 4 and 5 (`DEPLOY.md`, "Fases 4 y 5").

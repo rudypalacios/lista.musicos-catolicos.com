@@ -4,7 +4,7 @@ import { sheetHtml } from '../chordpro/sheet.ts';
 import type { Song } from '../data/types.ts';
 import { h, setSheet } from '../dom.ts';
 import { clearFit, DEFAULT_LIMITS, fitToStage, isWide, type ColumnMode } from '../fit.ts';
-import { readColumns, readFit, readNotation, saveColumns, saveFit, saveNotation } from '../prefs.ts';
+import { readColumns, readFit, readLyricSize, readNotation, saveColumns, saveFit, saveLyricSize, saveNotation } from '../prefs.ts';
 
 const SIZE_MIN = -2;
 const SIZE_MAX = 4;
@@ -15,10 +15,10 @@ export interface ReaderOptions {
     /** The person changed the key; `shift` is the new one. Where it is kept is up to the caller. */
     onShift: (shift: number) => void;
     /**
-     * Only the quick tools (key, lyric size) in view; notation, fit and columns behind a "⋯"
-     * button. For singing at an event, where the lyrics need the room.
+     * The key on screen changed (or was drawn for the first time): `key` is its name in the notation
+     * shown, or null when the song has none. For whoever shows the key somewhere else too.
      */
-    compact?: boolean;
+    onKey?: (key: string | null) => void;
 }
 
 /** Columns button: auto → two → one → auto */
@@ -30,6 +30,8 @@ export interface Reader {
     toolbar: HTMLElement;
     /** Where the song is drawn: give it all the space left, it fits the song to it */
     stage: HTMLElement;
+    /** Does what a button of the toolbar does: for buttons elsewhere that carry the same `data-` attributes */
+    press: (button: HTMLElement) => void;
     dispose: () => void;
 }
 
@@ -46,7 +48,8 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
     let t = options.shift;
     let notation: Notation = readNotation();
     let fit = readFit();
-    let size = 0;
+    // The size is the device's, not the song's: the next song opens as big as this one was left
+    let size = Math.min(SIZE_MAX, Math.max(SIZE_MIN, readLyricSize()));
     let columns = readColumns();
 
     // --- the song ---
@@ -81,13 +84,9 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
     const bigger = h('button', { type: 'button', 'aria-label': 'Letra más grande', 'data-size': '1' }, 'A+');
     const fitButton = h('button', { type: 'button', 'data-fit': true }, 'Ajustar');
     const columnsButton = h('button', { type: 'button', 'data-columns': true });
-    const more = h('button', {
-        type: 'button', 'data-more': true, 'aria-label': 'Más herramientas', 'aria-expanded': 'false',
-    }, '⋯');
-    const compact = options.compact === true;
     const extra = h(
         'div',
-        { class: 'toolbar__extra', hidden: compact },
+        { class: 'toolbar__extra' },
         h('div', { class: 'group' }, notationButton),
         h('div', { class: 'group' }, fitButton, columnsButton),
     );
@@ -96,7 +95,6 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
         { class: 'toolbar', role: 'toolbar', 'aria-label': 'Herramientas de la letra' },
         h('div', { class: 'group' }, down, keyButton, up),
         h('div', { class: 'group' }, smaller, bigger),
-        ...(compact ? [h('div', { class: 'group' }, more)] : []),
         extra,
         live,
     );
@@ -138,10 +136,12 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
             keyButton.setAttribute('aria-label', t === 0
                 ? `Tono: ${current}`
                 : `Tono: ${current}. Volver al tono original, ${transpose(original, 0, notation)}`);
+            options.onKey?.(current);
             if (announce) {
                 live.textContent = `Tono: ${current}`;
             }
         } else {
+            options.onKey?.(null);
             keyChip.hidden = true;
             keyButton.textContent = t === 0 ? 'Tono' : `${t > 0 ? '+' : ''}${t} ↺`;
         }
@@ -155,9 +155,8 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
         refit();
     };
 
-    toolbar.addEventListener('click', (event) => {
-        const button = (event.target as HTMLElement).closest('button');
-        if (button === null || button.getAttribute('aria-disabled') === 'true') {
+    const press = (button: HTMLElement): void => {
+        if (button.getAttribute('aria-disabled') === 'true') {
             return;
         }
         const before = t;
@@ -170,19 +169,23 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
             saveNotation(notation);
         } else if (button.dataset['size'] !== undefined) {
             size = Math.min(SIZE_MAX, Math.max(SIZE_MIN, size + parseInt(button.dataset['size'], 10)));
+            saveLyricSize(size);
         } else if (button.dataset['fit'] !== undefined) {
             fit = !fit;
             saveFit(fit);
         } else if (button.dataset['columns'] !== undefined) {
             columns = NEXT_COLUMNS[columns];
             saveColumns(columns);
-        } else if (button.dataset['more'] !== undefined) {
-            extra.hidden = !extra.hidden;
-            more.setAttribute('aria-expanded', String(!extra.hidden));
         }
         update();
         if (t !== before) {
             options.onShift(t);
+        }
+    };
+    toolbar.addEventListener('click', (event) => {
+        const button = (event.target as HTMLElement).closest('button');
+        if (button !== null) {
+            press(button);
         }
     });
 
@@ -201,6 +204,7 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
     return {
         toolbar,
         stage,
+        press,
         dispose: () => {
             observer.disconnect();
             cancelAnimationFrame(frame);

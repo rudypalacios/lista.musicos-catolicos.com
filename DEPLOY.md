@@ -123,8 +123,10 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
 3. Cambia el tono de un canto con `−` / `+` (aparece, por ejemplo, "Re ↺"; el ↺ vuelve al tono original).
    Abre ese mismo canto desde *Cantos*: debe seguir en su tono de siempre. El cambio es solo del listado.
 4. Toca *Cantar*. Debe abrir el primer canto, en el tono del listado, con el nombre de la parte arriba.
-   Cambia de canto con `‹` `›`, con el dedo (deslizar a izquierda o derecha) y, si tienes teclado, con las
-   flechas. Cambia el tono ahí mismo: se guarda en el listado. Gira la tablet: se vuelve a ajustar.
+   Cambia de canto con el dedo (deslizar a izquierda o derecha: el canto debe seguir al dedo desde que
+   empiezas), con el botón de posición («1/10 ▾», abre la lista de cantos para saltar a uno) y, si tienes
+   teclado, con las flechas. Cambia el tono ahí mismo (con `⋯` o con la pastilla de abajo): se guarda en el
+   listado. Gira la tablet: se vuelve a ajustar.
 5. Modo avión. Cierra la app, ábrela, entra al listado y toca *Cantar*: todo debe funcionar. Cambia un
    tono sin conexión: arriba debe decir "Sin conexión · 1 sin enviar"; al quitar el modo avión, "Sincronizado".
 6. En el otro dispositivo abre *Listados*: el mismo listado, con los mismos tonos y notas.
@@ -132,7 +134,7 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    "Canto eliminado" en su lugar (y se puede quitar con *Quitar*).
 8. Cuéntame si algo no cabe, se corta o cuesta tocarlo con el dedo.
 
-**Fases 4 y 5 (pulido, ajustes y modos), de momento solo en Android**
+**Fases 4 y 5 (pulido y ajustes), de momento solo en Android**
 1. Edita un listado: debe aparecer un aviso breve "Guardado en este dispositivo" y, al poco,
    "Guardado y sincronizado". En modo avión se queda en "en este dispositivo".
 2. En un listado largo, toca *Agregar canto* en una parte lejana y elige uno: vuelves a esa parte,
@@ -146,12 +148,20 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
 6. *Ajustes* (arriba): cambia el nombre de los acordes, el color de la letra y las columnas; el ejemplo
    cambia al momento. Abre un canto: ya usa lo elegido. En la tablet, el botón *Columnas* del lector
    cambia entre automático, 2 y 1.
-7. *Cantar* en **modo evento** (el de siempre): barra mínima con tono, `A−`/`A+` y `⋯` para el resto. Con
-   un canto largo, baja la letra: las herramientas se esconden y queda una franja "▾ Mostrar herramientas"
-   (tócala, o sube un poco, y vuelven). También se pueden esconder a mano con "▴ Ocultar", incluso si el
-   canto cabe entero. `A+` debe agrandar la letra incluso con *Ajustar* activo. El selector *Ensayo (para
-   preparar) | Evento (para cantar)*: en ensayo salen todas las herramientas y se pueden escribir notas en el
-   canto que estás cantando.
+7. *Cantar* (encabezado nuevo): una sola fila arriba con `←`, el nombre de la parte y del canto, la posición
+   («3/10 ▾») y `⋯`. La barra de la app (Listas, Ajustes, Salir) ya no aparece aquí. Con un canto largo, baja la
+   letra: la barra se pliega a una franja delgada con el título, el tono y la posición (tócala, o sube un poco, y
+   vuelve); la letra no debe moverse al plegarse. Abajo a la derecha hay una pastilla con el tono: tócala para
+   `−` `+` `A−` `A+`; desaparece al bajar la letra. `⋯` abre un panel con tono, tamaño, `Do → C`, *Ajustar*,
+   columnas, la nota del canto (se escribe ahí mismo; un punto en `⋯` avisa que hay una), *Ajustes* y *Salir*.
+   Ya no hay modos Ensayo / Evento. El tamaño
+   de letra que eliges con `A−`/`A+` se queda para los demás cantos y al volver a abrir la app. El último
+   renglón debe quedar con aire debajo, sin pegarse al borde ni quedar bajo la pastilla. Con un panel abierto
+   (`⋯` o «3/10 ▾»), el botón *atrás* del Android debe cerrar el panel, no salir de *Cantar*.
+8. **La pantalla no se apaga** mientras un canto está abierto (en *Cantar* o leyendo un canto): déjala quieta
+   un minuto o más del tiempo que tienes configurado para apagarla. `⋯` → *Pantalla* dice si se logró (si no,
+   "ahorro de batería" puede ser la causa). En *Ajustes* se puede apagar esta opción. En el iPad pide Safari
+   16.4 o más; instalada en la pantalla de inicio, iOS 18.4 o más.
 
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).

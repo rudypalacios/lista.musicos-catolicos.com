@@ -3,7 +3,7 @@ import { parse } from '../chordpro/parser.ts';
 import { sheetHtml } from '../chordpro/sheet.ts';
 import { h, setSheet } from '../dom.ts';
 import type { ColumnMode } from '../fit.ts';
-import { readColumns, readFit, readMode, readNotation, saveColumns, saveFit, saveLyricColor, saveMode, saveNotation, type Mode } from '../prefs.ts';
+import { readColumns, readFit, readKeepAwake, readNotation, saveColumns, saveFit, saveKeepAwake, saveLyricColor, saveNotation } from '../prefs.ts';
 import { applyLyricColor, chosenLyricColor, LYRIC_COLORS } from '../settings.ts';
 import { showToast } from '../toast.ts';
 import type { View } from './types.ts';
@@ -13,7 +13,7 @@ const SAMPLE = '[C]Abrimos la [G]puerta de [Am]casa\n[F]Entra, her[G]mano, ven';
 
 /**
  * The settings of this device: how chords are named, the colour of the lyrics, whether the
- * song fits the screen, how many columns, and how a list is sung. They live on the device (a
+ * song fits the screen, how many columns, and whether the screen stays on. They live on the device (a
  * tablet on a stand wants other things than a phone) and apply at once.
  */
 export function settingsView(): View {
@@ -64,6 +64,13 @@ export function settingsView(): View {
         saved();
     });
 
+    const awake = h('input', { type: 'checkbox', id: 'setting-awake' });
+    awake.checked = readKeepAwake();
+    awake.addEventListener('change', () => {
+        saveKeepAwake(awake.checked);
+        saved();
+    });
+
     const element = h(
         'div',
         { class: 'page settings' },
@@ -84,15 +91,12 @@ export function settingsView(): View {
             applyLyricColor();
         }),
         h('div', { class: 'choice' }, h('label', { class: 'choice__option', for: 'setting-fit' }, fit, 'Ajustar la letra a la pantalla')),
+        h('div', { class: 'choice' }, h('label', { class: 'choice__option', for: 'setting-awake' }, awake, 'Mantener la pantalla encendida al leer o cantar un canto')),
         choice<ColumnMode>('columns', 'Columnas en pantallas anchas', readColumns(), [
             { value: 'auto', label: 'Automático (las que necesite el canto)' },
             { value: 'one', label: 'Siempre una' },
             { value: 'two', label: 'Siempre dos' },
         ], saveColumns),
-        choice<Mode>('mode', 'Al cantar un listado', readMode(), [
-            { value: 'event', label: 'Modo evento: herramientas mínimas y más espacio para la letra' },
-            { value: 'rehearsal', label: 'Modo ensayo: todas las herramientas y notas' },
-        ], saveMode),
     );
 
     return { element };

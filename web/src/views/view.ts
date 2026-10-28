@@ -1,7 +1,9 @@
 import type { App } from '../app.ts';
 import type { Song } from '../data/types.ts';
 import { h, link } from '../dom.ts';
+import { readKeepAwake } from '../prefs.ts';
 import { paths } from '../router.ts';
+import { screenKeeper } from '../wakelock.ts';
 import { planSheet } from '../print/plan.ts';
 import { printMenu } from './print-menu.ts';
 import { createReader } from './reader.ts';
@@ -49,5 +51,14 @@ export function viewView(app: App, song: Song): View {
         link(paths.edit(song.id), 'Editar', 'button edit'),
     );
 
-    return { element: h('div', { class: 'viewer' }, bar, reader.stage), dispose: reader.dispose };
+    // A song on a stand must not go dark while it is being read (unless turned off in Ajustes)
+    const releaseScreen = readKeepAwake() ? screenKeeper.hold() : (): void => undefined;
+
+    return {
+        element: h('div', { class: 'viewer' }, bar, reader.stage),
+        dispose: () => {
+            releaseScreen();
+            reader.dispose();
+        },
+    };
 }

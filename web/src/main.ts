@@ -7,6 +7,7 @@ import { MASS_PARTS } from './mass.ts';
 import { matchRoute, paths, sectionOf, type Route } from './router.ts';
 import { applyLyricColor } from './settings.ts';
 import { showToast, type Toast } from './toast.ts';
+import { screenKeeper } from './wakelock.ts';
 import { showFatal, startUpdates } from './updates.ts';
 import { addView } from './views/add.ts';
 import { editView } from './views/edit.ts';
@@ -18,7 +19,8 @@ import { performView } from './views/perform.ts';
 import { setlistView } from './views/setlist.ts';
 import { settingsView } from './views/settings.ts';
 import { signInView } from './views/signin.ts';
-import type { Navigate, View } from './views/types.ts';
+import { dismissSheetOnBack } from './views/sheet.ts';
+import type { Account, Navigate, View } from './views/types.ts';
 import { viewView } from './views/view.ts';
 
 /**
@@ -34,8 +36,11 @@ if (root === null) {
 const app: HTMLElement = root;
 
 let current: View | null = null;
-/** The "Cantos | Listados" tabs under the header, once the person is in */
+/** The header and the "Cantos | Listados" tabs under it, once the person is in */
+let header: HTMLElement | null = null;
 let tabs: HTMLElement | null = null;
+/** Signs out, asking first when something written here was never sent (set once the header exists) */
+let requestSignOut: () => void = () => undefined;
 
 function show(view: View): void {
     current?.dispose?.();
@@ -107,7 +112,7 @@ function mountShell(data: App, email: string, onSignedOut: () => void, onNeedsSi
     const renew = h('button', { type: 'button', class: 'link', hidden: true }, 'Iniciar sesión');
     renew.addEventListener('click', onNeedsSignIn);
     const out = h('button', { type: 'button', class: 'link' }, 'Salir');
-    out.addEventListener('click', () => {
+    requestSignOut = () => {
         void signOut(data, (unsent) =>
             confirm(
                 unsent === 1
@@ -119,11 +124,13 @@ function mountShell(data: App, email: string, onSignedOut: () => void, onNeedsSi
                 onSignedOut();
             }
         });
-    });
+    };
+    out.addEventListener('click', requestSignOut);
 
     const brand = link(paths.list(), 'Listas', 'brand');
     const settings = link(paths.settings(), 'Ajustes', 'link');
     const bar = h('header', { class: 'bar' }, h('h1', {}, brand), sync, renew, h('span', { class: 'who' }, email), settings, out);
+    header = bar;
     tabs = h(
         'nav',
         { class: 'tabs', 'aria-label': 'Secciones' },
@@ -143,7 +150,7 @@ function mountShell(data: App, email: string, onSignedOut: () => void, onNeedsSi
     paint(data.status());
 }
 
-/** Marks the tab of the section on screen; while singing a list the tabs give their room to the song */
+/** Marks the tab of the section on screen; while singing a list the header and the tabs give their room to the song */
 function markSection(route: Route): void {
     if (tabs === null) {
         return;
@@ -157,6 +164,18 @@ function markSection(route: Route): void {
         }
     }
     tabs.hidden = route.name === 'perform';
+    if (header !== null) {
+        header.hidden = route.name === 'perform';
+    }
+}
+
+/** The header's sync line and sign-out, for the screen that puts the header away */
+function accountOf(data: App): Account {
+    return {
+        syncText: () => describe(data.status()).text,
+        onSync: (listener) => data.onStatus((status) => listener(describe(status).text)),
+        signOut: () => requestSignOut(),
+    };
 }
 
 function routeView(data: App, route: Route, navigate: Navigate): Promise<View> {
@@ -174,7 +193,7 @@ function routeView(data: App, route: Route, navigate: Navigate): Promise<View> {
                     return setlistView(data, navigate, setlist);
                 }
                 if (route.name === 'perform') {
-                    return performView(data, navigate, setlist, route.n);
+                    return performView(data, navigate, setlist, route.n, accountOf(data));
                 }
                 const part = MASS_PARTS.find((candidate) => candidate.id === route.part);
 
@@ -270,6 +289,9 @@ function runRouter(data: App): void {
         }
     });
     window.addEventListener('popstate', () => {
+        if (dismissSheetOnBack()) {
+            return;
+        }
         rememberScroll();
         render(true);
     });
@@ -374,6 +396,12 @@ window.addEventListener('unhandledrejection', (event) => {
 });
 
 applyLyricColor();
+// The browser drops the screen lock whenever the page is hidden: ask again when it is back
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        screenKeeper.resume();
+    }
+});
 startUpdates();
 void App.create(() => {
     // Another window still runs the old version and holds the data: say what to do, not just wait

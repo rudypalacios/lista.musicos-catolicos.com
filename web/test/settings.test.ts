@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { readColumns, readMode } from '../src/prefs.ts';
+import { readColumns } from '../src/prefs.ts';
 import { LYRIC_COLORS } from '../src/settings.ts';
 
 /** WCAG relative luminance of a #rrggbb colour */
@@ -33,8 +33,7 @@ describe('lyric colours', () => {
 });
 
 describe('preferences with no storage (node has none)', () => {
-    it('fall back to the defaults: automatic columns, event mode', () => {
+    it('fall back to the defaults: automatic columns', () => {
         assert.equal(readColumns(), 'auto');
-        assert.equal(readMode(), 'event');
     });
 });
