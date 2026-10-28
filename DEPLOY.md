@@ -125,7 +125,7 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
 4. Toca *Cantar*. Debe abrir el primer canto, en el tono del listado, con el nombre de la parte arriba.
    Cambia de canto con el dedo (deslizar a izquierda o derecha: el canto debe seguir al dedo desde que
    empiezas), con el botón de posición («1/10 ▾», abre la lista de cantos para saltar a uno) y, si tienes
-   teclado, con las flechas. Cambia el tono ahí mismo (con `⋯` o con la pastilla de abajo): se guarda en el
+   teclado, con las flechas. Cambia el tono ahí mismo (con `⋯`): se guarda en el
    listado. Gira la tablet: se vuelve a ajustar.
 5. Modo avión. Cierra la app, ábrela, entra al listado y toca *Cantar*: todo debe funcionar. Cambia un
    tono sin conexión: arriba debe decir "Sin conexión · 1 sin enviar"; al quitar el modo avión, "Sincronizado".
@@ -156,7 +156,7 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    Ya no hay modos Ensayo / Evento. El tamaño
    de letra que eliges con `A−`/`A+` se guarda aparte para *Cantar* un listado y para leer un canto de *Cantos*:
    cambiarlo en uno no cambia el otro, y cada uno se queda al pasar de canto y al volver a abrir la app. El último
-   renglón debe quedar con aire debajo, sin pegarse al borde ni quedar bajo la pastilla. Con un panel abierto
+   renglón debe quedar con aire debajo, sin pegarse al borde. Con un panel abierto
    (`⋯` o «3/10 ▾»), el botón *atrás* del Android debe cerrar el panel, no salir de *Cantar*. Los dos paneles
    siempre suben desde el borde de abajo (sin mover la barra de arriba), en cualquier canto del listado.
 8. **La pantalla no se apaga** mientras un canto está abierto (en *Cantar* o leyendo un canto): déjala quieta
