@@ -147,7 +147,9 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    canto nuevo debe entrar deslizándose. (Esto solo se puede confirmar en el teléfono.)
 6. *Ajustes* (arriba): cambia el nombre de los acordes, el color de la letra y las columnas; el ejemplo
    cambia al momento. Abre un canto: ya usa lo elegido. En la tablet, el botón *Columnas* del lector
-   cambia entre automático, 2 y 1.
+   cambia entre automático, 2 y 1. En automático, un canto que en una columna
+   quedaría con letra chica (menos de 20 px) pasa a dos columnas si así la letra crece al menos 20 %; los
+   cantos cortos se quedan en una.
 7. *Cantar* (encabezado nuevo): una sola fila arriba con `←`, el nombre de la parte y del canto, la posición
    («3/10 ▾») y `⋯`. La barra de la app (Listas, Ajustes, Salir) ya no aparece aquí. Con un canto largo, baja la
    letra: la barra se pliega a una franja delgada con el título, el tono y la posición (tócala, o sube un poco, y

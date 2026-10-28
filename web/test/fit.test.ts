@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { bestSize } from '../src/fit.ts';
+import { bestSize, preferTwoColumns } from '../src/fit.ts';
 
 const limits = { min: 13, max: 34, step: 0.5 };
 
@@ -39,5 +39,26 @@ describe('bestSize', () => {
 
     it('works when the range is a single step', () => {
         assert.deepEqual(bestSize({ min: 10, max: 10.5, step: 0.5 }, (s) => s <= 10), { size: 10, fits: true });
+    });
+});
+
+describe('preferTwoColumns', () => {
+    const fits = (size: number) => ({ size, fits: true });
+
+    it('takes two columns when a small single column gets clearly bigger letters', () => {
+        assert.equal(preferTwoColumns(fits(15.5), fits(23.5)), true);
+    });
+
+    it('keeps one column when the letters are already comfortable', () => {
+        assert.equal(preferTwoColumns(fits(23.5), fits(34)), false);
+        assert.equal(preferTwoColumns(fits(20), fits(34)), false);
+    });
+
+    it('keeps one column when two columns barely help', () => {
+        assert.equal(preferTwoColumns(fits(16), fits(18)), false);
+    });
+
+    it('never takes two columns that do not fit', () => {
+        assert.equal(preferTwoColumns(fits(14), { size: 13, fits: false }), false);
     });
 });

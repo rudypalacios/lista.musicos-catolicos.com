@@ -54,6 +54,21 @@ export type ColumnMode = 'auto' | 'one' | 'two';
 
 export const DEFAULT_LIMITS: FitLimits = { min: 13, max: 34, step: 0.5 };
 
+/** In "auto", a single column that fits at this size or bigger is read comfortably: two columns are not tried */
+export const COMFORTABLE_SIZE = 20;
+
+/** In "auto", two columns replace a single one only if the letters get this many times bigger (a column break has a cost) */
+export const TWO_COLUMNS_GAIN = 1.2;
+
+/**
+ * Whether "auto" should use two columns over the single one that already fits: when the single
+ * column is small and two columns would make the letters clearly bigger. A song that only fits
+ * in two columns never gets here (the single column did not fit).
+ */
+export function preferTwoColumns(single: FitResult, double: FitResult): boolean {
+    return double.fits && single.size < COMFORTABLE_SIZE && double.size >= single.size * TWO_COLUMNS_GAIN;
+}
+
 /** Below this width two columns are not worth it: phones scroll instead */
 export const TWO_COLUMNS_MIN_WIDTH = 720;
 
@@ -74,9 +89,10 @@ export function isWide(stage: HTMLElement): boolean {
 
 /**
  * Fits `content` (the song, in a stage with a fixed size) by setting `--lyric-size` on it.
- * With `columns` "auto": tries one column; if the minimum size does not fit and the stage is
- * wide, two columns; if that does not fit either, a single column at the minimum, which
- * scrolls. "one" never uses two columns; "two" tries them first (a narrow stage has no room
+ * With `columns` "auto": tries one column; if it fits but only small (see `preferTwoColumns`) and
+ * the stage is wide, two columns when they make the letters clearly bigger; if the minimum size
+ * does not fit in one column, two columns; if that does not fit either, a single column at the
+ * minimum, which scrolls. "one" never uses two columns; "two" tries them first (a narrow stage has no room
  * for them and stays in one).
  *
  * @returns the layout it settled on and the size it chose
@@ -111,6 +127,16 @@ export function fitToStage(
     if (columns !== 'two' || !wide) {
         const single = attempt(false);
         if (single.fits) {
+            if (columns === 'auto' && wide && single.size < COMFORTABLE_SIZE) {
+                const double = attempt(true);
+                if (preferTwoColumns(single, double)) {
+                    apply(double.size);
+                    content.classList.remove('is-scroll');
+
+                    return { layout: 'two-columns', size: double.size };
+                }
+                content.classList.toggle('is-columns', false);
+            }
             apply(single.size);
             content.classList.remove('is-scroll');
 
