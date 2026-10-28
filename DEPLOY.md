@@ -177,6 +177,12 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    «＋ Nuevo» sigue creando un listado al instante. **La estrella se sincroniza**: márcala en la tablet y mira
    que aparezca en el teléfono. La primera vez después de este deploy, la app crea sola la columna
    (migración `0006`); no hay que hacer nada en phpMyAdmin.
+10. **Jalar para sincronizar.** En cualquier pantalla (menos *Cantar*), con la pantalla hasta arriba, jala el dedo hacia
+   abajo: sale «Jala para sincronizar», y pasado un tramo cambia a «Suelta para sincronizar». Al soltar dice
+   «Sincronizando…» y luego «Sincronizado» (o «Sin conexión», «La sesión terminó», «No se pudo sincronizar»). Un tirón
+   corto, o jalar con la pantalla ya desplazada, no hace nada. Prueba: escribe o cambia algo en la web, y en la tablet
+   jala; debe aparecer sin esperar el minuto. **Solo se confirma en el dispositivo:** que el navegador no recargue
+   la página por su cuenta (en Chrome de Android o en el iPad), y que no estorbe al desplazarte por una lista larga.
 
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
