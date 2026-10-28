@@ -23,7 +23,6 @@ export function listView(app: App): View {
         search,
         list,
         empty,
-        h('p', { class: 'muted help-link' }, link(paths.install(), '¿Cómo instalar la app en el iPad o el teléfono?')),
     );
 
     let songs: Song[] = [];

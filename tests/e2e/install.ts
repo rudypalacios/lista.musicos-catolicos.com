@@ -15,14 +15,15 @@ const IPAD_SAFARI =
 
 const browser = await chromium.launch();
 try {
-    // A desktop browser that gave no install prompt: no bar, but the link to the guide is always there
+    // A desktop browser that gave no install prompt: no bar, but the guide is always reachable from Ajustes
     const desktop = await (await browser.newContext({ viewport: { width: 820, height: 1180 } })).newPage();
     await signIn(desktop, server.base);
     assert.equal(await desktop.locator('.install-banner').isVisible(), false);
-    await desktop.getByRole('link', { name: '¿Cómo instalar la app en el iPad o el teléfono?' }).click();
+    await desktop.getByRole('link', { name: 'Ajustes' }).click();
+    await desktop.getByRole('link', { name: 'Cómo instalar la app en el iPad o el teléfono' }).click();
     await desktop.getByRole('heading', { name: 'Instalar Lista' }).waitFor();
     assert.match(await desktop.locator('.help').innerText(), /Añadir a pantalla de inicio/);
-    pass('the guide is one link away and says how to install on iPad and Android');
+    pass('the guide is reachable from Ajustes and says how to install on iPad and Android');
 
     // Safari on an iPad: the bar gives the steps, says nothing alarming, and is back on the next visit
     const context = await browser.newContext({ viewport: { width: 820, height: 1180 }, userAgent: IPAD_SAFARI, hasTouch: true });

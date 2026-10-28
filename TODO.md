@@ -109,7 +109,7 @@ Next, in this order (design agreed with the owner):
       Archivos) covers sharing a list. Questions to settle then: what "the whole system" includes (all
       users' data, the database, the `.env`?), where the copies go, how often, and how a restore is done
       without a shell (the host has none).
-- [x] Install guide (`/ayuda/instalar`, also offline) for iPad, iPhone and Android, linked from the song list,
+- [x] Install guide (`/ayuda/instalar`, also offline) for iPad, iPhone and Android, linked from Ajustes,
       and an install bar at the bottom of every screen but singing, on every visit until the app is installed
       (`web/src/install.ts`, `web/src/views/install-banner.ts`): a button that opens Chrome's own dialog when
       Chrome offers it (it cannot be forced: the browser decides, and the dialog needs a tap), the steps for
