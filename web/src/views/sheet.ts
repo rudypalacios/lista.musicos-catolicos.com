@@ -39,6 +39,8 @@ export interface Sheet {
      * when it is safe to navigate: going somewhere before would leave the entry behind.
      */
     close: (then?: () => void) => void;
+    /** Scrolls the panel so `target` (something inside it) is in the middle: the current song of a long list */
+    reveal: (target: HTMLElement) => void;
     /** Closes it without touching the history: for a screen that is being replaced anyway */
     release: () => void;
     isOpen: () => boolean;
@@ -79,7 +81,7 @@ export function createSheet(label: string, onOpen?: () => void | Promise<void>):
         panel.inert = true;
         document.removeEventListener('keydown', onKey);
         if (opener instanceof HTMLElement && opener.isConnected) {
-            opener.focus();
+            opener.focus({ preventScroll: true });
         }
     };
     const close = (then?: () => void): void => {
@@ -108,6 +110,9 @@ export function createSheet(label: string, onOpen?: () => void | Promise<void>):
         element,
         body,
         close,
+        reveal: (target) => {
+            panel.scrollTop = target.offsetTop - (panel.clientHeight - target.offsetHeight) / 2;
+        },
         release,
         isOpen: () => open,
         open: () => {
@@ -125,7 +130,8 @@ export function createSheet(label: string, onOpen?: () => void | Promise<void>):
                 opened.push(self);
                 element.classList.add('is-open');
                 panel.inert = false;
-                panel.focus();
+                // preventScroll: focusing a panel that is still sliding in would scroll the screen under it
+                panel.focus({ preventScroll: true });
                 document.addEventListener('keydown', onKey);
             });
         },

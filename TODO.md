@@ -80,8 +80,9 @@ Next, in this order (design agreed with the owner):
       Singing has one floating bar: a row with back, part and song, the position button (a list of the
       songs to jump to) and "⋯" (a sheet with every tool, the note, Ajustes and Salir); it folds
       to a strip with the title and key while the lyrics scroll down and returns on scroll up or a tap;
-      a small pill at the bottom keeps the key and A± at hand. The song follows the finger on a swipe;
-      the lyric size is kept on the device. A± nudge the size the fit chose. Settings are not synced between
+      The song follows the finger on a swipe; the lyric size is kept on the device, apart for the library's
+      songs and for the lists being sung. The quick pill was tried and removed (the owner prefers just "⋯");
+      it can come back later if wanted. A± nudge the size the fit chose. Settings are not synced between
       devices on purpose (a tablet on a stand and a phone want different things); sync them later if
       the owner asks.
 - [ ] **Owner's check on the Android** for phases 4 and 5 (`DEPLOY.md`, "Fases 4 y 5").

@@ -29,11 +29,6 @@ function partName(item: SetlistItem): string {
     return MASS_PARTS.find((part) => part.id === item.part)?.name ?? 'Otra parte';
 }
 
-/** A button of the quick pill: it does what the toolbar button with the same `data-` attribute does */
-function pillButton(label: string, text: string, data: Record<string, string>): HTMLButtonElement {
-    return h('button', { type: 'button', class: 'perform__pill-button', 'aria-label': label, ...data }, text);
-}
-
 /**
  * Singing a setlist: the songs in the order of the Mass, one at a time, big. Between songs by a
  * swipe (the song follows the finger), the arrow keys, or the position button, which lists them all.
@@ -43,8 +38,7 @@ function pillButton(label: string, text: string, data: Record<string, string>): 
  *
  * The bar floats over the lyrics (so folding it never moves them): one row with the way back, the
  * song, its position and "⋯" for every other tool; it folds to a thin strip with the song and its key
- * while the lyrics scroll down, and unfolds on scroll up or a tap. A small pill at the bottom keeps the
- * key and the lyric size at hand.
+ * while the lyrics scroll down, and unfolds on scroll up or a tap.
  *
  * @param n 1-based position in the order of the Mass; out of range is brought into range
  */
@@ -91,26 +85,11 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     const error = h('p', { class: 'error', role: 'alert' });
     const chrome = h('div', { class: 'perform__chrome' }, progress, full, strip, error);
 
-    // --- the pill: the key and the lyric size, one tap from the lyrics ---
-    const pillKey = h('button', { type: 'button', class: 'perform__pill-key', 'aria-label': 'Tono y tamaño rápidos', 'aria-expanded': 'false' });
-    const pillTools = h('span', { class: 'perform__pill-tools' },
-        pillButton('Bajar el tono', '−', { 'data-transpose': '-1' }),
-        pillButton('Subir el tono', '+', { 'data-transpose': '1' }),
-        pillButton('Achicar la letra', 'A−', { 'data-size': '-1' }),
-        pillButton('Agrandar la letra', 'A+', { 'data-size': '1' }));
-    const pill = h('div', { class: 'perform__pill' }, pillKey, pillTools);
-    pillTools.hidden = true;
-    pillKey.addEventListener('click', () => {
-        pillTools.hidden = !pillTools.hidden;
-        pillKey.setAttribute('aria-expanded', String(!pillTools.hidden));
-    });
-
     // --- the song ---
     let stage: HTMLElement;
     let tools: HTMLElement | null = null;
     let dispose: () => void = () => undefined;
     if (song === undefined) {
-        pill.hidden = true;
         stage = h(
             'div',
             { class: 'stage is-scroll-stage' },
@@ -118,6 +97,7 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
         );
     } else {
         const reader = createReader(song, {
+            sizeScope: 'setlist',
             shift: item.transpose,
             onShift: (shift) => {
                 error.textContent = '';
@@ -126,15 +106,8 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
                 });
             },
             onKey: (key) => {
-                pillKey.textContent = key ?? 'Tono';
                 stripKey.textContent = key ?? '';
             },
-        });
-        pill.addEventListener('click', (event) => {
-            const button = (event.target as HTMLElement).closest('button');
-            if (button !== null && button !== pillKey) {
-                reader.press(button);
-            }
         });
         tools = reader.toolbar;
         stage = reader.stage;
@@ -188,6 +161,7 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
 
     // --- the position button: the songs of the list, to jump to one ---
     const songList = h('ul', { class: 'perform__songs' });
+    let current: HTMLElement | null = null;
     const jumpSheet = createSheet('Cantos del listado', async () => {
         const known = new Map((await app.list()).map((candidate) => [candidate.id, candidate.title]));
         songList.replaceChildren(...order.map((entry, index) => {
@@ -196,11 +170,15 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
                 h('span', {}, h('small', {}, partName(entry)), known.get(entry.songId) ?? 'Canto eliminado'));
             if (index + 1 === position) {
                 choice.setAttribute('aria-current', 'true');
+                current = choice;
             }
             choice.addEventListener('click', () => jumpSheet.close(() => go(index + 1)));
 
             return h('li', {}, choice);
         }));
+        if (current !== null) {
+            jumpSheet.reveal(current);
+        }
     });
     jumpSheet.body.append(h('h3', {}, 'Cantos del listado, en el orden de la misa'), songList);
     jumpButton.addEventListener('click', jumpSheet.open);
@@ -289,12 +267,6 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
         chrome.classList.toggle('is-folded', folded);
         full.inert = folded;
         strip.inert = !folded;
-        pill.classList.toggle('is-away', folded);
-        pill.inert = folded;
-        if (folded) {
-            pillTools.hidden = true;
-            pillKey.setAttribute('aria-expanded', 'false');
-        }
     };
     stage.addEventListener('scroll', () => {
         const top = stage.scrollTop;
@@ -312,7 +284,7 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     });
 
     return {
-        element: h('div', { class: 'viewer perform' }, stage, chrome, pill, jumpSheet.element, toolsSheet.element),
+        element: h('div', { class: 'viewer perform' }, stage, chrome, jumpSheet.element, toolsSheet.element),
         dispose: () => {
             document.removeEventListener('keydown', onKey);
             toolsSheet.release();

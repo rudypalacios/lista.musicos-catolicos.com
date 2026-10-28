@@ -151,13 +151,14 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
 7. *Cantar* (encabezado nuevo): una sola fila arriba con `←`, el nombre de la parte y del canto, la posición
    («3/10 ▾») y `⋯`. La barra de la app (Listas, Ajustes, Salir) ya no aparece aquí. Con un canto largo, baja la
    letra: la barra se pliega a una franja delgada con el título, el tono y la posición (tócala, o sube un poco, y
-   vuelve); la letra no debe moverse al plegarse. Abajo a la derecha hay una pastilla con el tono: tócala para
-   `−` `+` `A−` `A+`; desaparece al bajar la letra. `⋯` abre un panel con tono, tamaño, `Do → C`, *Ajustar*,
+   vuelve); la letra no debe moverse al plegarse. `⋯` abre un panel con tono, tamaño, `Do → C`, *Ajustar*,
    columnas, la nota del canto (se escribe ahí mismo; un punto en `⋯` avisa que hay una), *Ajustes* y *Salir*.
    Ya no hay modos Ensayo / Evento. El tamaño
-   de letra que eliges con `A−`/`A+` se queda para los demás cantos y al volver a abrir la app. El último
+   de letra que eliges con `A−`/`A+` se guarda aparte para *Cantar* un listado y para leer un canto de *Cantos*:
+   cambiarlo en uno no cambia el otro, y cada uno se queda al pasar de canto y al volver a abrir la app. El último
    renglón debe quedar con aire debajo, sin pegarse al borde ni quedar bajo la pastilla. Con un panel abierto
-   (`⋯` o «3/10 ▾»), el botón *atrás* del Android debe cerrar el panel, no salir de *Cantar*.
+   (`⋯` o «3/10 ▾»), el botón *atrás* del Android debe cerrar el panel, no salir de *Cantar*. Los dos paneles
+   siempre suben desde el borde de abajo (sin mover la barra de arriba), en cualquier canto del listado.
 8. **La pantalla no se apaga** mientras un canto está abierto (en *Cantar* o leyendo un canto): déjala quieta
    un minuto o más del tiempo que tienes configurado para apagarla. `⋯` → *Pantalla* dice si se logró (si no,
    "ahorro de batería" puede ser la causa). En *Ajustes* se puede apagar esta opción. En el iPad pide Safari
