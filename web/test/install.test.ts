@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { installContext, type Environment } from '../src/install.ts';
+import { installContext, installOffer, type Environment } from '../src/install.ts';
 
 const base: Environment = { userAgent: '', platform: '', maxTouchPoints: 0, standalone: false };
 
@@ -20,12 +20,33 @@ describe('installContext', () => {
         assert.equal(installContext({ ...base, userAgent, platform: 'MacIntel', maxTouchPoints: 0 }), 'other');
     });
 
-    it('says nothing on Android, whose Chrome offers the install itself', () => {
+    it('does not call Android a Safari: its offer comes from Chrome, not from a guess', () => {
         const userAgent = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/124.0 Mobile Safari/537.36';
         assert.equal(installContext({ ...base, userAgent, platform: 'Linux armv81', maxTouchPoints: 5 }), 'other');
     });
 
     it('says nothing once the app is installed', () => {
         assert.equal(installContext({ ...base, userAgent: 'iPad', standalone: true }), 'installed');
+    });
+});
+
+describe('installOffer', () => {
+    it('offers Chrome\'s dialog whenever it has one, on every visit', () => {
+        assert.equal(installOffer('other', true, false), 'prompt');
+        assert.equal(installOffer('ios-browser', true, false), 'prompt');
+    });
+
+    it('gives Safari on iOS the steps, since it has no dialog to open', () => {
+        assert.equal(installOffer('ios-browser', false, false), 'steps');
+    });
+
+    it('offers nothing where the browser has no way to install and gave no prompt', () => {
+        assert.equal(installOffer('other', false, false), 'none');
+    });
+
+    it('offers nothing once installed, or after "Ahora no" on this visit', () => {
+        assert.equal(installOffer('installed', true, false), 'none');
+        assert.equal(installOffer('ios-browser', false, true), 'none');
+        assert.equal(installOffer('other', true, true), 'none');
     });
 });

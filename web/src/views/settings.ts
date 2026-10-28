@@ -1,10 +1,11 @@
 import { transpose, type Notation } from '../chordpro/chord.ts';
 import { parse } from '../chordpro/parser.ts';
 import { sheetHtml } from '../chordpro/sheet.ts';
-import { h, setSheet } from '../dom.ts';
+import { h, link, setSheet } from '../dom.ts';
 import type { ColumnMode } from '../fit.ts';
 import { readColumns, readFit, readKeepAwake, readNotation, saveColumns, saveFit, saveKeepAwake, saveLyricColor, saveNotation } from '../prefs.ts';
 import { applyLyricColor, chosenLyricColor, LYRIC_COLORS } from '../settings.ts';
+import { paths } from '../router.ts';
 import { showToast } from '../toast.ts';
 import type { View } from './types.ts';
 
@@ -97,6 +98,7 @@ export function settingsView(): View {
             { value: 'one', label: 'Siempre una' },
             { value: 'two', label: 'Siempre dos' },
         ], saveColumns),
+        h('p', { class: 'muted help-link' }, link(paths.install(), 'Cómo instalar la app en el iPad o el teléfono')),
     );
 
     return { element };

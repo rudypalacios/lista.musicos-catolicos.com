@@ -64,6 +64,7 @@ declare module 'playwright' {
         once(event: 'dialog', listener: (dialog: Dialog) => void): void;
         reload(): Promise<unknown>;
         goBack(): Promise<unknown>;
+        addInitScript(script: () => void): Promise<void>;
         url(): string;
         setViewportSize(size: { width: number; height: number }): Promise<void>;
         waitForFunction<A = undefined>(callback: (arg: A) => unknown, arg?: A, options?: { timeout?: number }): Promise<unknown>;

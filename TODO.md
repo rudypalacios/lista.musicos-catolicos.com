@@ -109,11 +109,15 @@ Next, in this order (design agreed with the owner):
       Archivos) covers sharing a list. Questions to settle then: what "the whole system" includes (all
       users' data, the database, the `.env`?), where the copies go, how often, and how a restore is done
       without a shell (the host has none).
-- [x] Install guide (`/ayuda/instalar`, also offline) for iPad, iPhone and Android, linked from the song list,
-      and a calm, closable note shown only to Safari on iOS (`web/src/install.ts`). It never says data is lost:
-      the account holds everything; only unsent changes depend on the device.
-- [ ] **Owner's check on the iPad, at the end:** the note appears in Safari, not in the installed app; "Ver cómo"
-      opens the guide.
+- [x] Install guide (`/ayuda/instalar`, also offline) for iPad, iPhone and Android, linked from Ajustes,
+      and an install bar at the bottom of every screen but singing, on every visit until the app is installed
+      (`web/src/install.ts`, `web/src/views/install-banner.ts`): a button that opens Chrome's own dialog when
+      Chrome offers it (it cannot be forced: the browser decides, and the dialog needs a tap), the steps for
+      Safari on iOS (no dialog exists). "Ahora no" lasts one visit. It never says data is lost: the account
+      holds everything; only unsent changes depend on the device.
+- [ ] **Owner's check:** on the Android, in Chrome (not installed), the bar offers "Instalar" and the dialog opens;
+      after installing, the bar is gone. On the iPad, at the end: the bar shows the steps in Safari, not in the
+      installed app; "Cómo instalar" opens the guide.
 
 ## Later
 
