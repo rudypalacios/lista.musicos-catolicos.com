@@ -12,6 +12,8 @@ import { showFatal, startUpdates } from './updates.ts';
 import { addView } from './views/add.ts';
 import { editView } from './views/edit.ts';
 import { importView } from './views/import.ts';
+import { watchInstallPrompt } from './install.ts';
+import { createInstallBanner } from './views/install-banner.ts';
 import { installView } from './views/install.ts';
 import { listView } from './views/list.ts';
 import { listsView } from './views/lists.ts';
@@ -39,6 +41,8 @@ let current: View | null = null;
 /** The header and the "Cantos | Listados" tabs under it, once the person is in */
 let header: HTMLElement | null = null;
 let tabs: HTMLElement | null = null;
+/** The "install the app" bar at the bottom, one for the whole page, until the app is installed */
+const installBanner = createInstallBanner();
 /** Signs out, asking first when something written here was never sent (set once the header exists) */
 let requestSignOut: () => void = () => undefined;
 
@@ -137,7 +141,7 @@ function mountShell(data: App, email: string, onSignedOut: () => void, onNeedsSi
         h('a', { href: paths.list(), 'data-link': true, 'data-section': 'songs' }, 'Cantos'),
         h('a', { href: paths.lists(), 'data-link': true, 'data-section': 'lists' }, 'Listados'),
     );
-    app.replaceChildren(bar, tabs, h('main', { id: 'view' }));
+    app.replaceChildren(bar, tabs, h('main', { id: 'view' }), installBanner.element);
     watchSaves(data);
 
     const paint = (status: Status): void => {
@@ -164,6 +168,7 @@ function markSection(route: Route): void {
         }
     }
     tabs.hidden = route.name === 'perform';
+    installBanner.setAway(route.name === 'perform');
     if (header !== null) {
         header.hidden = route.name === 'perform';
     }
@@ -341,6 +346,7 @@ async function begin(data: App): Promise<void> {
     app.replaceChildren(
         h('header', { class: 'bar' }, h('h1', {}, 'Listas')),
         h('main', { id: 'view' }, splash('Conectando…')),
+        installBanner.element,
     );
     try {
         const me = await api.me();
@@ -396,6 +402,8 @@ window.addEventListener('unhandledrejection', (event) => {
 });
 
 applyLyricColor();
+// Chrome's install prompt comes once, soon after load: be listening before anything else is built
+watchInstallPrompt();
 // The browser drops the screen lock whenever the page is hidden: ask again when it is back
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {

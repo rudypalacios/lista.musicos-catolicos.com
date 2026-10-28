@@ -3,8 +3,7 @@ import { parse, songKey } from '../chordpro/parser.ts';
 import { transpose } from '../chordpro/chord.ts';
 import type { Song } from '../data/types.ts';
 import { h, link } from '../dom.ts';
-import { detectInstall } from '../install.ts';
-import { readInstallHintClosed, readNotation, saveInstallHintClosed } from '../prefs.ts';
+import { readNotation } from '../prefs.ts';
 import { paths } from '../router.ts';
 import { filterSongs } from '../search.ts';
 import type { View } from './types.ts';
@@ -26,9 +25,6 @@ export function listView(app: App): View {
         empty,
         h('p', { class: 'muted help-link' }, link(paths.install(), '¿Cómo instalar la app en el iPad o el teléfono?')),
     );
-    if (detectInstall() === 'ios-browser' && !readInstallHintClosed()) {
-        element.insertBefore(installHint(), search);
-    }
 
     let songs: Song[] = [];
     const draw = (): void => {
@@ -51,24 +47,6 @@ export function listView(app: App): View {
     load();
 
     return { element, dispose: stop };
-}
-
-/** A gentle note for Safari on iOS: add Lista to the home screen. It says nothing about losing data */
-function installHint(): HTMLElement {
-    const close = h('button', { type: 'button', class: 'button' }, 'Ahora no');
-    const hint = h(
-        'div',
-        { class: 'card install-hint', role: 'note' },
-        h('p', {}, 'Para abrir Lista como una app, a pantalla completa y sin conexión, añádela a la pantalla de inicio. ',
-            link(paths.install(), 'Ver cómo')),
-        close,
-    );
-    close.addEventListener('click', () => {
-        saveInstallHintClosed();
-        hint.remove();
-    });
-
-    return hint;
 }
 
 function item(song: Song): HTMLElement {

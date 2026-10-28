@@ -91,7 +91,10 @@ Chromium se prueba aquí, pero **Safari/WebKit no**, y es justo donde está el r
 vez después del primer deploy, y otra vez antes de confiar en la app para una misa.
 
 **Android (Chrome)**
-1. Abre la URL, inicia sesión, menú ⋮ → *Instalar aplicación*.
+1. Abre la URL en Chrome (aún sin instalar): abajo debe aparecer una barra «Instala Lista en este aparato» con el
+   botón *Instalar*; tócalo y acepta. Si tocas *Ahora no*, vuelve a aparecer en la siguiente visita. Ya instalada,
+   la barra no debe aparecer ni en la app ni en el navegador. (Si Chrome no ofrece su ventana, por ejemplo tras
+   rechazarla hace poco, no hay barra: menú ⋮ → *Instalar aplicación*.)
 2. Ábrela desde el ícono. Modo avión. Ciérrala del todo y ábrela otra vez: debe abrir, mostrar
    tu sesión y la etiqueta "Sin conexión".
 

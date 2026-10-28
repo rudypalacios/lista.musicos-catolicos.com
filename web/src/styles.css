@@ -881,17 +881,21 @@ button.info {
     line-height: 1.6;
 }
 
-.install-hint {
+.install-banner {
     display: flex;
+    flex: none;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.5rem 1rem;
-    margin: 0.75rem 0;
+    gap: 0.5rem 0.75rem;
+    padding: 0.6rem 1rem calc(0.6rem + env(safe-area-inset-bottom, 0px));
+    background: var(--surface);
+    border-top: 1px solid var(--border);
 }
 
-.install-hint p {
+.install-banner p {
     flex: 1 1 16rem;
     margin: 0;
+    font-size: 0.9rem;
 }
 
 .help-link {
