@@ -884,6 +884,7 @@ button.info {
 .install-banner {
     display: flex;
     flex: none;
+    flex-wrap: wrap;
     align-items: center;
     gap: 0.25rem 0.5rem;
     padding: 0.2rem 0.4rem 0.2rem 1rem;
@@ -899,6 +900,19 @@ button.info {
     color: var(--muted);
     font-size: 0.85rem;
     line-height: 1.25;
+}
+
+.install-banner__steps {
+    flex: 1 1 100%;
+    margin: 0;
+    padding: 0 1rem 0.5rem 2.25rem;
+    color: var(--text);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.install-banner__steps li {
+    padding: 0.15rem 0;
 }
 
 .install-banner__action,
