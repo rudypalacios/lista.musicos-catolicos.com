@@ -49,20 +49,21 @@ final class SetlistRepository
                 $this->sequence->next($userId),
             ];
             if (is_array($row)) {
+                // No star sent (an older app): keep the one stored
                 $this->pdo
                     ->prepare(
                         'UPDATE setlists SET title = ?, event_date = ?, notes = ?, items = ?, updated_at = ?, '
-                        . 'deleted_at = ?, seq = ? WHERE id = ?'
+                        . 'deleted_at = ?, seq = ?, starred = COALESCE(?, starred) WHERE id = ?'
                     )
-                    ->execute([...$values, $change->id]);
+                    ->execute([...$values, $change->starred === null ? null : (int) $change->starred, $change->id]);
             } else {
                 $this->pdo
                     ->prepare(
                         'INSERT INTO setlists '
-                        . '(title, event_date, notes, items, updated_at, deleted_at, seq, id, user_id) '
-                        . 'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+                        . '(title, event_date, notes, items, updated_at, deleted_at, seq, starred, id, user_id) '
+                        . 'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
                     )
-                    ->execute([...$values, $change->id, $userId]);
+                    ->execute([...$values, (int) ($change->starred ?? false), $change->id, $userId]);
             }
             $this->pdo->commit();
         } catch (\Throwable $e) {
@@ -77,7 +78,7 @@ final class SetlistRepository
      * The setlists that changed after `$since`, oldest change first, at most `$limit`.
      *
      * @return list<array{
-     *     id: string, title: string, eventDate: ?string, notes: string,
+     *     id: string, title: string, eventDate: ?string, notes: string, starred: bool,
      *     items: list<array{id: string, part: string, songId: string, transpose: int, note: string}>,
      *     updatedAt: int, deletedAt: ?int, seq: int
      * }>
@@ -85,7 +86,7 @@ final class SetlistRepository
     public function changedSince(string $userId, int $since, int $limit): array
     {
         $statement = $this->pdo->prepare(
-            'SELECT id, title, event_date, notes, items, updated_at, deleted_at, seq FROM setlists '
+            'SELECT id, title, event_date, notes, starred, items, updated_at, deleted_at, seq FROM setlists '
             . 'WHERE user_id = ? AND seq > ? ORDER BY seq ASC LIMIT ' . max(1, $limit)
         );
         $statement->execute([$userId, $since]);
@@ -97,6 +98,7 @@ final class SetlistRepository
                 'title' => (string) $row['title'],
                 'eventDate' => $row['event_date'] === null ? null : (string) $row['event_date'],
                 'notes' => (string) $row['notes'],
+                'starred' => (int) $row['starred'] === 1,
                 // Written by itemsJson() only: an unreadable value is damage, and says so
                 'items' => json_decode((string) $row['items'], true, 4, JSON_THROW_ON_ERROR),
                 'updatedAt' => (int) $row['updated_at'],

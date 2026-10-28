@@ -18,7 +18,7 @@ use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * POST /api/sync {songs?: [{id, title, author, body, updatedAt, deleted}],
- * setlists?: [{id, title, eventDate, notes, items, updatedAt, deleted}]} → 200
+ * setlists?: [{id, title, eventDate, notes, starred?, items, updatedAt, deleted}]} → 200
  * {applied: [id…], ignored: [id…]}. Each record is whole, with the client's own timestamp
  * (epoch milliseconds); the server keeps the newest. "ignored" are the ones it already had in
  * an equal or newer form: the client gets the winner on its next pull. At least one of the

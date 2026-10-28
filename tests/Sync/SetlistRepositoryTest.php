@@ -68,6 +68,43 @@ final class SetlistRepositoryTest extends TestCase
         $this->assertNull($this->setlists->changedSince(self::ME, 0, 10)[0]['eventDate']);
     }
 
+    private function starred(?bool $starred, int $at): SetlistChange
+    {
+        return new SetlistChange(self::LIST, 'Rosario', null, '', [], $at, false, $starred);
+    }
+
+    public function testAListStartsUnstarredAndTheStarSyncsWithTheEdit(): void
+    {
+        $this->setlists->apply(self::ME, $this->starred(null, 1000));
+        $this->assertFalse($this->setlists->changedSince(self::ME, 0, 10)[0]['starred']);
+
+        $this->setlists->apply(self::ME, $this->starred(true, 2000));
+        $row = $this->setlists->changedSince(self::ME, 0, 10)[0];
+        $this->assertTrue($row['starred']);
+        $this->assertSame(2, $row['seq'], 'a star is a change like any other: other devices pull it');
+
+        $this->setlists->apply(self::ME, $this->starred(false, 3000));
+        $this->assertFalse($this->setlists->changedSince(self::ME, 0, 10)[0]['starred']);
+    }
+
+    public function testAnEditFromAnOlderAppKeepsTheStoredStar(): void
+    {
+        $this->setlists->apply(self::ME, $this->starred(true, 1000));
+
+        $this->setlists->apply(self::ME, $this->starred(null, 2000));
+
+        $this->assertTrue($this->setlists->changedSince(self::ME, 0, 10)[0]['starred']);
+    }
+
+    public function testDeletingAStarredListClearsTheStar(): void
+    {
+        $this->setlists->apply(self::ME, $this->starred(true, 1000));
+
+        $this->setlists->apply(self::ME, new SetlistChange(self::LIST, 'Rosario', null, '', [], 2000, true, false));
+
+        $this->assertFalse($this->setlists->changedSince(self::ME, 0, 10)[0]['starred']);
+    }
+
     public function testANewerEditReplacesTheWholeListAndGetsANewNumber(): void
     {
         $this->setlists->apply(self::ME, $this->change('Domingo', 1000));

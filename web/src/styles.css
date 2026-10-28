@@ -175,6 +175,7 @@ a.link {
     --accent-soft: rgba(108, 184, 255, 0.15);
     --changed: #f0b429;
     --changed-soft: rgba(240, 180, 41, 0.16);
+    --star: #f0b429;
 }
 
 /* An element with `hidden` must stay hidden whatever display its class gives it */
@@ -984,6 +985,103 @@ body:has(.update) .install-banner {
         opacity: 0;
         transform: translateY(0.5rem);
     }
+}
+
+/* ===== The lists screen: flat rows under two quiet headings, the star apart from the row ===== */
+.lists__top {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.25rem;
+}
+
+.lists__top input {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+}
+
+.lists__error {
+    min-height: 0;
+    margin: 0.5rem 0 0;
+}
+
+.lists__new {
+    flex: none;
+}
+
+.lists__hint {
+    margin: 0.75rem 0 0;
+    font-size: 0.85rem;
+}
+
+.lgroup__label {
+    margin: 1.1rem 0 0.15rem;
+    color: var(--accent);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.lgroup:first-child .lgroup__label {
+    margin-top: 1rem;
+}
+
+.lrows {
+    margin: 0;
+    border-top: 1px solid var(--border);
+    padding: 0;
+    list-style: none;
+}
+
+.lrow {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+}
+
+.lrow__link {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    min-height: 3.5rem;
+    padding: 0.4rem 0;
+    color: var(--text);
+    text-decoration: none;
+}
+
+.lrow__title {
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.lrow__detail {
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.lrow:has(.lrow__link:hover) .lrow__title,
+.lrow__link:focus-visible .lrow__title {
+    text-decoration: underline;
+}
+
+button.star {
+    flex: none;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0;
+    color: var(--muted);
+    background: none;
+    border: 0;
+    font-size: 1.4rem;
+    line-height: 1;
+}
+
+button.star.is-on {
+    color: var(--star);
 }
 
 /* ===== A setlist, quieter ===== */

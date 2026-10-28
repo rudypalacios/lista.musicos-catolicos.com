@@ -16,7 +16,8 @@ use RuntimeException;
  * The site is on shared hosting with no shell and the CI only deploys, so the app migrates
  * itself on the first request after a deploy. MySQL commits DDL on its own, so a file is
  * recorded only after it ran, and files must be safe to run twice (CREATE TABLE IF NOT
- * EXISTS): that is what makes two simultaneous first requests harmless.
+ * EXISTS): that is what makes two simultaneous first requests harmless. ADD COLUMN has no such
+ * guard in the common subset, so a "duplicate column" error on one counts as already applied.
  */
 final class Migrator
 {
@@ -42,7 +43,7 @@ final class Migrator
                 continue;
             }
             foreach ($this->statements($file) as $statement) {
-                $this->pdo->exec($statement);
+                $this->run($statement);
             }
             $this->record($version);
             $done[] = $version;
@@ -94,6 +95,19 @@ final class Migrator
         $parts = preg_split('~;\s*(?:\R|$)~', $sql) ?: [];
 
         return array_values(array_filter(array_map('trim', $parts), static fn (string $part): bool => $part !== ''));
+    }
+
+    private function run(string $statement): void
+    {
+        try {
+            $this->pdo->exec($statement);
+        } catch (PDOException $e) {
+            // A simultaneous request added the column first: same result
+            $added = preg_match('~^ALTER\s+TABLE\s+\S+\s+ADD\s+COLUMN\b~i', $statement) === 1;
+            if (!$added || !str_contains(strtolower($e->getMessage()), 'duplicate column')) {
+                throw $e;
+            }
+        }
     }
 
     private function record(string $version): void

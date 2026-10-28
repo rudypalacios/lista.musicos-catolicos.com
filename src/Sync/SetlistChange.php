@@ -12,6 +12,9 @@ use App\Uuid;
  * devices that edit the same list while apart keep the later edit and lose the other (a
  * personal tool, where that is rare; TODO.md "Known limits").
  *
+ * `starred` marks a favourite. A client that predates it sends no value: `null` means "keep what
+ * the server has", so an old copy of the app cannot unstar a list by editing it.
+ *
  * An item is one song placed in one part of the Mass:
  * {id, part, songId, transpose, note}. `part` is the id of a part of web/src/mass.ts; the
  * server checks its shape and not the list of parts, so adding a part never needs a deploy
@@ -44,6 +47,7 @@ final class SetlistChange
         public readonly array $items,
         public readonly int $updatedAt,
         public readonly bool $deleted,
+        public readonly ?bool $starred = null,
     ) {
     }
 
@@ -67,8 +71,8 @@ final class SetlistChange
 
         $title = self::text($data, 'title', self::MAX_TITLE, 'El título');
         if (($data['deleted'] ?? false) === true) {
-            // A tombstone keeps the title and nothing else: the list is gone
-            return new self($id, $title, null, '', [], $updatedAt, true);
+            // A tombstone keeps the title and nothing else: the list is gone, and no longer a favourite
+            return new self($id, $title, null, '', [], $updatedAt, true, false);
         }
         if ($title === '') {
             throw new InvalidSetlist('El listado necesita un título.');
@@ -82,6 +86,7 @@ final class SetlistChange
             self::items($data['items'] ?? null),
             $updatedAt,
             false,
+            self::starred($data['starred'] ?? null),
         );
     }
 
@@ -95,6 +100,15 @@ final class SetlistChange
     private static function encode(array $items): string
     {
         return json_encode($items, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+    }
+
+    private static function starred(mixed $value): ?bool
+    {
+        if ($value !== null && !is_bool($value)) {
+            throw new InvalidSetlist('La marca de destacado del listado no es válida.');
+        }
+
+        return $value;
     }
 
     private static function date(mixed $value): ?string

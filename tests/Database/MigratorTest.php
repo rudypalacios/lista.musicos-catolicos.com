@@ -66,6 +66,44 @@ final class MigratorTest extends TestCase
         }
     }
 
+    public function testAddingAColumnThatAlreadyExistsCountsAsDone(): void
+    {
+        $dir = sys_get_temp_dir() . '/migrations-' . bin2hex(random_bytes(4));
+        mkdir($dir);
+        file_put_contents($dir . '/0001_a.sql', 'CREATE TABLE a (id INTEGER);');
+        file_put_contents($dir . '/0002_more.sql', 'ALTER TABLE a ADD COLUMN extra SMALLINT NOT NULL DEFAULT 0;');
+        $pdo = new PDO('sqlite::memory:', null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+        // A simultaneous first request ran 0002 before this one got to it
+        $pdo->exec('CREATE TABLE a (id INTEGER, extra SMALLINT NOT NULL DEFAULT 0)');
+        $pdo->exec(
+            'CREATE TABLE schema_migrations (version VARCHAR(190) NOT NULL PRIMARY KEY, applied_at DATETIME NOT NULL)'
+        );
+        $pdo->exec("INSERT INTO schema_migrations VALUES ('0001_a', '2026-01-01 00:00:00')");
+
+        $applied = (new Migrator($pdo, $dir))->migrate();
+
+        $this->assertSame(['0002_more'], $applied);
+
+        array_map('unlink', glob($dir . '/*.sql') ?: []);
+        rmdir($dir);
+    }
+
+    public function testAnyOtherFailingStatementStillStopsTheMigration(): void
+    {
+        $dir = sys_get_temp_dir() . '/migrations-' . bin2hex(random_bytes(4));
+        mkdir($dir);
+        file_put_contents($dir . '/0001_a.sql', 'ALTER TABLE missing ADD COLUMN extra SMALLINT;');
+        $pdo = new PDO('sqlite::memory:', null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+
+        try {
+            $this->expectException(\PDOException::class);
+            (new Migrator($pdo, $dir))->migrate();
+        } finally {
+            array_map('unlink', glob($dir . '/*.sql') ?: []);
+            rmdir($dir);
+        }
+    }
+
     public function testCommentsAndSeveralStatementsPerFileAreHandled(): void
     {
         $dir = sys_get_temp_dir() . '/migrations-' . bin2hex(random_bytes(4));

@@ -75,11 +75,12 @@ const pickSong = ({ id, title, author, body, updatedAt, deletedAt }: Song): Song
     id, title, author, body, updatedAt, deletedAt,
 });
 
-const pickSetlist = ({ id, title, eventDate, notes, items, updatedAt, deletedAt }: Setlist): Setlist => ({
+const pickSetlist = ({ id, title, eventDate, notes, starred, items, updatedAt, deletedAt }: Setlist): Setlist => ({
     id,
     title,
     eventDate,
     notes,
+    starred,
     items: items.map(({ id: itemId, part, songId, transpose, note }) => ({ id: itemId, part, songId, transpose, note })),
     updatedAt,
     deletedAt,

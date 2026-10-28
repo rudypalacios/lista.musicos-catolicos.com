@@ -69,6 +69,13 @@ final class SetlistChangeTest extends TestCase
         $this->assertSame([], $change->items);
     }
 
+    public function testStarredIsReadAndIsNullWhenAnOlderAppSendsNone(): void
+    {
+        $this->assertTrue(SetlistChange::fromArray($this->data(['starred' => true]), self::NOW)->starred);
+        $this->assertFalse(SetlistChange::fromArray($this->data(['starred' => false]), self::NOW)->starred);
+        $this->assertNull(SetlistChange::fromArray($this->data(), self::NOW)->starred, 'not sent: keep what is stored');
+    }
+
     public function testAnEmptyDateMeansNone(): void
     {
         $this->assertNull(SetlistChange::fromArray($this->data(['eventDate' => '']), self::NOW)->eventDate);
@@ -113,6 +120,8 @@ final class SetlistChangeTest extends TestCase
             'no date of edit' => [['updatedAt' => null], 'edición'],
             'date of edit as text' => [['updatedAt' => '1700000000000'], 'edición'],
             'negative date of edit' => [['updatedAt' => -1], 'edición'],
+            'starred as a number' => [['starred' => 1], 'destacado'],
+            'starred as text' => [['starred' => 'true'], 'destacado'],
             'date as a number' => [['eventDate' => 20261101], 'fecha'],
             'date in another format' => [['eventDate' => '01/11/2026'], 'fecha'],
             'date that does not exist' => [['eventDate' => '2026-02-30'], 'fecha'],
@@ -219,6 +228,13 @@ final class SetlistChangeTest extends TestCase
         $this->assertSame([], $change->items);
         $this->assertSame('', $change->notes);
         $this->assertNull($change->eventDate);
+    }
+
+    public function testADeletedSetlistIsNoLongerStarred(): void
+    {
+        $change = SetlistChange::fromArray($this->data(['deleted' => true, 'starred' => true]), self::NOW);
+
+        $this->assertFalse($change->starred);
     }
 
     public function testADeletionStillNeedsAnId(): void

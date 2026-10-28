@@ -54,7 +54,7 @@ async function serverData(page: Page) {
         const answer = (await (await fetch('/api/sync?since=0')).json()) as {
             songs: { id: string; title: string; body: string; deletedAt: number | null }[];
             setlists: {
-                id: string; title: string; eventDate: string | null; notes: string; deletedAt: number | null;
+                id: string; title: string; eventDate: string | null; notes: string; starred: boolean; deletedAt: number | null;
                 items: { id: string; part: string; songId: string; transpose: number; note: string }[];
             }[];
         };
@@ -197,7 +197,7 @@ try {
     assert.deepEqual(await chords(page), ['Do', 'Sol']);
     pass('the song itself keeps its own key');
     await page.getByRole('link', { name: 'Listados', exact: true }).click();
-    await page.locator('.song-list .song-item').first().click();
+    await page.locator('.lrow__link').first().click();
     await page.locator('section.slot').first().waitFor();
     await slot(page, 'Canto de entrada').locator('button.key', { hasText: 'Re ↺' }).waitFor();
     pass('and the list remembers the key after leaving the screen');
@@ -446,6 +446,59 @@ try {
     await page.getByRole('link', { name: '← Listados' }).click();
     await page.getByRole('link', { name: /Domingo, editado en la tablet/ }).waitFor();
     pass('an edit of the list made on one device shows up on the other');
+
+    // ----- stars: the starred lists first, searching, and the star on the other device -----
+    await page.getByRole('button', { name: 'Nuevo listado' }).click();
+    await page.locator('section.slot').first().waitFor();
+    await page.getByLabel('Título').fill('Rosario en familia');
+    await page.getByLabel('Título').blur();
+    await page.getByLabel('Fecha de la misa').fill('');
+    await page.getByLabel('Fecha de la misa').blur();
+    await page.getByRole('link', { name: '← Listados' }).click();
+    await page.getByText('Toca ☆ para dejar un listado arriba.').waitFor();
+    assert.equal(await page.getByRole('heading', { name: 'Recientes' }).count(), 0, 'no headings while nothing is starred');
+    assert.equal(await page.locator('.lrow__title').first().textContent(), 'Rosario en familia', 'the list edited last comes first');
+    assert.equal(await page.locator('.lrow__detail').first().textContent(), '0 cantos', 'a list with no day shows no day');
+    pass('with no stars the lists are one flat list, the most recently edited first, and a hint says how to star');
+
+    await page.getByRole('button', { name: 'Destacar: Domingo, editado en la tablet' }).click();
+    await page.getByRole('heading', { name: '★ Destacados' }).waitFor();
+    await page.getByRole('heading', { name: 'Recientes' }).waitFor();
+    assert.equal(await page.locator('.lgroup').first().locator('.lrow__title').textContent(), 'Domingo, editado en la tablet');
+    assert.equal(await page.getByRole('button', { name: 'Quitar de destacados: Domingo, editado en la tablet' }).getAttribute('aria-pressed'), 'true');
+    assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-star') !== null), true, 'the focus stays on the star');
+    assert.equal(await page.getByText('Toca ☆ para dejar un listado arriba.').isVisible(), false, 'the hint goes once a list is starred');
+    pass('starring a list moves it to "★ Destacados" and keeps the focus on its star');
+
+    const star = await page.getByRole('button', { name: /^Quitar de destacados/ }).boundingBox();
+    assert.ok(star !== null && star.width >= 44 && star.height >= 44, 'the star is a 44px target');
+    pass('the star is a tap target of at least 44px');
+
+    await page.getByLabel('Buscar listados').fill('ROSARIO');
+    assert.equal(await page.locator('.lrow').count(), 1);
+    assert.equal(await page.locator('.lgroup__label').count(), 0, 'searching shows one list with no headings');
+    await page.getByLabel('Buscar listados').fill('cuaresma');
+    await page.getByText('Ningún listado coincide con la búsqueda.').waitFor();
+    await page.getByLabel('Buscar listados').fill('');
+    await page.getByRole('heading', { name: '★ Destacados' }).waitFor();
+    pass('the search finds a list by title, ignoring case, and says when nothing matches');
+
+    await synced(page);
+    assert.equal((await serverData(page)).setlists.filter((list) => list.starred).length, 1);
+    await second.evaluate(() => window.dispatchEvent(new Event('online')));
+    await second.getByRole('link', { name: 'Listados', exact: true }).click();
+    await second.getByRole('button', { name: 'Quitar de destacados: Domingo, editado en la tablet' }).waitFor({ timeout: 15000 });
+    pass('the star reaches the other device');
+
+    // the extra list goes, so the rest of the test finds the screen as it expects
+    await page.getByLabel('Buscar listados').fill('rosario');
+    await page.getByRole('link', { name: /Rosario en familia/ }).click();
+    page.once('dialog', (dialog) => void dialog.accept());
+    await page.getByRole('button', { name: 'Eliminar listado' }).click();
+    await page.getByRole('heading', { name: 'Listados' }).waitFor();
+    await page.getByRole('button', { name: 'Quitar de destacados: Domingo, editado en la tablet' }).click();
+    await page.getByRole('button', { name: 'Destacar: Domingo, editado en la tablet' }).waitFor();
+    await synced(page);
 
     // ----- deleting a song that is in a list -----
     await page.getByRole('link', { name: 'Cantos', exact: true }).click();

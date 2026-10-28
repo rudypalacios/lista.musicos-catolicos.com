@@ -37,11 +37,28 @@ export function defaultTitle(eventDate: string): string {
     return `Misa del ${shortDate(eventDate)}`;
 }
 
-/** Newest first: by the day of the Mass (a list with no day last), then by when it was edited */
-export function newestFirst(a: Setlist, b: Setlist): number {
-    const byDay = (b.eventDate ?? '').localeCompare(a.eventDate ?? '');
+/**
+ * Most recently edited first. Not by the day of the Mass: a list may be for a rosary or a
+ * prayer meeting and have no day at all.
+ */
+export function recentFirst(a: Setlist, b: Setlist): number {
+    return b.updatedAt - a.updatedAt || a.id.localeCompare(b.id);
+}
 
-    return byDay !== 0 ? byDay : b.updatedAt - a.updatedAt;
+/**
+ * The lists as the screen shows them: the starred ones (by title, so they stay where the
+ * person left them) and the rest (most recently edited first).
+ */
+export function splitStarred(lists: readonly Setlist[]): { starred: Setlist[]; others: Setlist[] } {
+    return {
+        starred: lists.filter((list) => list.starred).sort((a, b) => a.title.localeCompare(b.title, 'es') || a.id.localeCompare(b.id)),
+        others: lists.filter((list) => !list.starred).sort(recentFirst),
+    };
+}
+
+/** A list saved by a version of the app that had no stars has none */
+function withStar(list: Setlist): Setlist {
+    return { ...list, starred: list.starred === true };
 }
 
 // --- writing ------------------------------------------------------------------------------
@@ -74,18 +91,18 @@ export class Setlists {
         this.newId = newId;
     }
 
-    /** The lists that are not deleted, newest first */
+    /** The lists that are not deleted, most recently edited first */
     async list(): Promise<Setlist[]> {
         const lists = (await this.store.all('setlists')).filter((list) => list.deletedAt === null);
 
-        return lists.sort(newestFirst);
+        return lists.map(withStar).sort(recentFirst);
     }
 
     /** A list, or undefined if it does not exist or was deleted */
     async get(id: string): Promise<Setlist | undefined> {
         const list = await this.store.get('setlists', id);
 
-        return list !== undefined && list.deletedAt === null ? list : undefined;
+        return list !== undefined && list.deletedAt === null ? withStar(list) : undefined;
     }
 
     /** The lists that use a song, so deleting it can warn first */
@@ -103,6 +120,7 @@ export class Setlists {
                 eventDate,
                 notes: draft.notes ?? '',
             }),
+            starred: false,
             items: [],
             updatedAt: this.now(),
             deletedAt: null,
@@ -120,6 +138,11 @@ export class Setlists {
         return this.edit(id, () => clean);
     }
 
+    /** Stars the list (it goes to the top of the lists screen) or takes the star off; syncs like any edit */
+    setStarred(id: string, starred: boolean): Promise<Setlist> {
+        return this.edit(id, () => ({ starred }));
+    }
+
     /** Deletes the list; the deletion syncs like any edit */
     async remove(id: string): Promise<void> {
         await this.serial(async () => {
@@ -128,7 +151,7 @@ export class Setlists {
                 return;
             }
             const at = this.stamp(current);
-            await this.store.save('setlists', { ...current, notes: '', items: [], updatedAt: at, deletedAt: at });
+            await this.store.save('setlists', { ...current, notes: '', starred: false, items: [], updatedAt: at, deletedAt: at });
             this.afterWrite();
         });
     }

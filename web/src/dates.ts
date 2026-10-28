@@ -39,3 +39,13 @@ export function longDate(value: string): string {
 export function shortDate(value: string): string {
     return new Intl.DateTimeFormat('es', { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(utc(value));
 }
+
+const WEEKDAYS = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'] as const;
+const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'] as const;
+
+/** "dom 1 nov": for a line of detail. A fixed table, so every device writes it the same */
+export function shortDay(value: string): string {
+    const date = utc(value);
+
+    return `${WEEKDAYS[date.getUTCDay()]} ${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]}`;
+}
