@@ -5,6 +5,7 @@ import { h, link } from '../dom.ts';
 import { MASS_PARTS } from '../mass.ts';
 import { readMode, saveMode, type Mode } from '../prefs.ts';
 import { paths } from '../router.ts';
+import { dragOffset, isSwipe, swipeAxis, type Axis } from '../swipe.ts';
 import { createReader } from './reader.ts';
 import type { Navigate, View } from './types.ts';
 
@@ -14,8 +15,11 @@ const HIDE_AFTER = 12;
 /** How long (ms) the stage takes to settle after the tools are shown or put away */
 const SETTLE_TIME = 450;
 
-/** A swipe is a mostly horizontal move at least this far (px) */
-const SWIPE_MIN = 60;
+/** How long (ms) the song takes to leave the screen once the finger lets go */
+const EXIT_TIME = 140;
+
+/** How far, as a share of the stage's width, the song travels as it leaves */
+const EXIT_DISTANCE = 0.35;
 
 /**
  * Which way the last move went, so the next song slides in from that side. The view is made
@@ -161,10 +165,48 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     };
     document.addEventListener('keydown', onKey);
 
+    // The song follows the finger from the first sideways move; letting go past SWIPE_MIN carries it
+    // off the screen and the next one slides in, otherwise it springs back
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let start: { x: number; y: number } | null = null;
+    let axis: Axis | null = null;
+    const hasSongOn = (dx: number): boolean => (dx < 0 ? position < order.length : position > 1);
+    const place = (offset: number): void => {
+        stage.style.transition = 'none';
+        stage.style.transform = `translateX(${offset}px)`;
+        stage.style.opacity = String(1 - Math.min(Math.abs(offset) / stage.clientWidth, 1) * 0.6);
+    };
+    const settle = (offset: number, opacity: number, then?: () => void): void => {
+        stage.style.transition = reduceMotion ? 'none' : `transform ${EXIT_TIME}ms ease-out, opacity ${EXIT_TIME}ms ease-out`;
+        stage.style.transform = offset === 0 ? '' : `translateX(${offset}px)`;
+        stage.style.opacity = opacity === 1 ? '' : String(opacity);
+        if (then !== undefined) {
+            setTimeout(then, reduceMotion ? 0 : EXIT_TIME);
+        }
+    };
     stage.addEventListener('touchstart', (event) => {
         const touch = event.touches[0];
         start = event.touches.length === 1 && touch !== undefined ? { x: touch.clientX, y: touch.clientY } : null;
+        axis = null;
+    }, { passive: true });
+    stage.addEventListener('touchmove', (event) => {
+        const touch = event.touches[0];
+        if (start === null || touch === undefined) {
+            return;
+        }
+        const dx = touch.clientX - start.x;
+        axis ??= swipeAxis(dx, touch.clientY - start.y);
+        if (axis === 'x') {
+            stage.classList.remove('slide-in-next', 'slide-in-previous');
+            place(dragOffset(dx, hasSongOn(dx)));
+        }
+    }, { passive: true });
+    stage.addEventListener('touchcancel', () => {
+        start = null;
+        if (axis === 'x') {
+            settle(0, 1);
+        }
+        axis = null;
     }, { passive: true });
     stage.addEventListener('touchend', (event) => {
         const touch = event.changedTouches[0];
@@ -174,8 +216,11 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
         const dx = touch.clientX - start.x;
         const dy = touch.clientY - start.y;
         start = null;
-        if (Math.abs(dx) >= SWIPE_MIN && Math.abs(dx) > Math.abs(dy) * 1.5) {
-            go(dx < 0 ? position + 1 : position - 1);
+        axis = null;
+        if (isSwipe(dx, dy) && hasSongOn(dx)) {
+            settle(Math.sign(dx) * stage.clientWidth * EXIT_DISTANCE, 0, () => go(dx < 0 ? position + 1 : position - 1));
+        } else {
+            settle(0, 1);
         }
     }, { passive: true });
 

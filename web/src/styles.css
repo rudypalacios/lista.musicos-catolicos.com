@@ -505,6 +505,8 @@ ul.notes {
 
 .stage.is-scroll-stage {
     overflow: auto;
+    /* The last line must not sit on the edge of the screen (or under the gesture bar) */
+    padding-bottom: calc(3rem + env(safe-area-inset-bottom, 0px));
 }
 
 .viewer-content {

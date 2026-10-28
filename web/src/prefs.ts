@@ -93,3 +93,16 @@ export function readMode(): Mode {
 export function saveMode(mode: Mode): void {
     write(MODE, mode === 'rehearsal' ? 'ensayo' : 'evento');
 }
+
+const LYRIC_SIZE = 'lista:tamano';
+
+/** How many A− / A+ steps the lyrics are away from their size (0 when never changed); the caller clamps it */
+export function readLyricSize(): number {
+    const value = Number.parseInt(read(LYRIC_SIZE) ?? '', 10);
+
+    return Number.isFinite(value) ? value : 0;
+}
+
+export function saveLyricSize(steps: number): void {
+    write(LYRIC_SIZE, String(steps));
+}

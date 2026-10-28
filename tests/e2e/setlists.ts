@@ -291,6 +291,39 @@ try {
     assert.equal(await page.locator('.perform__count').textContent(), '2/3');
     pass('a swipe moves between songs; a small move does not');
 
+    // The song follows the finger as soon as the swipe starts, and springs back when it is let go short
+    const dragged = await page.evaluate(() => {
+        const stage = document.querySelector<HTMLElement>('#stage');
+        if (stage === null) {
+            throw new Error('no stage');
+        }
+        const touch = (x: number): Touch => new Touch({ identifier: 1, target: stage, clientX: x, clientY: 300 });
+        stage.dispatchEvent(new TouchEvent('touchstart', { touches: [touch(400)], bubbles: true }));
+        stage.dispatchEvent(new TouchEvent('touchmove', { touches: [touch(380)], bubbles: true }));
+        stage.dispatchEvent(new TouchEvent('touchmove', { touches: [touch(340)], bubbles: true }));
+        const during = stage.style.transform;
+        stage.dispatchEvent(new TouchEvent('touchend', { changedTouches: [touch(360)], bubbles: true }));
+
+        return during;
+    });
+    assert.equal(dragged, 'translateX(-60px)', 'the song moves with the finger');
+    await page.waitForFunction(() => document.querySelector<HTMLElement>('#stage')?.style.transform === '');
+    assert.equal(await page.locator('.perform__count').textContent(), '2/3');
+    pass('the song follows the finger while it swipes and springs back when let go short');
+
+    await page.getByRole('button', { name: 'Letra más grande' }).click();
+    assert.equal(await page.evaluate(() => localStorage.getItem('lista:tamano')), '1');
+    await page.getByRole('button', { name: 'Canto siguiente' }).click();
+    await page.getByRole('heading', { name: 'Pan de vida' }).waitFor();
+    assert.equal(await page.getByRole('button', { name: 'Letra más grande' }).getAttribute('aria-disabled'), 'false');
+    const nextSize = await page.evaluate(() => getComputedStyle(document.querySelector('#song-content') as Element).fontSize);
+    await page.getByRole('button', { name: 'Letra más pequeña' }).click();
+    const smallerSize = await page.evaluate(() => getComputedStyle(document.querySelector('#song-content') as Element).fontSize);
+    assert.notEqual(nextSize, smallerSize, 'the next song opened with the size the last one was left at');
+    await page.getByRole('button', { name: 'Canto anterior' }).click();
+    await page.getByRole('heading', { name: 'Gloria sencilla' }).waitFor();
+    pass('the lyric size chosen stays for the next song');
+
     await page.getByRole('button', { name: 'Subir un semitono' }).click();
     await page.waitForFunction(() => document.querySelector('#song-sheet .ch')?.textContent === 'Lab');
     assert.deepEqual(await chords(page), ['Lab', 'Mib']);
