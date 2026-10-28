@@ -145,6 +145,7 @@ a.link {
 
 .update {
     position: fixed;
+    z-index: 20;
     right: 1rem;
     bottom: calc(1rem + env(safe-area-inset-bottom));
     left: 1rem;
@@ -891,6 +892,11 @@ button.info {
     padding-bottom: calc(0.2rem + env(safe-area-inset-bottom, 0px));
     background: var(--surface);
     border-top: 1px solid var(--border);
+}
+
+/* A new version to accept is the one thing on screen at the bottom: the install offer waits */
+body:has(.update) .install-banner {
+    display: none;
 }
 
 .install-banner p {

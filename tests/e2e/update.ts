@@ -25,6 +25,14 @@ const browser = await chromium.launch();
 
 try {
     const context = await browser.newContext({ viewport: { width: 820, height: 1180 } });
+    // Chrome offers to install: the install bar is on screen when the update arrives
+    await context.addInitScript(() => {
+        window.addEventListener('load', () => {
+            const event = new Event('beforeinstallprompt', { cancelable: true });
+            Object.assign(event, { prompt: () => Promise.resolve(), userChoice: Promise.resolve({ outcome: 'dismissed' }) });
+            setTimeout(() => window.dispatchEvent(event), 300);
+        });
+    });
     const page = await context.newPage();
     const problems: string[] = [];
     page.on('pageerror', (error) => problems.push(error.message));
@@ -59,6 +67,15 @@ try {
     await page.evaluate(() => navigator.serviceWorker.getRegistration().then((registration) => registration?.update()));
     await page.getByText('Hay una versión nueva').waitFor({ timeout: 15000 });
     pass('a new version is announced');
+
+    // The notice to update is on top of the install bar, never behind it: the button takes the tap
+    assert.equal(await page.evaluate(() => {
+        const box = (document.querySelector('.update button') as HTMLElement).getBoundingClientRect();
+
+        return document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2)?.closest('.update') !== null;
+    }), true, 'the Actualizar button is the topmost thing at its place');
+    assert.equal(await page.locator('.install-banner').isVisible(), false, 'the install offer waits while a version is to be accepted');
+    pass('the update notice sits above the install bar and the bar steps aside');
 
     await page.getByRole('button', { name: 'Actualizar' }).click();
     await page.getByText('Actualizando la app…').waitFor({ timeout: 3000 });
