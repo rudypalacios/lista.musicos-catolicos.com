@@ -79,7 +79,7 @@ export async function signIn(page: Page, base: string): Promise<void> {
 
 /** Waits until the header says the songs are synced (nothing left to send) */
 export async function synced(page: Page): Promise<void> {
-    await page.waitForFunction(() => document.querySelector('.sync')?.textContent === 'Sincronizado', { timeout: 15000 });
+    await page.waitForFunction(() => document.querySelector('.sync')?.textContent === 'Sincronizado', undefined, { timeout: 15000 });
 }
 
 /** The Content-Security-Policy that public/.htaccess sends in production */

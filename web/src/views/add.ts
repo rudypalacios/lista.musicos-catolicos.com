@@ -1,7 +1,7 @@
 import type { App } from '../app.ts';
 import { parse, songKey } from '../chordpro/parser.ts';
 import { transpose } from '../chordpro/chord.ts';
-import type { MassPart } from '../mass.ts';
+import { MASS_PARTS, type MassPart } from '../mass.ts';
 import type { Setlist, Song } from '../data/types.ts';
 import { h, link } from '../dom.ts';
 import { readNotation } from '../prefs.ts';
@@ -21,7 +21,12 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Ma
     const list = h('ul', { class: 'song-list' });
     const empty = h('p', { class: 'empty', hidden: true });
     const error = h('p', { class: 'error', role: 'alert' });
-    const already = new Set(setlist.items.filter((item) => item.part === part.id).map((item) => item.songId));
+    /** Where each song of the list already is, by song id: the part names */
+    const placed = new Map<string, Set<string>>();
+    for (const item of setlist.items) {
+        const name = MASS_PARTS.find((candidate) => candidate.id === item.part)?.name ?? 'otra parte';
+        placed.set(item.songId, (placed.get(item.songId) ?? new Set<string>()).add(name));
+    }
     const element = h(
         'div',
         { class: 'page' },
@@ -53,8 +58,10 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Ma
             text.append(h('span', { class: 'song-item__author' }, song.author));
         }
         const button = h('button', { type: 'button', class: 'song-item', 'data-song': song.id }, text);
-        if (already.has(song.id)) {
-            button.append(h('span', { class: 'chip chip--changed' }, 'Ya está'));
+        // Not a block: a song can be sung twice in a Mass. Only a reminder, before choosing it.
+        const where = placed.get(song.id);
+        if (where !== undefined) {
+            button.append(h('span', { class: 'chip chip--changed' }, where.has(part.name) ? 'Ya está aquí' : `Ya está en ${[...where].join(', ')}`));
         }
         if (key !== null) {
             button.append(h('span', { class: 'chip' }, transpose(key, 0, readNotation())));
@@ -64,7 +71,7 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Ma
             error.textContent = '';
             app.setlists
                 .addItem(setlist.id, part.id, song.id)
-                .then(() => navigate(paths.setlist(setlist.id), { replace: true }))
+                .then(() => navigate(`${paths.setlist(setlist.id)}#parte-${part.id}`, { replace: true }))
                 .catch((failure: unknown) => {
                     error.textContent = failure instanceof Error ? failure.message : 'No se pudo agregar el canto.';
                     button.disabled = false;

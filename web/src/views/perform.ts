@@ -10,6 +10,12 @@ import type { Navigate, View } from './types.ts';
 /** A swipe is a mostly horizontal move at least this far (px) */
 const SWIPE_MIN = 60;
 
+/**
+ * Which way the last move went, so the next song slides in from that side. The view is made
+ * anew for every song, so this has to outlive it; it is read once, by the view that follows.
+ */
+let slideFrom: 'next' | 'previous' | null = null;
+
 /** The part of the Mass an item belongs to, by name */
 function partName(item: SetlistItem): string {
     return MASS_PARTS.find((part) => part.id === item.part)?.name ?? 'Otra parte';
@@ -42,6 +48,7 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
 
     const go = (to: number): void => {
         if (to >= 1 && to <= order.length) {
+            slideFrom = to > position ? 'next' : 'previous';
             navigate(paths.perform(setlist.id, to), { replace: true });
         }
     };
@@ -57,7 +64,14 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     const error = h('p', { class: 'error', role: 'alert' });
     const info = h('div', { class: 'perform__info' }, h('strong', {}, partName(item)));
     if (item.note !== '') {
-        info.append(h('span', {}, ` · ${item.note}`));
+        // The note is there when wanted and out of the way otherwise: a button opens it
+        const text = h('p', { class: 'perform__note', hidden: true }, item.note);
+        const toggle = h('button', { type: 'button', class: 'perform__notebutton', 'aria-expanded': 'false' }, '📝 Nota');
+        toggle.addEventListener('click', () => {
+            text.hidden = !text.hidden;
+            toggle.setAttribute('aria-expanded', String(!text.hidden));
+        });
+        info.append(' ', toggle, text);
     }
 
     const bar = h('div', { class: 'viewer__bar' }, back, nav);
@@ -116,6 +130,10 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
         }
     }, { passive: true });
 
+    if (slideFrom !== null) {
+        stage.classList.add(`slide-in-${slideFrom}`);
+        slideFrom = null;
+    }
     const element = h('div', { class: 'viewer perform' }, bar, info, error, stage);
 
     return {
