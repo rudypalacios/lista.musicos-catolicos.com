@@ -94,6 +94,24 @@ async function swipe(page: Page, from: number, to: number): Promise<void> {
     }, [from, to]);
 }
 
+/** Opens the "⋯" sheet over the song (every tool, the mode, the note, the account) */
+async function openTools(page: Page): Promise<void> {
+    await page.getByRole('button', { name: 'Más herramientas' }).click();
+    await page.getByRole('dialog', { name: 'Herramientas' }).waitFor();
+}
+
+/** Closes whichever sheet is open */
+async function closeSheet(page: Page): Promise<void> {
+    await page.keyboard.press('Escape');
+    await page.locator('.sheet-layer.is-open').waitFor({ state: 'detached' });
+}
+
+/** Jumps to the n-th song of the list with the position button */
+async function jumpTo(page: Page, n: number): Promise<void> {
+    await page.getByRole('button', { name: /Ir a otro canto/ }).click();
+    await page.locator('.perform__song-choice').nth(n - 1).click();
+}
+
 const browser = await chromium.launch();
 try {
     const ipad = await browser.newContext({ viewport: { width: 820, height: 1180 } });
@@ -259,27 +277,33 @@ try {
     await page.getByRole('heading', { name: 'Abrimos la puerta' }).waitFor();
     assert.equal(await page.locator('.perform__count').textContent(), '1/3');
     assert.deepEqual(await chords(page), ['Re', 'La']);
-    assert.match(await page.locator('.perform__info').innerText(), /Canto de entrada/);
+    assert.match(await page.locator('.perform__part').textContent() ?? '', /Canto de entrada/);
     assert.equal(await page.locator('.tabs').isVisible(), false);
-    assert.equal(await page.getByRole('button', { name: 'Canto anterior' }).isDisabled(), true);
-    pass('singing opens the first song in the key of the list, with its part and no tabs in the way');
+    assert.equal(await page.locator('header.bar').isVisible(), false, 'the app header gives its room to the song');
+    await page.getByRole('button', { name: /Ir a otro canto/ }).click();
+    await page.getByRole('dialog', { name: 'Cantos del listado' }).waitFor();
+    assert.equal(await page.locator('.perform__song-choice').count(), 3);
+    assert.equal(await page.locator('.perform__song-choice[aria-current="true"]').innerText().then((text) => text.includes('Abrimos la puerta')), true);
+    await closeSheet(page);
+    pass('singing opens the first song in the key of the list, with its part, no tabs and no app header in the way');
 
-    await page.getByRole('button', { name: 'Canto siguiente' }).click();
+    await jumpTo(page, 2);
     await page.getByRole('heading', { name: 'Gloria sencilla' }).waitFor();
     assert.equal(await page.locator('.perform__count').textContent(), '2/3');
     assert.deepEqual(await chords(page), ['Sol', 'Re']);
-    assert.match(await page.locator('.perform__info').innerText(), /Canto de comunión/);
-    pass('next goes to the following song, in the order of the Mass');
+    assert.match(await page.locator('.perform__part').textContent() ?? '', /Canto de comunión/);
+    pass('the position button lists the songs in the order of the Mass and jumps to the one chosen');
 
     await page.keyboard.press('ArrowRight');
     await page.getByRole('heading', { name: 'Pan de vida' }).waitFor();
-    assert.doesNotMatch(await page.locator('.perform__info').innerText(), /Sin el último coro/);
-    await page.getByRole('button', { name: '📝 Nota' }).click();
-    assert.match(await page.locator('.perform__info').innerText(), /Sin el último coro/);
-    assert.equal(await page.getByRole('button', { name: 'Canto siguiente' }).isDisabled(), true);
+    assert.equal(await page.locator('.perform__note').isVisible(), false, 'the note is out of the way');
+    assert.equal(await page.locator('.perform__more.has-note').count(), 1, 'but a dot says there is one');
+    await openTools(page);
+    assert.match(await page.locator('.perform__note').innerText(), /Sin el último coro/);
+    await closeSheet(page);
     await page.keyboard.press('ArrowLeft');
     await page.getByRole('heading', { name: 'Gloria sencilla' }).waitFor();
-    pass('the arrow keys move between songs, and the note of the item is one tap away, not in the way');
+    pass('the arrow keys move between songs, and the note of the item is in the sheet, not in the way');
 
     await swipe(page, 600, 200);
     await page.getByRole('heading', { name: 'Pan de vida' }).waitFor();
@@ -311,20 +335,26 @@ try {
     assert.equal(await page.locator('.perform__count').textContent(), '2/3');
     pass('the song follows the finger while it swipes and springs back when let go short');
 
+    await openTools(page);
     await page.getByRole('button', { name: 'Letra más grande' }).click();
     assert.equal(await page.evaluate(() => localStorage.getItem('lista:tamano')), '1');
-    await page.getByRole('button', { name: 'Canto siguiente' }).click();
+    await closeSheet(page);
+    await page.keyboard.press('ArrowRight');
     await page.getByRole('heading', { name: 'Pan de vida' }).waitFor();
+    await openTools(page);
     assert.equal(await page.getByRole('button', { name: 'Letra más grande' }).getAttribute('aria-disabled'), 'false');
     const nextSize = await page.evaluate(() => getComputedStyle(document.querySelector('#song-content') as Element).fontSize);
     await page.getByRole('button', { name: 'Letra más pequeña' }).click();
     const smallerSize = await page.evaluate(() => getComputedStyle(document.querySelector('#song-content') as Element).fontSize);
     assert.notEqual(nextSize, smallerSize, 'the next song opened with the size the last one was left at');
-    await page.getByRole('button', { name: 'Canto anterior' }).click();
+    await closeSheet(page);
+    await page.keyboard.press('ArrowLeft');
     await page.getByRole('heading', { name: 'Gloria sencilla' }).waitFor();
     pass('the lyric size chosen stays for the next song');
 
+    await openTools(page);
     await page.getByRole('button', { name: 'Subir un semitono' }).click();
+    await closeSheet(page);
     await page.waitForFunction(() => document.querySelector('#song-sheet .ch')?.textContent === 'Lab');
     assert.deepEqual(await chords(page), ['Lab', 'Mib']);
     const afterShift = await serverWhen(page, (data) =>
@@ -338,12 +368,12 @@ try {
     await page.reload();
     await page.getByRole('heading', { name: 'Gloria sencilla' }).waitFor();
     assert.deepEqual(await chords(page), ['Lab', 'Mib']);
-    await page.getByRole('button', { name: 'Canto anterior' }).click();
+    await jumpTo(page, 1);
     await page.getByRole('heading', { name: 'Abrimos la puerta' }).waitFor();
     assert.deepEqual(await chords(page), ['Re', 'La']);
     pass('offline: a reload of the singing screen still shows the songs, in the keys of the list');
 
-    await page.getByRole('link', { name: '← Listado' }).click();
+    await page.getByRole('link', { name: 'Volver al listado' }).click();
     await page.locator('section.slot').first().waitFor();
     await slot(page, 'Canto de entrada').getByRole('button', { name: /Bajar un semitono/ }).click();
     await slot(page, 'Canto de entrada').locator('button.key', { hasText: 'Do# ↺' }).waitFor();
@@ -399,13 +429,12 @@ try {
     pass('the list shows "Canto eliminado" where the song was');
 
     await page.getByRole('link', { name: 'Cantar' }).click();
-    await page.getByRole('button', { name: 'Canto siguiente' }).click();
-    await page.getByRole('button', { name: 'Canto siguiente' }).click();
+    await jumpTo(page, 3);
     await page.getByRole('heading', { name: 'Canto eliminado' }).waitFor();
-    await page.getByRole('button', { name: 'Canto anterior' }).click();
+    await jumpTo(page, 2);
     pass('singing a list with a deleted song says so and keeps going');
 
-    await page.getByRole('link', { name: '← Listado' }).click();
+    await page.getByRole('link', { name: 'Volver al listado' }).click();
     await page.getByRole('button', { name: 'Quitar Canto eliminado del listado' }).click();
     await page.getByText('2 cantos').waitFor();
     pass('the deleted song can be removed from the list');
@@ -476,7 +505,13 @@ try {
     await guarded.locator('section.slot').first().waitFor();
     await guarded.getByRole('link', { name: 'Cantar' }).click();
     await guarded.getByRole('heading', { name: 'Abrimos la puerta' }).waitFor();
+    await guarded.getByRole('button', { name: 'Más herramientas' }).click();
     await guarded.getByRole('button', { name: 'Subir un semitono' }).click();
+    await guarded.keyboard.press('Escape');
+    await guarded.getByRole('button', { name: 'Tono y tamaño rápidos' }).click();
+    await guarded.getByRole('button', { name: 'Subir el tono' }).click();
+    await guarded.getByRole('button', { name: /Ir a otro canto/ }).click();
+    await guarded.getByRole('dialog', { name: 'Cantos del listado' }).waitFor();
     assert.deepEqual(violations, [], 'nothing the policy forbids');
     pass('the list screens and singing run under the production Content-Security-Policy');
 

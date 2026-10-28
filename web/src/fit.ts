@@ -57,6 +57,16 @@ export const DEFAULT_LIMITS: FitLimits = { min: 13, max: 34, step: 0.5 };
 /** Below this width two columns are not worth it: phones scroll instead */
 export const TWO_COLUMNS_MIN_WIDTH = 720;
 
+/**
+ * The height (px) the song really has: the stage's, less the room its padding keeps free (for the
+ * bar that floats over the top of the lyrics and for the floating pill at the bottom)
+ */
+function usableHeight(stage: HTMLElement): number {
+    const style = getComputedStyle(stage);
+
+    return stage.clientHeight - (Number.parseFloat(style.paddingTop) || 0) - (Number.parseFloat(style.paddingBottom) || 0);
+}
+
 /** Whether the stage is wide enough for two columns */
 export function isWide(stage: HTMLElement): boolean {
     return stage.clientWidth >= TWO_COLUMNS_MIN_WIDTH;
@@ -78,10 +88,15 @@ export function fitToStage(
     columns: ColumnMode = 'auto',
 ): { layout: FitLayout; size: number } {
     const apply = (size: number): void => content.style.setProperty('--lyric-size', `${size}px`);
-    const overflows = (inColumns: boolean): boolean =>
-        inColumns
-            ? content.scrollWidth > stage.clientWidth + 1 || content.scrollHeight > stage.clientHeight + 1
-            : content.scrollHeight > stage.clientHeight + 1 || content.scrollWidth > stage.clientWidth + 1;
+    // The room at the end of a scrolling song is not part of what has to fit
+    content.classList.remove('is-scroll');
+    const overflows = (inColumns: boolean): boolean => {
+        const room = usableHeight(stage);
+
+        return inColumns
+            ? content.scrollWidth > stage.clientWidth + 1 || content.scrollHeight > room + 1
+            : content.scrollHeight > room + 1 || content.scrollWidth > stage.clientWidth + 1;
+    };
     const attempt = (inColumns: boolean): FitResult => {
         content.classList.toggle('is-columns', inColumns);
 

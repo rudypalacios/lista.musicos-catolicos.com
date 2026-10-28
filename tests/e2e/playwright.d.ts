@@ -11,6 +11,8 @@ declare module 'playwright' {
         fill(value: string): Promise<void>;
         blur(): Promise<void>;
         first(): Locator;
+        nth(index: number): Locator;
+        boundingBox(): Promise<{ x: number; y: number; width: number; height: number } | null>;
         waitFor(options?: { state?: 'visible' | 'hidden' | 'attached' | 'detached'; timeout?: number }): Promise<void>;
         textContent(): Promise<string | null>;
         inputValue(): Promise<string>;

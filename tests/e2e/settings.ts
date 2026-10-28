@@ -127,38 +127,51 @@ try {
     }
     await synced(page);
 
-    // ----- event mode: the default, a slim bar -----
-    await setting(page, 'Modo evento: herramientas mínimas y más espacio para la letra');
+    // ----- event mode: the default, one row of bar and everything else behind "⋯" -----
+    await setting(page, 'Modo evento: para cantar (las notas solo se leen)');
     await page.getByRole('link', { name: 'Listados', exact: true }).click();
     await page.locator('.song-list .song-item').first().click();
     await page.getByRole('link', { name: 'Cantar' }).click();
     await page.getByRole('heading', { name: 'Camino largo' }).waitFor();
     await page.getByRole('button', { name: 'Más herramientas' }).waitFor();
     assert.equal(await page.getByRole('button', { name: 'Ajustar' }).isVisible(), false);
-    assert.equal(await page.getByRole('button', { name: 'Subir un semitono' }).isVisible(), true);
-    assert.equal(await page.getByRole('button', { name: 'Letra más grande' }).isVisible(), true);
+    assert.equal(await page.getByRole('button', { name: 'Tono y tamaño rápidos' }).isVisible(), true);
+    assert.ok((await page.locator('.perform__chrome').boundingBox())!.height < 60, 'the bar is one row');
     await page.getByRole('button', { name: 'Más herramientas' }).click();
     assert.equal(await page.getByRole('button', { name: 'Ajustar' }).isVisible(), true);
-    await page.getByRole('button', { name: 'Más herramientas' }).click();
-    assert.equal(await page.getByRole('button', { name: 'Ajustar' }).isVisible(), false);
-    pass('event mode keeps the key and size tools in view and the rest behind "⋯"');
+    assert.equal(await page.getByRole('button', { name: 'Subir un semitono' }).isVisible(), true);
+    assert.equal(await page.getByRole('link', { name: 'Ajustes' }).isVisible(), true);
+    assert.equal(await page.getByRole('button', { name: 'Salir' }).isVisible(), true);
+    assert.match(await page.locator('.perform__sync').innerText(), /Sincronizado|Sincronizando/);
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Ajustar' }).waitFor({ state: 'hidden' });
+    pass('singing has a one-row bar; the tools, the account and the mode are behind "⋯", and Escape closes it');
+
+    // The pill keeps the key and the size one tap away, collapsed until tapped
+    assert.equal(await page.getByRole('button', { name: 'Subir el tono' }).isVisible(), false);
+    await page.getByRole('button', { name: 'Tono y tamaño rápidos' }).click();
+    await page.getByRole('button', { name: 'Subir el tono' }).click();
+    await page.locator('.perform__pill-key', { hasText: 'Do#' }).waitFor();
+    await page.getByRole('button', { name: 'Bajar el tono' }).click();
+    await page.locator('.perform__pill-key', { hasText: /^Do$/ }).waitFor();
+    pass('the pill changes the key from the lyrics, and shows it');
 
     // Emergency: the lyrics can be made bigger even with the fit on (and then they scroll)
     const sizeOf = (): Promise<number> =>
         page.locator('.viewer-content').evaluate((el) => parseFloat((el as HTMLElement).style.getPropertyValue('--lyric-size')));
     const fitted = await sizeOf();
-    await page.getByRole('button', { name: 'Letra más grande' }).click();
+    await page.getByRole('button', { name: 'Agrandar la letra' }).click();
     assert.equal(await sizeOf(), fitted + 2);
-    await page.getByRole('button', { name: 'Letra más pequeña' }).click();
-    await page.getByRole('button', { name: 'Letra más pequeña' }).click();
+    await page.getByRole('button', { name: 'Achicar la letra' }).click();
+    await page.getByRole('button', { name: 'Achicar la letra' }).click();
     assert.equal(await sizeOf(), fitted - 2);
-    await page.getByRole('button', { name: 'Letra más grande' }).click();
+    await page.getByRole('button', { name: 'Agrandar la letra' }).click();
     assert.equal(await sizeOf(), fitted);
     pass('A− and A+ work with the fit on: they nudge the size the fit chose');
 
-    // The tools give way when the lyrics are scrolled and come back on scrolling up or on a tap
+    // The bar folds to a strip when the lyrics are scrolled down and comes back on scrolling up or on a tap
     await page.setViewportSize({ width: 390, height: 700 });
-    await page.getByRole('button', { name: 'Letra más grande' }).click();
+    await page.getByRole('button', { name: 'Agrandar la letra' }).click();
     await page.waitForFunction(() => {
         const stage = document.querySelector('#stage');
 
@@ -168,53 +181,49 @@ try {
         page.evaluate((to) => {
             (document.querySelector('#stage') as HTMLElement).scrollTop = to;
         }, top);
+    const stageHeight = (): Promise<number> => page.locator('#stage').evaluate((el) => el.getBoundingClientRect().height);
+    const unfolded = await stageHeight();
     await scrollStage(300);
-    await page.waitForFunction(() => document.querySelector('.perform__chrome.is-collapsed') !== null);
-    assert.equal(await page.getByRole('button', { name: '▾ Mostrar herramientas' }).isVisible(), true);
-    await page.getByRole('button', { name: '▾ Mostrar herramientas' }).click();
-    assert.equal(await has(page, '.perform__chrome.is-collapsed'), false);
-    await page.waitForTimeout(600); // the stage settles after the tools come back
+    await page.waitForFunction(() => document.querySelector('.perform__chrome.is-folded') !== null);
+    assert.equal(await page.getByRole('button', { name: 'Mostrar la barra' }).isVisible(), true);
+    assert.equal(await page.locator('.perform__strip').innerText().then((text) => text.includes('Camino largo')), true, 'the strip keeps the title');
+    assert.equal(await page.locator('.perform__pill.is-away').count(), 1, 'the pill goes with the bar');
+    assert.equal(await stageHeight(), unfolded, 'folding the bar does not resize the lyrics');
+    await page.getByRole('button', { name: 'Mostrar la barra' }).click();
+    assert.equal(await has(page, '.perform__chrome.is-folded'), false);
     await scrollStage(600);
-    await page.waitForFunction(() => document.querySelector('.perform__chrome.is-collapsed') !== null);
-    await page.waitForTimeout(600);
+    await page.waitForFunction(() => document.querySelector('.perform__chrome.is-folded') !== null);
     await scrollStage(200);
-    await page.waitForFunction(() => document.querySelector('.perform__chrome.is-collapsed') === null);
-    pass('event mode hides the tools when the lyrics scroll down and brings them back on scroll up or a tap');
+    await page.waitForFunction(() => document.querySelector('.perform__chrome.is-folded') === null);
+    await page.getByRole('button', { name: 'Tono y tamaño rápidos' }).waitFor();
+    pass('the bar folds to a strip with the title when the lyrics scroll down, and comes back on scroll up or a tap');
 
-    // By hand too: a song that fits has nothing to scroll, and the tools can still be put away
-    await page.getByRole('button', { name: 'Ocultar las herramientas' }).click();
-    await page.waitForFunction(() => document.querySelector('.perform__chrome.is-collapsed') !== null);
-    await page.waitForTimeout(600);
-    const roomWith = await page.locator('#stage').evaluate((el) => el.getBoundingClientRect().height);
-    await page.getByRole('button', { name: '▾ Mostrar herramientas' }).click();
-    await page.waitForFunction(() => document.querySelector('.perform__chrome.is-collapsed') === null);
-    await page.waitForTimeout(600);
-    const roomWithout = await page.locator('#stage').evaluate((el) => el.getBoundingClientRect().height);
-    assert.ok(roomWith > roomWithout + 60, `the lyrics gain room when the tools are away (${roomWith} vs ${roomWithout})`);
-    pass('the tools can also be put away by hand, and the strip brings them back');
-
-    // ----- rehearsal mode: every tool, and notes -----
+    // ----- rehearsal mode: notes can be written -----
     await page.setViewportSize({ width: 1280, height: 800 });
+    await scrollStage(0);
+    await page.getByRole('button', { name: 'Más herramientas' }).click();
     assert.equal(await page.getByRole('button', { name: /Evento/ }).getAttribute('aria-pressed'), 'true');
     assert.match(await page.locator('.perform__modes').innerText(), /para preparar[\s\S]*para cantar/i);
+    assert.equal(await page.getByLabel('Nota de este canto').count(), 0);
     await page.getByRole('button', { name: /Ensayo/ }).click();
+    await page.locator('.perform__notefield').waitFor({ state: 'attached' });
+    await page.getByRole('button', { name: 'Más herramientas' }).click();
     await page.locator('.perform__mode[aria-pressed="true"]', { hasText: 'Ensayo' }).waitFor();
-    assert.equal(await page.getByRole('button', { name: 'Ajustar' }).isVisible(), true);
-    assert.equal(await page.getByRole('button', { name: 'Más herramientas' }).count(), 0);
-    await page.getByRole('button', { name: '📝 Agregar nota' }).click();
     await page.getByLabel('Nota de este canto').fill('Tono alto, bajar medio tono');
     await page.getByLabel('Nota de este canto').blur();
     await page.locator('.toast', { hasText: 'Guardado' }).waitFor();
     await synced(page);
-    pass('rehearsal mode shows every tool and takes a note on the song being sung');
+    pass('rehearsal mode takes a note on the song being sung');
 
     // The note is read, not edited, in event mode, and the list has it
     await page.getByRole('button', { name: /Evento/ }).click();
-    await page.locator('.perform__mode[aria-pressed="true"]', { hasText: 'Evento' }).waitFor();
+    await page.locator('.perform__notefield').waitFor({ state: 'detached' });
+    await page.getByRole('button', { name: 'Más herramientas' }).click();
     assert.equal(await page.getByLabel('Nota de este canto').count(), 0);
-    await page.getByRole('button', { name: '📝 Nota' }).click();
     await page.getByText('Tono alto, bajar medio tono').waitFor();
-    await page.getByRole('link', { name: '← Listado' }).click();
+    await page.keyboard.press('Escape');
+    await page.locator('.sheet-layer.is-open').waitFor({ state: 'detached' });
+    await page.getByRole('link', { name: 'Volver al listado' }).click();
     await page.getByRole('button', { name: 'Editar la nota de Camino largo' }).waitFor();
     pass('in event mode the note is only read; the list shows what was written while rehearsing');
 

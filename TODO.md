@@ -74,9 +74,12 @@ Next, in this order (design agreed with the owner):
 
 - [x] Phase 5, settings and modes (this branch): an Ajustes screen per device (chord names, lyric colour,
       fit, columns auto / 1 / 2, default way to sing); a columns button in the reader on wide screens;
-      rehearsal mode (all tools, notes written while singing) and event mode (key ± and A± in view, the
-      rest behind "⋯", the tools hide when the lyrics scroll down and come back on scroll up or a tap;
-      A± now nudge the size the fit chose). Event is the default. Settings are not synced between
+      rehearsal mode (notes written while singing) and event mode (notes only read). Event is the default.
+      Singing has one floating bar: a row with back, part and song, the position button (a list of the
+      songs to jump to) and "⋯" (a sheet with every tool, the mode, the note, Ajustes and Salir); it folds
+      to a strip with the title and key while the lyrics scroll down and returns on scroll up or a tap;
+      a small pill at the bottom keeps the key and A± at hand. The song follows the finger on a swipe;
+      the lyric size is kept on the device. A± nudge the size the fit chose. Settings are not synced between
       devices on purpose (a tablet on a stand and a phone want different things); sync them later if
       the owner asks.
 - [ ] **Owner's check on the Android** for phases 4 and 5 (`DEPLOY.md`, "Fases 4 y 5").

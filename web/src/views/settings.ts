@@ -90,8 +90,8 @@ export function settingsView(): View {
             { value: 'two', label: 'Siempre dos' },
         ], saveColumns),
         choice<Mode>('mode', 'Al cantar un listado', readMode(), [
-            { value: 'event', label: 'Modo evento: herramientas mínimas y más espacio para la letra' },
-            { value: 'rehearsal', label: 'Modo ensayo: todas las herramientas y notas' },
+            { value: 'event', label: 'Modo evento: para cantar (las notas solo se leen)' },
+            { value: 'rehearsal', label: 'Modo ensayo: para preparar (se pueden escribir notas)' },
         ], saveMode),
     );
 

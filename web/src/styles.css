@@ -505,8 +505,6 @@ ul.notes {
 
 .stage.is-scroll-stage {
     overflow: auto;
-    /* The last line must not sit on the edge of the screen (or under the gesture bar) */
-    padding-bottom: calc(3rem + env(safe-area-inset-bottom, 0px));
 }
 
 .viewer-content {
@@ -548,6 +546,8 @@ ul.notes {
 
 .viewer-content.is-scroll {
     height: auto;
+    /* The last line must not sit on the edge of the screen (or under the gesture bar) */
+    padding-bottom: calc(3rem + env(safe-area-inset-bottom, 0px));
 }
 
 @media (min-width: 900px) {
@@ -835,48 +835,6 @@ button.info {
     margin-left: auto;
 }
 
-/* ----- singing a setlist ----- */
-.viewer__bar > .perform__nav {
-    order: 2;
-}
-
-@media (min-width: 900px) {
-    .viewer__bar > .perform__nav {
-        order: 3;
-    }
-}
-
-.perform__nav {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-}
-
-.perform__nav .button {
-    min-width: 2.75rem;
-    font-size: 1.4rem;
-}
-
-.perform__count {
-    min-width: 3.5rem;
-    text-align: center;
-    font-weight: 700;
-}
-
-.perform__info {
-    padding: 0.4rem 0.75rem;
-    color: var(--muted);
-    border-bottom: 1px solid var(--border);
-}
-
-.perform__info strong {
-    color: var(--text);
-}
-
-.perform .error:empty {
-    display: none;
-}
-
 /* Imprimir: a menu with the two sheets (print/print.css lays the pages out) */
 .print-menu {
     position: relative;
@@ -1008,21 +966,6 @@ button.info {
 }
 
 /* ===== Singing: the note on demand, the slide between songs, no stretching ===== */
-.perform__notebutton {
-    min-height: 2.5rem;
-    padding: 0 0.6rem;
-    color: var(--muted);
-    background: none;
-    border: 1px solid var(--border);
-    border-radius: 0.45rem;
-    font: inherit;
-    font-size: 0.9rem;
-}
-
-.perform__note {
-    margin: 0.4rem 0 0;
-}
-
 /*
  * A swipe sideways is ours (next song, previous song): the browser must not also pull the page
  * (the rubber-band or stretch at the edge, a sideways scroll). Zooming with two fingers stays.
@@ -1141,7 +1084,7 @@ body {
     font-size: 1.2rem;
 }
 
-/* ===== Tools: the quick ones in view, the rest behind "⋯" ===== */
+/* ===== Tools: the toolbar, which singing puts in a sheet ===== */
 .toolbar__extra {
     display: flex;
     flex-wrap: wrap;
@@ -1149,59 +1092,332 @@ body {
     gap: 0.4rem;
 }
 
-.toolbar__extra[hidden] {
-    display: none;
-}
-
-/* ===== Singing in event mode: the tools give way to the lyrics ===== */
+/* ===== Singing a list: the lyrics fill the screen, the bar floats over them ===== */
 .perform {
+    --perform-bar: 3.25rem;
+    --perform-strip: 1.75rem;
     position: relative;
-}
-
-.perform__chrome {
-    display: grid;
-    grid-template-rows: 1fr;
-    transition: grid-template-rows 180ms ease-out;
-}
-
-.perform__chrome.is-collapsed {
-    grid-template-rows: 0fr;
-}
-
-.perform__chrome-inner {
-    min-height: 0;
     overflow: hidden;
 }
 
-.perform__reveal {
-    display: block;
-    width: 100%;
-    min-height: 2.5rem;
-    color: var(--muted);
-    background: var(--surface);
-    border: 0;
-    border-bottom: 1px solid var(--border);
-    font: inherit;
-    font-size: 0.9rem;
+/* Room kept free for the bar above and the pill below, so no line is ever hidden under them */
+.perform .stage {
+    padding-top: calc(var(--perform-bar) + 0.5rem);
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
 }
 
-.perform__reveal[hidden] {
+.perform .viewer-content.is-scroll {
+    padding-bottom: 0;
+}
+
+.perform__chrome {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 4;
+    height: var(--perform-bar);
+    overflow: hidden;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    transition: height 200ms ease-out;
+}
+
+.perform__chrome.is-folded {
+    height: var(--perform-strip);
+}
+
+/* The messages ("Guardado…") stay above the pill instead of hiding it */
+body:has(.perform) .toasts {
+    bottom: calc(4.75rem + env(safe-area-inset-bottom));
+}
+
+/* The error hangs under the bar instead of pushing anything */
+.perform__chrome:has(.error:not(:empty)) {
+    overflow: visible;
+}
+
+.perform__chrome .error {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding: 0.4rem 0.75rem;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+}
+
+.perform .error:empty {
     display: none;
 }
 
-.perform__putaway {
-    min-height: 2.5rem;
-    padding: 0 0.6rem;
+.perform__full,
+.perform__strip {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: opacity 150ms;
+}
+
+.perform__full {
+    padding: 0 0.4rem;
+}
+
+.perform__chrome.is-folded .perform__full,
+.perform__strip[inert] {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.perform__strip {
+    width: 100%;
+    height: var(--perform-strip);
+    min-height: 0;
+    gap: 0.6rem;
+    padding: 0 0.75rem;
     color: var(--muted);
     background: none;
     border: 0;
     font: inherit;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    text-align: left;
+    cursor: pointer;
+}
+
+.perform__strip strong {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--text);
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.perform__strip-key {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.perform__strip-count {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.perform__back,
+.perform__jump,
+.perform__more {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0 0.5rem;
+    color: var(--text);
+    background: none;
+    border: 0;
+    border-radius: 0.6rem;
+    font: inherit;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.perform__back {
+    font-size: 1.3rem;
+}
+
+.perform__jump {
+    border: 1px solid var(--border);
+    font-variant-numeric: tabular-nums;
+}
+
+.perform__more {
+    position: relative;
+    font-size: 1.3rem;
+}
+
+/* A note on this song: a dot on "⋯", so it is not forgotten behind the button */
+.perform__more.has-note::after {
+    content: '';
+    position: absolute;
+    top: 0.55rem;
+    right: 0.5rem;
+    width: 0.5rem;
+    height: 0.5rem;
+    background: var(--accent);
+    border-radius: 50%;
+}
+
+.perform__title {
+    flex: 1;
+    min-width: 0;
+    line-height: 1.15;
+}
+
+.perform__title small,
+.perform__title strong {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.perform__title small {
+    color: var(--muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.perform__progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 100%;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    pointer-events: none;
+}
+
+/* The pill: the key and the lyric size, collapsed to the key until tapped */
+.perform__pill {
+    position: absolute;
+    right: 0.75rem;
+    bottom: calc(0.9rem + env(safe-area-inset-bottom, 0px));
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+    transition: transform 200ms ease-out, opacity 200ms;
+}
+
+.perform__pill.is-away {
+    opacity: 0;
+    transform: translateY(5rem);
+    pointer-events: none;
+}
+
+.perform__pill-tools {
+    display: flex;
+    align-items: center;
+}
+
+.perform__pill-key,
+.perform__pill-button {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0 0.5rem;
+    color: var(--text);
+    background: none;
+    border: 0;
+    border-radius: 99px;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.perform__pill-key {
+    color: var(--accent);
+}
+
+.perform__pill-button[aria-disabled='true'] {
+    opacity: 0.4;
+}
+
+/* ----- the sheets: the tools, the list of songs ----- */
+.sheet-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 8;
+    pointer-events: none;
+}
+
+.sheet-layer.is-open {
+    pointer-events: auto;
+}
+
+.sheet__scrim {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transition: opacity 200ms;
+}
+
+.sheet-layer.is-open .sheet__scrim {
+    opacity: 1;
+}
+
+.sheet {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-height: 85%;
+    margin: 0 auto;
+    max-width: 40rem;
+    padding: 0.6rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+    overflow-y: auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-bottom: 0;
+    border-radius: 1.1rem 1.1rem 0 0;
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+    transform: translateY(105%);
+    visibility: hidden;
+    transition: transform 220ms ease-out, visibility 0s linear 220ms;
+}
+
+.sheet-layer.is-open .sheet {
+    transform: none;
+    visibility: visible;
+    transition: transform 220ms ease-out;
+}
+
+.sheet:focus {
+    outline: none;
+}
+
+.sheet__grab {
+    width: 2.25rem;
+    height: 0.25rem;
+    margin: 0 auto 0.6rem;
+    background: var(--border);
+    border-radius: 0.25rem;
+}
+
+.sheet h3 {
+    margin: 1rem 0 0.4rem;
+    color: var(--muted);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.sheet__body > h3:first-child {
+    margin-top: 0;
+}
+
+.sheet .toolbar button {
+    min-width: 3rem;
+    min-height: 3rem;
 }
 
 /* The two ways of singing, side by side, each saying what it is for */
 .perform__modes {
-    display: inline-flex;
+    display: flex;
     border: 1px solid var(--border);
     border-radius: 0.6rem;
     overflow: hidden;
@@ -1209,6 +1425,7 @@ body {
 
 .perform__mode {
     display: flex;
+    flex: 1;
     flex-direction: column;
     align-items: center;
     min-height: 2.75rem;
@@ -1232,15 +1449,80 @@ body {
 .perform__notefield {
     display: block;
     width: 100%;
-    margin-top: 0.4rem;
 }
 
-.perform__notefield[hidden] {
-    display: none;
+.perform__note {
+    margin: 0;
+}
+
+.perform__account {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.perform__sync {
+    display: block;
+    margin-top: 0.6rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+.perform__songs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.perform__song-choice {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.4rem 0.6rem;
+    color: var(--text);
+    background: none;
+    border: 0;
+    border-radius: 0.6rem;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.perform__song-choice small {
+    display: block;
+    color: var(--muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.perform__song-choice[aria-current='true'] {
+    background: var(--accent-soft);
+}
+
+.perform__song-number {
+    width: 1.5rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.perform__song-choice[aria-current='true'] .perform__song-number {
+    color: var(--accent);
+    font-weight: 700;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .perform__chrome {
+    .perform__chrome,
+    .perform__full,
+    .perform__strip,
+    .perform__pill,
+    .sheet,
+    .sheet__scrim {
         transition: none;
     }
 }

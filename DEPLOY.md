@@ -123,8 +123,10 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
 3. Cambia el tono de un canto con `−` / `+` (aparece, por ejemplo, "Re ↺"; el ↺ vuelve al tono original).
    Abre ese mismo canto desde *Cantos*: debe seguir en su tono de siempre. El cambio es solo del listado.
 4. Toca *Cantar*. Debe abrir el primer canto, en el tono del listado, con el nombre de la parte arriba.
-   Cambia de canto con `‹` `›`, con el dedo (deslizar a izquierda o derecha) y, si tienes teclado, con las
-   flechas. Cambia el tono ahí mismo: se guarda en el listado. Gira la tablet: se vuelve a ajustar.
+   Cambia de canto con el dedo (deslizar a izquierda o derecha: el canto debe seguir al dedo desde que
+   empiezas), con el botón de posición («1/10 ▾», abre la lista de cantos para saltar a uno) y, si tienes
+   teclado, con las flechas. Cambia el tono ahí mismo (con `⋯` o con la pastilla de abajo): se guarda en el
+   listado. Gira la tablet: se vuelve a ajustar.
 5. Modo avión. Cierra la app, ábrela, entra al listado y toca *Cantar*: todo debe funcionar. Cambia un
    tono sin conexión: arriba debe decir "Sin conexión · 1 sin enviar"; al quitar el modo avión, "Sincronizado".
 6. En el otro dispositivo abre *Listados*: el mismo listado, con los mismos tonos y notas.
@@ -146,12 +148,15 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
 6. *Ajustes* (arriba): cambia el nombre de los acordes, el color de la letra y las columnas; el ejemplo
    cambia al momento. Abre un canto: ya usa lo elegido. En la tablet, el botón *Columnas* del lector
    cambia entre automático, 2 y 1.
-7. *Cantar* en **modo evento** (el de siempre): barra mínima con tono, `A−`/`A+` y `⋯` para el resto. Con
-   un canto largo, baja la letra: las herramientas se esconden y queda una franja "▾ Mostrar herramientas"
-   (tócala, o sube un poco, y vuelven). También se pueden esconder a mano con "▴ Ocultar", incluso si el
-   canto cabe entero. `A+` debe agrandar la letra incluso con *Ajustar* activo. El selector *Ensayo (para
-   preparar) | Evento (para cantar)*: en ensayo salen todas las herramientas y se pueden escribir notas en el
-   canto que estás cantando.
+7. *Cantar* (encabezado nuevo): una sola fila arriba con `←`, el nombre de la parte y del canto, la posición
+   («3/10 ▾») y `⋯`. La barra de la app (Listas, Ajustes, Salir) ya no aparece aquí. Con un canto largo, baja la
+   letra: la barra se pliega a una franja delgada con el título, el tono y la posición (tócala, o sube un poco, y
+   vuelve); la letra no debe moverse al plegarse. Abajo a la derecha hay una pastilla con el tono: tócala para
+   `−` `+` `A−` `A+`; desaparece al bajar la letra. `⋯` abre un panel con tono, tamaño, `Do → C`, *Ajustar*,
+   columnas, el selector *Ensayo (para preparar) | Evento (para cantar)*, la nota, *Ajustes* y *Salir*. En
+   ensayo se escribe la nota del canto; en evento solo se lee (un punto en `⋯` avisa que hay una). El tamaño
+   de letra que eliges con `A−`/`A+` se queda para los demás cantos y al volver a abrir la app. El último
+   renglón debe quedar con aire debajo, sin pegarse al borde ni quedar bajo la pastilla.
 
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
