@@ -145,6 +145,7 @@ a.link {
 
 .update {
     position: fixed;
+    z-index: 20;
     right: 1rem;
     bottom: calc(1rem + env(safe-area-inset-bottom));
     left: 1rem;
@@ -884,12 +885,18 @@ button.info {
 .install-banner {
     display: flex;
     flex: none;
+    flex-wrap: wrap;
     align-items: center;
     gap: 0.25rem 0.5rem;
     padding: 0.2rem 0.4rem 0.2rem 1rem;
     padding-bottom: calc(0.2rem + env(safe-area-inset-bottom, 0px));
     background: var(--surface);
     border-top: 1px solid var(--border);
+}
+
+/* A new version to accept is the one thing on screen at the bottom: the install offer waits */
+body:has(.update) .install-banner {
+    display: none;
 }
 
 .install-banner p {
@@ -899,6 +906,19 @@ button.info {
     color: var(--muted);
     font-size: 0.85rem;
     line-height: 1.25;
+}
+
+.install-banner__steps {
+    flex: 1 1 100%;
+    margin: 0;
+    padding: 0 1rem 0.5rem 2.25rem;
+    color: var(--text);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.install-banner__steps li {
+    padding: 0.15rem 0;
 }
 
 .install-banner__action,

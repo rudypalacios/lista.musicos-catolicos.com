@@ -126,3 +126,14 @@ export async function promptInstall(): Promise<'accepted' | 'dismissed' | 'unava
 
     return outcome;
 }
+
+/**
+ * Putting Lista on the home screen from Safari, the way the install bar tells it. It lives here, in
+ * the bar, and not only in the guide: the guide is a screen of the app, which sits behind the sign-in,
+ * and the people who need these steps are the ones who have not installed or signed in yet.
+ */
+export const HOME_SCREEN_STEPS: readonly string[] = [
+    'Toca el botón Compartir (el cuadrado con una flecha hacia arriba).',
+    'Elige «Añadir a pantalla de inicio» y toca «Añadir».',
+    'Abre Lista desde su ícono, no desde el navegador.',
+];

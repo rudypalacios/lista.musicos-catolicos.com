@@ -113,11 +113,12 @@ Next, in this order (design agreed with the owner):
       and an install bar at the bottom of every screen but singing, on every visit until the app is installed
       (`web/src/install.ts`, `web/src/views/install-banner.ts`): a button that opens Chrome's own dialog when
       Chrome offers it (it cannot be forced: the browser decides, and the dialog needs a tap), the steps for
-      Safari on iOS (no dialog exists). "Ahora no" lasts one visit. It never says data is lost: the account
+      Safari on iOS (no dialog exists): "Cómo" opens the three steps right in the bar, so they work before
+      signing in (the guide screen is behind the sign-in) and offline. "Ahora no" lasts one visit. It never says data is lost: the account
       holds everything; only unsent changes depend on the device.
 - [ ] **Owner's check:** on the Android, in Chrome (not installed), the bar offers "Instalar" and the dialog opens;
-      after installing, the bar is gone. On the iPad, at the end: the bar shows the steps in Safari, not in the
-      installed app; "Cómo instalar" opens the guide.
+      after installing, the bar is gone. On the iPad, at the end: the bar shows "Cómo" in Safari, signed out too, and it opens the steps;
+      the bar is not there in the installed app.
 
 ## Later
 

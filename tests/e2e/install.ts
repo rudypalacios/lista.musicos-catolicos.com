@@ -33,13 +33,26 @@ try {
     const note = await ipad.locator('.install-banner').innerText();
     assert.match(note, /pantalla de inicio/);
     assert.doesNotMatch(note, /pierd|borr|perd/i, 'the note must not suggest that nothing is being saved');
-    await ipad.getByRole('link', { name: 'Cómo instalar', exact: true }).waitFor();
+    await ipad.getByRole('button', { name: 'Cómo instalar', exact: true }).waitFor();
     await ipad.getByRole('button', { name: 'Ahora no' }).click();
     assert.equal(await ipad.locator('.install-banner').isVisible(), false);
     await ipad.reload();
     await ipad.getByRole('heading', { name: 'Cantos' }).waitFor();
     await ipad.locator('.install-banner').waitFor();
     pass('Safari on iOS gets the steps on every visit; "Ahora no" is for this visit only');
+
+    // Signed out, with no account on the device: the steps are written in the bar itself (the guide screen
+    // is behind the sign-in, so a link to it would only lead back to the sign-in form)
+    const stranger = await (await browser.newContext({ viewport: { width: 390, height: 844 }, userAgent: IPAD_SAFARI, hasTouch: true })).newPage();
+    await stranger.goto(server.base);
+    await stranger.getByRole('heading', { name: 'Inicia sesión' }).waitFor();
+    assert.equal(await stranger.locator('.install-banner__steps').isVisible(), false, 'the steps wait to be asked for');
+    await stranger.getByRole('button', { name: 'Cómo instalar', exact: true }).click();
+    await stranger.getByText('Añadir a pantalla de inicio').waitFor();
+    assert.equal(await stranger.getByRole('heading', { name: 'Inicia sesión' }).isVisible(), true, 'and the person stays where they were');
+    await stranger.getByRole('button', { name: 'Cómo instalar', exact: true }).click();
+    await stranger.locator('.install-banner__steps').waitFor({ state: 'hidden' });
+    pass('on an iPhone that is not signed in, "Cómo" opens the steps right in the bar and closes them again');
 
     // Chrome: its install prompt is held and opened by the bar's button
     const chrome = await (await browser.newContext({ viewport: { width: 412, height: 860 } })).newPage();
