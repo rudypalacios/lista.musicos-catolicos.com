@@ -157,7 +157,6 @@ try {
     await page.getByRole('heading', { name: 'Camino largo' }).waitFor();
     await page.getByRole('button', { name: 'Más herramientas' }).waitFor();
     assert.equal(await page.getByRole('button', { name: 'Ajustar' }).isVisible(), false);
-    assert.equal(await page.getByRole('button', { name: 'Tono y tamaño rápidos' }).isVisible(), true);
     assert.ok((await page.locator('.perform__chrome').boundingBox())!.height < 60, 'the bar is one row');
     await page.getByRole('button', { name: 'Más herramientas' }).click();
     assert.equal(await page.getByRole('button', { name: 'Ajustar' }).isVisible(), true);
@@ -192,31 +191,31 @@ try {
     await page.keyboard.press('Escape');
     pass('the setting turns the screen lock off, and the sheet says the device decides');
 
-    // The pill keeps the key and the size one tap away, collapsed until tapped
-    assert.equal(await page.getByRole('button', { name: 'Subir el tono' }).isVisible(), false);
-    await page.getByRole('button', { name: 'Tono y tamaño rápidos' }).click();
-    await page.getByRole('button', { name: 'Subir el tono' }).click();
-    await page.locator('.perform__pill-key', { hasText: 'Do#' }).waitFor();
-    await page.getByRole('button', { name: 'Bajar el tono' }).click();
-    await page.locator('.perform__pill-key', { hasText: /^Do$/ }).waitFor();
-    pass('the pill changes the key from the lyrics, and shows it');
+    // The key is changed from the sheet, and the strip shows it
+    await page.getByRole('button', { name: 'Más herramientas' }).click();
+    await page.getByRole('button', { name: 'Subir un semitono' }).click();
+    await page.locator('.perform__strip-key', { hasText: 'Do#' }).waitFor();
+    await page.getByRole('button', { name: 'Bajar un semitono' }).click();
+    await page.locator('.perform__strip-key', { hasText: /^Do$/ }).waitFor();
+    pass('the key is changed from the sheet and the strip keeps it in view');
 
     // Emergency: the lyrics can be made bigger even with the fit on (and then they scroll)
     const sizeOf = (): Promise<number> =>
         page.locator('.viewer-content').evaluate((el) => parseFloat((el as HTMLElement).style.getPropertyValue('--lyric-size')));
     const fitted = await sizeOf();
-    await page.getByRole('button', { name: 'Agrandar la letra' }).click();
+    await page.getByRole('button', { name: 'Letra más grande' }).click();
     assert.equal(await sizeOf(), fitted + 2);
-    await page.getByRole('button', { name: 'Achicar la letra' }).click();
-    await page.getByRole('button', { name: 'Achicar la letra' }).click();
+    await page.getByRole('button', { name: 'Letra más pequeña' }).click();
+    await page.getByRole('button', { name: 'Letra más pequeña' }).click();
     assert.equal(await sizeOf(), fitted - 2);
-    await page.getByRole('button', { name: 'Agrandar la letra' }).click();
+    await page.getByRole('button', { name: 'Letra más grande' }).click();
     assert.equal(await sizeOf(), fitted);
     pass('A− and A+ work with the fit on: they nudge the size the fit chose');
 
     // The bar folds to a strip when the lyrics are scrolled down and comes back on scrolling up or on a tap
     await page.setViewportSize({ width: 390, height: 700 });
-    await page.getByRole('button', { name: 'Agrandar la letra' }).click();
+    await page.getByRole('button', { name: 'Letra más grande' }).click();
+    await page.keyboard.press('Escape');
     await page.waitForFunction(() => {
         const stage = document.querySelector('#stage');
 
@@ -232,7 +231,6 @@ try {
     await page.waitForFunction(() => document.querySelector('.perform__chrome.is-folded') !== null);
     assert.equal(await page.getByRole('button', { name: 'Mostrar la barra' }).isVisible(), true);
     assert.equal(await page.locator('.perform__strip').innerText().then((text) => text.includes('Camino largo')), true, 'the strip keeps the title');
-    assert.equal(await page.locator('.perform__pill.is-away').count(), 1, 'the pill goes with the bar');
     assert.equal(await stageHeight(), unfolded, 'folding the bar does not resize the lyrics');
     await page.getByRole('button', { name: 'Mostrar la barra' }).click();
     assert.equal(await has(page, '.perform__chrome.is-folded'), false);
@@ -240,7 +238,6 @@ try {
     await page.waitForFunction(() => document.querySelector('.perform__chrome.is-folded') !== null);
     await scrollStage(200);
     await page.waitForFunction(() => document.querySelector('.perform__chrome.is-folded') === null);
-    await page.getByRole('button', { name: 'Tono y tamaño rápidos' }).waitFor();
     pass('the bar folds to a strip with the title when the lyrics scroll down, and comes back on scroll up or a tap');
 
     // ----- the note of the song being sung is written behind "⋯" -----

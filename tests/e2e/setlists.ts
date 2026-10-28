@@ -303,6 +303,34 @@ try {
     assert.equal(page.url(), singingUrl);
     pass('back closes the sheet that is open and gives back its history entry when it is closed by hand');
 
+    // On a phone a sheet always rises from the bottom edge and the bar stays where it is
+    await page.setViewportSize({ width: 412, height: 860 });
+    const placement = (): Promise<{ scrolled: number; barTop: number; sheetBottom: number; sheetTop: number; height: number }> =>
+        page.evaluate(() => {
+            const sheet = (document.querySelector('.sheet-layer.is-open .sheet') as HTMLElement).getBoundingClientRect();
+
+            return {
+                scrolled: (document.querySelector('.perform') as HTMLElement).scrollTop,
+                barTop: (document.querySelector('.perform__chrome') as HTMLElement).getBoundingClientRect().top,
+                sheetBottom: Math.round(sheet.bottom),
+                sheetTop: Math.round(sheet.top),
+                height: window.innerHeight,
+            };
+        });
+    for (const open of [() => page.getByRole('button', { name: /Ir a otro canto/ }).click(), () => page.getByRole('button', { name: 'Más herramientas' }).click()]) {
+        await open();
+        await page.locator('.sheet-layer.is-open').waitFor();
+        await page.waitForTimeout(400); // the slide finishes
+        const where = await placement();
+        assert.equal(where.scrolled, 0, 'opening a sheet does not scroll the screen under it');
+        assert.equal(where.barTop, 0, 'the bar stays at the top');
+        assert.equal(where.sheetBottom, where.height, 'the sheet rises from the bottom edge');
+        assert.ok(where.sheetTop > where.height * 0.25, 'and leaves the top of the screen free');
+        await closeSheet(page);
+    }
+    await page.setViewportSize({ width: 820, height: 1180 });
+    pass('both sheets rise from the bottom edge on a phone, whatever the song, and leave the bar and the screen alone');
+
     await jumpTo(page, 2);
     await page.getByRole('heading', { name: 'Gloria sencilla' }).waitFor();
     assert.equal(await page.locator('.perform__count').textContent(), '2/3');
@@ -353,7 +381,8 @@ try {
 
     await openTools(page);
     await page.getByRole('button', { name: 'Letra más grande' }).click();
-    assert.equal(await page.evaluate(() => localStorage.getItem('lista:tamano')), '1');
+    assert.equal(await page.evaluate(() => localStorage.getItem('lista:tamano-listado')), '1');
+    assert.equal(await page.evaluate(() => localStorage.getItem('lista:tamano-cantos')), null, 'the library keeps its own size');
     await closeSheet(page);
     await page.keyboard.press('ArrowRight');
     await page.getByRole('heading', { name: 'Pan de vida' }).waitFor();
@@ -524,8 +553,6 @@ try {
     await guarded.getByRole('button', { name: 'Más herramientas' }).click();
     await guarded.getByRole('button', { name: 'Subir un semitono' }).click();
     await guarded.keyboard.press('Escape');
-    await guarded.getByRole('button', { name: 'Tono y tamaño rápidos' }).click();
-    await guarded.getByRole('button', { name: 'Subir el tono' }).click();
     await guarded.getByRole('button', { name: /Ir a otro canto/ }).click();
     await guarded.getByRole('dialog', { name: 'Cantos del listado' }).waitFor();
     assert.deepEqual(violations, [], 'nothing the policy forbids');

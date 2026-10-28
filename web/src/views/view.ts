@@ -34,6 +34,7 @@ export function viewView(app: App, song: Song): View {
     /** The key on screen, which is the one that prints */
     let shown = shift;
     const reader = createReader(song, {
+        sizeScope: 'songs',
         shift,
         onShift: (t) => {
             shown = t;

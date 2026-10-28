@@ -1097,17 +1097,15 @@ body {
     --perform-bar: 3.25rem;
     --perform-strip: 1.75rem;
     position: relative;
+    /* clip, not hidden: a hidden box can still be scrolled by the browser (to reveal a focused
+       element), which pushed the bar and the lyrics out of sight under an opening sheet */
     overflow: hidden;
+    overflow: clip;
 }
 
-/* Room kept free for the bar above and the pill below, so no line is ever hidden under them */
+/* Room kept free for the bar that floats over the top of the lyrics */
 .perform .stage {
     padding-top: calc(var(--perform-bar) + 0.5rem);
-    padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
-}
-
-.perform .viewer-content.is-scroll {
-    padding-bottom: 0;
 }
 
 .perform__chrome {
@@ -1125,11 +1123,6 @@ body {
 
 .perform__chrome.is-folded {
     height: var(--perform-strip);
-}
-
-/* The messages ("Guardado…") stay above the pill instead of hiding it */
-body:has(.perform) .toasts {
-    bottom: calc(4.75rem + env(safe-area-inset-bottom));
 }
 
 /* The error hangs under the bar instead of pushing anything */
@@ -1288,54 +1281,6 @@ body:has(.perform) .toasts {
     pointer-events: none;
 }
 
-/* The pill: the key and the lyric size, collapsed to the key until tapped */
-.perform__pill {
-    position: absolute;
-    right: 0.75rem;
-    bottom: calc(0.9rem + env(safe-area-inset-bottom, 0px));
-    z-index: 4;
-    display: flex;
-    align-items: center;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    border-radius: 99px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
-    transition: transform 200ms ease-out, opacity 200ms;
-}
-
-.perform__pill.is-away {
-    opacity: 0;
-    transform: translateY(5rem);
-    pointer-events: none;
-}
-
-.perform__pill-tools {
-    display: flex;
-    align-items: center;
-}
-
-.perform__pill-key,
-.perform__pill-button {
-    min-width: 2.75rem;
-    min-height: 2.75rem;
-    padding: 0 0.5rem;
-    color: var(--text);
-    background: none;
-    border: 0;
-    border-radius: 99px;
-    font: inherit;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.perform__pill-key {
-    color: var(--accent);
-}
-
-.perform__pill-button[aria-disabled='true'] {
-    opacity: 0.4;
-}
-
 /* ----- the sheets: the tools, the list of songs ----- */
 .sheet-layer {
     position: absolute;
@@ -1365,7 +1310,7 @@ body:has(.perform) .toasts {
     left: 0;
     right: 0;
     bottom: 0;
-    max-height: 85%;
+    max-height: 70%;
     margin: 0 auto;
     max-width: 40rem;
     padding: 0.6rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
@@ -1491,7 +1436,6 @@ body:has(.perform) .toasts {
     .perform__chrome,
     .perform__full,
     .perform__strip,
-    .perform__pill,
     .sheet,
     .sheet__scrim {
         transition: none;

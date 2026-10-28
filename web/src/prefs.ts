@@ -77,17 +77,24 @@ export function saveLyricColor(id: string): void {
     write(LYRIC_COLOR, id);
 }
 
-const LYRIC_SIZE = 'lista:tamano';
+/**
+ * Where the lyric size (A− / A+) is chosen: the songs of the library and the lists being sung each
+ * keep their own, so enlarging the letters on a stand for the list does not change how a song reads
+ * when it is opened from the library, and the other way round.
+ */
+export type SizeScope = 'songs' | 'setlist';
+
+const LYRIC_SIZE: Readonly<Record<SizeScope, string>> = { songs: 'lista:tamano-cantos', setlist: 'lista:tamano-listado' };
 
 /** How many A− / A+ steps the lyrics are away from their size (0 when never changed); the caller clamps it */
-export function readLyricSize(): number {
-    const value = Number.parseInt(read(LYRIC_SIZE) ?? '', 10);
+export function readLyricSize(scope: SizeScope): number {
+    const value = Number.parseInt(read(LYRIC_SIZE[scope]) ?? '', 10);
 
     return Number.isFinite(value) ? value : 0;
 }
 
-export function saveLyricSize(steps: number): void {
-    write(LYRIC_SIZE, String(steps));
+export function saveLyricSize(scope: SizeScope, steps: number): void {
+    write(LYRIC_SIZE[scope], String(steps));
 }
 
 const KEEP_AWAKE = 'lista:pantalla-encendida';
