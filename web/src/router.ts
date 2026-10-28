@@ -13,6 +13,7 @@ export type Route =
     | { name: 'add'; id: string; part: string }
     | { name: 'perform'; id: string; n: number }
     | { name: 'install' }
+    | { name: 'settings' }
     | { name: 'not-found' };
 
 const ID = '([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|[\\w-]{1,64})';
@@ -59,6 +60,10 @@ export function matchRoute(path: string): Route {
         return { name: 'install' };
     }
 
+    if (clean === '/ajustes') {
+        return { name: 'settings' };
+    }
+
     return { name: 'not-found' };
 }
 
@@ -74,16 +79,19 @@ export const paths = {
     /** `n` counts from 1: the first song of the list in the order of the Mass */
     perform: (id: string, n: number): string => `/listados/${id}/cantar/${n}`,
     install: (): string => '/ayuda/instalar',
+    settings: (): string => '/ajustes',
 };
 
 /** The tab of the header a route belongs to */
-export function sectionOf(route: Route): 'songs' | 'lists' {
+export function sectionOf(route: Route): 'songs' | 'lists' | null {
     switch (route.name) {
         case 'lists':
         case 'setlist':
         case 'add':
         case 'perform':
             return 'lists';
+        case 'settings':
+            return null;
         default:
             return 'songs';
     }

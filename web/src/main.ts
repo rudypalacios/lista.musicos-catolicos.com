@@ -5,6 +5,7 @@ import { App, signOut, type Status } from './app.ts';
 import { h, link } from './dom.ts';
 import { MASS_PARTS } from './mass.ts';
 import { matchRoute, paths, sectionOf, type Route } from './router.ts';
+import { applyLyricColor } from './settings.ts';
 import { showToast, type Toast } from './toast.ts';
 import { showFatal, startUpdates } from './updates.ts';
 import { addView } from './views/add.ts';
@@ -15,6 +16,7 @@ import { listView } from './views/list.ts';
 import { listsView } from './views/lists.ts';
 import { performView } from './views/perform.ts';
 import { setlistView } from './views/setlist.ts';
+import { settingsView } from './views/settings.ts';
 import { signInView } from './views/signin.ts';
 import type { Navigate, View } from './views/types.ts';
 import { viewView } from './views/view.ts';
@@ -120,7 +122,8 @@ function mountShell(data: App, email: string, onSignedOut: () => void, onNeedsSi
     });
 
     const brand = link(paths.list(), 'Listas', 'brand');
-    const bar = h('header', { class: 'bar' }, h('h1', {}, brand), sync, renew, h('span', { class: 'who' }, email), out);
+    const settings = link(paths.settings(), 'Ajustes', 'link');
+    const bar = h('header', { class: 'bar' }, h('h1', {}, brand), sync, renew, h('span', { class: 'who' }, email), settings, out);
     tabs = h(
         'nav',
         { class: 'tabs', 'aria-label': 'Secciones' },
@@ -179,6 +182,8 @@ function routeView(data: App, route: Route, navigate: Navigate): Promise<View> {
             });
         case 'install':
             return Promise.resolve(installView());
+        case 'settings':
+            return Promise.resolve(settingsView());
         case 'list':
             return Promise.resolve(listView(data));
         case 'new':
@@ -368,6 +373,7 @@ window.addEventListener('unhandledrejection', (event) => {
     }
 });
 
+applyLyricColor();
 startUpdates();
 void App.create(() => {
     // Another window still runs the old version and holds the data: say what to do, not just wait

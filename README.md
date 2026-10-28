@@ -12,10 +12,10 @@ Offline-first PWA to plan the music of a Mass. Private for now, built to be fold
 
 | Path | What |
 |---|---|
-| `web/src/` | The app: `main.ts` (shell, tabs, router), `views/` (songs: list, editor, importer, viewer; setlists: `lists`, `setlist`, `add`, `perform`; `reader` is the song reader both viewers share; `install` is the install guide), `app.ts` (store, sync) |
+| `web/src/` | The app: `main.ts` (shell, tabs, router), `views/` (songs: list, editor, importer, viewer; setlists: `lists`, `setlist`, `add`, `perform`; `reader` is the song reader both viewers share; `install` is the install guide; `settings` is the Ajustes screen), `app.ts` (store, sync) |
 | `web/src/chordpro/` | ChordPro parser, chords, transposition, lyrics renderer: ports of the public site's PHP and `song.js` |
 | `web/src/data/` | Songs and setlists on the device (IndexedDB, one store contract for both collections), the queues of unsent records, the sync engine; `library.ts` and `setlists.ts` are the operations on each |
-| `web/src/` (others) | `importer.ts` (chords above the words → ChordPro; one song or a whole Mass), `fit.ts` (fit to the screen), `mass.ts` (parts of the Mass), `install.ts` (is this Safari on iOS, or the installed app?), `toast.ts` (the "Guardado" message), `sw.ts` (service worker) |
+| `web/src/` (others) | `importer.ts` (chords above the words → ChordPro; one song or a whole Mass), `fit.ts` (fit to the screen), `mass.ts` (parts of the Mass), `install.ts` (is this Safari on iOS, or the installed app?), `toast.ts` (the "Guardado" message), `settings.ts` (lyric colours; the settings themselves are in `prefs.ts`, on the device), `sw.ts` (service worker) |
 | `web/src/print/` | Printing: `layout.ts` (the `PrintLayout.php` cascade, ported as it is), `plan.ts` (what a page prints: header, musical data, key), `print.ts` (fills `#print-root` and calls `window.print()`), `print.css` (copied from the public site's print rules) |
 | `web/fonts/` | The fonts the public site prints with (Atkinson Hyperlegible, Bricolage Grotesque; OFL), served from this origin so a printout looks the same and works offline |
 | `web/test/` | Unit tests of the client (`node --test`); `fixtures/golden.json` is what the PHP answered |

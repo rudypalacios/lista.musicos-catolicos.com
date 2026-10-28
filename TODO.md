@@ -72,9 +72,14 @@ Phase 4, quiet and quick (no schema change):
 
 Next, in this order (design agreed with the owner):
 
-- [ ] Phase 5, settings and modes: a Ajustes screen per device (default notation, lyric colour and size,
-      fit, columns: automatic / 1 / 2); rehearsal mode (all tools, notes) and event mode (a slim bar with
-      key ± and A±, hidden on scroll down, back on scroll up or tap).
+- [x] Phase 5, settings and modes (this branch): an Ajustes screen per device (chord names, lyric colour,
+      fit, columns auto / 1 / 2, default way to sing); a columns button in the reader on wide screens;
+      rehearsal mode (all tools, notes written while singing) and event mode (key ± and A± in view, the
+      rest behind "⋯", the tools hide when the lyrics scroll down and come back on scroll up or a tap;
+      A± now nudge the size the fit chose). Event is the default. Settings are not synced between
+      devices on purpose (a tablet on a stand and a phone want different things); sync them later if
+      the owner asks.
+- [ ] **Owner's check on the Android** for phases 4 and 5 (`DEPLOY.md`, "Fases 4 y 5").
 - [ ] Phase 6, templates and tags (schema change, migration): turn parts on and off per list, add own
       parts, a template manager (the Mass is the default); tags on songs, one per part by default; the
       picker of a part filters by its tag, with "Mostrar todos" always at hand and no filter when no

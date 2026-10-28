@@ -46,8 +46,19 @@ main {
 }
 
 .who {
+    min-width: 0;
+    overflow: hidden;
     color: var(--muted);
     font-size: 0.9rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* A phone: the header has room for the tools, not for the address as well */
+@media (max-width: 520px) {
+    .who {
+        display: none;
+    }
 }
 
 .badge {
@@ -117,11 +128,13 @@ button:disabled {
     cursor: default;
 }
 
-button.link {
+button.link,
+a.link {
     padding: 0 0.5rem;
     color: var(--accent);
     background: none;
     border: 0;
+    font-size: 0.9rem;
 }
 
 .error {
@@ -1081,5 +1094,124 @@ body {
     .viewer-content.is-scroll {
         max-width: 48em;
         margin-inline: auto;
+    }
+}
+
+/* ===== Settings ===== */
+.settings .choice {
+    margin: 1rem 0 0;
+    padding: 0;
+    border: 0;
+}
+
+.settings legend {
+    margin-bottom: 0.25rem;
+    padding: 0;
+    font-weight: 700;
+}
+
+.choice__option {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 2.75rem;
+}
+
+.choice__option input {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 0;
+}
+
+.swatch {
+    width: 1.1rem;
+    height: 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+}
+
+.settings__sample {
+    margin: 1rem 0;
+    padding: 0.75rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    font-size: 1.2rem;
+}
+
+/* ===== Tools: the quick ones in view, the rest behind "⋯" ===== */
+.toolbar__extra {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.toolbar__extra[hidden] {
+    display: none;
+}
+
+/* ===== Singing in event mode: the tools give way to the lyrics ===== */
+.perform {
+    position: relative;
+}
+
+.perform__chrome {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows 180ms ease-out;
+}
+
+.perform__chrome.is-collapsed {
+    grid-template-rows: 0fr;
+}
+
+.perform__chrome-inner {
+    min-height: 0;
+    overflow: hidden;
+}
+
+.perform__reveal {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.5rem;
+    z-index: 5;
+    width: 2.75rem;
+    height: 2.75rem;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    opacity: 0.85;
+}
+
+.perform__reveal[hidden] {
+    display: none;
+}
+
+.perform__mode {
+    min-height: 2.5rem;
+    padding: 0 0.6rem;
+    color: var(--accent);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 0.45rem;
+    font: inherit;
+    font-size: 0.9rem;
+}
+
+.perform__notefield {
+    display: block;
+    width: 100%;
+    margin-top: 0.4rem;
+}
+
+.perform__notefield[hidden] {
+    display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .perform__chrome {
+        transition: none;
     }
 }

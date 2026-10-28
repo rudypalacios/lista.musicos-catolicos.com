@@ -49,15 +49,25 @@ export function bestSize(limits: FitLimits, fits: (size: number) => boolean): Fi
 
 export type FitLayout = 'one-column' | 'two-columns' | 'scroll';
 
+/** How many columns the person wants on a wide screen: as many as the song needs, or always one / two */
+export type ColumnMode = 'auto' | 'one' | 'two';
+
 export const DEFAULT_LIMITS: FitLimits = { min: 13, max: 34, step: 0.5 };
 
 /** Below this width two columns are not worth it: phones scroll instead */
 export const TWO_COLUMNS_MIN_WIDTH = 720;
 
+/** Whether the stage is wide enough for two columns */
+export function isWide(stage: HTMLElement): boolean {
+    return stage.clientWidth >= TWO_COLUMNS_MIN_WIDTH;
+}
+
 /**
  * Fits `content` (the song, in a stage with a fixed size) by setting `--lyric-size` on it.
- * Tries one column; if the minimum size does not fit and the stage is wide, two columns; if
- * that does not fit either, a single column at the minimum, which scrolls.
+ * With `columns` "auto": tries one column; if the minimum size does not fit and the stage is
+ * wide, two columns; if that does not fit either, a single column at the minimum, which
+ * scrolls. "one" never uses two columns; "two" tries them first (a narrow stage has no room
+ * for them and stays in one).
  *
  * @returns the layout it settled on and the size it chose
  */
@@ -65,30 +75,34 @@ export function fitToStage(
     stage: HTMLElement,
     content: HTMLElement,
     limits: FitLimits = DEFAULT_LIMITS,
+    columns: ColumnMode = 'auto',
 ): { layout: FitLayout; size: number } {
     const apply = (size: number): void => content.style.setProperty('--lyric-size', `${size}px`);
-    const overflows = (columns: boolean): boolean =>
-        columns
+    const overflows = (inColumns: boolean): boolean =>
+        inColumns
             ? content.scrollWidth > stage.clientWidth + 1 || content.scrollHeight > stage.clientHeight + 1
             : content.scrollHeight > stage.clientHeight + 1 || content.scrollWidth > stage.clientWidth + 1;
-    const attempt = (columns: boolean): FitResult => {
-        content.classList.toggle('is-columns', columns);
+    const attempt = (inColumns: boolean): FitResult => {
+        content.classList.toggle('is-columns', inColumns);
 
         return bestSize(limits, (size) => {
             apply(size);
 
-            return !overflows(columns);
+            return !overflows(inColumns);
         });
     };
+    const wide = isWide(stage);
 
-    const single = attempt(false);
-    if (single.fits) {
-        apply(single.size);
-        content.classList.remove('is-scroll');
+    if (columns !== 'two' || !wide) {
+        const single = attempt(false);
+        if (single.fits) {
+            apply(single.size);
+            content.classList.remove('is-scroll');
 
-        return { layout: 'one-column', size: single.size };
+            return { layout: 'one-column', size: single.size };
+        }
     }
-    if (stage.clientWidth >= TWO_COLUMNS_MIN_WIDTH) {
+    if (columns !== 'one' && wide) {
         const double = attempt(true);
         if (double.fits) {
             apply(double.size);

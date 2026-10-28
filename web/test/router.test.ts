@@ -68,6 +68,13 @@ describe('matchRoute', () => {
         }
     });
 
+    it('knows the settings screen, which belongs to no tab', () => {
+        assert.deepEqual(matchRoute('/ajustes'), { name: 'settings' });
+        assert.deepEqual(matchRoute('/ajustes/'), { name: 'settings' });
+        assert.equal(paths.settings(), '/ajustes');
+        assert.equal(sectionOf(matchRoute('/ajustes')), null);
+    });
+
     it('files each route under the right tab', () => {
         assert.equal(sectionOf(matchRoute('/')), 'songs');
         assert.equal(sectionOf(matchRoute(`/cantos/${ID}/editar`)), 'songs');
