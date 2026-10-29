@@ -745,8 +745,12 @@ input[type='file'] {
     }
 }
 
-/* Everything but the menu: the bar, the screen, the install bar */
+/*
+ * Everything but the menu: the bar, the screen, the install bar. It clips what is inside: the screen
+ * slides down while it is pulled to sync (pull.ts) and must not paint over the menu.
+ */
 .shell {
+    overflow: hidden;
     display: flex;
     flex: 1;
     flex-direction: column;
@@ -756,6 +760,8 @@ input[type='file'] {
 
 /* The menu: three entries at the bottom of a phone, on every screen but singing; it never scrolls away */
 .menu {
+    position: relative;
+    z-index: 6;
     display: flex;
     flex: none;
     background: var(--bg);

@@ -205,7 +205,7 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    en azul). Arriba, una barra con el nombre de la pantalla y un punto. El menú está siempre abajo, fijo, en todas las pantallas
    menos al cantar (también dentro de un canto, un listado o la guía de instalación) y no se mueve al desplazarte. En una
    pantalla que cuelga de otra, arriba queda una sola flecha («← Cantos», «← Listados», «← Volver al listado», «← Ajustes»).
-   Los avisos («Guardado…», «Sincronizado», «Hay una versión nueva») salen justo encima del menú, sin taparlo.
+   Los avisos («Guardado…», «Sincronizado», «Hay una versión nueva») salen justo encima del menú, sin taparlo. **Jalar para sincronizar** (punto 10): la lista baja, pero nunca se pinta encima del menú de abajo.
    - **El punto:** verde = todo enviado (sin texto); ámbar = hay algo por enviar; late mientras sincroniza. Tócalo y sincroniza
      ahora (avisa «Sincronizado», «Sin conexión»…). Si no hay conexión, o la sesión terminó, o falló, bajo la barra sale una
      franja con el texto completo («Sin conexión · 1 sin enviar»), y con la sesión terminada, el botón *Iniciar sesión*.

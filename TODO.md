@@ -132,7 +132,7 @@ Next, in this order (design agreed with the owner):
       has numbered steps in round badges. Weighed with the owner: tabs in the bar (merged in #23, replaced by this) and
       "Listados first" (the library becomes secondary). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 11. The messages that
       float over the screen (saved, sync, update) rest above the menu and the install bar (`bottom-chrome.ts`,
-      `--chrome-bottom`). Open: confirm on the iPad that the menu does not fight the home gesture.
+      `--chrome-bottom`), and the screen pulled down to sync is clipped so it never paints over the menu. Open: confirm on the iPad that the menu does not fight the home gesture.
 - [ ] **Owner's check on the Android** for phases 4 and 5 (`DEPLOY.md`, "Fases 4 y 5", item 9 for the lists screen).
 - [ ] Phase 6, templates and tags (a rosary or a prayer-meeting list must not get the 15 parts of the Mass; a
       section may hold a dozen songs, which is when dragging to reorder pays off) (schema change, migration): turn parts on and off per list, add own
