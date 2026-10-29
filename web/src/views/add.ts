@@ -23,10 +23,10 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Ma
         autocomplete: 'off', enterkeyhint: 'search',
     });
     const list = h('ul', { class: 'song-list' });
-    const empty = h('p', { class: 'empty', hidden: true });
+    const empty = h('p', { class: 'empty empty--above-action', hidden: true });
     const error = h('p', { class: 'error', role: 'alert' });
     /** The way out when the song is not in the library: write it here, with what was searched as its title */
-    const create = h('div', { class: 'actions' });
+    const create = h('div', { class: 'actions actions--center' });
     /** Where each song of the list already is, by song id: the part names */
     const placed = new Map<string, Set<string>>();
     for (const item of setlist.items) {

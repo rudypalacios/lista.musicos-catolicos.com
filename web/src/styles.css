@@ -242,6 +242,15 @@ button.button--danger {
     margin: 0.75rem 0;
 }
 
+.actions--center {
+    justify-content: center;
+}
+
+/* The message and the way out of it (the picker's "Crear …") read as one block */
+.empty--above-action {
+    padding-bottom: 0.25rem;
+}
+
 .song-list {
     display: flex;
     flex-direction: column;
