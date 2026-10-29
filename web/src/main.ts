@@ -6,6 +6,7 @@ import { h } from './dom.ts';
 import { MASS_PARTS } from './mass.ts';
 import { matchRoute, paths, type Route } from './router.ts';
 import { applyLyricColor } from './settings.ts';
+import { watchBottomChrome } from './bottom-chrome.ts';
 import { createPullToRefresh, pullAnswer } from './pull.ts';
 import { describeSync } from './sync-line.ts';
 import { showToast, type Toast } from './toast.ts';
@@ -129,6 +130,7 @@ function mountShell(data: App, email: string, onSignedOut: () => void, onNeedsSi
         },
     });
     app.replaceChildren(h('div', { class: 'shell' }, ...frame.top, view, pull, installBanner.element), frame.menu);
+    watchBottomChrome([installBanner.element, frame.menu]);
     watchSaves(data);
 
     data.onStatus(frame.paint);

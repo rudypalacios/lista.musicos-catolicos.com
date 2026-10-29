@@ -201,10 +201,11 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    corto, o jalar con la pantalla ya desplazada, no hace nada. Prueba: escribe o cambia algo en la web, y en la tablet
    jala; debe aparecer sin esperar el minuto. **Solo se confirma en el dispositivo:** que el navegador no recargue
    la página por su cuenta (en Chrome de Android o en el iPad), y que no estorbe al desplazarte por una lista larga.
-11. **Menú abajo.** En el teléfono, abajo hay tres botones: *Cantos*, *Listados* y *Ajustes* (el de la pantalla en que estás va
-   en azul). Arriba, una barra con el nombre de la pantalla y un punto. Solo está el menú en esas tres pantallas: al abrir un
-   canto, un listado, *Agregar canto* o la guía de instalación, el menú se va, la pantalla usa todo el alto y arriba queda una
-   sola flecha («← Cantos», «← Listados», «← Volver al listado», «← Ajustes»). No hay otra flecha en la pantalla.
+12. **Menú abajo.** En el teléfono, abajo hay tres botones: *Cantos*, *Listados* y *Ajustes* (el de la pantalla en que estás va
+   en azul). Arriba, una barra con el nombre de la pantalla y un punto. El menú está siempre abajo, fijo, en todas las pantallas
+   menos al cantar (también dentro de un canto, un listado o la guía de instalación) y no se mueve al desplazarte. En una
+   pantalla que cuelga de otra, arriba queda una sola flecha («← Cantos», «← Listados», «← Volver al listado», «← Ajustes»).
+   Los avisos («Guardado…», «Sincronizado», «Hay una versión nueva») salen justo encima del menú, sin taparlo. **Jalar para sincronizar** (punto 10): la lista baja, pero nunca se pinta encima del menú de abajo.
    - **El punto:** verde = todo enviado (sin texto); ámbar = hay algo por enviar; late mientras sincroniza. Tócalo y sincroniza
      ahora (avisa «Sincronizado», «Sin conexión»…). Si no hay conexión, o la sesión terminó, o falló, bajo la barra sale una
      franja con el texto completo («Sin conexión · 1 sin enviar»), y con la sesión terminada, el botón *Iniciar sesión*.
@@ -212,7 +213,7 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    - **Guía de instalación** (*Ajustes → Cómo instalar la app…*): los pasos van numerados en círculos.
    - **Pantalla ancha (tableta horizontal, computadora, 900 px o más):** el menú pasa a una columna a la izquierda, siempre visible
      (también dentro de un listado), con el correo y *Salir* al pie.
-   - **La barra de instalación** (si sale) queda justo encima del menú. Cantando no cambia nada: sin barra ni menú, como hoy.
+   - **La barra de instalación** (si sale) queda justo encima del menú, y los avisos encima de las dos. Cantando no cambia nada: sin barra ni menú, como hoy.
    - **Solo se confirma en el dispositivo:** que el menú se toque bien con el pulgar en el Android, y en el iPad que no choque
      con el gesto de inicio (la barra de abajo del iPad).
 

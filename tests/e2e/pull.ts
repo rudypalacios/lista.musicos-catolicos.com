@@ -135,6 +135,25 @@ try {
     await openSection(page, 'Listados');
     await page.getByRole('button', { name: 'Nuevo listado' }).click();
     await page.locator('section.slot').first().waitFor();
+
+    // ----- the screen, pulled down, never paints over the menu -----
+    await page.waitForTimeout(3200);
+    await drag(page, 120, false);
+    const covered = await page.evaluate(() => {
+        const menu = document.querySelector('.menu')!.getBoundingClientRect();
+        const hit = document.elementFromPoint(menu.left + menu.width / 2, menu.top + menu.height / 2);
+
+        return hit?.closest('.menu') === null;
+    });
+    await page.evaluate(() => {
+        const target = document.querySelector('#view .page') as HTMLElement;
+        const touch = new Touch({ identifier: 7, target, clientX: 100, clientY: 300 });
+        target.dispatchEvent(new TouchEvent('touchend', { bubbles: true, cancelable: true, touches: [], targetTouches: [], changedTouches: [touch] }));
+    });
+    assert.equal(covered, false, 'the list pulled down paints over the menu');
+    pass('pulling the screen down to sync leaves the menu uncovered');
+    await strip(page).waitFor({ state: 'hidden', timeout: 10000 });
+
     await page.getByRole('link', { name: 'Agregar canto a Canto de entrada' }).click();
     await page.getByLabel('Buscar cantos').fill('jalando');
     await page.getByRole('button', { name: /Llegó jalando/ }).click();

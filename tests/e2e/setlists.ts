@@ -607,6 +607,15 @@ try {
     assert.deepEqual(tooSmall, [], 'every control is at least 40px tall');
     pass('on a phone the list does not scroll sideways and its controls are big enough to tap');
 
+    // The menu is always at the bottom, also inside a list, and the messages rest above it
+    const menuBox = (await page.locator('.menu').boundingBox())!;
+    assert.ok(menuBox.y + menuBox.height >= 844 - 1, 'the menu rests at the bottom of the window');
+    await page.getByRole('button', { name: /Toca para sincronizar/ }).click();
+    await page.locator('.toast').waitFor();
+    const toastBox = (await page.locator('.toast').boundingBox())!;
+    assert.ok(toastBox.y + toastBox.height <= menuBox.y, 'a message does not cover the menu');
+    pass('on a phone the menu is at the bottom of every screen and the messages sit above it');
+
     // Back from a song returns to the same place in the list (the list is long on a phone)
     await page.evaluate(() => {
         const view = document.querySelector('#view');

@@ -78,8 +78,6 @@ export function createHeader(options: HeaderOptions): Header {
             const parent = parentOf(route);
             bar.hidden = singing;
             menu.hidden = singing;
-            // On a phone the menu is only on the screens of the menu; on a wide screen it is always there
-            menu.dataset['root'] = String(parent === null);
             away = singing;
             drawLine();
             title.hidden = parent !== null;
