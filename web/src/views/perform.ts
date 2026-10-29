@@ -1,6 +1,6 @@
 import type { App } from '../app.ts';
 import { inMassOrder } from '../data/setlists.ts';
-import { LIMITS, type Setlist, type SetlistItem, type Song } from '../data/types.ts';
+import type { Setlist, SetlistItem, Song } from '../data/types.ts';
 import { h, link } from '../dom.ts';
 import { nextFold, type FoldState } from '../fold.ts';
 import { MASS_PARTS } from '../mass.ts';
@@ -75,7 +75,6 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     const jumpButton = h('button', { type: 'button', class: 'perform__jump', 'aria-label': `Ir a otro canto. Canto ${position} de ${order.length}` },
         h('span', { class: 'perform__count' }, countText), ' ▾');
     const moreButton = h('button', { type: 'button', class: 'perform__more', 'aria-label': 'Más herramientas' }, '⋯');
-    moreButton.classList.toggle('has-note', item.note !== '');
     const full = h('div', { class: 'perform__full' }, back, heading, jumpButton, moreButton);
     const stripKey = h('span', { class: 'perform__strip-key' });
     const strip = h('button', { type: 'button', class: 'perform__strip', 'aria-label': 'Mostrar la barra' },
@@ -114,7 +113,7 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
         dispose = reader.dispose;
     }
 
-    // --- "⋯": every tool, the note and the account ---
+    // --- "⋯": every tool and the account ---
     const toolsSheet = createSheet('Herramientas');
     const sync = h('span', { class: 'perform__sync', role: 'status' }, account.syncText());
     const stopSync = account.onSync((text) => {
@@ -128,22 +127,8 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     });
     const signOut = h('button', { type: 'button', class: 'button button--danger' }, 'Salir');
     signOut.addEventListener('click', () => account.signOut());
-    // The note is written (and read) here, behind "⋯": out of the way of the lyrics, one tap from them
-    const field = h('input', {
-        type: 'text', class: 'perform__notefield', value: item.note, placeholder: 'Nota (opcional)',
-        'aria-label': 'Nota de este canto', maxlength: String(LIMITS.itemNote), autocomplete: 'off',
-    });
-    field.addEventListener('change', () => {
-        error.textContent = '';
-        moreButton.classList.toggle('has-note', field.value.trim() !== '');
-        app.setlists.setNote(setlist.id, item.id, field.value).catch((failure: unknown) => {
-            error.textContent = failure instanceof Error ? failure.message : 'No se pudo guardar la nota.';
-        });
-    });
-    toolsSheet.body.append(
-        ...(tools !== null ? [h('h3', {}, 'Tono y letra'), tools] : []),
-        h('h3', {}, 'Nota'), field,
-    );
+    // The notes of an item are kept in the data but are not shown or edited for now
+    toolsSheet.body.append(...(tools !== null ? [h('h3', {}, 'Tono y letra'), tools] : []));
     // The screen stays on while a song is on screen, unless the person turned that off in Ajustes
     const keepAwake = readKeepAwake();
     const releaseScreen = keepAwake ? screenKeeper.hold() : (): void => undefined;

@@ -66,6 +66,18 @@ async function choosePrint(page: Page, sheet: 'Con acordes' | 'Solo letra'): Pro
     const before = await page.evaluate(() => (window as unknown as { printed: number }).printed);
     await page.locator('.print-menu summary').click();
     await page.getByRole('button', { name: sheet, exact: true }).click();
+    await waitForPrint(page, before);
+}
+
+/** A setlist prints from the sheet behind its "⋯": the same two sheets, as options of that sheet */
+async function choosePrintFromList(page: Page, sheet: 'Con acordes' | 'Solo letra'): Promise<void> {
+    const before = await page.evaluate(() => (window as unknown as { printed: number }).printed);
+    await page.getByRole('button', { name: 'Más opciones del listado' }).click();
+    await page.getByRole('button', { name: sheet === 'Con acordes' ? 'Imprimir con acordes' : 'Imprimir solo la letra' }).click();
+    await waitForPrint(page, before);
+}
+
+async function waitForPrint(page: Page, before: number): Promise<void> {
     // The page runs under the production policy: no strings evaluated, so the mark goes in first
     await page.evaluate((n) => {
         (window as unknown as { printedBefore: number }).printedBefore = n;
@@ -150,7 +162,7 @@ try {
     // ----- the setlist: one song per page, in the order of the Mass, key of the list -----
     await page.goto(`${server.base}/listados/${sheetCases.setlist}`);
     await page.getByRole('heading', { name: 'Ofertorio', exact: true }).waitFor();
-    await choosePrint(page, 'Con acordes');
+    await choosePrintFromList(page, 'Con acordes');
     const order = await page.locator('#print-root .page-title').allTextContents();
     assert.deepEqual(order, [SAMPLES[0]?.title, SAMPLES[2]?.title, SAMPLES[1]?.title], 'entrada, ofertorio, comunión');
     const subtitles = await page.locator('#print-root .page-head__sub').allTextContents();

@@ -3,6 +3,7 @@ import type { Setlist } from '../data/types.ts';
 import { splitStarred } from '../data/setlists.ts';
 import { shortDay } from '../dates.ts';
 import { h } from '../dom.ts';
+import { icon } from '../icons.ts';
 import { paths } from '../router.ts';
 import { filterSetlists } from '../search.ts';
 import type { Navigate, View } from './types.ts';
@@ -49,7 +50,7 @@ export function listsView(app: App, navigate: Navigate): View {
             type: 'button', class: list.starred ? 'star is-on' : 'star', 'aria-pressed': String(list.starred),
             'aria-label': list.starred ? `Quitar de destacados: ${list.title}` : `Destacar: ${list.title}`,
             'data-star': list.id,
-        }, list.starred ? '★' : '☆');
+        }, icon(list.starred ? 'star-filled' : 'star', 24));
         button.addEventListener('click', () => {
             error.textContent = '';
             app.setlists.setStarred(list.id, !list.starred).catch((failure: unknown) => {

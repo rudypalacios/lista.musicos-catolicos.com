@@ -145,7 +145,8 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    atrás: debe quedar en el mismo lugar.
 3. Pon el mismo canto en dos partes: al agregarlo aparece un aviso "«…» también está en: …" (no al
    buscarlo) y en las dos filas queda "También está en…". No debe impedir nada.
-4. Las notas: botón *Nota*; si ya hay una se ve como una línea tenue, y al tocarla se edita.
+4. Las notas **no se muestran por ahora** (ni las del listado ni las de cada canto, ni en *Cantar*): lo que ya
+   escribiste sigue guardado en tu cuenta, solo no se ve ni se edita. Volverán con el formato ChordPro.
 5. En *Cantar*, desliza a izquierda y derecha: **la pantalla ya no debe "ensancharse"** en los bordes y el
    canto nuevo debe entrar deslizándose. (Esto solo se puede confirmar en el teléfono.)
 6. *Ajustes* (arriba): cambia el nombre de los acordes, el color de la letra y las columnas; el ejemplo
@@ -157,7 +158,7 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    («3/10 ▾») y `⋯`. La barra de la app (Listas, Ajustes, Salir) ya no aparece aquí. Con un canto largo, baja la
    letra: la barra se pliega a una franja delgada con el título, el tono y la posición (tócala, o sube un poco, y
    vuelve); la letra no debe moverse al plegarse. `⋯` abre un panel con tono, tamaño, `Do → C`, *Ajustar*,
-   columnas, la nota del canto (se escribe ahí mismo; un punto en `⋯` avisa que hay una), *Ajustes* y *Salir*.
+   columnas, *Ajustes* y *Salir*.
    Ya no hay modos Ensayo / Evento. El tamaño
    de letra que eliges con `A−`/`A+` se guarda aparte para *Cantar* un listado y para leer un canto de *Cantos*:
    cambiarlo en uno no cambia el otro, y cada uno se queda al pasar de canto y al volver a abrir la app. El último
@@ -177,6 +178,18 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    «＋ Nuevo» sigue creando un listado al instante. **La estrella se sincroniza**: márcala en la tablet y mira
    que aparezca en el teléfono. La primera vez después de este deploy, la app crea sola la columna
    (migración `0006`); no hay que hacer nada en phpMyAdmin.
+11. **Pantalla interior del listado (más limpia).** Arriba: el título (se edita tocándolo; si es largo, crece
+   y se lee completo), la fecha como pastilla («dom 1 nov ✎», que abre el selector de fecha; «＋ Fecha» si no
+   hay), «N cantos», **▶ Cantar** y **⋯**. Cada parte de la misa es un rótulo azul con una línea; una parte
+   sin canto es una sola línea con «＋ Agregar» a la derecha (las opcionales llevan «opcional» y ⓘ).
+   Cada canto es una fila: título, y debajo «Autor · Tono» (el tono en ámbar si lo cambiaste; aquí solo se
+   lee). **Tocar la fila abre el canto.** El **⋯** de la fila abre una hoja con: *Cantar desde aquí* (ahí se
+   cambia el tono, y queda guardado en el listado), *Subir* / *Bajar en esta parte* (solo los que se pueden;
+   la hoja sigue abierta para mover otra vez) y *Quitar del listado* (aviso «Quitado · Deshacer» unos
+   segundos). El **⋯** de arriba tiene *Imprimir con acordes*, *Imprimir solo la letra* y *Eliminar listado*
+   (pide confirmación). En la tablet ancha, las partes van en dos columnas que bajan en el orden de la misa.
+   Los íconos son propios (no se cargan de ningún sitio). **Solo se confirma en el dispositivo:** que
+   el selector de fecha se abra al tocar la pastilla en el iPad, y que imprimir desde la hoja abra AirPrint.
 10. **Jalar para sincronizar.** En cualquier pantalla (menos *Cantar*), con la pantalla hasta arriba, jala el dedo hacia
    abajo: sale «Jala para sincronizar», y pasado un tramo cambia a «Suelta para sincronizar». Al soltar dice
    «Sincronizando…» y luego «Sincronizado» (o «Sin conexión», «La sesión terminó», «No se pudo sincronizar»). Un tirón

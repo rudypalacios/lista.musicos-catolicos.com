@@ -737,104 +737,264 @@ input[type='file'] {
     align-self: center;
 }
 
-.slots {
+/* ===== A setlist: the title, the day, and the parts of the Mass as flat sections ===== */
+.setlist-head {
+    margin-bottom: 0.25rem;
+}
+
+.page > .actions:first-child {
+    margin-bottom: 0;
+}
+
+/* The title is edited where it is read: no frame until it has the focus */
+textarea.setlist-title {
+    display: block;
+    margin: 0 0 0 -0.5rem;
+    padding: 0.3rem 0.5rem;
+    width: calc(100% + 1rem);
+    min-height: 0;
+    overflow: hidden;
+    resize: none;
+    color: var(--text);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 0.5rem;
+    font: inherit;
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+textarea.setlist-title:focus {
+    background: var(--surface);
+    border-color: var(--border);
+}
+
+.setlist-head__meta {
     display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    margin-top: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+    align-items: center;
+    margin-top: 0.25rem;
+    font-size: 0.85rem;
+}
+
+/* The day is a chip; the real date field lies over it, invisible, so touching it opens the native picker */
+.chip--day {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.75rem;
+    padding: 0 0.9rem;
+    font-size: 0.85rem;
+}
+
+input.chip__input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    padding: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.setlist-head__actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.setlist-head__actions .button--primary {
+    flex: 1;
+    gap: 0.5rem;
+    font-weight: 700;
+}
+
+/* A wide screen does not need a button across the whole page */
+@media (min-width: 700px) {
+    .setlist-head__actions .button--primary {
+        flex: 0 1 18rem;
+    }
+}
+
+a.button--primary .icon {
+    color: inherit;
+}
+
+.setlist__error {
+    min-height: 0;
+    margin: 0.5rem 0 0;
+}
+
+a.setlist-back {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0;
+    text-decoration: none;
+}
+
+.button--icon {
+    padding: 0 0.7rem;
+}
+
+.slots {
+    margin-top: 0.5rem;
 }
 
 .slot {
-    padding: 0.75rem 0.9rem;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 0.75rem;
+    padding-top: 1.1rem;
 }
 
 .slot__head {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
+    min-height: 2rem;
+    border-bottom: 1px solid var(--border);
 }
 
+/* The name of a part is a quiet label: the songs under it are what the eye should go to */
 .slot__head h3 {
     margin: 0;
-    font-size: 1rem;
+    color: var(--accent);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
 }
 
 .slot__note {
-    margin: 0.5rem 0 0;
+    margin: 0.4rem 0 0;
     color: var(--muted);
+    font-size: 0.88rem;
+}
+
+/* A part with no song is one line, with its way in on the right */
+.slot.is-empty {
+    padding-top: 0;
+}
+
+.slot.is-empty .slot__head {
+    min-height: 2.75rem;
+    border-bottom-style: dashed;
+}
+
+.slot.is-empty .slot__head h3 {
+    color: var(--muted);
+}
+
+.slot.is-empty .add {
+    margin-left: auto;
     font-size: 0.9rem;
 }
 
-.slot > .button {
-    margin-top: 0.5rem;
+.add {
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+    min-height: 2.75rem;
+    color: var(--accent);
+    font-weight: 600;
+    text-decoration: none;
 }
 
 button.info {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     min-width: 2.75rem;
     padding: 0;
     color: var(--accent);
     background: none;
     border: 0;
-    font-size: 1.1rem;
 }
 
 .items {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin: 0.6rem 0 0;
+    margin: 0;
     padding: 0;
     list-style: none;
 }
 
 .item {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 0.4rem 0.75rem;
+    display: flex;
     align-items: center;
-    padding: 0.6rem 0.7rem;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 0.6rem;
+    min-height: 3.5rem;
+    border-bottom: 1px solid var(--border);
 }
 
-.item__main {
+/* The whole row opens the song (in the key of this list); "⋯" is the only thing apart from it */
+.item__open {
+    /* Contains the hidden "Tono" for screen readers: an absolute element with no positioned parent would
+       escape the scrolling screen and lengthen the whole page */
+    position: relative;
+    flex: 1;
     display: flex;
     flex-direction: column;
+    justify-content: center;
     min-width: 0;
+    min-height: 3.5rem;
+    padding: 0.4rem 0;
+    color: var(--text);
+    text-decoration: none;
+}
+
+a.item__open:active {
+    background: var(--surface-2);
 }
 
 .item__title {
     font-weight: 600;
-    color: var(--text);
+    overflow-wrap: anywhere;
 }
 
-.item__title--gone {
+.item.is-gone .item__title {
     color: var(--muted);
     font-style: italic;
+    font-weight: 500;
 }
 
+.item__sub {
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+/* The key of this use of the song, to read: amber when it is not the song's own */
 .item__key {
-    justify-self: end;
+    font-weight: 600;
 }
 
-.item__note {
-    grid-column: 1 / -1;
-    min-height: 2.5rem;
+.item__key.is-changed {
+    color: var(--changed);
 }
 
-.item__tools {
-    grid-column: 1 / -1;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
+.item__also {
+    color: var(--changed);
+    font-size: 0.85rem;
 }
 
-.item__tools .button:last-child {
-    margin-left: auto;
+button.item__more {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.75rem;
+    padding: 0;
+    color: var(--muted);
+    background: none;
+    border: 0;
+}
+
+.item.is-new {
+    animation: item-new 1.6s ease-out;
+}
+
+@keyframes item-new {
+    from {
+        background: var(--accent-soft);
+    }
 }
 
 /* Imprimir: a menu with the two sheets (print/print.css lays the pages out) */
@@ -1079,40 +1239,6 @@ button.star.is-on {
     color: var(--star);
 }
 
-/* ===== A setlist, quieter ===== */
-.item__also {
-    margin-top: 0.15rem;
-    color: var(--changed);
-    font-size: 0.85rem;
-}
-
-/* A note that exists is one quiet line under the song; the field only appears to edit it */
-.item__noteline {
-    grid-column: 1 / -1;
-    min-height: 2.5rem;
-    padding: 0 0.25rem;
-    overflow: hidden;
-    color: var(--muted);
-    background: none;
-    border: 0;
-    font: inherit;
-    font-size: 0.9rem;
-    text-align: left;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.item.is-new {
-    animation: item-new 1.6s ease-out;
-}
-
-@keyframes item-new {
-    from {
-        background: var(--accent-soft);
-        border-color: var(--accent);
-    }
-}
-
 /* ===== Singing: the note on demand, the slide between songs, no stretching ===== */
 /*
  * A swipe sideways is ours (next song, previous song): the browser must not also pull the page
@@ -1159,29 +1285,19 @@ body {
     }
 }
 
-/* ===== A wide screen: the list in two columns, each song's tools on one line ===== */
+/* ===== A wide screen: the parts in two columns, read in the order of the Mass (down, then across) ===== */
 @media (min-width: 1000px) {
     .page:has(> .slots) {
         max-width: 72rem;
     }
 
     .slots {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        align-items: start;
+        column-count: 2;
+        column-gap: 3rem;
     }
 
-    .item {
-        grid-template-columns: 1fr auto auto;
-    }
-
-    .item__tools {
-        grid-column: auto;
-        flex-wrap: nowrap;
-    }
-
-    .item__tools .button:last-child {
-        margin-left: 0;
+    .slot {
+        break-inside: avoid;
     }
 
     .viewer-content.is-scroll {
@@ -1383,18 +1499,6 @@ body {
     font-size: 1.3rem;
 }
 
-/* A note on this song: a dot on "⋯", so it is not forgotten behind the button */
-.perform__more.has-note::after {
-    content: '';
-    position: absolute;
-    top: 0.55rem;
-    right: 0.5rem;
-    width: 0.5rem;
-    height: 0.5rem;
-    background: var(--accent);
-    border-radius: 50%;
-}
-
 .perform__title {
     flex: 1;
     min-width: 0;
@@ -1506,11 +1610,6 @@ body {
 .sheet .toolbar button {
     min-width: 3rem;
     min-height: 3rem;
-}
-
-.perform__notefield {
-    display: block;
-    width: 100%;
 }
 
 .perform__account {
@@ -1663,4 +1762,74 @@ main#view.is-pulling {
     .pull__spinner {
         animation: none;
     }
+}
+
+/* ===== The sheets of a setlist: what is done to one song, or to the whole list ===== */
+/* The page scrolls inside the app, so these cover the window, not the page */
+.sheet-layer--window {
+    position: fixed;
+    /* above the messages (9): a message must not sit over the options of a sheet */
+    z-index: 10;
+}
+
+.sheet__title {
+    margin: 0;
+    font-size: 1.05rem;
+}
+
+.sheet__sub {
+    margin: 0.1rem 0 0.5rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+button.sheet-action {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+    width: 100%;
+    min-height: 3.25rem;
+    padding: 0;
+    color: var(--text);
+    background: none;
+    border: 0;
+    border-top: 1px solid var(--border);
+    font: inherit;
+    text-align: left;
+}
+
+button.sheet-action .icon {
+    flex: none;
+    color: var(--muted);
+}
+
+.sheet-action__text {
+    display: flex;
+    flex-direction: column;
+}
+
+.sheet-action__text small {
+    color: var(--muted);
+    font-size: 0.8rem;
+}
+
+button.sheet-action.is-danger,
+button.sheet-action.is-danger .icon {
+    color: var(--danger);
+}
+
+/* A message with something to do about it ("Deshacer") */
+.toast--action {
+    gap: 0.4rem;
+    padding-right: 0.3rem;
+}
+
+.toast--action .toast__action {
+    min-height: 2.75rem;
+    padding: 0 0.8rem;
+    color: var(--accent);
+    background: none;
+    border: 0;
+    font-weight: 700;
+    pointer-events: auto;
 }

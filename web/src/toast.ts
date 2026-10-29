@@ -52,3 +52,22 @@ export function showToast(text: string, visibleFor: number = VISIBLE_FOR, mustRe
         },
     };
 }
+
+/**
+ * A message with one thing to do about it ("Deshacer"), for an action that was one tap and cannot
+ * be asked about first. It must be read, so it keeps ordinary messages away while it is on screen
+ * (the "Guardado" of the same change must not wipe it), and it stays longer than they do.
+ */
+export function showUndoToast(text: string, label: string, onUndo: () => void, visibleFor = 6000): void {
+    heldUntil = Date.now() + visibleFor;
+    const action = h('button', { type: 'button', class: 'toast__action' }, label);
+    const element = h('p', { class: 'toast toast--action' }, h('span', {}, text), action);
+    toastRegion().replaceChildren(element);
+    const timer = setTimeout(() => element.remove(), visibleFor);
+    action.addEventListener('click', () => {
+        clearTimeout(timer);
+        heldUntil = 0;
+        element.remove();
+        onUndo();
+    });
+}

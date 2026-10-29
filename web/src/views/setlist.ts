@@ -1,65 +1,66 @@
 import type { App } from '../app.ts';
 import { transpose } from '../chordpro/chord.ts';
 import { parse, songKey } from '../chordpro/parser.ts';
+import { shortDay } from '../dates.ts';
 import { LIMITS, type Setlist, type SetlistItem, type Song } from '../data/types.ts';
-import { inMassOrder, itemsOfPart, partIndex } from '../data/setlists.ts';
+import { inMassOrder, itemsOfPart, moveOptions, partIndex, positionInMass } from '../data/setlists.ts';
 import { h, link } from '../dom.ts';
+import { icon, type IconName } from '../icons.ts';
 import { MASS_PARTS, type MassPart } from '../mass.ts';
 import { planSheet } from '../print/plan.ts';
+import type { PrintVersion } from '../print/layout.ts';
+import { printPlans } from '../print/print.ts';
 import { readNotation } from '../prefs.ts';
 import { paths } from '../router.ts';
-import { printMenu } from './print-menu.ts';
+import { showUndoToast } from '../toast.ts';
+import { createSheet } from './sheet.ts';
 import type { Navigate, View } from './types.ts';
 
 /**
- * One setlist: its title, day and notes, and the template of the Mass with a slot for every
- * part. Each slot holds one or more songs; each song can be moved within its slot, put in
- * another key (for this list only, the song itself is not changed), given a note or removed.
+ * One setlist: its title and day, and the template of the Mass with a slot for every part. A part
+ * with no song is one quiet line; a part with songs is a heading and one row per song. A row opens
+ * the song in the key of this list (read-only here: the key is changed while singing, so it is saved
+ * to the list and not to the song); "⋯" opens a sheet with what is done now and then to one song
+ * (sing from it, move it up or down within its part, remove it with an undo). The list's own "⋯" holds
+ * print and delete.
+ *
+ * The notes of a list and of its songs are kept in the data but are not shown or edited for now.
  */
 export async function setlistView(app: App, navigate: Navigate, initial: Setlist): Promise<View> {
     let setlist = initial;
     let songs = await songsById(app);
     /** Parts whose explanation (ⓘ) is open: it must stay open when the list is redrawn */
     const explained = new Set<string>();
-    /** Notes typed and not saved yet, by item id: saving waits for the end of the typing */
-    const unsaved = new Map<string, () => Promise<unknown>>();
-    /** Items whose note is open for editing: it must stay open when the list is redrawn */
-    const noting = new Set<string>();
 
-    // --- the header: title, day, notes ---
-    const title = h('input', { id: 'title', type: 'text', autocomplete: 'off', maxlength: String(LIMITS.title) });
-    const day = h('input', { id: 'day', type: 'date' });
-    const notes = h('textarea', { id: 'notes', rows: '2', maxlength: String(LIMITS.notes) });
-    const error = h('p', { class: 'error', role: 'alert' });
-    const sing = h('a', { class: 'button button--primary', 'data-link': true, href: paths.perform(setlist.id, 1) }, 'Cantar');
+    // --- the header: title, day, and what to do with the list ---
+    // A field that grows with the title: a long name is read whole, never cut off
+    const title = h('textarea', {
+        id: 'title', class: 'setlist-title', rows: '1', 'aria-label': 'Título', autocomplete: 'off', maxlength: String(LIMITS.title),
+    });
+    const fitTitle = (): void => {
+        title.style.height = 'auto';
+        title.style.height = `${title.scrollHeight}px`;
+    };
+    new ResizeObserver(fitTitle).observe(title);
+    title.addEventListener('input', fitTitle);
+    const dayText = h('span', {});
+    const day = h('input', { id: 'day', type: 'date', class: 'chip__input', 'aria-label': 'Fecha de la misa' });
+    const dayChip = h('label', { class: 'chip chip--day' }, dayText, icon('pencil', 14), day);
     const count = h('span', { class: 'muted' });
-    const print = printMenu((version, notation) =>
-        inMassOrder(setlist.items).flatMap((item) => {
-            const song = songs.get(item.songId);
-            const part = MASS_PARTS.find((candidate) => candidate.id === item.part)?.name;
-
-            return song === undefined ? [] : [planSheet(song, { version, shift: item.transpose, notation, ...(part !== undefined ? { part } : {}) })];
-        }));
-    const remove = h('button', { type: 'button', class: 'button button--danger' }, 'Eliminar listado');
+    const error = h('p', { class: 'error setlist__error', role: 'alert' });
+    const sing = h('a', { class: 'button button--primary', 'data-link': true, href: paths.perform(setlist.id, 1) }, icon('play', 16), 'Cantar');
+    const more = h('button', { type: 'button', class: 'button button--icon', 'aria-label': 'Más opciones del listado', 'data-focus': 'list-more' }, icon('more', 22));
     const slots = h('div', { class: 'slots' });
 
-    const header = h(
-        'div',
-        { class: 'form' },
-        h('label', { for: 'title' }, 'Título'),
-        title,
-        h('label', { for: 'day' }, 'Fecha de la misa'),
-        day,
-        h('label', { for: 'notes' }, 'Notas del listado'),
-        notes,
-    );
     const element = h(
         'div',
         { class: 'page' },
-        h('div', { class: 'actions' }, link(paths.lists(), '← Listados', 'button')),
-        header,
-        error,
-        h('div', { class: 'actions' }, sing, print, count, remove),
+        h('div', { class: 'actions' }, link(paths.lists(), '← Listados', 'link setlist-back')),
+        h('header', { class: 'setlist-head' },
+            title,
+            h('div', { class: 'setlist-head__meta' }, dayChip, count),
+            error,
+            h('div', { class: 'setlist-head__actions' }, sing, more)),
         slots,
     );
 
@@ -70,54 +71,153 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
     const saveHeader = (): Promise<unknown> => {
         error.textContent = '';
 
+        // The notes are not edited here (kept as they are)
         return app.setlists
-            .update(setlist.id, { title: title.value, eventDate: day.value === '' ? null : day.value, notes: notes.value })
+            .update(setlist.id, { title: title.value, eventDate: day.value === '' ? null : day.value, notes: setlist.notes })
             .catch((failure: unknown) => fail(failure, 'No se pudo guardar el listado.'));
     };
-    for (const field of [title, day, notes]) {
+    for (const field of [title, day]) {
         field.addEventListener('change', () => void saveHeader());
     }
+    title.addEventListener('keydown', (event) => {
+        // A title is one line: Enter finishes it instead of breaking it
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            title.blur();
+        }
+    });
+    day.addEventListener('input', () => {
+        dayText.textContent = day.value === '' ? '＋ Fecha' : shortDay(day.value);
+    });
+
+    // --- the sheets ---
+    // The screen scrolls inside the app, so a sheet here covers the window, not the page
+    const listSheet = createSheet('Opciones del listado', () => fillListSheet());
+    const songSheet = createSheet('Opciones del canto', () => fillSongSheet());
+    listSheet.element.classList.add('sheet-layer--window');
+    songSheet.element.classList.add('sheet-layer--window');
+    element.append(listSheet.element, songSheet.element);
 
     /** This screen is deleting its own list: it leaves by itself, once */
     let leaving = false;
-    remove.addEventListener('click', () => {
-        if (confirm(`¿Eliminar “${setlist.title}”? No se puede deshacer.`)) {
-            leaving = true;
-            void app.setlists.remove(setlist.id).then(() => navigate(paths.lists()));
+
+    const print = (version: PrintVersion): void => {
+        // Straight from the tap (a browser may refuse to print from anything later), then the sheet goes
+        printPlans(
+            inMassOrder(setlist.items).flatMap((item) => {
+                const song = songs.get(item.songId);
+                const part = MASS_PARTS.find((candidate) => candidate.id === item.part)?.name;
+
+                return song === undefined ? [] : [planSheet(song, { version, shift: item.transpose, notation: readNotation(), ...(part !== undefined ? { part } : {}) })];
+            }),
+        ).catch(() => fail(undefined, 'No se pudo preparar la impresión.'));
+        listSheet.close();
+    };
+    const fillListSheet = (): void => {
+        const rows = setlist.items.length;
+        listSheet.body.replaceChildren(
+            h('h4', { class: 'sheet__title' }, setlist.title),
+            h('p', { class: 'sheet__sub' }, rows === 1 ? '1 canto' : `${rows} cantos`),
+            ...(rows > 0 ? [action('printer', 'Imprimir con acordes', () => print('chords')), action('printer', 'Imprimir solo la letra', () => print('lyrics'))] : []),
+            action('trash', 'Eliminar listado', () => {
+                listSheet.close(() => {
+                    if (confirm(`¿Eliminar “${setlist.title}”? No se puede deshacer.`)) {
+                        leaving = true;
+                        void app.setlists.remove(setlist.id).then(() => navigate(paths.lists()));
+                    }
+                });
+            }, { danger: true }),
+        );
+    };
+    more.addEventListener('click', listSheet.open);
+
+    /** The item whose "⋯" is open */
+    let target: string | null = null;
+    const fillSongSheet = (focus?: 'up' | 'down'): void => {
+        const item = setlist.items.find((candidate) => candidate.id === target);
+        if (item === undefined) {
+            // Removed (here or on another device) while its sheet was open
+            songSheet.close();
+
+            return;
         }
-    });
+        const song = songs.get(item.songId);
+        const name = song?.title ?? 'Canto eliminado';
+        const partName = MASS_PARTS.find((candidate) => candidate.id === item.part)?.name ?? 'Otra parte';
+        const can = moveOptions(setlist.items, item.id);
+        const step = (direction: -1 | 1): void => {
+            void app.setlists.moveItem(setlist.id, item.id, direction).catch((failure: unknown) => fail(failure, 'No se pudo mover el canto.'));
+        };
+        songSheet.body.replaceChildren(
+            h('h4', { class: 'sheet__title' }, name),
+            h('p', { class: 'sheet__sub' }, partName),
+            ...(song === undefined ? [] : [action('play', 'Cantar desde aquí', () => {
+                const at = positionInMass(setlist.items, item.id);
+                songSheet.close(() => navigate(paths.perform(setlist.id, at)));
+            }, { hint: 'Ahí se cambia el tono' })]),
+            // Only the moves that can happen: a part with one song has none
+            ...(can.up ? [action('arrow-up', 'Subir en esta parte', () => step(-1), { key: 'up' })] : []),
+            ...(can.down ? [action('arrow-down', 'Bajar en esta parte', () => step(1), { key: 'down' })] : []),
+            action('x', 'Quitar del listado', () => {
+                const index = setlist.items.findIndex((candidate) => candidate.id === item.id);
+                songSheet.close(() => {
+                    void app.setlists.removeItem(setlist.id, item.id).then(() => {
+                        showUndoToast(`«${name}» quitado del listado`, 'Deshacer', () => {
+                            void app.setlists.restoreItem(setlist.id, item, index).catch((failure: unknown) => fail(failure, 'No se pudo deshacer.'));
+                        });
+                    }).catch((failure: unknown) => fail(failure, 'No se pudo quitar el canto.'));
+                });
+            }, { danger: true }),
+        );
+        // Moving keeps the sheet open (to move again): the button pressed is replaced, so focus its twin
+        if (focus !== undefined) {
+            const kept = songSheet.body.querySelector<HTMLElement>(`[data-key="${focus}"]`)
+                ?? songSheet.body.querySelector<HTMLElement>('[data-key="up"], [data-key="down"]');
+            kept?.focus();
+        }
+    };
+    const openSongSheet = (itemId: string): void => {
+        target = itemId;
+        songSheet.open();
+    };
+    // A move keeps the sheet open (to move again): it is refreshed with the new list, keeping the focus on a move
+    let lastMove: 'up' | 'down' | undefined;
+    const refreshSongSheet = (): void => {
+        if (songSheet.isOpen()) {
+            const focus = lastMove;
+            lastMove = undefined;
+            fillSongSheet(focus);
+        }
+    };
 
     // --- the slots ---
-    /** The slots are being replaced: fields taken off the page lose focus, which is not the person leaving */
-    let drawing = false;
     const draw = (): void => {
         const focused = document.activeElement?.getAttribute('data-focus') ?? null;
         const rows = inMassOrder(setlist.items);
         const known = MASS_PARTS.map((part) => slot(part));
         const strays = rows.filter((item) => partIndex(item.part) === MASS_PARTS.length);
-        drawing = true;
         slots.replaceChildren(...known, ...(strays.length > 0 ? [strangers(strays)] : []));
-        drawing = false;
         count.textContent = rows.length === 1 ? '1 canto' : `${rows.length} cantos`;
         sing.hidden = rows.length === 0;
-        print.hidden = rows.length === 0;
         if (focused !== null) {
-            slots.querySelector<HTMLElement>(`[data-focus="${CSS.escape(focused)}"]`)?.focus();
+            element.querySelector<HTMLElement>(`[data-focus="${CSS.escape(focused)}"]`)?.focus();
         }
     };
 
     const slot = (part: MassPart): HTMLElement => {
+        const items = itemsOfPart(setlist.items, part.id);
+        const empty = items.length === 0;
         const head = h('div', { class: 'slot__head' }, h('h3', {}, part.name));
         if (part.optional === true) {
             head.append(h('span', { class: 'badge' }, 'opcional'));
         }
-        const section = h('section', { class: 'slot', id: `parte-${part.id}`, 'data-part': part.id }, head);
+        const section = h('section', { class: empty ? 'slot is-empty' : 'slot', id: `parte-${part.id}`, 'data-part': part.id }, head);
         if (part.note !== undefined) {
             const note = h('p', { class: 'slot__note', hidden: !explained.has(part.id) }, part.note);
             const info = h('button', {
                 type: 'button', class: 'info', title: part.note, 'aria-label': `Qué es esto: ${part.name}`,
                 'aria-expanded': String(explained.has(part.id)), 'data-focus': `info:${part.id}`,
-            }, 'ⓘ');
+            }, icon('info', 18));
             info.addEventListener('click', () => {
                 if (explained.delete(part.id)) {
                     note.hidden = true;
@@ -130,13 +230,14 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             head.append(info);
             section.append(note);
         }
-        const items = itemsOfPart(setlist.items, part.id);
-        if (items.length > 0) {
-            section.append(h('ul', { class: 'items' }, ...items.map((item, index) => row(item, index, items.length))));
+        const add = h('a', {
+            class: 'add', href: paths.addToSetlist(setlist.id, part.id), 'data-link': true, 'aria-label': `Agregar canto a ${part.name}`,
+        }, icon('plus', 16), empty ? 'Agregar' : 'Agregar canto');
+        if (empty) {
+            head.append(add);
+        } else {
+            section.append(h('ul', { class: 'items' }, ...items.map(row)), add);
         }
-        const add = link(paths.addToSetlist(setlist.id, part.id), 'Agregar canto', 'button');
-        add.setAttribute('aria-label', `Agregar canto a ${part.name}`);
-        section.append(add);
 
         return section;
     };
@@ -147,137 +248,73 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             'section',
             { class: 'slot' },
             h('div', { class: 'slot__head' }, h('h3', {}, 'Otras partes')),
-            h('ul', { class: 'items' }, ...items.map((item) => row(item, 0, 1))),
+            h('ul', { class: 'items' }, ...items.map(row)),
         );
 
-    const row = (item: SetlistItem, index: number, total: number): HTMLElement => {
+    const row = (item: SetlistItem): HTMLElement => {
         const song = songs.get(item.songId);
-        const li = h('li', { class: 'item' });
-        const main = h('div', { class: 'item__main' });
-        if (song === undefined) {
-            main.append(h('span', { class: 'item__title item__title--gone' }, 'Canto eliminado'));
-        } else {
-            const suffix = item.transpose === 0 ? '' : `?t=${item.transpose}`;
-            main.append(link(paths.view(song.id) + suffix, song.title, 'item__title'));
-            if (song.author !== '') {
-                main.append(h('span', { class: 'song-item__author' }, song.author));
+        const li = h('li', { class: song === undefined ? 'item is-gone' : 'item' });
+        const name = song?.title ?? 'Canto eliminado';
+        const lines: HTMLElement[] = [h('span', { class: 'item__title' }, name)];
+        if (song !== undefined) {
+            // "Autor · SOL": the key is for reading here, and amber when it is not the song's own
+            const key = keyOf(item, song);
+            const sub: Array<Node | string> = song.author === '' ? [] : [song.author];
+            if (key !== null) {
+                const label = h('span', { class: key.changed ? 'item__key is-changed' : 'item__key' }, h('span', { class: 'sr-only' }, 'Tono '), key.text);
+                sub.push(...(sub.length > 0 ? [' · ', label] : [label]));
+            }
+            if (sub.length > 0) {
+                lines.push(h('span', { class: 'item__sub' }, ...sub));
+            }
+            // The same song in another part is allowed (a hymn can open and close), but worth a word
+            const elsewhere = otherParts(item, setlist.items);
+            if (elsewhere.length > 0) {
+                lines.push(h('span', { class: 'item__also', role: 'note' }, `También está en: ${elsewhere.join(', ')}`));
             }
         }
-        // The same song in another part is allowed (a hymn can open and close), but worth a word
-        const elsewhere = song === undefined ? [] : otherParts(item, setlist.items);
-        if (elsewhere.length > 0) {
-            main.append(h('span', { class: 'item__also', role: 'note' }, `También está en: ${elsewhere.join(', ')}`));
-        }
-        li.append(main);
-
-        if (song !== undefined) {
-            li.append(keyControls(item, song));
-        }
-
-        const noteField = (): HTMLElement => {
-            const note = h('input', {
-                type: 'text', class: 'item__note', placeholder: 'Nota (opcional)', value: item.note,
-                'aria-label': `Nota para ${song?.title ?? 'este canto'}`, maxlength: String(LIMITS.itemNote), autocomplete: 'off',
-                'data-focus': `note:${item.id}`,
-            });
-            const saveNote = (): Promise<unknown> => {
-                unsaved.delete(item.id);
-
-                return app.setlists.setNote(setlist.id, item.id, note.value).catch((failure: unknown) => fail(failure, 'No se pudo guardar la nota.'));
-            };
-            note.addEventListener('input', () => unsaved.set(item.id, saveNote));
-            note.addEventListener('change', () => void saveNote());
-            note.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter') {
-                    note.blur();
-                }
-            });
-            note.addEventListener('blur', () => {
-                // Not the person leaving: the list was redrawn and this field was taken off the page
-                if (drawing || !note.isConnected) {
-                    return;
-                }
-                // Leaving the field closes it (a note is the exception, not a form to keep open);
-                // what was typed is saved first, and a note put back as it was just closes
-                const done = unsaved.has(item.id) ? saveNote() : Promise.resolve();
-                void done.then(() => {
-                    noting.delete(item.id);
-                    reload();
-                });
-            });
-
-            return note;
-        };
-        if (noting.has(item.id)) {
-            li.append(noteField());
-        } else if (item.note !== '') {
-            // A note that exists is one quiet line; touching it opens it for editing
-            const line = h('button', {
-                type: 'button', class: 'item__noteline', 'aria-label': `Editar la nota de ${song?.title ?? 'este canto'}`,
-                'data-focus': `note:${item.id}`,
-            }, h('span', { 'aria-hidden': 'true' }, '📝 '), item.note);
-            line.addEventListener('click', () => {
-                noting.add(item.id);
-                draw();
-                slots.querySelector<HTMLElement>(`[data-focus="${CSS.escape(`note:${item.id}`)}"]`)?.focus();
-            });
-            li.append(line);
-        }
-
-        const tools = h('div', { class: 'item__tools' });
-        const move = (label: string, symbol: string, direction: -1 | 1, disabled: boolean): void => {
-            const button = h('button', {
-                type: 'button', class: 'button', 'aria-label': `${label}: ${song?.title ?? 'canto'}`, disabled,
-                'data-focus': `${direction < 0 ? 'up' : 'down'}:${item.id}`,
-            }, symbol);
-            button.addEventListener('click', () => void app.setlists.moveItem(setlist.id, item.id, direction));
-            tools.append(button);
-        };
-        move('Mover arriba', '↑', -1, index === 0);
-        move('Mover abajo', '↓', 1, index === total - 1);
-        if (item.note === '' && !noting.has(item.id)) {
-            const addNote = h('button', {
-                type: 'button', class: 'button', 'aria-label': `Agregar una nota a ${song?.title ?? 'este canto'}`,
-                'data-focus': `addnote:${item.id}`,
-            }, 'Nota');
-            addNote.addEventListener('click', () => {
-                noting.add(item.id);
-                draw();
-                slots.querySelector<HTMLElement>(`[data-focus="${CSS.escape(`note:${item.id}`)}"]`)?.focus();
-            });
-            tools.append(addNote);
-        }
-        const quit = h('button', { type: 'button', class: 'button button--danger', 'data-focus': `quit:${item.id}` }, 'Quitar');
-        quit.setAttribute('aria-label', `Quitar ${song?.title ?? 'canto eliminado'} del listado`);
-        quit.addEventListener('click', () => void app.setlists.removeItem(setlist.id, item.id));
-        tools.append(quit);
-        li.append(tools);
+        const suffix = item.transpose === 0 ? '' : `?t=${item.transpose}`;
+        li.append(song === undefined
+            ? h('div', { class: 'item__open' }, ...lines)
+            : h('a', { class: 'item__open', href: paths.view(song.id) + suffix, 'data-link': true }, ...lines));
+        const options = h('button', {
+            type: 'button', class: 'item__more', 'aria-label': `Más opciones: ${name}`, 'data-focus': `more:${item.id}`,
+        }, icon('more', 22));
+        options.addEventListener('click', () => {
+            lastMove = undefined;
+            openSongSheet(item.id);
+        });
+        li.append(options);
 
         return li;
     };
 
-    /** − key + for this use of the song; the middle button goes back to the song's own key */
-    const keyControls = (item: SetlistItem, song: Song): HTMLElement => {
+    /** The key of this use of the song, to read: changed in amber. Songs with no key show only a change. */
+    const keyOf = (item: SetlistItem, song: Song): { text: string; changed: boolean } | null => {
         const original = songKey(parse(song.body));
         const changed = item.transpose !== 0;
-        const label = original === null
-            ? (changed ? `${item.transpose > 0 ? '+' : ''}${item.transpose}` : 'Tono')
-            : transpose(original, item.transpose, readNotation());
-        const key = h('button', {
-            type: 'button', class: changed ? 'key is-changed' : 'key', 'data-focus': `key:${item.id}`,
-            'aria-label': changed ? `Tono: ${label}. Volver al tono original` : `Tono: ${label}`,
-        }, changed ? `${label} ↺` : label);
-        const step = (text: string, aria: string, delta: number, focus: string): HTMLButtonElement => {
-            const button = h('button', { type: 'button', 'aria-label': `${aria}: ${song.title}`, 'data-focus': `${focus}:${item.id}` }, text);
-            button.addEventListener('click', () => void app.setlists.shiftItem(setlist.id, item.id, delta));
+        if (original === null) {
+            return changed ? { text: `${item.transpose > 0 ? '+' : ''}${item.transpose}`, changed } : null;
+        }
 
-            return button;
-        };
-        key.addEventListener('click', () => void app.setlists.setTranspose(setlist.id, item.id, 0));
-
-        return h('div', { class: 'toolbar item__key', role: 'group', 'aria-label': 'Tono para este listado' },
-            h('div', { class: 'group' }, step('−', 'Bajar un semitono', -1, 'down-key'), key, step('+', 'Subir un semitono', 1, 'up-key')));
+        return { text: transpose(original, item.transpose, readNotation()), changed };
     };
+
+    /** A row of a sheet: an icon and what it does, big enough to tap, and a quiet line under it if it needs one */
+    function action(name: IconName, label: string, run: () => void, options: { danger?: boolean; hint?: string; key?: 'up' | 'down' } = {}): HTMLElement {
+        const button = h('button', {
+            type: 'button', class: options.danger === true ? 'sheet-action is-danger' : 'sheet-action',
+            ...(options.key !== undefined ? { 'data-key': options.key } : {}),
+        }, icon(name, 20), h('span', { class: 'sheet-action__text' }, label, ...(options.hint === undefined ? [] : [h('small', {}, options.hint)])));
+        button.addEventListener('click', () => {
+            if (options.key !== undefined) {
+                lastMove = options.key;
+            }
+            run();
+        });
+
+        return button;
+    }
 
     /**
      * Coming back from picking a song the address names the part (`#parte-comunion`): show it
@@ -300,22 +337,16 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
 
     // --- keeping it in step with the store ---
     const fill = (): void => {
-        for (const [field, value] of [[title, setlist.title], [day, setlist.eventDate ?? ''], [notes, setlist.notes]] as const) {
+        for (const [field, value] of [[title, setlist.title], [day, setlist.eventDate ?? '']] as const) {
             if (document.activeElement !== field && field.value !== value) {
                 field.value = value;
             }
         }
+        fitTitle();
+        dayText.textContent = setlist.eventDate === null ? '＋ Fecha' : shortDay(setlist.eventDate);
     };
     const reload = (): void => {
-        // A note being typed would be wiped by a redraw: its own save redraws afterwards
-        if (unsaved.size > 0) {
-            return;
-        }
         void Promise.all([app.setlists.get(setlist.id), songsById(app)]).then(([latest, all]) => {
-            // A note began to be typed while this was reading: redrawing now would wipe it
-            if (unsaved.size > 0) {
-                return;
-            }
             if (latest === undefined) {
                 // Deleted on another device while it was open
                 if (!leaving) {
@@ -328,6 +359,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             songs = all;
             fill();
             draw();
+            refreshSongSheet();
         });
     };
     const stop = app.onData(reload);
@@ -340,15 +372,13 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
         element,
         dispose: () => {
             stop();
+            songSheet.release();
+            listSheet.release();
             if (leaving) {
                 return;
             }
             // What was typed and not yet "changed" (a navigation can come before the blur) is still saved
-            for (const save of unsaved.values()) {
-                void save();
-            }
-            const unchanged = title.value === setlist.title && notes.value === setlist.notes
-                && (day.value === '' ? null : day.value) === setlist.eventDate;
+            const unchanged = title.value === setlist.title && (day.value === '' ? null : day.value) === setlist.eventDate;
             if (!unchanged && title.value.trim() !== '') {
                 void saveHeader();
             }

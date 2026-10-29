@@ -3,7 +3,7 @@ import { beforeEach, describe, it } from 'node:test';
 import { ValidationError } from '../../src/data/library.ts';
 import { MemoryStore } from '../../src/data/memory-store.ts';
 import {
-    defaultTitle, inMassOrder, itemsOfPart, partIndex, recentFirst, Setlists, splitStarred,
+    defaultTitle, inMassOrder, itemsOfPart, moveOptions, partIndex, positionInMass, recentFirst, Setlists, splitStarred,
 } from '../../src/data/setlists.ts';
 import { LIMITS, type Setlist, type SetlistItem } from '../../src/data/types.ts';
 import { MASS_PARTS } from '../../src/mass.ts';
@@ -236,6 +236,58 @@ describe('Setlists', () => {
         });
     });
 
+    describe('putting a removed song back', () => {
+        it('puts it where it was among the items, so "Deshacer" leaves the list as it was', async () => {
+            const list = await lists.create();
+            await lists.addItem(list.id, 'entrada', 's1');
+            await lists.addItem(list.id, 'comunion', 's2');
+            await lists.addItem(list.id, 'comunion', 's1');
+            const before = await itemsOf(list.id);
+            const removed = before[1] as SetlistItem;
+
+            await lists.removeItem(list.id, removed.id);
+            assert.equal((await itemsOf(list.id)).length, 2);
+            await lists.restoreItem(list.id, removed, 1);
+
+            assert.deepEqual(await itemsOf(list.id), before);
+        });
+
+        it('does nothing when it is already there, so a second "Deshacer" cannot double it', async () => {
+            const list = await lists.create();
+            await lists.addItem(list.id, 'entrada', 's1');
+            const [only] = await itemsOf(list.id);
+
+            await lists.restoreItem(list.id, only as SetlistItem, 0);
+
+            assert.equal((await itemsOf(list.id)).length, 1);
+        });
+
+        it('keeps the key of the song it puts back', async () => {
+            const list = await lists.create();
+            await lists.addItem(list.id, 'entrada', 's1');
+            const [added] = await itemsOf(list.id);
+            await lists.shiftItem(list.id, (added as SetlistItem).id, 3);
+            const [shifted] = await itemsOf(list.id);
+            await lists.removeItem(list.id, (shifted as SetlistItem).id);
+
+            await lists.restoreItem(list.id, shifted as SetlistItem, 0);
+
+            assert.equal((await itemsOf(list.id))[0]?.transpose, 3);
+        });
+
+        it('refuses to go past the most songs a list takes', async () => {
+            const list = await lists.create();
+            for (let n = 0; n < LIMITS.items; n++) {
+                await lists.addItem(list.id, 'comunion', 's1');
+            }
+
+            await assert.rejects(
+                lists.restoreItem(list.id, { id: 'extra', part: 'entrada', songId: 's1', transpose: 0, note: '' }, 0),
+                ValidationError,
+            );
+        });
+    });
+
     describe('adding songs', () => {
         it('adds at the end of the part with no change of key, and one song can be there twice', async () => {
             const list = await lists.create();
@@ -422,6 +474,25 @@ describe('Setlists', () => {
 
 describe('reading a list', () => {
     const item = (id: string, part: string): SetlistItem => ({ id, part, songId: 's', transpose: 0, note: '' });
+
+    it('says which moves a song can make inside its own part', () => {
+        const items = [item('a', 'comunion'), item('b', 'entrada'), item('c', 'comunion'), item('d', 'comunion')];
+
+        assert.deepEqual(moveOptions(items, 'b'), { up: false, down: false }, 'alone in its part: no move at all');
+        assert.deepEqual(moveOptions(items, 'a'), { up: false, down: true });
+        assert.deepEqual(moveOptions(items, 'c'), { up: true, down: true });
+        assert.deepEqual(moveOptions(items, 'd'), { up: true, down: false });
+        assert.deepEqual(moveOptions(items, 'zzz'), { up: false, down: false }, 'an item that is gone has none');
+    });
+
+    it('numbers a song by its place in the order of the Mass, which is how singing names it', () => {
+        const items = [item('1', 'salida'), item('2', 'comunion'), item('3', 'entrada')];
+
+        assert.equal(positionInMass(items, '3'), 1);
+        assert.equal(positionInMass(items, '2'), 2);
+        assert.equal(positionInMass(items, '1'), 3);
+        assert.equal(positionInMass(items, 'zzz'), 0);
+    });
 
     it('puts the items in the order of the Missal, and keeps the order inside a part', () => {
         const items = [item('1', 'salida'), item('2', 'comunion'), item('3', 'entrada'), item('4', 'comunion'), item('5', 'gloria')];

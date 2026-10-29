@@ -32,6 +32,23 @@ export function itemsOfPart(items: readonly SetlistItem[], part: string): Setlis
     return items.filter((item) => item.part === part);
 }
 
+/** Whether the item can go up or down among the items of its own part (the first cannot go up, the last down) */
+export function moveOptions(items: readonly SetlistItem[], itemId: string): { up: boolean; down: boolean } {
+    const item = items.find((candidate) => candidate.id === itemId);
+    if (item === undefined) {
+        return { up: false, down: false };
+    }
+    const siblings = itemsOfPart(items, item.part);
+    const at = siblings.findIndex((candidate) => candidate.id === itemId);
+
+    return { up: at > 0, down: at < siblings.length - 1 };
+}
+
+/** 1-based place of the item in the order of the Mass, which is how singing names a song; 0 if it is not there */
+export function positionInMass(items: readonly SetlistItem[], itemId: string): number {
+    return inMassOrder(items).findIndex((item) => item.id === itemId) + 1;
+}
+
 /** The title a new list gets: the person renames it if they like */
 export function defaultTitle(eventDate: string): string {
     return `Misa del ${shortDate(eventDate)}`;
@@ -176,6 +193,24 @@ export class Setlists {
 
     removeItem(id: string, itemId: string): Promise<Setlist> {
         return this.editItems(id, (items) => items.filter((item) => item.id !== itemId));
+    }
+
+    /**
+     * Puts back an item that was just removed, at the place it had among the list's items (the undo of
+     * "Quitar"). An item that is already there is left alone, so a repeated undo changes nothing.
+     */
+    restoreItem(id: string, item: SetlistItem, index: number): Promise<Setlist> {
+        return this.editItems(id, (items) => {
+            if (items.some((candidate) => candidate.id === item.id)) {
+                return items;
+            }
+            if (items.length >= LIMITS.items) {
+                throw new ValidationError(`Un listado admite hasta ${LIMITS.items} cantos.`);
+            }
+            const at = Math.min(Math.max(index, 0), items.length);
+
+            return [...items.slice(0, at), item, ...items.slice(at)];
+        });
     }
 
     /** Moves the item one place up (−1) or down (1) among the items of its own part */
