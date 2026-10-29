@@ -217,6 +217,13 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    - **Solo se confirma en el dispositivo:** que el menú se toque bien con el pulgar en el Android, y en el iPad que no choque
      con el gesto de inicio (la barra de abajo del iPad).
 
+13. **Crear un canto desde el selector.** En un listado, toca «＋ Agregar» en una parte y escribe en el buscador un canto que
+   no tengas (por ejemplo «Santo es el Señor»). Debajo aparece **«Crear “Santo es el Señor”»** (con la biblioteca
+   vacía, «Crear canto nuevo»). Al tocarlo se abre «Nuevo canto» con ese título ya escrito; escribe la letra y
+   toca *Guardar*: el canto se guarda en la biblioteca **y queda en esa parte del listado**, y vuelves al listado.
+   «Cancelar» o «← Volver a agregar» regresan al selector. Probar también sin conexión (se guarda en el
+   dispositivo y se envía después).
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.

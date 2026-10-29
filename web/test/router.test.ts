@@ -112,3 +112,27 @@ describe('titleOf', () => {
         assert.equal(titleOf(matchRoute('/nada')), 'Lista');
     });
 });
+
+describe('a new song written from the picker of a part', () => {
+    const into = { setlist: ID, part: 'entrada' };
+
+    it('carries the part it is for and the title searched through the address', () => {
+        const path = paths.new(into, 'Pan de vida & más');
+        const [pathname, search] = path.split('?');
+        assert.deepEqual(matchRoute(pathname ?? '', `?${search ?? ''}`), { name: 'new', into, title: 'Pan de vida & más' });
+    });
+
+    it('has no extra address when it starts from nothing', () => {
+        assert.equal(paths.new(), '/cantos/nuevo');
+        assert.deepEqual(matchRoute('/cantos/nuevo', ''), { name: 'new' });
+    });
+
+    it('ignores a part or list that is not valid, and keeps the title', () => {
+        assert.deepEqual(matchRoute('/cantos/nuevo', '?listado=../x&parte=ENTRADA&titulo=Hola'), { name: 'new', title: 'Hola' });
+    });
+
+    it('goes back to the picker instead of the library', () => {
+        assert.deepEqual(parentOf({ name: 'new', into }), { path: paths.addToSetlist(ID, 'entrada'), label: 'Volver a agregar' });
+        assert.deepEqual(parentOf({ name: 'new' }), { path: paths.list(), label: 'Cantos' });
+    });
+});

@@ -25,6 +25,8 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Ma
     const list = h('ul', { class: 'song-list' });
     const empty = h('p', { class: 'empty', hidden: true });
     const error = h('p', { class: 'error', role: 'alert' });
+    /** The way out when the song is not in the library: write it here, with what was searched as its title */
+    const create = h('div', { class: 'actions' });
     /** Where each song of the list already is, by song id: the part names */
     const placed = new Map<string, Set<string>>();
     for (const item of setlist.items) {
@@ -39,6 +41,7 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Ma
         error,
         list,
         empty,
+        create,
     );
 
     let songs: Song[] = [];
@@ -47,10 +50,18 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Ma
         list.replaceChildren(...shown.map((song) => row(song)));
         empty.hidden = shown.length > 0;
         if (songs.length === 0) {
-            empty.replaceChildren('Todavía no hay cantos en la biblioteca. ', link(paths.new(), 'Crea uno'), ' o ', link(paths.import(), 'importa uno'), '.');
+            empty.textContent = 'Todavía no hay cantos en la biblioteca.';
         } else {
             empty.textContent = 'Ningún canto coincide con la búsqueda.';
         }
+        drawCreate();
+    };
+
+    const drawCreate = (): void => {
+        const typed = search.value.trim();
+        const label = typed === '' ? 'Crear canto nuevo' : `Crear «${typed}»`;
+        create.hidden = typed === '' && songs.length > 0;
+        create.replaceChildren(link(paths.new({ setlist: setlist.id, part: part.id }, typed), label, 'button button--primary'));
     };
 
     const row = (song: Song): HTMLElement => {

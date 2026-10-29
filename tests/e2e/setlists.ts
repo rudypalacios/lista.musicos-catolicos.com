@@ -184,6 +184,21 @@ try {
     await page.getByText('3 cantos').waitFor();
     pass('a slot takes several songs, added at the end');
 
+    // A song that is not in the library is written right from the picker, and lands in the part
+    await page.getByRole('link', { name: 'Agregar canto a Acción de gracias' }).click();
+    await page.getByLabel('Buscar cantos').fill('Santo es el Señor');
+    await page.getByText('Ningún canto coincide con la búsqueda.').waitFor();
+    await page.getByRole('link', { name: 'Crear «Santo es el Señor»' }).click();
+    assert.equal(await page.getByLabel('Título').inputValue(), 'Santo es el Señor');
+    await page.getByLabel('Letra con acordes').fill('[D]Santo es el [A]Señor');
+    await page.getByRole('button', { name: 'Guardar' }).click();
+    await slot(page, 'Acción de gracias').locator('.item__title', { hasText: 'Santo es el Señor' }).waitFor();
+    pass('a song missing from the picker is created there with the search as its title, and ends in the part');
+    // Out again, so the rest of the test counts the songs it put in itself
+    await slot(page, 'Acción de gracias').getByRole('button', { name: 'Más opciones: Santo es el Señor' }).click();
+    await page.getByRole('button', { name: 'Quitar del listado' }).click();
+    await slot(page, 'Acción de gracias').locator('.item').waitFor({ state: 'detached' });
+
     // ----- the key, for this list only: read here, changed while singing -----
     const entrada = slot(page, 'Canto de entrada');
     assert.match((await entrada.locator('.item__key').textContent()) ?? '', /Do$/);
