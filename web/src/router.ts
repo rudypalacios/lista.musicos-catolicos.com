@@ -96,3 +96,27 @@ export function sectionOf(route: Route): 'songs' | 'lists' | null {
             return 'songs';
     }
 }
+
+/**
+ * Where "back" goes from a screen that hangs from another one, and what the header calls it. The
+ * screens of the sections (the two lists, Ajustes) have no parent: the header shows the tabs there.
+ * Singing has its own bar and no header, so it has no parent either.
+ */
+export function parentOf(route: Route): { path: string; label: string } | null {
+    switch (route.name) {
+        case 'view':
+        case 'new':
+        case 'import':
+            return { path: paths.list(), label: 'Cantos' };
+        case 'edit':
+            return { path: paths.view(route.id), label: 'Canto' };
+        case 'setlist':
+            return { path: paths.lists(), label: 'Listados' };
+        case 'add':
+            return { path: paths.setlist(route.id), label: 'Volver al listado' };
+        case 'install':
+            return { path: paths.settings(), label: 'Ajustes' };
+        default:
+            return null;
+    }
+}

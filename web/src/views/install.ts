@@ -1,5 +1,4 @@
-import { h, link } from '../dom.ts';
-import { paths } from '../router.ts';
+import { h } from '../dom.ts';
 import type { View } from './types.ts';
 
 function steps(...items: string[]): HTMLElement {
@@ -11,7 +10,6 @@ export function installView(): View {
     const element = h(
         'div',
         { class: 'page help' },
-        h('div', { class: 'actions' }, link(paths.list(), '← Cantos', 'button')),
         h('h2', {}, 'Instalar Lista'),
         h(
             'p',

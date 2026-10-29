@@ -46,7 +46,6 @@ export function viewView(app: App, song: Song): View {
     const bar = h(
         'div',
         { class: 'viewer__bar' },
-        link(paths.list(), '← Cantos', 'button back'),
         reader.toolbar,
         printMenu((version, notation) => [planSheet(song, { version, shift: shown, notation })]),
         link(paths.edit(song.id), 'Editar', 'button edit'),

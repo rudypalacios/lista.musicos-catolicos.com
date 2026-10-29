@@ -77,6 +77,25 @@ export async function signIn(page: Page, base: string): Promise<void> {
     await page.getByRole('heading', { name: 'Cantos' }).waitFor();
 }
 
+/**
+ * Goes to a section by its tab. A screen that hangs from another (a song, a list) has no tabs, only
+ * the way back, so this goes back until the tabs are there, as a person does.
+ */
+export async function openSection(page: Page, name: 'Cantos' | 'Listados'): Promise<void> {
+    const tab = page.getByRole('link', { name, exact: true });
+    for (let hops = 0; hops < 4 && !(await tab.isVisible()); hops++) {
+        await page.locator('.bar__back').click();
+    }
+    await tab.click();
+}
+
+/** Opens the account menu of the header (the avatar) and picks one of its entries */
+export async function accountMenu(page: Page, entry: 'Ajustes' | 'Cómo instalar la app' | 'Salir'): Promise<void> {
+    await page.getByRole('button', { name: /^Cuenta de / }).click();
+    const menu = page.getByRole('dialog', { name: 'Cuenta' });
+    await menu.getByRole(entry === 'Salir' ? 'button' : 'link', { name: entry }).click();
+}
+
 /** Waits until the header says the songs are synced (nothing left to send) */
 export async function synced(page: Page): Promise<void> {
     await page.waitForFunction(() => document.querySelector('.sync')?.textContent === 'Sincronizado', undefined, { timeout: 15000 });

@@ -18,7 +18,7 @@ export function listView(app: App): View {
     const element = h(
         'div',
         { class: 'page' },
-        h('h2', {}, 'Cantos'),
+        h('h2', { class: 'sr-only' }, 'Cantos'),
         h('div', { class: 'actions' }, link(paths.new(), 'Nuevo canto', 'button button--primary'), link(paths.import(), 'Importar', 'button')),
         search,
         list,

@@ -4,7 +4,7 @@ import { parse, songKey } from '../chordpro/parser.ts';
 import { shortDay } from '../dates.ts';
 import { LIMITS, type Setlist, type SetlistItem, type Song } from '../data/types.ts';
 import { inMassOrder, itemsOfPart, moveOptions, partIndex, positionInMass } from '../data/setlists.ts';
-import { h, link } from '../dom.ts';
+import { h } from '../dom.ts';
 import { icon, type IconName } from '../icons.ts';
 import { MASS_PARTS, type MassPart } from '../mass.ts';
 import { planSheet } from '../print/plan.ts';
@@ -59,7 +59,6 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
     const element = h(
         'div',
         { class: 'page' },
-        h('div', { class: 'actions' }, link(paths.lists(), '← Listados', 'link setlist-back')),
         h('header', { class: 'setlist-head' },
             title,
             h('div', { class: 'setlist-head__meta' }, dayChip, count),

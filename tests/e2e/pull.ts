@@ -7,7 +7,7 @@
  *     npm run build && node tests/e2e/pull.ts
  */
 import assert from 'node:assert/strict';
-import { chromium, reporter, signIn, startServer, synced } from './lib.ts';
+import { chromium, openSection, reporter, signIn, startServer, synced } from './lib.ts';
 import type { Page } from 'playwright';
 
 const server = await startServer(18097);
@@ -15,7 +15,7 @@ const { pass, count } = reporter();
 const BASE = server.base;
 
 async function createSong(page: Page, title: string, body: string): Promise<void> {
-    await page.getByRole('link', { name: 'Cantos', exact: true }).click();
+    await openSection(page, 'Cantos');
     await page.getByRole('link', { name: 'Nuevo canto' }).click();
     await page.getByLabel('Título').fill(title);
     await page.getByLabel('Letra con acordes').fill(body);
@@ -69,7 +69,7 @@ try {
     await createSong(other, 'Llegó jalando', '[C]Esto lo [G]escribí en la otra tablet');
     await synced(other);
 
-    await page.getByRole('link', { name: 'Cantos', exact: true }).click();
+    await openSection(page, 'Cantos');
     assert.equal(await page.getByRole('link', { name: 'Llegó jalando' }).count(), 0, 'the other device has not been heard yet');
     pass('a song written on another device has not arrived by itself yet');
 
@@ -132,7 +132,7 @@ try {
     await page.evaluate(() => window.dispatchEvent(new Event('online')));
 
     // ----- not while singing -----
-    await page.getByRole('link', { name: 'Listados', exact: true }).click();
+    await openSection(page, 'Listados');
     await page.getByRole('button', { name: 'Nuevo listado' }).click();
     await page.locator('section.slot').first().waitFor();
     await page.getByRole('link', { name: 'Agregar canto a Canto de entrada' }).click();

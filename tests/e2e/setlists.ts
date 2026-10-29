@@ -7,7 +7,7 @@
  *     npm run build && node tests/e2e/setlists.ts
  */
 import assert from 'node:assert/strict';
-import { chromium, enforcePolicy, reporter, signIn, startServer, synced } from './lib.ts';
+import { chromium, openSection, enforcePolicy, reporter, signIn, startServer, synced } from './lib.ts';
 import type { Page } from 'playwright';
 
 const server = await startServer(18086);
@@ -21,7 +21,7 @@ const SONGS: [string, string][] = [
 ];
 
 async function createSong(page: Page, title: string, body: string): Promise<void> {
-    await page.getByRole('link', { name: 'Cantos', exact: true }).click();
+    await openSection(page, 'Cantos');
     await page.getByRole('link', { name: 'Nuevo canto' }).click();
     await page.getByLabel('Título').fill(title);
     await page.getByLabel('Letra con acordes').fill(body);
@@ -126,7 +126,7 @@ try {
     await synced(page);
 
     // ----- the lists screen and the template -----
-    await page.getByRole('link', { name: 'Listados', exact: true }).click();
+    await openSection(page, 'Listados');
     await page.getByRole('heading', { name: 'Listados' }).waitFor();
     await page.getByText('Todavía no hay listados.').waitFor();
     assert.equal(await page.getByRole('link', { name: 'Listados', exact: true }).getAttribute('aria-current'), 'page');
@@ -199,11 +199,11 @@ try {
     await entrada.locator('.item__key.is-changed', { hasText: 'Re' }).waitFor();
     pass('the list shows the key to read; it is changed while singing, and shows in amber when it is not the song\'s own (Do → Re)');
 
-    await page.getByRole('link', { name: 'Cantos', exact: true }).click();
+    await openSection(page, 'Cantos');
     await page.getByRole('link', { name: 'Abrimos la puerta' }).click();
     assert.deepEqual(await chords(page), ['Do', 'Sol']);
     pass('the song itself keeps its own key');
-    await page.getByRole('link', { name: 'Listados', exact: true }).click();
+    await openSection(page, 'Listados');
     await page.locator('.lrow__link').first().click();
     await page.locator('section.slot').first().waitFor();
     await slot(page, 'Canto de entrada').locator('.item__key.is-changed', { hasText: 'Re' }).waitFor();
@@ -447,7 +447,7 @@ try {
     const tablet = await browser.newContext({ viewport: { width: 1180, height: 820 } });
     const second = await tablet.newPage();
     await signIn(second, BASE);
-    await second.getByRole('link', { name: 'Listados', exact: true }).click();
+    await openSection(second, 'Listados');
     await second.getByRole('link', { name: /Domingo de prueba/ }).click();
     await second.locator('section.slot').first().waitFor();
     await slot(second, 'Canto de entrada').locator('.item__key.is-changed', { hasText: 'Do#' }).waitFor();
@@ -500,7 +500,7 @@ try {
     await synced(page);
     assert.equal((await serverData(page)).setlists.filter((list) => list.starred).length, 1);
     await second.evaluate(() => window.dispatchEvent(new Event('online')));
-    await second.getByRole('link', { name: 'Listados', exact: true }).click();
+    await openSection(second, 'Listados');
     await second.getByRole('button', { name: 'Quitar de destacados: Domingo, editado en la tablet' }).waitFor({ timeout: 15000 });
     pass('the star reaches the other device');
 
@@ -541,7 +541,7 @@ try {
     await synced(page);
 
     // ----- deleting a song that is in a list -----
-    await page.getByRole('link', { name: 'Cantos', exact: true }).click();
+    await openSection(page, 'Cantos');
     await page.getByRole('link', { name: 'Pan de vida' }).click();
     await page.getByRole('link', { name: 'Editar' }).click();
     const dialogs: string[] = [];
@@ -560,7 +560,7 @@ try {
     page.once('dialog', (dialog) => void dialog.accept());
     await page.getByRole('button', { name: 'Eliminar' }).click();
     await page.getByRole('heading', { name: 'Cantos' }).waitFor();
-    await page.getByRole('link', { name: 'Listados', exact: true }).click();
+    await openSection(page, 'Listados');
     await page.getByRole('link', { name: /Domingo, editado en la tablet/ }).click();
     await slot(page, 'Canto de comunión').getByText('Canto eliminado').waitFor();
     assert.equal(await slot(page, 'Canto de comunión').locator('.item__key').count(), 1, 'a deleted song has no key to show');
@@ -588,7 +588,7 @@ try {
     assert.ok((await serverData(page)).setlists.every((list) => list.deletedAt !== null));
     await second.evaluate(() => window.dispatchEvent(new Event('online')));
     await second.getByText('Todavía no hay listados.').waitFor({ timeout: 15000 }).catch(async () => {
-        await second.getByRole('link', { name: 'Listados', exact: true }).click();
+        await openSection(second, 'Listados');
         await second.getByText('Todavía no hay listados.').waitFor();
     });
     pass('deleting a list removes it here and on the other device');
@@ -652,7 +652,7 @@ try {
     const guarded = await strict.newPage();
     const violations = await enforcePolicy(strict, guarded);
     await signIn(guarded, BASE);
-    await guarded.getByRole('link', { name: 'Listados', exact: true }).click();
+    await openSection(guarded, 'Listados');
     await guarded.getByRole('link', { name: /Misa del/ }).click();
     await guarded.locator('section.slot').first().waitFor();
     await guarded.getByRole('link', { name: 'Cantar' }).click();
