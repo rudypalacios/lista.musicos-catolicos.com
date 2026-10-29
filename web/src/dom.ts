@@ -30,3 +30,8 @@ export function link(href: string, text: string, className = ''): HTMLAnchorElem
 export function setSheet(target: HTMLElement, html: string): void {
     target.innerHTML = html;
 }
+
+/** The lines of a song shown in a row to tell it from another with the same title, one row each */
+export function snippetBlock(lines: readonly string[]): HTMLElement {
+    return h('span', { class: 'song-item__snippet' }, ...lines.map((line) => h('span', {}, line)));
+}
