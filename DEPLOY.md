@@ -224,6 +224,15 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    «Cancelar» o «← Volver a agregar» regresan al selector. Probar también sin conexión (se guarda en el
    dispositivo y se envía después).
 
+14. **Ver el canto antes de agregarlo, y buscar por letra.** En «＋ Agregar» de una parte, cada canto muestra su título,
+   el autor, el tono y **las dos primeras líneas de la letra** (en gris, cortadas con «…» si son largas), para
+   distinguir varios «Santo». **Tocar la fila agrega el canto**, como antes. A la derecha de cada fila hay un
+   **ojo**: ábrelo y sale una hoja con el canto completo, con los acordes en tu notación; abajo, **Cerrar** y
+   **Agregar a …**. Se cierra con «Cerrar», tocando fuera o con el botón atrás del teléfono. El buscador ahora
+   también mira **la letra**: escribe una palabra del canto («universo») y aparece; los que coinciden en el
+   título o el autor salen primero, y si el canto salió por la letra, las dos líneas son las que coinciden.
+   En la pantalla *Cantos* pasa igual, con esas líneas solo cuando el canto salió por la letra. Probar también sin conexión.
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.

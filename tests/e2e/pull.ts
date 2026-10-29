@@ -156,7 +156,7 @@ try {
 
     await page.getByRole('link', { name: 'Agregar canto a Canto de entrada' }).click();
     await page.getByLabel('Buscar cantos').fill('jalando');
-    await page.getByRole('button', { name: /Llegó jalando/ }).click();
+    await page.locator('button.song-item', { hasText: 'Llegó jalando' }).click();
     await page.getByRole('link', { name: 'Cantar' }).click();
     await page.locator('.perform').waitFor();
     await drag(page, 260);

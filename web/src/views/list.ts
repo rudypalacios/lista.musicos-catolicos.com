@@ -2,10 +2,10 @@ import type { App } from '../app.ts';
 import { parse, songKey } from '../chordpro/parser.ts';
 import { transpose } from '../chordpro/chord.ts';
 import type { Song } from '../data/types.ts';
-import { h, link } from '../dom.ts';
+import { h, link, snippetBlock } from '../dom.ts';
 import { readNotation } from '../prefs.ts';
 import { paths } from '../router.ts';
-import { filterSongs } from '../search.ts';
+import { filterSongs, foundInLyricsOnly, songSnippet } from '../search.ts';
 import type { View } from './types.ts';
 
 export function listView(app: App): View {
@@ -28,7 +28,7 @@ export function listView(app: App): View {
     let songs: Song[] = [];
     const draw = (): void => {
         const shown = filterSongs(songs, search.value);
-        list.replaceChildren(...shown.map(item));
+        list.replaceChildren(...shown.map((song) => item(song, search.value)));
         empty.hidden = shown.length > 0;
         empty.textContent = songs.length === 0
             ? 'Todavía no hay cantos. Crea uno o importa uno que ya tengas escrito.'
@@ -48,13 +48,17 @@ export function listView(app: App): View {
     return { element, dispose: stop };
 }
 
-function item(song: Song): HTMLElement {
+/** `query` is what is being searched: a song found only through its lyrics shows the lines that matched */
+function item(song: Song, query: string): HTMLElement {
     const sheet = parse(song.body);
     const key = songKey(sheet);
     const title = h('span', { class: 'song-item__title' }, song.title);
-    const text = h('span', {}, title);
+    const text = h('span', { class: 'song-item__text' }, title);
     if (song.author !== '') {
         text.append(h('span', { class: 'song-item__author' }, song.author));
+    }
+    if (foundInLyricsOnly(song, query)) {
+        text.append(snippetBlock(songSnippet(song, query)));
     }
     const row = h('a', { class: 'song-item', href: paths.view(song.id), 'data-link': true }, text);
     if (key !== null) {

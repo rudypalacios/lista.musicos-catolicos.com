@@ -62,6 +62,13 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       saving puts the song in that part and returns to the list (`paths.new(into, title)`, `Route` `new`,
       `editView`'s `start`). Importing from the picker is not offered: a PDF can hold several songs and they do
       not all belong to one part. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 13.
+- [x] The picker of a part tells songs apart before adding: each row shows the first two lines of the lyrics
+      (no chords or labels, one row each, cut with "…"), and an eye (44px, `icons.ts`) opens a sheet with the whole
+      song in the person's notation and "Cerrar" / "Agregar a …" (`views/add.ts`, `songSnippet` in `search.ts`).
+      Search now also reads the lyrics (title and author matches first; a song found only through its lyrics shows
+      the lines that matched, also on Cantos). No highlight of the matched words on purpose: showing the matching
+      line does the job with no offset mapping across accents. Not added: searching inside the key or chords.
+      **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 14.
 - [ ] Adding several songs to one part takes a round trip per song (the picker returns to the list).
       If that is slow in practice, let the picker stay open and show what has been added.
 - [ ] **Paused (owner, after the UI session).** Duplicate a list ("copiar listado") to start next Sunday's from this
