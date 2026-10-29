@@ -6,7 +6,7 @@
  *     npm run build && node tests/e2e/songs.ts
  */
 import assert from 'node:assert/strict';
-import { accountMenu, chromium, EMAIL, PASSWORD, reporter, signIn, startServer, synced } from './lib.ts';
+import { chromium, EMAIL, PASSWORD, reporter, openSection, signIn, signOutFromSettings, startServer, synced } from './lib.ts';
 import type { BrowserContext, Page } from 'playwright';
 
 const server = await startServer(18081);
@@ -328,20 +328,20 @@ try {
         dialogs.push(dialog.message());
         void dialog.dismiss();
     });
-    await accountMenu(page, 'Salir');
+    await signOutFromSettings(page);
     // It tries to send first, offline that fails, and only then does it ask
     for (let waited = 0; dialogs.length === 0 && waited < 50; waited++) {
         await page.waitForTimeout(100);
     }
     assert.match(dialogs[0] ?? '', /1 canto escrito en este dispositivo/);
-    await page.getByRole('link', { name: '← Cantos' }).click();
+    await openSection(page, 'Cantos');
     await page.getByRole('link', { name: 'Pendiente al salir' }).waitFor();
     pass('signing out with an unsent song asks first, and cancelling keeps everything');
 
     await ipad.setOffline(false);
     await page.evaluate(() => window.dispatchEvent(new Event('online')));
     await synced(page);
-    await accountMenu(page, 'Salir');
+    await signOutFromSettings(page);
     await page.getByRole('heading', { name: 'Inicia sesión' }).waitFor();
     const left = await page.evaluate(() => indexedDB.databases().then((dbs) => dbs.length));
     assert.ok(left >= 0);

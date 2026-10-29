@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { matchRoute, parentOf, paths, sectionOf } from '../src/router.ts';
+import { matchRoute, parentOf, paths, sectionOf, titleOf } from '../src/router.ts';
 
 const ID = '0f8fad5b-d9cb-469f-a165-70867728950e';
 
@@ -72,7 +72,8 @@ describe('matchRoute', () => {
         assert.deepEqual(matchRoute('/ajustes'), { name: 'settings' });
         assert.deepEqual(matchRoute('/ajustes/'), { name: 'settings' });
         assert.equal(paths.settings(), '/ajustes');
-        assert.equal(sectionOf(matchRoute('/ajustes')), null);
+        assert.equal(sectionOf(matchRoute('/ajustes')), 'settings');
+        assert.equal(sectionOf(matchRoute('/ayuda/instalar')), 'settings');
     });
 
     it('files each route under the right tab', () => {
@@ -100,5 +101,14 @@ describe('parentOf', () => {
         for (const path of ['/', '/listados', '/ajustes', `/listados/${ID}/cantar/1`, '/nada']) {
             assert.equal(parentOf(matchRoute(path)), null, path);
         }
+    });
+});
+
+describe('titleOf', () => {
+    it('names the screens of the menu', () => {
+        assert.equal(titleOf(matchRoute('/')), 'Cantos');
+        assert.equal(titleOf(matchRoute('/listados')), 'Listados');
+        assert.equal(titleOf(matchRoute('/ajustes')), 'Ajustes');
+        assert.equal(titleOf(matchRoute('/nada')), 'Lista');
     });
 });

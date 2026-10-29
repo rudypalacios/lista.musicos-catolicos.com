@@ -150,7 +150,7 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    del canto sigue** (`⋯` → *Nota*, con su punto de aviso). Volverán al listado con el formato ChordPro.
 5. En *Cantar*, desliza a izquierda y derecha: **la pantalla ya no debe "ensancharse"** en los bordes y el
    canto nuevo debe entrar deslizándose. (Esto solo se puede confirmar en el teléfono.)
-6. *Ajustes* (menú de la cuenta, la letra de arriba a la derecha): cambia el nombre de los acordes, el color de la letra y las columnas; el ejemplo
+6. *Ajustes* (botón de abajo a la derecha del menú): cambia el nombre de los acordes, el color de la letra y las columnas; el ejemplo
    cambia al momento. Abre un canto: ya usa lo elegido. En la tablet, el botón *Columnas* del lector
    cambia entre automático, 2 y 1. En automático, un canto que en una columna
    quedaría con letra chica (menos de 20 px) pasa a dos columnas si así la letra crece al menos 20 %; los
@@ -201,17 +201,20 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    corto, o jalar con la pantalla ya desplazada, no hace nada. Prueba: escribe o cambia algo en la web, y en la tablet
    jala; debe aparecer sin esperar el minuto. **Solo se confirma en el dispositivo:** que el navegador no recargue
    la página por su cuenta (en Chrome de Android o en el iPad), y que no estorbe al desplazarte por una lista larga.
-11. **Cabecera nueva (una sola fila).** En *Cantos* y *Listados* arriba están solo las dos pestañas, a la derecha un punto
-   y una letra (tu cuenta); ya no hay «Listas», «Ajustes», «Salir» ni el título repetido debajo. En una pantalla que cuelga de
-   otra (un canto, un listado, *Agregar canto*, la guía de instalación) las pestañas dejan su sitio a una sola flecha
-   («← Cantos», «← Listados», «← Volver al listado», «← Ajustes»); no hay otra flecha en la pantalla.
-   - **El punto:** verde = todo enviado (sin texto); ámbar = hay algo por enviar; late mientras sincroniza. Tócalo y sincroniza ahora
-     (avisa «Sincronizado», «Sin conexión»…). Si no hay conexión, o la sesión terminó, o falló, bajo la cabecera sale una franja
-     con el texto completo («Sin conexión · 1 sin enviar»), y con la sesión terminada, el botón *Iniciar sesión*.
-   - **La letra (cuenta):** abre un panel desde abajo con tu correo, *Ajustes*, *Cómo instalar la app* y *Salir* (pide confirmación
-     si hay algo sin enviar). El botón *Atrás* del teléfono lo cierra.
-   - Cantando no cambia nada: sin cabecera, con su barra y su «⋯».
-   - **Solo se confirma en el dispositivo:** que el punto y la letra se toquen bien con el pulgar en el Android y en el iPad.
+11. **Menú abajo.** En el teléfono, abajo hay tres botones: *Cantos*, *Listados* y *Ajustes* (el de la pantalla en que estás va
+   en azul). Arriba, una barra con el nombre de la pantalla y un punto. Solo está el menú en esas tres pantallas: al abrir un
+   canto, un listado, *Agregar canto* o la guía de instalación, el menú se va, la pantalla usa todo el alto y arriba queda una
+   sola flecha («← Cantos», «← Listados», «← Volver al listado», «← Ajustes»). No hay otra flecha en la pantalla.
+   - **El punto:** verde = todo enviado (sin texto); ámbar = hay algo por enviar; late mientras sincroniza. Tócalo y sincroniza
+     ahora (avisa «Sincronizado», «Sin conexión»…). Si no hay conexión, o la sesión terminó, o falló, bajo la barra sale una
+     franja con el texto completo («Sin conexión · 1 sin enviar»), y con la sesión terminada, el botón *Iniciar sesión*.
+   - **Tu cuenta y *Salir*:** al final de *Ajustes* (correo y botón *Salir*, que pide confirmación si hay algo sin enviar).
+   - **Guía de instalación** (*Ajustes → Cómo instalar la app…*): los pasos van numerados en círculos.
+   - **Pantalla ancha (tableta horizontal, computadora, 900 px o más):** el menú pasa a una columna a la izquierda, siempre visible
+     (también dentro de un listado), con el correo y *Salir* al pie.
+   - **La barra de instalación** (si sale) queda justo encima del menú. Cantando no cambia nada: sin barra ni menú, como hoy.
+   - **Solo se confirma en el dispositivo:** que el menú se toque bien con el pulgar en el Android, y en el iPad que no choque
+     con el gesto de inicio (la barra de abajo del iPad).
 
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).

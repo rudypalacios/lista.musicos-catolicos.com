@@ -6,7 +6,7 @@
  *     npm run build && node tests/e2e/install.ts
  */
 import assert from 'node:assert/strict';
-import { accountMenu, chromium, reporter, signIn, startServer, synced } from './lib.ts';
+import { chromium, openSection, reporter, signIn, startServer, synced } from './lib.ts';
 
 const server = await startServer(18092);
 const { pass, count } = reporter();
@@ -19,7 +19,7 @@ try {
     const desktop = await (await browser.newContext({ viewport: { width: 820, height: 1180 } })).newPage();
     await signIn(desktop, server.base);
     assert.equal(await desktop.locator('.install-banner').isVisible(), false);
-    await accountMenu(desktop, 'Ajustes');
+    await openSection(desktop, 'Ajustes');
     await desktop.getByRole('link', { name: 'Cómo instalar la app en el iPad o el teléfono' }).click();
     await desktop.getByRole('heading', { name: 'Instalar Lista' }).waitFor();
     assert.match(await desktop.locator('.help').innerText(), /Añadir a pantalla de inicio/);

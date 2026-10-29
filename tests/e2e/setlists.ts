@@ -286,7 +286,7 @@ try {
     assert.equal(await page.locator('.perform__count').textContent(), '1/3');
     assert.deepEqual(await chords(page), ['Re', 'La']);
     assert.match(await page.locator('.perform__part').textContent() ?? '', /Canto de entrada/);
-    assert.equal(await page.locator('.tabs').isVisible(), false);
+    assert.equal(await page.locator('.menu').isVisible(), false);
     assert.equal(await page.locator('header.bar').isVisible(), false, 'the app header gives its room to the song');
     await page.getByRole('button', { name: /Ir a otro canto/ }).click();
     await page.locator('.sheet-layer.is-open').waitFor();

@@ -12,6 +12,8 @@ export type Navigate = (path: string, options?: { replace?: boolean }) => void;
  * has to offer it itself: the sync line and signing out.
  */
 export interface Account {
+    /** Who is signed in */
+    email: string;
     /** What the header says about the sync ("Sincronizado", "Sin conexión · 2 sin enviar"…) */
     syncText: () => string;
     /** Calls `listener` whenever that line changes; returns how to stop */

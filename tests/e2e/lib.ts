@@ -77,23 +77,26 @@ export async function signIn(page: Page, base: string): Promise<void> {
     await page.getByRole('heading', { name: 'Cantos' }).waitFor();
 }
 
+/** The menu: at the bottom of a phone, at the left of a wide screen */
+const menu = (page: Page) => page.getByRole('navigation', { name: 'Menú' });
+
 /**
- * Goes to a section by its tab. A screen that hangs from another (a song, a list) has no tabs, only
- * the way back, so this goes back until the tabs are there, as a person does.
+ * Goes to a screen of the menu by its entry. On a phone the menu is only on the screens of the menu
+ * itself: a screen that hangs from another (a song, a list) has only the way back, so this goes back
+ * until the menu is there, as a person does.
  */
-export async function openSection(page: Page, name: 'Cantos' | 'Listados'): Promise<void> {
-    const tab = page.getByRole('link', { name, exact: true });
-    for (let hops = 0; hops < 4 && !(await tab.isVisible()); hops++) {
+export async function openSection(page: Page, name: 'Cantos' | 'Listados' | 'Ajustes'): Promise<void> {
+    const entry = menu(page).getByRole('link', { name, exact: true });
+    for (let hops = 0; hops < 4 && !(await entry.isVisible()); hops++) {
         await page.locator('.bar__back').click();
     }
-    await tab.click();
+    await entry.click();
 }
 
-/** Opens the account menu of the header (the avatar) and picks one of its entries */
-export async function accountMenu(page: Page, entry: 'Ajustes' | 'Cómo instalar la app' | 'Salir'): Promise<void> {
-    await page.getByRole('button', { name: /^Cuenta de / }).click();
-    const menu = page.getByRole('dialog', { name: 'Cuenta' });
-    await menu.getByRole(entry === 'Salir' ? 'button' : 'link', { name: entry }).click();
+/** Signs out the way a person does: Ajustes, then "Salir" */
+export async function signOutFromSettings(page: Page): Promise<void> {
+    await openSection(page, 'Ajustes');
+    await page.getByRole('button', { name: 'Salir' }).click();
 }
 
 /** Waits until the header says the songs are synced (nothing left to send) */
