@@ -181,8 +181,10 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    (migración `0006`); no hay que hacer nada en phpMyAdmin.
 11. **Pantalla interior del listado (más limpia).** Arriba: el título (se edita tocándolo; si es largo, crece
    y se lee completo), la fecha como pastilla («dom 1 nov ✎», que abre el selector de fecha; «＋ Fecha» si no
-   hay), «N cantos», **▶ Cantar** y **⋯**. Cada parte de la misa es un rótulo azul con una línea; una parte
-   sin canto es una sola línea con «＋ Agregar» a la derecha (las opcionales llevan «opcional» y ⓘ).
+   hay), «N cantos», **▶ Cantar** y **⋯**. Cada parte de la misa es un rótulo azul con una línea. **Agregar
+   un canto siempre está en la cabecera de la parte, a la derecha:** con texto («＋ Agregar») mientras la parte
+   está vacía (las opcionales llevan «opcional» y ⓘ), y como un «＋» solo cuando ya tiene cantos; desde el
+   cuarto canto hay además un «＋ Agregar canto» al final de la lista de esa parte.
    Cada canto es una fila: título, y debajo «Autor · Tono» (el tono en ámbar si lo cambiaste; aquí solo se
    lee). **Tocar la fila abre el canto.** El **⋯** de la fila abre una hoja con: *Cantar desde aquí* (ahí se
    cambia el tono, y queda guardado en el listado), *Subir* / *Bajar en esta parte* (solo los que se pueden;
