@@ -6,7 +6,7 @@
  *     npm run build && node tests/e2e/songs.ts
  */
 import assert from 'node:assert/strict';
-import { chromium, EMAIL, PASSWORD, reporter, signIn, startServer, synced } from './lib.ts';
+import { accountMenu, chromium, EMAIL, PASSWORD, reporter, signIn, startServer, synced } from './lib.ts';
 import type { BrowserContext, Page } from 'playwright';
 
 const server = await startServer(18081);
@@ -259,6 +259,10 @@ try {
     await second.getByLabel('Título').fill('Editado en la otra tablet');
     await second.getByRole('button', { name: 'Guardar' }).click();
     await synced(second);
+    // "Sincronizado" can show for a moment before the save is counted as unsent: wait for the server itself
+    for (let waited = 0; waited < 100 && !(await serverSongs(second)).some((song) => song.title === 'Editado en la otra tablet'); waited++) {
+        await second.waitForTimeout(100);
+    }
 
     await page.evaluate(() => window.dispatchEvent(new Event('online')));
     await page.getByRole('link', { name: '← Cantos' }).click();
@@ -324,7 +328,7 @@ try {
         dialogs.push(dialog.message());
         void dialog.dismiss();
     });
-    await page.getByRole('button', { name: 'Salir' }).click();
+    await accountMenu(page, 'Salir');
     // It tries to send first, offline that fails, and only then does it ask
     for (let waited = 0; dialogs.length === 0 && waited < 50; waited++) {
         await page.waitForTimeout(100);
@@ -337,7 +341,7 @@ try {
     await ipad.setOffline(false);
     await page.evaluate(() => window.dispatchEvent(new Event('online')));
     await synced(page);
-    await page.getByRole('button', { name: 'Salir' }).click();
+    await accountMenu(page, 'Salir');
     await page.getByRole('heading', { name: 'Inicia sesión' }).waitFor();
     const left = await page.evaluate(() => indexedDB.databases().then((dbs) => dbs.length));
     assert.ok(left >= 0);

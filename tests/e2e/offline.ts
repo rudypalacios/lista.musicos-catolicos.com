@@ -10,7 +10,7 @@
  * hand on the iPad (see DEPLOY.md).
  */
 import assert from 'node:assert/strict';
-import { chromium, EMAIL, PASSWORD, reporter, startServer } from './lib.ts';
+import { accountMenu, chromium, EMAIL, PASSWORD, reporter, startServer } from './lib.ts';
 
 const server = await startServer(18080);
 const { pass, count } = reporter();
@@ -62,7 +62,7 @@ try {
 
     await context.setOffline(false);
     await page.goto(BASE + '/');
-    await page.getByRole('button', { name: 'Salir' }).click();
+    await accountMenu(page, 'Salir');
     await page.getByRole('heading', { name: 'Inicia sesión' }).waitFor();
     pass('back online: signing out returns to the sign-in form');
 

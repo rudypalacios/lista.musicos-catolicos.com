@@ -26,7 +26,7 @@ export function listsView(app: App, navigate: Navigate): View {
     const element = h(
         'div',
         { class: 'page' },
-        h('h2', {}, 'Listados'),
+        h('h2', { class: 'sr-only' }, 'Listados'),
         h('div', { class: 'lists__top' }, search, create),
         error,
         groups,

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { matchRoute, paths, sectionOf } from '../src/router.ts';
+import { matchRoute, parentOf, paths, sectionOf } from '../src/router.ts';
 
 const ID = '0f8fad5b-d9cb-469f-a165-70867728950e';
 
@@ -81,6 +81,24 @@ describe('matchRoute', () => {
         assert.equal(sectionOf(matchRoute('/otra')), 'songs');
         for (const path of ['/listados', `/listados/${ID}`, `/listados/${ID}/agregar/entrada`, `/listados/${ID}/cantar/1`]) {
             assert.equal(sectionOf(matchRoute(path)), 'lists', path);
+        }
+    });
+});
+
+describe('parentOf', () => {
+    it('gives a way back to the screens that hang from another', () => {
+        assert.deepEqual(parentOf(matchRoute(`/cantos/${ID}`)), { path: '/', label: 'Cantos' });
+        assert.deepEqual(parentOf(matchRoute('/cantos/nuevo')), { path: '/', label: 'Cantos' });
+        assert.deepEqual(parentOf(matchRoute('/cantos/importar')), { path: '/', label: 'Cantos' });
+        assert.deepEqual(parentOf(matchRoute(`/cantos/${ID}/editar`)), { path: `/cantos/${ID}`, label: 'Canto' });
+        assert.deepEqual(parentOf(matchRoute(`/listados/${ID}`)), { path: '/listados', label: 'Listados' });
+        assert.deepEqual(parentOf(matchRoute(`/listados/${ID}/agregar/entrada`)), { path: `/listados/${ID}`, label: 'Volver al listado' });
+        assert.deepEqual(parentOf(matchRoute('/ayuda/instalar')), { path: '/ajustes', label: 'Ajustes' });
+    });
+
+    it('has none for the screens of a section, Ajustes, singing or an unknown address', () => {
+        for (const path of ['/', '/listados', '/ajustes', `/listados/${ID}/cantar/1`, '/nada']) {
+            assert.equal(parentOf(matchRoute(path)), null, path);
         }
     });
 });

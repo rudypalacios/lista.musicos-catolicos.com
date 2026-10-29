@@ -34,7 +34,6 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Ma
     const element = h(
         'div',
         { class: 'page' },
-        h('div', { class: 'actions' }, link(paths.setlist(setlist.id), '← Volver al listado', 'button')),
         h('h2', {}, `Agregar a ${part.name}`),
         search,
         error,

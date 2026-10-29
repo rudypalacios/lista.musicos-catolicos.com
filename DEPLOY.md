@@ -110,7 +110,7 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    tono, `Do → C` y `Ajustar`: el canto entero debe caber en la pantalla sin hacer scroll (si es
    muy largo, en dos columnas en la tablet). Gira la tablet: se vuelve a ajustar.
 2. Modo avión. Cierra la app y ábrela: el canto debe seguir ahí. Escribe uno nuevo sin conexión:
-   arriba debe decir "Sin conexión · 1 sin enviar". Quita el modo avión: pasa a "Sincronizado".
+   bajo la cabecera debe salir la franja "Sin conexión · 1 sin enviar". Quita el modo avión: la franja desaparece y el punto queda verde.
 3. Entra con la misma cuenta en el otro dispositivo: ve los mismos cantos. Edita uno en un
    dispositivo y comprueba que aparece en el otro (puede tardar hasta que vuelvas a abrir la app).
 4. En el iPad, repite el paso 2 después de 8 días sin abrir la app: los cantos deben seguir.
@@ -131,7 +131,7 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    teclado, con las flechas. Cambia el tono ahí mismo (con `⋯`): se guarda en el
    listado. Gira la tablet: se vuelve a ajustar.
 5. Modo avión. Cierra la app, ábrela, entra al listado y toca *Cantar*: todo debe funcionar. Cambia un
-   tono sin conexión: arriba debe decir "Sin conexión · 1 sin enviar"; al quitar el modo avión, "Sincronizado".
+   tono sin conexión: bajo la cabecera debe salir "Sin conexión · 1 sin enviar"; al quitar el modo avión, la franja desaparece y el punto queda verde.
 6. En el otro dispositivo abre *Listados*: el mismo listado, con los mismos tonos y notas.
 7. Elimina un canto que esté en un listado: la app avisa en cuáles está. Después, ese listado muestra
    "Canto eliminado" en su lugar (y se puede quitar con *Quitar*).
@@ -150,13 +150,13 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    del canto sigue** (`⋯` → *Nota*, con su punto de aviso). Volverán al listado con el formato ChordPro.
 5. En *Cantar*, desliza a izquierda y derecha: **la pantalla ya no debe "ensancharse"** en los bordes y el
    canto nuevo debe entrar deslizándose. (Esto solo se puede confirmar en el teléfono.)
-6. *Ajustes* (arriba): cambia el nombre de los acordes, el color de la letra y las columnas; el ejemplo
+6. *Ajustes* (menú de la cuenta, la letra de arriba a la derecha): cambia el nombre de los acordes, el color de la letra y las columnas; el ejemplo
    cambia al momento. Abre un canto: ya usa lo elegido. En la tablet, el botón *Columnas* del lector
    cambia entre automático, 2 y 1. En automático, un canto que en una columna
    quedaría con letra chica (menos de 20 px) pasa a dos columnas si así la letra crece al menos 20 %; los
    cantos cortos se quedan en una.
 7. *Cantar* (encabezado nuevo): una sola fila arriba con `←`, el nombre de la parte y del canto, la posición
-   («3/10 ▾») y `⋯`. La barra de la app (Listas, Ajustes, Salir) ya no aparece aquí. Con un canto largo, baja la
+   («3/10 ▾») y `⋯`. La cabecera de la app (pestañas, punto de sincronización, cuenta) ya no aparece aquí. Con un canto largo, baja la
    letra: la barra se pliega a una franja delgada con el título, el tono y la posición (tócala, o sube un poco, y
    vuelve); la letra no debe moverse al plegarse. `⋯` abre un panel con tono, tamaño, `Do → C`, *Ajustar*,
    columnas, la nota del canto (se escribe ahí mismo; un punto en `⋯` avisa que hay una), *Ajustes* y *Salir*.
@@ -201,6 +201,17 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    corto, o jalar con la pantalla ya desplazada, no hace nada. Prueba: escribe o cambia algo en la web, y en la tablet
    jala; debe aparecer sin esperar el minuto. **Solo se confirma en el dispositivo:** que el navegador no recargue
    la página por su cuenta (en Chrome de Android o en el iPad), y que no estorbe al desplazarte por una lista larga.
+11. **Cabecera nueva (una sola fila).** En *Cantos* y *Listados* arriba están solo las dos pestañas, a la derecha un punto
+   y una letra (tu cuenta); ya no hay «Listas», «Ajustes», «Salir» ni el título repetido debajo. En una pantalla que cuelga de
+   otra (un canto, un listado, *Agregar canto*, la guía de instalación) las pestañas dejan su sitio a una sola flecha
+   («← Cantos», «← Listados», «← Volver al listado», «← Ajustes»); no hay otra flecha en la pantalla.
+   - **El punto:** verde = todo enviado (sin texto); ámbar = hay algo por enviar; late mientras sincroniza. Tócalo y sincroniza ahora
+     (avisa «Sincronizado», «Sin conexión»…). Si no hay conexión, o la sesión terminó, o falló, bajo la cabecera sale una franja
+     con el texto completo («Sin conexión · 1 sin enviar»), y con la sesión terminada, el botón *Iniciar sesión*.
+   - **La letra (cuenta):** abre un panel desde abajo con tu correo, *Ajustes*, *Cómo instalar la app* y *Salir* (pide confirmación
+     si hay algo sin enviar). El botón *Atrás* del teléfono lo cierra.
+   - Cantando no cambia nada: sin cabecera, con su barra y su «⋯».
+   - **Solo se confirma en el dispositivo:** que el punto y la letra se toquen bien con el pulgar en el Android y en el iPad.
 
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).

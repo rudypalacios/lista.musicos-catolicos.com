@@ -1,16 +1,18 @@
 import './styles.css';
 import './sheet.css';
 import { api, ApiError } from './api.ts';
-import { App, signOut, type Status } from './app.ts';
-import { h, link } from './dom.ts';
+import { App, signOut } from './app.ts';
+import { h } from './dom.ts';
 import { MASS_PARTS } from './mass.ts';
-import { matchRoute, paths, sectionOf, type Route } from './router.ts';
+import { matchRoute, type Route } from './router.ts';
 import { applyLyricColor } from './settings.ts';
-import { createPullToRefresh } from './pull.ts';
+import { createPullToRefresh, pullAnswer } from './pull.ts';
+import { describeSync } from './sync-line.ts';
 import { showToast, type Toast } from './toast.ts';
 import { screenKeeper } from './wakelock.ts';
 import { showFatal, startUpdates } from './updates.ts';
 import { addView } from './views/add.ts';
+import { createHeader, type Header } from './views/header.ts';
 import { editView } from './views/edit.ts';
 import { importView } from './views/import.ts';
 import { watchInstallPrompt } from './install.ts';
@@ -39,9 +41,10 @@ if (root === null) {
 const app: HTMLElement = root;
 
 let current: View | null = null;
-/** The header and the "Cantos | Listados" tabs under it, once the person is in */
-let header: HTMLElement | null = null;
-let tabs: HTMLElement | null = null;
+/** The header, once the person is in */
+let header: Header | null = null;
+/** Goes to a screen of the app (set once the router runs), for what the header opens */
+let navigateTo: Navigate = () => undefined;
 /** The "install the app" bar at the bottom, one for the whole page, until the app is installed */
 const installBanner = createInstallBanner();
 /** Signs out, asking first when something written here was never sent (set once the header exists) */
@@ -61,28 +64,6 @@ function show(view: View): void {
 
 function notice(text: string): View {
     return { element: h('div', { class: 'page' }, h('p', { class: 'card' }, text)) };
-}
-
-function describe(status: Status): { text: string; className: string } {
-    const unsent = status.pending > 0 ? `${status.pending} sin enviar` : '';
-    const refused = status.rejected > 0 ? `${status.rejected} rechazado${status.rejected === 1 ? '' : 's'}` : '';
-    const extra = [unsent, refused].filter((part) => part !== '').join(' · ');
-    const flag = extra !== '' ? 'sync sync--pending' : 'sync';
-    if (!status.durable) {
-        return { text: 'Este navegador no guarda datos sin conexión', className: 'sync sync--pending' };
-    }
-    switch (status.state) {
-        case 'syncing':
-            return { text: 'Sincronizando…', className: flag };
-        case 'offline':
-            return { text: extra !== '' ? `Sin conexión · ${extra}` : 'Sin conexión', className: flag };
-        case 'signed-out':
-            return { text: 'La sesión terminó', className: 'sync sync--pending' };
-        case 'error':
-            return { text: extra !== '' ? `Error al sincronizar · ${extra}` : 'Error al sincronizar', className: 'sync sync--pending' };
-        default:
-            return { text: extra !== '' ? extra : 'Sincronizado', className: flag };
-    }
 }
 
 let savesWatched = false;
@@ -113,10 +94,6 @@ function watchSaves(data: App): void {
 
 /** The frame around every screen. Built once per sign-in. */
 function mountShell(data: App, email: string, onSignedOut: () => void, onNeedsSignIn: () => void): void {
-    const sync = h('span', { class: 'sync', role: 'status', 'aria-live': 'polite' });
-    const renew = h('button', { type: 'button', class: 'link', hidden: true }, 'Iniciar sesión');
-    renew.addEventListener('click', onNeedsSignIn);
-    const out = h('button', { type: 'button', class: 'link' }, 'Salir');
     requestSignOut = () => {
         void signOut(data, (unsent) =>
             confirm(
@@ -130,18 +107,17 @@ function mountShell(data: App, email: string, onSignedOut: () => void, onNeedsSi
             }
         });
     };
-    out.addEventListener('click', requestSignOut);
 
-    const brand = link(paths.list(), 'Listas', 'brand');
-    const settings = link(paths.settings(), 'Ajustes', 'link');
-    const bar = h('header', { class: 'bar' }, h('h1', {}, brand), sync, renew, h('span', { class: 'who' }, email), settings, out);
-    header = bar;
-    tabs = h(
-        'nav',
-        { class: 'tabs', 'aria-label': 'Secciones' },
-        h('a', { href: paths.list(), 'data-link': true, 'data-section': 'songs' }, 'Cantos'),
-        h('a', { href: paths.lists(), 'data-link': true, 'data-section': 'lists' }, 'Listados'),
-    );
+    const frame = createHeader({
+        email,
+        navigate: (path, options) => navigateTo(path, options),
+        onSync: () => {
+            void data.syncNow().then(() => showToast(pullAnswer(data.status().state)));
+        },
+        onSignOut: () => requestSignOut(),
+        onNeedsSignIn,
+    });
+    header = frame;
     const view = h('main', { id: 'view' });
     // Pull down to sync now (not while singing: the stage has its own touches)
     const pull = createPullToRefresh(view, {
@@ -152,44 +128,24 @@ function mountShell(data: App, email: string, onSignedOut: () => void, onNeedsSi
             return data.status().state;
         },
     });
-    app.replaceChildren(bar, tabs, view, pull, installBanner.element);
+    app.replaceChildren(...frame.elements, view, pull, installBanner.element);
     watchSaves(data);
 
-    const paint = (status: Status): void => {
-        const { text, className } = describe(status);
-        sync.textContent = text;
-        sync.className = className;
-        renew.hidden = status.state !== 'signed-out';
-    };
-    data.onStatus(paint);
-    paint(data.status());
+    data.onStatus(frame.paint);
+    frame.paint(data.status());
 }
 
-/** Marks the tab of the section on screen; while singing a list the header and the tabs give their room to the song */
+/** Shows the header that suits the screen; while singing a list the header gives its room to the song */
 function markSection(route: Route): void {
-    if (tabs === null) {
-        return;
-    }
-    const section = sectionOf(route);
-    for (const tab of Array.from(tabs.querySelectorAll('a'))) {
-        if (tab.dataset['section'] === section) {
-            tab.setAttribute('aria-current', 'page');
-        } else {
-            tab.removeAttribute('aria-current');
-        }
-    }
-    tabs.hidden = route.name === 'perform';
+    header?.setRoute(route);
     installBanner.setAway(route.name === 'perform');
-    if (header !== null) {
-        header.hidden = route.name === 'perform';
-    }
 }
 
 /** The header's sync line and sign-out, for the screen that puts the header away */
 function accountOf(data: App): Account {
     return {
-        syncText: () => describe(data.status()).text,
-        onSync: (listener) => data.onStatus((status) => listener(describe(status).text)),
+        syncText: () => describeSync(data.status()).text,
+        onSync: (listener) => data.onStatus((status) => listener(describeSync(status).text)),
         signOut: () => requestSignOut(),
     };
 }
@@ -294,6 +250,7 @@ function runRouter(data: App): void {
         render(false);
     };
 
+    navigateTo = navigate;
     document.addEventListener('click', (event) => {
         if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
             return;

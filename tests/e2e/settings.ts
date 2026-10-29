@@ -6,7 +6,7 @@
  *     npm run build && node tests/e2e/settings.ts
  */
 import assert from 'node:assert/strict';
-import { chromium, reporter, signIn, startServer, synced } from './lib.ts';
+import { accountMenu, chromium, openSection, reporter, signIn, startServer, synced } from './lib.ts';
 import type { Page } from 'playwright';
 
 const server = await startServer(18094);
@@ -17,7 +17,7 @@ const LONG = Array.from({ length: 14 }, (_, n) =>
     `{c: Verso ${n + 1}}\n[C]Caminamos juntos [G]por la senda del [Am]día\n[F]y la luz nos [G]guía hasta el [C]fin\n[C]Caminamos juntos [G]por la senda del [Am]día\n[F]y la luz nos [G]guía hasta el [C]fin`).join('\n\n');
 
 async function createSong(page: Page, title: string, body: string): Promise<void> {
-    await page.getByRole('link', { name: 'Cantos', exact: true }).click();
+    await openSection(page, 'Cantos');
     await page.getByRole('link', { name: 'Nuevo canto' }).click();
     await page.getByLabel('Título').fill(title);
     await page.getByLabel('Letra con acordes').fill(body);
@@ -26,13 +26,13 @@ async function createSong(page: Page, title: string, body: string): Promise<void
 }
 
 async function openSong(page: Page, title: string): Promise<void> {
-    await page.getByRole('link', { name: 'Cantos', exact: true }).click();
+    await openSection(page, 'Cantos');
     await page.getByRole('link', { name: title }).click();
     await page.locator('#song-sheet .ch').first().waitFor();
 }
 
 async function setting(page: Page, label: string): Promise<void> {
-    await page.getByRole('link', { name: 'Ajustes' }).click();
+    await accountMenu(page, 'Ajustes');
     await page.getByRole('heading', { name: 'Ajustes' }).waitFor();
     await page.getByLabel(label).check();
 }
@@ -82,7 +82,7 @@ try {
     await createSong(page, 'Camino largo', LONG);
 
     // ----- chord names -----
-    await page.getByRole('link', { name: 'Ajustes' }).click();
+    await accountMenu(page, 'Ajustes');
     await page.getByRole('heading', { name: 'Ajustes' }).waitFor();
     assert.equal(await page.getByRole('link', { name: 'Cantos', exact: true }).getAttribute('aria-current'), null);
     assert.equal((await page.locator('.settings__sample .ch').first().textContent()), 'Do');
@@ -164,7 +164,7 @@ try {
     pass('auto picks two columns when the single column would be small, and keeps one when the letters are already big');
 
     // ----- the list to sing -----
-    await page.getByRole('link', { name: 'Listados', exact: true }).click();
+    await openSection(page, 'Listados');
     await page.getByRole('button', { name: 'Nuevo listado' }).click();
     await page.locator('section.slot').first().waitFor();
     for (const [part, song] of [['Canto de entrada', 'Camino largo'], ['Canto de salida', 'Puerta corta']] as const) {
@@ -176,7 +176,7 @@ try {
     await synced(page);
 
     // ----- singing: one row of bar and everything else behind "⋯" -----
-    await page.getByRole('link', { name: 'Listados', exact: true }).click();
+    await openSection(page, 'Listados');
     await page.locator('.lrow__link').first().click();
     await page.getByRole('link', { name: 'Cantar' }).click();
     await page.getByRole('heading', { name: 'Camino largo' }).waitFor();

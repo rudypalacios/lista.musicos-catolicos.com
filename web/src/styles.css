@@ -9,6 +9,7 @@
     --on-accent: #0b1220;
     --danger: #ff8b8b;
     --warn: #f0b429;
+    --ok: #7ad49a;
     font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
@@ -43,22 +44,6 @@ main {
     margin: 0;
     font-size: 1.25rem;
     flex: 1;
-}
-
-.who {
-    min-width: 0;
-    overflow: hidden;
-    color: var(--muted);
-    font-size: 0.9rem;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-/* A phone: the header has room for the tools, not for the address as well */
-@media (max-width: 520px) {
-    .who {
-        display: none;
-    }
 }
 
 .badge {
@@ -188,20 +173,6 @@ a.link {
     flex-direction: column;
     height: 100vh;
     height: 100dvh;
-}
-
-.bar a.brand {
-    color: inherit;
-    text-decoration: none;
-}
-
-.bar .sync {
-    font-size: 0.8rem;
-    color: var(--muted);
-}
-
-.bar .sync--pending {
-    color: var(--changed);
 }
 
 /* The screen under the header: the full width (each screen limits itself), and it scrolls */
@@ -428,6 +399,7 @@ ul.notes {
 
 .viewer__bar > .edit {
     order: 2;
+    margin-left: auto;
 }
 
 .viewer__bar > .toolbar {
@@ -703,28 +675,141 @@ input[type='file'] {
     margin: 0;
 }
 
-/* ----- header tabs: Cantos | Listados ----- */
+/* ----- the header: the tabs (or the way back), the sync dot, the account ----- */
+.bar--shell {
+    gap: 0;
+    padding: 0 0.25rem 0 1rem;
+}
+
 .tabs {
     display: flex;
+    flex: 1;
+    min-width: 0;
     gap: 0.25rem;
-    padding: 0 1rem;
-    border-bottom: 1px solid var(--border);
 }
 
 .tabs a {
     display: inline-flex;
     align-items: center;
-    min-height: 2.75rem;
-    padding: 0 1rem;
+    min-height: 3rem;
+    padding: 0 0.75rem;
     color: var(--muted);
     border-bottom: 3px solid transparent;
+    font-size: 1.05rem;
     font-weight: 600;
     text-decoration: none;
+}
+
+.tabs a:first-child {
+    padding-left: 0;
+    margin-right: 0.5rem;
 }
 
 .tabs a[aria-current='page'] {
     color: var(--text);
     border-bottom-color: var(--accent);
+}
+
+/* The way back to the screen this one hangs from: the one way, in the one place */
+.bar__back {
+    display: inline-flex;
+    flex: 1;
+    align-items: center;
+    min-height: 3rem;
+    color: var(--accent);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.sync-dot,
+.avatar-button {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 2.75rem;
+    height: 3rem;
+    padding: 0;
+    background: none;
+    border: 0;
+    color: inherit;
+}
+
+.sync-dot__mark {
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    background: var(--ok);
+}
+
+.sync-dot--busy .sync-dot__mark {
+    background: var(--accent);
+}
+
+.sync-dot--quiet .sync-dot__mark {
+    background: var(--faint);
+}
+
+.sync-dot--pending .sync-dot__mark,
+.sync-dot--warn .sync-dot__mark {
+    background: var(--warn);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .sync-dot--busy .sync-dot__mark {
+        animation: sync-pulse 1s ease-in-out infinite;
+    }
+}
+
+@keyframes sync-pulse {
+    50% {
+        opacity: 0.3;
+    }
+}
+
+.avatar {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+/* Under the bar, only while the sync needs attention: what is wrong, in full */
+.sync-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.4rem 1rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+.sync-line--warn {
+    color: var(--changed);
+    background: var(--changed-soft);
+}
+
+.sync-line .link {
+    flex: none;
+}
+
+.account-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.account-actions .button {
+    justify-content: center;
+    min-height: 2.75rem;
 }
 
 .muted {
@@ -740,10 +825,6 @@ input[type='file'] {
 /* ===== A setlist: the title, the day, and the parts of the Mass as flat sections ===== */
 .setlist-head {
     margin-bottom: 0.25rem;
-}
-
-.page > .actions:first-child {
-    margin-bottom: 0;
 }
 
 /* The title is edited where it is read: no frame until it has the focus */
@@ -827,14 +908,6 @@ a.button--primary .icon {
 .setlist__error {
     min-height: 0;
     margin: 0.5rem 0 0;
-}
-
-a.setlist-back {
-    display: inline-flex;
-    align-items: center;
-    min-height: 2.75rem;
-    padding: 0;
-    text-decoration: none;
 }
 
 .button--icon {
