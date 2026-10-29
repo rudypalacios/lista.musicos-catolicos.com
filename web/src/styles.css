@@ -132,7 +132,7 @@ a.link {
     position: fixed;
     z-index: 20;
     right: 1rem;
-    bottom: calc(1rem + env(safe-area-inset-bottom));
+    bottom: var(--over-chrome);
     left: 1rem;
     display: flex;
     align-items: center;
@@ -156,6 +156,8 @@ a.link {
 :root {
     --surface-2: #1f232b;
     --faint: #8a93a3;
+    /* Where a message that floats over the screen rests: above the menu and the install bar (bottom-chrome.ts) */
+    --over-chrome: max(calc(var(--chrome-bottom, 0px) + 0.75rem), calc(1rem + env(safe-area-inset-bottom, 0px)));
     --accent-rule: rgba(108, 184, 255, 0.45);
     --accent-soft: rgba(108, 184, 255, 0.15);
     --changed: #f0b429;
@@ -657,7 +659,7 @@ input[type='file'] {
 .toast {
     position: fixed;
     right: 1rem;
-    bottom: calc(1rem + env(safe-area-inset-bottom));
+    bottom: var(--over-chrome);
     left: 1rem;
     z-index: 9;
     display: flex;
@@ -752,17 +754,13 @@ input[type='file'] {
     min-height: 0;
 }
 
-/* The menu: three entries at the bottom of a phone, on the screens of the menu only */
+/* The menu: three entries at the bottom of a phone, on every screen but singing; it never scrolls away */
 .menu {
     display: flex;
     flex: none;
     background: var(--bg);
     border-top: 1px solid var(--border);
     padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-.menu[data-root='false'] {
-    display: none;
 }
 
 .menu__brand,
@@ -803,10 +801,6 @@ input[type='file'] {
         border-top: 0;
         border-right: 1px solid var(--border);
         background: var(--surface);
-    }
-
-    #app > .menu[data-root='false'] {
-        display: flex;
     }
 
     .menu__brand {
@@ -1332,7 +1326,7 @@ body:has(.update) .install-banner {
 .toasts {
     position: fixed;
     right: 0;
-    bottom: calc(1rem + env(safe-area-inset-bottom));
+    bottom: var(--over-chrome);
     left: 0;
     z-index: 50;
     display: flex;
@@ -1341,7 +1335,10 @@ body:has(.update) .install-banner {
     pointer-events: none;
 }
 
-.toast {
+.toasts .toast {
+    /* the region is the fixed one: the message sits in it (the older .toast above is the update note) */
+    position: static;
+    max-width: none;
     margin: 0;
     padding: 0.55rem 1rem;
     color: var(--text);
