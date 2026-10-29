@@ -130,7 +130,7 @@ Next, in this order (design agreed with the owner):
       was refused; an amber dot, with no line, while something is about to be sent, so the screen does not jump after
       every edit; touching it syncs now). The account (email, Salir) is a block at the end of Ajustes. The install guide
       has numbered steps in round badges. Weighed with the owner: tabs in the bar (merged in #23, replaced by this) and
-      "Listados first" (the library becomes secondary). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 11. The messages that
+      "Listados first" (the library becomes secondary). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 12. The messages that
       float over the screen (saved, sync, update) rest above the menu and the install bar (`bottom-chrome.ts`,
       `--chrome-bottom`), and the screen pulled down to sync is clipped so it never paints over the menu. Open: confirm on the iPad that the menu does not fight the home gesture.
 - [ ] **Owner's check on the Android** for phases 4 and 5 (`DEPLOY.md`, "Fases 4 y 5", item 9 for the lists screen).
