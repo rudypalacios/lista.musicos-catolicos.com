@@ -16,6 +16,9 @@ import { showUndoToast } from '../toast.ts';
 import { createSheet } from './sheet.ts';
 import type { Navigate, View } from './types.ts';
 
+/** A part with this many songs or more also has its "agregar" at the end: the one in the head would be far away */
+const ADD_AT_END_FROM = 4;
+
 /**
  * One setlist: its title and day, and the template of the Mass with a slot for every part. A part
  * with no song is one quiet line; a part with songs is a heading and one row per song. A row opens
@@ -231,13 +234,16 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             head.append(info);
             section.append(note);
         }
-        const add = h('a', {
-            class: 'add', href: paths.addToSetlist(setlist.id, part.id), 'data-link': true, 'aria-label': `Agregar canto a ${part.name}`,
-        }, icon('plus', 16), empty ? 'Agregar' : 'Agregar canto');
-        if (empty) {
-            head.append(add);
-        } else {
-            section.append(h('ul', { class: 'items' }, ...items.map(row)), add);
+        // The way in is always in the head, on the right: with words while the part is empty, as a "+" once it has songs
+        const href = paths.addToSetlist(setlist.id, part.id);
+        head.append(empty
+            ? h('a', { class: 'add', href, 'data-link': true, 'aria-label': `Agregar canto a ${part.name}` }, icon('plus', 16), 'Agregar')
+            : h('a', { class: 'add add--icon', href, 'data-link': true, 'aria-label': `Agregar canto a ${part.name}` }, icon('plus', 22)));
+        if (!empty) {
+            section.append(h('ul', { class: 'items' }, ...items.map(row)));
+            if (items.length >= ADD_AT_END_FROM) {
+                section.append(h('a', { class: 'add', href, 'data-link': true, 'aria-label': `Agregar canto al final de ${part.name}` }, icon('plus', 16), 'Agregar canto'));
+            }
         }
 
         return section;

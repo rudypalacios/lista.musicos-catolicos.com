@@ -853,7 +853,7 @@ a.setlist-back {
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    min-height: 2rem;
+    min-height: 2.75rem;
     border-bottom: 1px solid var(--border);
 }
 
@@ -887,8 +887,18 @@ a.setlist-back {
 }
 
 .slot.is-empty .add {
-    margin-left: auto;
     font-size: 0.9rem;
+}
+
+/* The way in sits at the right of the head, over the "⋯" of the rows */
+.slot__head .add {
+    margin-left: auto;
+}
+
+a.add--icon {
+    justify-content: center;
+    min-width: 2.75rem;
+    text-decoration: none;
 }
 
 .add {

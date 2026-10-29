@@ -51,7 +51,9 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       print and delete), an empty part as one line, two columns in the order of the Mass on a wide screen. The key is
       no longer changed here (it is changed while singing, which saves it to the list item); it is shown to read, in
       amber when it is not the song's own. The app's own icons are in `web/src/icons.ts` (Simple Icons is for brand
-      logos only and has none of these). Owner's check: `DEPLOY.md` "Fases 4 y 5", item 11.
+      logos only and has none of these). Adding a song is always in the head of the part (words while it is empty,
+      a "+" once it has songs, and from the fourth song also one at the end: `ADD_AT_END_FROM` in `setlist.ts`).
+      Owner's check: `DEPLOY.md` "Fases 4 y 5", item 11.
 - [ ] Dragging a song to reorder it was weighed and left for phase 6 (custom parts can hold a dozen songs, and the
       arrows move one place at a time); it would be a long press on the row, and it must keep the arrows
       (an alternative without dragging is required). Cheap step before it: "move to the start / the end".

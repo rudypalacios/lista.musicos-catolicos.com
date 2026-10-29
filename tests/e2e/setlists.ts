@@ -515,6 +515,31 @@ try {
     await page.getByRole('button', { name: 'Destacar: Domingo, editado en la tablet' }).waitFor();
     await synced(page);
 
+    // ----- the way to add a song is in the head of the part -----
+    await page.getByRole('button', { name: 'Nuevo listado' }).click();
+    await page.locator('section.slot').first().waitFor();
+    const empty = slot(page, 'Señor, ten piedad');
+    assert.equal((await empty.locator('.slot__head a.add').innerText()).trim(), 'Agregar', 'a part with no song has "Agregar", in its head');
+    const comunionLong = slot(page, 'Canto de comunión');
+    for (let n = 0; n < 3; n++) {
+        await addToSlot(page, 'Canto de comunión', 'puerta');
+    }
+    assert.equal(await comunionLong.locator('.slot__head a.add--icon').count(), 1, 'with songs it is a "+" in the head');
+    assert.equal(await comunionLong.locator('.slot__head a.add--icon').innerText(), '', 'with no words');
+    assert.equal(await comunionLong.locator('ul.items ~ a.add').count(), 0, 'and nothing under the songs while there are few');
+    await addToSlot(page, 'Canto de comunión', 'puerta');
+    await comunionLong.getByRole('link', { name: 'Agregar canto al final de Canto de comunión' }).waitFor();
+    assert.equal(await comunionLong.locator('.slot__head a.add--icon').count(), 1, 'the one in the head stays');
+    const plus = await comunionLong.locator('.slot__head a.add--icon').boundingBox();
+    assert.ok(plus !== null && plus.width >= 44 && plus.height >= 44, 'the "+" is a 44px target');
+    pass('"Agregar" is always in the head of the part: words while it is empty, a "+" with songs, and from four songs also one at the end');
+
+    page.once('dialog', (dialog) => void dialog.accept());
+    await page.getByRole('button', { name: 'Más opciones del listado' }).click();
+    await page.getByRole('button', { name: 'Eliminar listado' }).click();
+    await page.getByRole('heading', { name: 'Listados' }).waitFor();
+    await synced(page);
+
     // ----- deleting a song that is in a list -----
     await page.getByRole('link', { name: 'Cantos', exact: true }).click();
     await page.getByRole('link', { name: 'Pan de vida' }).click();
