@@ -1106,19 +1106,7 @@ button.info {
     overflow-wrap: anywhere;
 }
 
-/* A dash marks each song as part of the part above it; it sits on the title's own line, under the label's text */
-.item__title::before {
-    content: '–';
-    position: absolute;
-    left: -0.8rem;
-    color: var(--accent);
-    font-weight: 700;
-}
-
-.item.is-gone .item__title::before {
-    color: var(--muted);
-}
-
+/* No mark before a song: the indent of its row (1.4rem, under the part's band) is what shows it belongs to the part */
 .item.is-gone .item__title {
     color: var(--muted);
     font-style: italic;
