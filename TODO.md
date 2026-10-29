@@ -46,7 +46,7 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       the way there, and the key could go back to that sheet if it gets in the way), creating and duplicating lists,
       the order and wording of the sheets.
 - [x] The setlist screen (`views/setlist.ts`), lighter: flat sections, one line per song (title, "Autor · key"),
-      the whole row opens the song, a "⋯" per song (sing from here, move up/down within the part, remove with an
+      a song is not a link here (touching its title does nothing; it is opened by singing from it), a "⋯" per song (sing from here, move up/down within the part, remove with an
       "undo"), a compact header (title edited in place and growing, the day as a chip, "▶ Cantar", and a "⋯" with
       print and delete), an empty part as one line, two columns in the order of the Mass on a wide screen. The key is
       no longer changed here (it is changed while singing, which saves it to the list item); it is shown to read, in

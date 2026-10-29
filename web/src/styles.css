@@ -947,7 +947,7 @@ button.info {
     border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
 }
 
-/* The whole row opens the song (in the key of this list); "⋯" is the only thing apart from it */
+/* The row only shows the song; "⋯" is the only thing to touch in it */
 .item__open {
     /* Contains the hidden "Tono" for screen readers: an absolute element with no positioned parent would
        escape the scrolling screen and lengthen the whole page */
@@ -961,10 +961,6 @@ button.info {
     padding: 0.4rem 0 0.4rem 1.4rem;
     color: var(--text);
     text-decoration: none;
-}
-
-a.item__open:active {
-    background: var(--surface-2);
 }
 
 .item__title {

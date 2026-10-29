@@ -616,12 +616,24 @@ try {
     });
     const before = await page.evaluate(() => document.querySelector('#view')?.scrollTop ?? 0);
     assert.ok(before > 0, 'the list is long enough to scroll');
-    await slot(page, 'Canto de salida').getByRole('link', { name: 'Abrimos la puerta' }).click();
+    // Touching the title of a song does nothing on this screen: it is not a link
+    const salidaRow = slot(page, 'Canto de salida').locator('.item').first();
+    const urlBefore = page.url();
+    assert.equal(await page.locator('.slots a.item__open').count(), 0, 'no song of the list is a link');
+    await salidaRow.locator('.item__title').click();
+    await page.waitForTimeout(300);
+    assert.equal(page.url(), urlBefore, 'touching a title goes nowhere');
+    assert.equal(await page.locator('.sheet-layer.is-open').count(), 0, 'and opens nothing');
+    pass('touching the title of a song in the list does nothing');
+
+    // Back from singing a song returns to the same place in the list
+    await slot(page, 'Canto de salida').getByRole('button', { name: 'Más opciones: Abrimos la puerta' }).click();
+    await page.getByRole('button', { name: /Cantar desde aquí/ }).click();
     await page.getByRole('heading', { name: 'Abrimos la puerta' }).waitFor();
     await page.goBack();
     await page.locator('section.slot').first().waitFor();
     await page.waitForFunction((top) => (document.querySelector('#view')?.scrollTop ?? 0) >= top - 2, before);
-    pass('back from a song returns to the same place in the list');
+    pass('back from singing a song returns to the same place in the list');
 
     // A desktop: the parts in two columns, the tools of each song on one line
     await page.setViewportSize({ width: 1280, height: 800 });

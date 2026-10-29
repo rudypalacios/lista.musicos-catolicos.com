@@ -188,7 +188,7 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    está vacía (las opcionales llevan «opcional» y ⓘ), y como un «＋» solo cuando ya tiene cantos; desde el
    cuarto canto hay además un «＋ Agregar canto» al final de la lista de esa parte.
    Cada canto es una fila: título, y debajo «Autor · Tono» (el tono en ámbar si lo cambiaste; aquí solo se
-   lee). **Tocar la fila abre el canto.** El **⋯** de la fila abre una hoja con: *Cantar desde aquí* (ahí se
+   lee). **Tocar el título no hace nada** (el canto no es un enlace en esta pantalla; se abre cantando desde él). El **⋯** de la fila abre una hoja con: *Cantar desde aquí* (ahí se
    cambia el tono, y queda guardado en el listado), *Subir* / *Bajar en esta parte* (solo los que se pueden;
    la hoja sigue abierta para mover otra vez) y *Quitar del listado* (aviso «Quitado · Deshacer» unos
    segundos). El **⋯** de arriba tiene *Imprimir con acordes*, *Imprimir solo la letra* y *Eliminar listado*
