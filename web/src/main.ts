@@ -181,7 +181,7 @@ function routeView(data: App, route: Route, navigate: Navigate): Promise<View> {
         case 'list':
             return Promise.resolve(listView(data));
         case 'new':
-            return Promise.resolve(editView(data, navigate));
+            return Promise.resolve(editView(data, navigate, undefined, route));
         case 'import':
             return Promise.resolve(importView(data, navigate));
         case 'view':
@@ -228,7 +228,7 @@ function runRouter(data: App): void {
     };
     const render = (restore: boolean): void => {
         const mine = ++token;
-        const route = matchRoute(location.pathname);
+        const route = matchRoute(location.pathname, location.search);
         const path = location.pathname;
         markSection(route);
         void routeView(data, route, navigate).then((view) => {

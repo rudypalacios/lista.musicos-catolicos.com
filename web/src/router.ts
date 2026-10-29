@@ -2,9 +2,15 @@
  * Paths of the app. The server answers any path that is not /api with the app shell, and the
  * service worker does the same offline, so these are real URLs that survive a reload.
  */
+/** Where a song being written from the picker of a part goes once it is saved */
+export interface Placement {
+    setlist: string;
+    part: string;
+}
+
 export type Route =
     | { name: 'list' }
-    | { name: 'new' }
+    | { name: 'new'; into?: Placement; title?: string }
     | { name: 'import' }
     | { name: 'view'; id: string }
     | { name: 'edit'; id: string }
@@ -20,13 +26,13 @@ const ID = '([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|[\\w-]
 /** The id of a part of the Mass (mass.ts): lower case, digits and hyphens */
 const PART = '([a-z0-9-]{1,40})';
 
-export function matchRoute(path: string): Route {
+export function matchRoute(path: string, search = ''): Route {
     const clean = path.length > 1 ? path.replace(/\/+$/, '') : path;
     if (clean === '/' || clean === '/cantos' || clean === '') {
         return { name: 'list' };
     }
     if (clean === '/cantos/nuevo') {
-        return { name: 'new' };
+        return newSongRoute(search);
     }
     if (clean === '/cantos/importar') {
         return { name: 'import' };
@@ -67,9 +73,39 @@ export function matchRoute(path: string): Route {
     return { name: 'not-found' };
 }
 
+/** `/cantos/nuevo`, with the part it was opened from (`listado`, `parte`) and the title searched (`titulo`) */
+function newSongRoute(search: string): Route {
+    const query = new URLSearchParams(search);
+    const setlist = query.get('listado') ?? '';
+    const part = query.get('parte') ?? '';
+    const title = query.get('titulo')?.trim() ?? '';
+    const route: Route = { name: 'new' };
+    if (new RegExp(`^${ID}$`).test(setlist) && new RegExp(`^${PART}$`).test(part)) {
+        route.into = { setlist, part };
+    }
+    if (title !== '') {
+        route.title = title;
+    }
+
+    return route;
+}
+
 export const paths = {
     list: (): string => '/',
-    new: (): string => '/cantos/nuevo',
+    /** A new song; from the picker of a part, it is added to that part once saved */
+    new: (into?: Placement, title = ''): string => {
+        const query = new URLSearchParams();
+        if (into !== undefined) {
+            query.set('listado', into.setlist);
+            query.set('parte', into.part);
+        }
+        if (title !== '') {
+            query.set('titulo', title);
+        }
+        const text = query.toString();
+
+        return text === '' ? '/cantos/nuevo' : `/cantos/nuevo?${text}`;
+    },
     import: (): string => '/cantos/importar',
     view: (id: string): string => `/cantos/${id}`,
     edit: (id: string): string => `/cantos/${id}/editar`,
@@ -119,8 +155,13 @@ export function titleOf(route: Route): string {
  */
 export function parentOf(route: Route): { path: string; label: string } | null {
     switch (route.name) {
-        case 'view':
         case 'new':
+            if (route.into !== undefined) {
+                return { path: paths.addToSetlist(route.into.setlist, route.into.part), label: 'Volver a agregar' };
+            }
+
+            return { path: paths.list(), label: 'Cantos' };
+        case 'view':
         case 'import':
             return { path: paths.list(), label: 'Cantos' };
         case 'edit':

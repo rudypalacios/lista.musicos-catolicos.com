@@ -57,6 +57,11 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
 - [x] Keep the screen awake while a song is open or a list is being sung (Screen Wake Lock, `web/src/wakelock.ts`;
       on by default, an Ajustes choice turns it off). **Owner's check:** Android and iPad (Safari 16.4+; a
       home-screen app only from iOS 18.4), see `DEPLOY.md`.
+- [x] A song missing from the picker of a part is written right there: with text in the search the picker offers
+      "Crear «texto»" (or "Crear canto nuevo" with an empty library); the form opens with the title typed, and
+      saving puts the song in that part and returns to the list (`paths.new(into, title)`, `Route` `new`,
+      `editView`'s `start`). Importing from the picker is not offered: a PDF can hold several songs and they do
+      not all belong to one part. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 13.
 - [ ] Adding several songs to one part takes a round trip per song (the picker returns to the list).
       If that is slow in practice, let the picker stay open and show what has been added.
 - [ ] **Paused (owner, after the UI session).** Duplicate a list ("copiar listado") to start next Sunday's from this

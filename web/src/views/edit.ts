@@ -4,7 +4,8 @@ import { sheetHtml } from '../chordpro/sheet.ts';
 import { ValidationError } from '../data/library.ts';
 import type { Setlist, Song } from '../data/types.ts';
 import { h, link, setSheet } from '../dom.ts';
-import { paths } from '../router.ts';
+import { paths, type Placement } from '../router.ts';
+import { showToast } from '../toast.ts';
 import { transpose } from '../chordpro/chord.ts';
 import { readNotation } from '../prefs.ts';
 import type { Navigate, View } from './types.ts';
@@ -32,15 +33,24 @@ cantando vamos hacia tu [Am]casa.
 [G]Coro: las líneas entre {soc} y {eoc}
 {eoc}`;
 
+/** What a new song starts from: a title already typed, and the part of a list it is for */
+export interface NewSongStart {
+    title?: string;
+    into?: Placement;
+}
+
 /**
  * Creating and editing a song. The lyrics are ChordPro; the preview under the box is the same
  * rendering the song gets when it is read, so what is typed is what will be seen.
+ *
+ * A new song started from the picker of a part (`start.into`) is put in that part once saved, and
+ * the person lands back on the list: the song they could not find is now in it.
  */
-export function editView(app: App, navigate: Navigate, existing?: Song): View {
+export function editView(app: App, navigate: Navigate, existing?: Song, start: NewSongStart = {}): View {
     const title = h('input', { id: 'title', name: 'title', type: 'text', required: true, autocomplete: 'off' });
     const author = h('input', { id: 'author', name: 'author', type: 'text', autocomplete: 'off' });
     const body = h('textarea', { id: 'body', name: 'body', class: 'mono', spellcheck: 'false', autocapitalize: 'off' });
-    title.value = existing?.title ?? '';
+    title.value = existing?.title ?? start.title ?? '';
     author.value = existing?.author ?? '';
     body.value = existing?.body ?? '';
 
@@ -60,7 +70,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song): View {
     draw();
 
     const save = h('button', { type: 'submit', class: 'button button--primary' }, 'Guardar');
-    const actions = h('div', { class: 'actions' }, save, link(existing ? paths.view(existing.id) : paths.list(), 'Cancelar', 'button'));
+    const actions = h('div', { class: 'actions' }, save, link(cancelPath(existing, start.into), 'Cancelar', 'button'));
     if (existing !== undefined) {
         const remove = h('button', { type: 'button', class: 'button button--danger' }, 'Eliminar');
         remove.addEventListener('click', () => {
@@ -102,7 +112,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song): View {
         const draft = { title: title.value, author: author.value, body: body.value };
         const saved = existing === undefined ? app.create(draft) : app.update(existing.id, draft);
         saved
-            .then((song) => navigate(paths.view(song.id)))
+            .then((song) => (existing === undefined && start.into !== undefined ? placeInPart(app, navigate, song, start.into) : navigate(paths.view(song.id))))
             .catch((failure: unknown) => {
                 error.textContent = failure instanceof ValidationError || failure instanceof Error ? failure.message : 'No se pudo guardar.';
                 save.disabled = false;
@@ -110,7 +120,33 @@ export function editView(app: App, navigate: Navigate, existing?: Song): View {
     });
 
     const element = h('div', { class: 'page' }, h('h2', {}, existing === undefined ? 'Nuevo canto' : 'Editar canto'), form, preview);
-    queueMicrotask(() => (existing === undefined ? title : body).focus());
+    // With the title already typed from the search, the lyrics are what is missing
+    queueMicrotask(() => (existing === undefined && title.value === '' ? title : body).focus());
 
     return { element };
+}
+
+function cancelPath(existing: Song | undefined, into: Placement | undefined): string {
+    if (existing !== undefined) {
+        return paths.view(existing.id);
+    }
+
+    return into === undefined ? paths.list() : paths.addToSetlist(into.setlist, into.part);
+}
+
+/**
+ * Puts a song just written into the part it was written for and opens the list there. The song is
+ * already saved: if the list refuses it (full, or deleted meanwhile) the person is told and keeps the song.
+ */
+async function placeInPart(app: App, navigate: Navigate, song: Song, into: Placement): Promise<void> {
+    try {
+        await app.setlists.addItem(into.setlist, into.part, song.id);
+    } catch (failure) {
+        const reason = failure instanceof Error ? failure.message : 'No se pudo agregar al listado.';
+        showToast(`“${song.title}” se guardó, pero no se agregó al listado: ${reason}`, 6000, true);
+        navigate(paths.view(song.id));
+
+        return;
+    }
+    navigate(`${paths.setlist(into.setlist)}#parte-${into.part}`, { replace: true });
 }
