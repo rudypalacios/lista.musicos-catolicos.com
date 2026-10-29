@@ -5,14 +5,34 @@ remember it.
 
 ## Where things stand
 
-Phases 0, 1 and 2 are written. Phases 0 and 1 are merged and deployed (`lista.musicos-catolicos.com`
-works); phase 2 (setlists) is on its branch, waiting for the owner's review and merge. Merged before:
-the PDF import, the sign-of-peace slot, the utf8mb4 migration, and the visible start and update flow
-(see the history of `main`).
+Phases 0 to 5 are written and merged (songs, setlists, print, the quiet usage fixes and Ajustes), and the
+interface is settled: the bar and sync dot, the menu, the lists screen, the inside of a list and singing are
+**locked** (`DESIGN-LOCK.md`: not to be changed unless the owner asks in that session). Phases 6 (templates and
+tags) and 7 (ChordPro) are not started. What comes next is a review of the flows of use, in its own session.
 
 Open elsewhere (owner to merge): `musicos-catolicos` [#42](https://github.com/rudypalacios/musicos-catolicos/pull/42)
 and `mc.musicos-catolicos` [#43](https://github.com/rudypalacios/mc.musicos-catolicos/pull/43): PHP 8.3 only, and the
 tests run only when called or by hand (the free Actions minutes ran out).
+
+## Next: flow review (its own session)
+
+The screens are settled; what is left to weigh is how a person gets through them. Walk each flow from the
+person's side (on the phone first, then the tablet), find where it takes more steps, asks for something it
+already knows or leaves the person unsure, and **propose** fixes: nothing is changed before the owner approves
+the list, and nothing in `DESIGN-LOCK.md` is touched unless the owner unlocks it. Flows to walk:
+
+- Preparing next Sunday: create a list (or copy last Sunday's: "copiar listado" is paused, see below), add songs
+  to each part, change a key, check it, sing it.
+- Adding songs: one at a time per part today (a round trip per song), from the library, by import, by writing one.
+- Changing a key: only while singing today ("Cantar desde aquí"); decide whether it should also be possible from
+  the list or the song's sheet.
+- At the church with no connection: open, find the list, sing, go back, what the dot says.
+- Leaving and coming back: where the app opens, what it remembers, signing out and in.
+- Settings and account: Ajustes and Salir are two taps away since the menu.
+
+Candidates already noted: the key only while singing; duplicating a list; the order and wording of the sheets;
+adding several songs to a part without leaving the picker; moving a song to the start or the end of its part;
+dragging to reorder (phase 6).
 
 ## Owner's checks (cannot be done from the sandbox: Safari, real devices, the host)
 
@@ -41,10 +61,6 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       If that is slow in practice, let the picker stay open and show what has been added.
 - [ ] **Paused (owner, after the UI session).** Duplicate a list ("copiar listado") to start next Sunday's from this
       Sunday's (the "Nuevo listado" sheet with "copy of the last one" was sketched with the owner; no schema change).
-- [ ] **UX review (owner, later).** The UI was done first; the flows are still to be weighed. To look at again: the
-      key of a list is changed only while singing (one more step than before; "Cantar desde aquí" in a song's sheet is
-      the way there, and the key could go back to that sheet if it gets in the way), creating and duplicating lists,
-      the order and wording of the sheets.
 - [x] The setlist screen (`views/setlist.ts`), lighter: flat sections, one line per song (title, "Autor · key"),
       a song is not a link here (touching its title does nothing; it is opened by singing from it), a "⋯" per song (sing from here, move up/down within the part, remove with an
       "undo"), a compact header (title edited in place and growing, the day as a chip, "▶ Cantar", and a "⋯" with

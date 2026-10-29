@@ -4,7 +4,15 @@ Offline-first PWA to prepare the music of a Mass: build a list from the songs, c
 key of each one for that list only, read it on a tablet or phone with no connection, print it.
 Part of Músicos Católicos. TypeScript client (no framework), Slim 4 + PDO JSON API, own MySQL
 database. Layout and commands: `README.md`. Deploy and hosting: `DEPLOY.md`. What is left:
-`TODO.md`.
+`TODO.md`. Design the owner has settled: `DESIGN-LOCK.md`.
+
+## Locked design
+
+`DESIGN-LOCK.md` lists the parts of the interface the owner has settled: the bar and the sync dot,
+the menu, the lists screen with its starred section, the inside of a list, and singing. **Do not
+change them** unless the owner asks for it in that session; if a task seems to need it, ask first.
+Read that file before touching any screen, and keep its standards (identical on every device, no
+font-drawn marks, `rem` spacing) in everything else.
 
 ## Source of truth: musicos-catolicos
 
