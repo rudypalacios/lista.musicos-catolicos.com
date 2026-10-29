@@ -122,16 +122,17 @@ Next, in this order (design agreed with the owner):
       Android and the iPad** (`DEPLOY.md`, "Fases 4 y 5", item 10): the browser must not reload the page by itself.
       On a computer with no touch screen the dot in the bar syncs when clicked (see the menu item below).
 - [x] The menu and the bar (`views/header.ts`, `sync-line.ts`, `parentOf`/`sectionOf`/`titleOf` in `router.ts`): a menu with
-      Cantos, Listados and Ajustes at the bottom of a phone (only on those three screens: a song, a list, "Agregar"
-      and the install guide have the whole height and one "← parent" in the bar) and as a rail at the left from 900px,
+      Cantos, Listados and Ajustes at the bottom of a phone (fixed, on every screen but
+      singing; a screen that hangs from another also has one "← parent" in the bar) and as a rail at the left from 900px,
       always there, with the account at its foot. The bar says the name of the screen; the in-screen back links and the
       repeated titles are gone (the title stays as a hidden heading for screen readers). A dot for the sync (silent when
       all is sent; a line under the bar only when there is no connection, the session ended, a sync failed or a record
       was refused; an amber dot, with no line, while something is about to be sent, so the screen does not jump after
       every edit; touching it syncs now). The account (email, Salir) is a block at the end of Ajustes. The install guide
       has numbered steps in round badges. Weighed with the owner: tabs in the bar (merged in #23, replaced by this) and
-      "Listados first" (the library becomes secondary). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 11. Open:
-      the install bar sits above the bottom menu on a phone; confirm on the iPad that the menu does not fight the home gesture.
+      "Listados first" (the library becomes secondary). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 11. The messages that
+      float over the screen (saved, sync, update) rest above the menu and the install bar (`bottom-chrome.ts`,
+      `--chrome-bottom`). Open: confirm on the iPad that the menu does not fight the home gesture.
 - [ ] **Owner's check on the Android** for phases 4 and 5 (`DEPLOY.md`, "Fases 4 y 5", item 9 for the lists screen).
 - [ ] Phase 6, templates and tags (a rosary or a prayer-meeting list must not get the 15 parts of the Mass; a
       section may hold a dozen songs, which is when dragging to reorder pays off) (schema change, migration): turn parts on and off per list, add own
