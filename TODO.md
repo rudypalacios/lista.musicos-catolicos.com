@@ -53,7 +53,7 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       amber when it is not the song's own. The app's own icons are in `web/src/icons.ts` (Simple Icons is for brand
       logos only and has none of these). Adding a song is always in the head of the part (words while it is empty,
       a "+" once it has songs, and from the fourth song also one at the end: `ADD_AT_END_FROM` in `setlist.ts`).
-      The head of a part is a band, each song has a blue dash, empty parts are a dashed outline, and the gap between
+      The head of a part is a band, a song has no mark, only the indent of its row (a dash, a square, a dot, a note and a bar were weighed with the owner; the marks that depend on the device's font were ruled out: everything must look the same on every device), empty parts are a dashed outline, and the gap between
       parts is 1.15rem (the rows keep their 3.5rem: they are what is touched).
       Owner's check: `DEPLOY.md` "Fases 4 y 5", item 11.
 - [ ] Dragging a song to reorder it was weighed and left for phase 6 (custom parts can hold a dozen songs, and the
