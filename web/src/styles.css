@@ -845,16 +845,20 @@ a.setlist-back {
     margin-top: 0.5rem;
 }
 
+/* Between parts: the owner's "tight" gap (the rows inside keep their height: they are what is touched) */
 .slot {
-    padding-top: 1.1rem;
+    padding-top: 1.15rem;
 }
 
+/* The head of a part is a band, so it reads as the title of the group under it */
 .slot__head {
     display: flex;
     align-items: center;
     gap: 0.4rem;
     min-height: 2.75rem;
-    border-bottom: 1px solid var(--border);
+    padding-left: 0.6rem;
+    background: var(--surface-2);
+    border-radius: 0.6rem;
 }
 
 /* The name of a part is a quiet label: the songs under it are what the eye should go to */
@@ -873,13 +877,19 @@ a.setlist-back {
 }
 
 /* A part with no song is one line, with its way in on the right */
+/* A part with no song is an outline, not a band, and empty parts one under another sit close together */
 .slot.is-empty {
-    padding-top: 0;
+    padding-top: 0.5rem;
+}
+
+.slot:not(.is-empty) + .slot.is-empty {
+    padding-top: 1.15rem;
 }
 
 .slot.is-empty .slot__head {
-    min-height: 2.75rem;
-    border-bottom-style: dashed;
+    padding-right: 0.7rem;
+    background: none;
+    border: 1px dashed var(--border);
 }
 
 .slot.is-empty .slot__head h3 {
@@ -933,6 +943,8 @@ button.info {
     align-items: center;
     min-height: 3.5rem;
     border-bottom: 1px solid var(--border);
+    /* A softer line between songs than the band's weight (a browser without color-mix keeps the line above) */
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
 }
 
 /* The whole row opens the song (in the key of this list); "⋯" is the only thing apart from it */
@@ -946,7 +958,7 @@ button.info {
     justify-content: center;
     min-width: 0;
     min-height: 3.5rem;
-    padding: 0.4rem 0;
+    padding: 0.4rem 0 0.4rem 1.4rem;
     color: var(--text);
     text-decoration: none;
 }
@@ -956,8 +968,22 @@ a.item__open:active {
 }
 
 .item__title {
+    position: relative;
     font-weight: 600;
     overflow-wrap: anywhere;
+}
+
+/* A dash marks each song as part of the part above it; it sits on the title's own line, under the label's text */
+.item__title::before {
+    content: '–';
+    position: absolute;
+    left: -0.8rem;
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.item.is-gone .item__title::before {
+    color: var(--muted);
 }
 
 .item.is-gone .item__title {
