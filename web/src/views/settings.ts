@@ -7,7 +7,7 @@ import { readColumns, readFit, readKeepAwake, readNotation, saveColumns, saveFit
 import { applyLyricColor, chosenLyricColor, LYRIC_COLORS } from '../settings.ts';
 import { paths } from '../router.ts';
 import { showToast } from '../toast.ts';
-import type { View } from './types.ts';
+import type { Account, View } from './types.ts';
 
 /** Invented lyrics: enough to see the colour and the notation */
 const SAMPLE = '[C]Abrimos la [G]puerta de [Am]casa\n[F]Entra, her[G]mano, ven';
@@ -17,7 +17,7 @@ const SAMPLE = '[C]Abrimos la [G]puerta de [Am]casa\n[F]Entra, her[G]mano, ven';
  * song fits the screen, how many columns, and whether the screen stays on. They live on the device (a
  * tablet on a stand wants other things than a phone) and apply at once.
  */
-export function settingsView(): View {
+export function settingsView(account: Account): View {
     const saved = (): void => void showToast('Ajuste guardado en este dispositivo');
 
     /** A group of radio buttons that saves the chosen value as soon as it changes */
@@ -72,10 +72,13 @@ export function settingsView(): View {
         saved();
     });
 
+    const signOut = h('button', { type: 'button', class: 'button button--danger' }, 'Salir');
+    signOut.addEventListener('click', () => account.signOut());
+
     const element = h(
         'div',
         { class: 'page settings' },
-        h('h2', {}, 'Ajustes'),
+        h('h2', { class: 'sr-only' }, 'Ajustes'),
         h('p', { class: 'muted' }, 'Se guardan en este dispositivo y se aplican al momento.'),
         sample,
         choice<Notation>('notation', 'Nombre de los acordes', readNotation(), [
@@ -99,6 +102,10 @@ export function settingsView(): View {
             { value: 'two', label: 'Siempre dos' },
         ], saveColumns),
         h('p', { class: 'muted help-link' }, link(paths.install(), 'Cómo instalar la app en el iPad o el teléfono')),
+        h('section', { class: 'settings__account' },
+            h('h3', {}, 'Cuenta'),
+            h('p', { class: 'muted' }, account.email),
+            signOut),
     );
 
     return { element };

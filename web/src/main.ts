@@ -4,7 +4,7 @@ import { api, ApiError } from './api.ts';
 import { App, signOut } from './app.ts';
 import { h } from './dom.ts';
 import { MASS_PARTS } from './mass.ts';
-import { matchRoute, type Route } from './router.ts';
+import { matchRoute, paths, type Route } from './router.ts';
 import { applyLyricColor } from './settings.ts';
 import { createPullToRefresh, pullAnswer } from './pull.ts';
 import { describeSync } from './sync-line.ts';
@@ -41,10 +41,10 @@ if (root === null) {
 const app: HTMLElement = root;
 
 let current: View | null = null;
-/** The header, once the person is in */
+/** Who is signed in, for the account block of Ajustes */
+let signedInEmail = '';
+/** The bar and the menu, once the person is in */
 let header: Header | null = null;
-/** Goes to a screen of the app (set once the router runs), for what the header opens */
-let navigateTo: Navigate = () => undefined;
 /** The "install the app" bar at the bottom, one for the whole page, until the app is installed */
 const installBanner = createInstallBanner();
 /** Signs out, asking first when something written here was never sent (set once the header exists) */
@@ -110,7 +110,6 @@ function mountShell(data: App, email: string, onSignedOut: () => void, onNeedsSi
 
     const frame = createHeader({
         email,
-        navigate: (path, options) => navigateTo(path, options),
         onSync: () => {
             void data.syncNow().then(() => showToast(pullAnswer(data.status().state)));
         },
@@ -118,6 +117,7 @@ function mountShell(data: App, email: string, onSignedOut: () => void, onNeedsSi
         onNeedsSignIn,
     });
     header = frame;
+    signedInEmail = email;
     const view = h('main', { id: 'view' });
     // Pull down to sync now (not while singing: the stage has its own touches)
     const pull = createPullToRefresh(view, {
@@ -128,14 +128,14 @@ function mountShell(data: App, email: string, onSignedOut: () => void, onNeedsSi
             return data.status().state;
         },
     });
-    app.replaceChildren(...frame.elements, view, pull, installBanner.element);
+    app.replaceChildren(h('div', { class: 'shell' }, ...frame.top, view, pull, installBanner.element), frame.menu);
     watchSaves(data);
 
     data.onStatus(frame.paint);
     frame.paint(data.status());
 }
 
-/** Shows the header that suits the screen; while singing a list the header gives its room to the song */
+/** Shows the bar and the menu that suit the screen; while singing a list they give their room to the song */
 function markSection(route: Route): void {
     header?.setRoute(route);
     installBanner.setAway(route.name === 'perform');
@@ -144,6 +144,7 @@ function markSection(route: Route): void {
 /** The header's sync line and sign-out, for the screen that puts the header away */
 function accountOf(data: App): Account {
     return {
+        email: signedInEmail,
         syncText: () => describeSync(data.status()).text,
         onSync: (listener) => data.onStatus((status) => listener(describeSync(status).text)),
         signOut: () => requestSignOut(),
@@ -174,7 +175,7 @@ function routeView(data: App, route: Route, navigate: Navigate): Promise<View> {
         case 'install':
             return Promise.resolve(installView());
         case 'settings':
-            return Promise.resolve(settingsView());
+            return Promise.resolve(settingsView(accountOf(data)));
         case 'list':
             return Promise.resolve(listView(data));
         case 'new':
@@ -250,7 +251,6 @@ function runRouter(data: App): void {
         render(false);
     };
 
-    navigateTo = navigate;
     document.addEventListener('click', (event) => {
         if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
             return;
@@ -278,7 +278,11 @@ function enter(data: App, email: string): void {
     mountShell(
         data,
         email,
-        () => void begin(data),
+        () => {
+            // Salir is in Ajustes: whoever signs in next starts from the songs, not from that screen
+            history.replaceState(null, '', paths.list());
+            void begin(data);
+        },
         () => {
             show(signInView((signedIn) => {
                 void data.adopt(signedIn).then(() => {

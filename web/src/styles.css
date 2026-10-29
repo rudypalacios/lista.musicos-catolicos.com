@@ -675,39 +675,17 @@ input[type='file'] {
     margin: 0;
 }
 
-/* ----- the header: the tabs (or the way back), the sync dot, the account ----- */
+/* ----- the bar (name or way back, sync dot) and the menu ----- */
 .bar--shell {
     gap: 0;
     padding: 0 0.25rem 0 1rem;
+    min-height: 3rem;
 }
 
-.tabs {
-    display: flex;
+.bar__title {
     flex: 1;
     min-width: 0;
-    gap: 0.25rem;
-}
-
-.tabs a {
-    display: inline-flex;
-    align-items: center;
-    min-height: 3rem;
-    padding: 0 0.75rem;
-    color: var(--muted);
-    border-bottom: 3px solid transparent;
-    font-size: 1.05rem;
-    font-weight: 600;
-    text-decoration: none;
-}
-
-.tabs a:first-child {
-    padding-left: 0;
-    margin-right: 0.5rem;
-}
-
-.tabs a[aria-current='page'] {
-    color: var(--text);
-    border-bottom-color: var(--accent);
+    font-size: 1.15rem;
 }
 
 /* The way back to the screen this one hangs from: the one way, in the one place */
@@ -721,8 +699,7 @@ input[type='file'] {
     text-decoration: none;
 }
 
-.sync-dot,
-.avatar-button {
+.sync-dot {
     display: grid;
     place-items: center;
     flex: none;
@@ -766,16 +743,115 @@ input[type='file'] {
     }
 }
 
-.avatar {
-    display: grid;
-    place-items: center;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    font-size: 0.85rem;
-    font-weight: 700;
+/* Everything but the menu: the bar, the screen, the install bar */
+.shell {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+}
+
+/* The menu: three entries at the bottom of a phone, on the screens of the menu only */
+.menu {
+    display: flex;
+    flex: none;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.menu[data-root='false'] {
+    display: none;
+}
+
+.menu__brand,
+.menu__foot {
+    display: none;
+}
+
+.menu__entry {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.1rem;
+    min-height: 3.5rem;
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.menu__entry[aria-current='page'] {
+    color: var(--accent);
+}
+
+/* A wide screen: the menu is a rail at the left, always there, with the account at its foot */
+@media (min-width: 900px) {
+    #app {
+        flex-direction: row;
+    }
+
+    #app > .menu {
+        order: -1;
+        width: 11rem;
+        flex-direction: column;
+        gap: 0.2rem;
+        padding: 0.9rem 0.6rem;
+        border-top: 0;
+        border-right: 1px solid var(--border);
+        background: var(--surface);
+    }
+
+    #app > .menu[data-root='false'] {
+        display: flex;
+    }
+
+    .menu__brand {
+        display: block;
+        padding: 0.1rem 0.7rem 0.9rem;
+        font-size: 1.2rem;
+        font-weight: 800;
+    }
+
+    .menu__entry {
+        flex: none;
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: 0.7rem;
+        min-height: 2.75rem;
+        padding: 0 0.7rem;
+        border-radius: 0.6rem;
+        font-size: 0.95rem;
+    }
+
+    .menu__entry[aria-current='page'] {
+        background: var(--accent-soft);
+    }
+
+    .menu__foot {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.4rem;
+        margin-top: auto;
+        padding: 0.7rem;
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 0.8rem;
+    }
+
+    .menu__email {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .bar__back {
+        flex: 1;
+    }
 }
 
 /* Under the bar, only while the sync needs attention: what is wrong, in full */
@@ -798,18 +874,6 @@ input[type='file'] {
 
 .sync-line .link {
     flex: none;
-}
-
-.account-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
-}
-
-.account-actions .button {
-    justify-content: center;
-    min-height: 2.75rem;
 }
 
 .muted {
@@ -1139,13 +1203,57 @@ button.item__more {
 
 /* Install guide and the note that points to it */
 .help h3 {
-    margin: 1.5rem 0 0.5rem;
+    margin: 1.75rem 0 0.75rem;
+    color: var(--accent);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
 }
 
+/* The guide reads in the main colour; only its explanations are muted */
+.help h2 {
+    color: var(--text);
+}
+
+/* Numbered steps: the number in a round badge, the text beside it */
 .steps {
-    margin: 0 0 0.75rem;
-    padding-left: 1.4rem;
-    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin: 0 0 0.9rem;
+    padding: 0;
+    list-style: none;
+    counter-reset: step;
+    color: var(--text);
+    line-height: 1.5;
+}
+
+.steps li {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    counter-increment: step;
+}
+
+.steps li::before {
+    content: counter(step);
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    background: var(--surface-2);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.settings__account {
+    margin-top: 1.5rem;
+}
+
+.settings__account h3 {
+    margin: 0 0 0.25rem;
 }
 
 .install-banner {

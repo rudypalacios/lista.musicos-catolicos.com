@@ -82,8 +82,8 @@ export const paths = {
     settings: (): string => '/ajustes',
 };
 
-/** The tab of the header a route belongs to */
-export function sectionOf(route: Route): 'songs' | 'lists' | null {
+/** The entry of the menu a route belongs to (the screens that hang from one share its entry) */
+export function sectionOf(route: Route): 'songs' | 'lists' | 'settings' {
     switch (route.name) {
         case 'lists':
         case 'setlist':
@@ -91,15 +91,30 @@ export function sectionOf(route: Route): 'songs' | 'lists' | null {
         case 'perform':
             return 'lists';
         case 'settings':
-            return null;
+        case 'install':
+            return 'settings';
         default:
             return 'songs';
     }
 }
 
+/** What the bar says on a screen of the menu; the screens that hang from another say it with their way back */
+export function titleOf(route: Route): string {
+    switch (route.name) {
+        case 'list':
+            return 'Cantos';
+        case 'lists':
+            return 'Listados';
+        case 'settings':
+            return 'Ajustes';
+        default:
+            return 'Lista';
+    }
+}
+
 /**
  * Where "back" goes from a screen that hangs from another one, and what the header calls it. The
- * screens of the sections (the two lists, Ajustes) have no parent: the header shows the tabs there.
+ * screens of the menu (the two lists, Ajustes) have no parent: the bar shows their name there.
  * Singing has its own bar and no header, so it has no parent either.
  */
 export function parentOf(route: Route): { path: string; label: string } | null {

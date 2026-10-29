@@ -6,7 +6,7 @@
  *     npm run build && node tests/e2e/settings.ts
  */
 import assert from 'node:assert/strict';
-import { accountMenu, chromium, openSection, reporter, signIn, startServer, synced } from './lib.ts';
+import { chromium, openSection, reporter, signIn, startServer, synced } from './lib.ts';
 import type { Page } from 'playwright';
 
 const server = await startServer(18094);
@@ -32,7 +32,7 @@ async function openSong(page: Page, title: string): Promise<void> {
 }
 
 async function setting(page: Page, label: string): Promise<void> {
-    await accountMenu(page, 'Ajustes');
+    await openSection(page, 'Ajustes');
     await page.getByRole('heading', { name: 'Ajustes' }).waitFor();
     await page.getByLabel(label).check();
 }
@@ -82,7 +82,7 @@ try {
     await createSong(page, 'Camino largo', LONG);
 
     // ----- chord names -----
-    await accountMenu(page, 'Ajustes');
+    await openSection(page, 'Ajustes');
     await page.getByRole('heading', { name: 'Ajustes' }).waitFor();
     assert.equal(await page.getByRole('link', { name: 'Cantos', exact: true }).getAttribute('aria-current'), null);
     assert.equal((await page.locator('.settings__sample .ch').first().textContent()), 'Do');
