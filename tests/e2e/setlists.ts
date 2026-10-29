@@ -94,7 +94,7 @@ async function swipe(page: Page, from: number, to: number): Promise<void> {
     }, [from, to]);
 }
 
-/** Opens the "⋯" sheet over the song (every tool, the note, the account) */
+/** Opens the "⋯" sheet over the song (every tool, the account) */
 async function openTools(page: Page): Promise<void> {
     await page.getByRole('button', { name: 'Más herramientas' }).click();
     await page.locator('.sheet-layer.is-open').waitFor();
@@ -184,13 +184,20 @@ try {
     await page.getByText('3 cantos').waitFor();
     pass('a slot takes several songs, added at the end');
 
-    // ----- the key, for this list only -----
+    // ----- the key, for this list only: read here, changed while singing -----
     const entrada = slot(page, 'Canto de entrada');
-    assert.equal(await entrada.locator('button.key').textContent(), 'Do');
-    await entrada.getByRole('button', { name: /Subir un semitono/ }).click();
-    await entrada.getByRole('button', { name: /Subir un semitono/ }).click();
-    await entrada.locator('button.key', { hasText: 'Re ↺' }).waitFor();
-    pass('a song can be raised two semitones in the list (Do → Re)');
+    assert.match((await entrada.locator('.item__key').textContent()) ?? '', /Do$/);
+    assert.equal(await page.getByRole('button', { name: /semitono/ }).count(), 0, 'the list has no key buttons');
+    await entrada.getByRole('button', { name: 'Más opciones: Abrimos la puerta' }).click();
+    await page.getByRole('button', { name: /Cantar desde aquí/ }).click();
+    await page.getByRole('heading', { name: 'Abrimos la puerta' }).waitFor();
+    await openTools(page);
+    await page.getByRole('button', { name: 'Subir un semitono' }).click();
+    await page.getByRole('button', { name: 'Subir un semitono' }).click();
+    await closeSheet(page);
+    await page.getByRole('link', { name: 'Volver al listado' }).click();
+    await entrada.locator('.item__key.is-changed', { hasText: 'Re' }).waitFor();
+    pass('the list shows the key to read; it is changed while singing, and shows in amber when it is not the song\'s own (Do → Re)');
 
     await page.getByRole('link', { name: 'Cantos', exact: true }).click();
     await page.getByRole('link', { name: 'Abrimos la puerta' }).click();
@@ -199,28 +206,32 @@ try {
     await page.getByRole('link', { name: 'Listados', exact: true }).click();
     await page.locator('.lrow__link').first().click();
     await page.locator('section.slot').first().waitFor();
-    await slot(page, 'Canto de entrada').locator('button.key', { hasText: 'Re ↺' }).waitFor();
+    await slot(page, 'Canto de entrada').locator('.item__key.is-changed', { hasText: 'Re' }).waitFor();
     pass('and the list remembers the key after leaving the screen');
 
-    // ----- moving, noting, quitting -----
+    // ----- moving and quitting, from the sheet of each song -----
     const comunion = slot(page, 'Canto de comunión');
-    await comunion.getByRole('button', { name: 'Mover arriba: Gloria sencilla' }).click();
+    await comunion.getByRole('button', { name: 'Más opciones: Gloria sencilla' }).click();
+    await page.locator('.sheet-layer.is-open').waitFor();
+    assert.equal(await page.getByRole('button', { name: 'Bajar en esta parte' }).count(), 0, 'the last song of a part cannot go lower');
+    await page.getByRole('button', { name: 'Subir en esta parte' }).click();
     await page.waitForFunction(() => document.querySelector('section.slot[data-part="comunion"] .item__title')?.textContent === 'Gloria sencilla');
-    assert.equal(await comunion.getByRole('button', { name: 'Mover arriba: Gloria sencilla' }).isDisabled(), true);
-    pass('a song moves up within its slot, and the first one cannot go higher');
+    await page.getByRole('button', { name: 'Bajar en esta parte' }).waitFor();
+    assert.equal(await page.getByRole('button', { name: 'Subir en esta parte' }).count(), 0, 'now the first, it cannot go higher');
+    assert.equal(await page.locator('.sheet-layer.is-open').count(), 1, 'the sheet stays open to move again');
+    await closeSheet(page);
+    pass('a song moves up from its sheet, which stays open and offers only the move that is left');
 
-    // A note is out of the way until asked for: no field, just a "Nota" button
-    assert.equal(await comunion.getByLabel('Nota para Pan de vida').count(), 0);
-    await comunion.getByRole('button', { name: 'Agregar una nota a Pan de vida' }).click();
-    await comunion.getByLabel('Nota para Pan de vida').fill('Sin el último coro');
-    await page.getByLabel('Título').click(); // leaving the field saves it and closes it
-    await comunion.getByRole('button', { name: 'Editar la nota de Pan de vida' }).waitFor();
-    await synced(page);
-    await page.reload();
-    await page.locator('section.slot').first().waitFor();
-    await slot(page, 'Canto de comunión').getByRole('button', { name: 'Editar la nota de Pan de vida' }).click();
-    assert.equal(await slot(page, 'Canto de comunión').getByLabel('Nota para Pan de vida').inputValue(), 'Sin el último coro');
-    pass('a note on a song is one quiet line, opens to edit, is kept (and survives a reload)');
+    await slot(page, 'Canto de entrada').getByRole('button', { name: 'Más opciones: Abrimos la puerta' }).click();
+    await page.locator('.sheet-layer.is-open').waitFor();
+    assert.equal(await page.getByRole('button', { name: /en esta parte/ }).count(), 0, 'a song alone in its part has no move');
+    await page.getByRole('button', { name: /Cantar desde aquí/ }).waitFor();
+    await closeSheet(page);
+    pass('a song alone in its part has no move to offer, only singing from it and removing it');
+
+    // The list screen shows no notes for now (the note of a song is written while singing)
+    assert.equal(await page.getByRole('button', { name: /nota/i }).count(), 0);
+    assert.equal(await page.locator('[aria-label*="Nota"], .item__note, .item__noteline').count(), 0);
 
     // A title cannot be emptied: it says so, in Spanish, and the list keeps the old one
     const oldTitle = await page.getByLabel('Título').inputValue();
@@ -230,31 +241,18 @@ try {
     pass('an empty title is refused with a message');
     await page.getByLabel('Título').fill(oldTitle);
 
-    // Typing in a note and putting it back must not leave the screen frozen
-    await slot(page, 'Canto de comunión').getByRole('button', { name: 'Agregar una nota a Gloria sencilla' }).click();
-    const quiet = slot(page, 'Canto de comunión').getByLabel('Nota para Gloria sencilla');
-    await quiet.fill('x');
-    await quiet.fill('');
-    await quiet.blur();
-    await slot(page, 'Canto de entrada').getByRole('button', { name: /Subir un semitono/ }).click();
-    await slot(page, 'Canto de entrada').locator('button.key', { hasText: 'Mib ↺' }).waitFor();
-    await slot(page, 'Canto de entrada').getByRole('button', { name: /Bajar un semitono/ }).click();
-    await slot(page, 'Canto de entrada').locator('button.key', { hasText: 'Re ↺' }).waitFor();
-    pass('a note typed and put back as it was does not freeze the screen');
-
     await page.getByLabel('Título').fill('Domingo de prueba');
-    await page.getByLabel('Notas del listado').fill('Misa de las diez');
     await page.getByLabel('Fecha de la misa').fill('2026-11-01');
-    await page.getByLabel('Notas del listado').blur();
-    const afterHeader = await serverWhen(page, (data) => data.setlists[0]?.notes === 'Misa de las diez');
+    await page.getByLabel('Fecha de la misa').blur();
+    await page.getByText('dom 1 nov').waitFor();
+    const afterHeader = await serverWhen(page, (data) => data.setlists[0]?.eventDate === '2026-11-01');
     const stored = afterHeader.setlists[0];
     assert.equal(stored?.title, 'Domingo de prueba');
     assert.equal(stored?.eventDate, '2026-11-01');
-    assert.equal(stored?.notes, 'Misa de las diez');
     assert.deepEqual(stored?.items.map((item) => [item.part, item.transpose, item.note]), [
-        ['entrada', 2, ''], ['comunion', 0, ''], ['comunion', 0, 'Sin el último coro'],
+        ['entrada', 2, ''], ['comunion', 0, ''], ['comunion', 0, ''],
     ]);
-    pass('title, day, notes, order, keys and notes reach the server');
+    pass('title, day, order and keys reach the server (the day is a chip that shows "dom 1 nov")');
 
     // The same song in two parts: allowed, with a quiet notice on both (and in the picker beforehand)
     await page.getByRole('link', { name: 'Agregar canto a Canto de salida' }).click();
@@ -268,8 +266,18 @@ try {
     await slot(page, 'Canto de entrada').getByText('También está en: Canto de salida').waitFor();
     assert.equal(await slot(page, 'Canto de comunión').locator('.item__also').count(), 0);
     pass('the same song in two parts is allowed: a notice when it is added (not while searching) and on both rows');
-    await slot(page, 'Canto de salida').getByRole('button', { name: 'Quitar Abrimos la puerta del listado' }).click();
-    await slot(page, 'Canto de salida').locator('.item').waitFor({ state: 'detached' });
+    const quitFromSalida = async (): Promise<void> => {
+        await slot(page, 'Canto de salida').getByRole('button', { name: 'Más opciones: Abrimos la puerta' }).click();
+        await page.getByRole('button', { name: 'Quitar del listado' }).click();
+        await slot(page, 'Canto de salida').locator('.item').waitFor({ state: 'detached' });
+    };
+    await quitFromSalida();
+    await page.locator('.toast--action', { hasText: '«Abrimos la puerta» quitado del listado' }).waitFor();
+    await page.getByRole('button', { name: 'Deshacer' }).click();
+    await slot(page, 'Canto de salida').locator('.item').waitFor();
+    await slot(page, 'Canto de salida').getByText('También está en: Canto de entrada').waitFor();
+    pass('quitting a song asks nothing and offers "Deshacer", which puts it back in its place');
+    await quitFromSalida();
     await slot(page, 'Canto de entrada').locator('.item__also').waitFor({ state: 'detached' });
 
     // ----- singing the list -----
@@ -340,14 +348,19 @@ try {
 
     await page.keyboard.press('ArrowRight');
     await page.getByRole('heading', { name: 'Pan de vida' }).waitFor();
+    assert.equal(await page.locator('.perform__more.has-note').count(), 0, 'no dot on "⋯": this song has no note yet');
     assert.equal(await page.getByLabel('Nota de este canto').isVisible(), false, 'the note is out of the way');
-    assert.equal(await page.locator('.perform__more.has-note').count(), 1, 'but a dot says there is one');
+    await openTools(page);
+    await page.getByLabel('Nota de este canto').fill('Sin el último coro');
+    await page.getByLabel('Nota de este canto').blur();
+    await closeSheet(page);
+    assert.equal(await page.locator('.perform__more.has-note').count(), 1, 'a dot says there is one');
     await openTools(page);
     assert.match(await page.getByLabel('Nota de este canto').inputValue(), /Sin el último coro/);
     await closeSheet(page);
     await page.keyboard.press('ArrowLeft');
     await page.getByRole('heading', { name: 'Gloria sencilla' }).waitFor();
-    pass('the arrow keys move between songs, and the note of the item is in the sheet, not in the way');
+    pass('the arrow keys move between songs, and the note of the item is written in the sheet, not in the way');
 
     await swipe(page, 600, 200);
     await page.getByRole('heading', { name: 'Pan de vida' }).waitFor();
@@ -418,10 +431,12 @@ try {
     assert.deepEqual(await chords(page), ['Re', 'La']);
     pass('offline: a reload of the singing screen still shows the songs, in the keys of the list');
 
+    await openTools(page);
+    await page.getByRole('button', { name: 'Bajar un semitono' }).click();
+    await closeSheet(page);
     await page.getByRole('link', { name: 'Volver al listado' }).click();
     await page.locator('section.slot').first().waitFor();
-    await slot(page, 'Canto de entrada').getByRole('button', { name: /Bajar un semitono/ }).click();
-    await slot(page, 'Canto de entrada').locator('button.key', { hasText: 'Do# ↺' }).waitFor();
+    await slot(page, 'Canto de entrada').locator('.item__key.is-changed', { hasText: 'Do#' }).waitFor();
     await page.getByText(/Sin conexión · 1 sin enviar/).waitFor();
     pass('offline: editing the list works and is counted as unsent');
     await ipad.setOffline(false);
@@ -435,7 +450,7 @@ try {
     await second.getByRole('link', { name: 'Listados', exact: true }).click();
     await second.getByRole('link', { name: /Domingo de prueba/ }).click();
     await second.locator('section.slot').first().waitFor();
-    await slot(second, 'Canto de entrada').locator('button.key', { hasText: 'Do# ↺' }).waitFor();
+    await slot(second, 'Canto de entrada').locator('.item__key.is-changed', { hasText: 'Do#' }).waitFor();
     assert.equal(await slot(second, 'Canto de comunión').locator('.item').count(), 2);
     pass('a second device receives the list with its keys and songs');
 
@@ -493,6 +508,7 @@ try {
     await page.getByLabel('Buscar listados').fill('rosario');
     await page.getByRole('link', { name: /Rosario en familia/ }).click();
     page.once('dialog', (dialog) => void dialog.accept());
+    await page.getByRole('button', { name: 'Más opciones del listado' }).click();
     await page.getByRole('button', { name: 'Eliminar listado' }).click();
     await page.getByRole('heading', { name: 'Listados' }).waitFor();
     await page.getByRole('button', { name: 'Quitar de destacados: Domingo, editado en la tablet' }).click();
@@ -522,7 +538,7 @@ try {
     await page.getByRole('link', { name: 'Listados', exact: true }).click();
     await page.getByRole('link', { name: /Domingo, editado en la tablet/ }).click();
     await slot(page, 'Canto de comunión').getByText('Canto eliminado').waitFor();
-    assert.equal(await slot(page, 'Canto de comunión').locator('button.key').count(), 1, 'a deleted song has no key to change');
+    assert.equal(await slot(page, 'Canto de comunión').locator('.item__key').count(), 1, 'a deleted song has no key to show');
     pass('the list shows "Canto eliminado" where the song was');
 
     await page.getByRole('link', { name: 'Cantar' }).click();
@@ -532,12 +548,14 @@ try {
     pass('singing a list with a deleted song says so and keeps going');
 
     await page.getByRole('link', { name: 'Volver al listado' }).click();
-    await page.getByRole('button', { name: 'Quitar Canto eliminado del listado' }).click();
-    await page.getByText('2 cantos').waitFor();
+    await page.getByRole('button', { name: 'Más opciones: Canto eliminado' }).click();
+    await page.getByRole('button', { name: 'Quitar del listado' }).click();
+    await page.locator('.setlist-head__meta').getByText('2 cantos').waitFor();
     pass('the deleted song can be removed from the list');
 
     // ----- deleting the list -----
     page.once('dialog', (dialog) => void dialog.accept());
+    await page.getByRole('button', { name: 'Más opciones del listado' }).click();
     await page.getByRole('button', { name: 'Eliminar listado' }).click();
     await page.getByRole('heading', { name: 'Listados' }).waitFor();
     await page.getByText('Todavía no hay listados.').waitFor();
@@ -582,10 +600,10 @@ try {
 
     // A desktop: the parts in two columns, the tools of each song on one line
     await page.setViewportSize({ width: 1280, height: 800 });
-    const columns = await page.evaluate(() => getComputedStyle(document.querySelector('.slots') as Element).gridTemplateColumns.split(' ').length);
-    assert.equal(columns, 2);
+    const columns = await page.evaluate(() => getComputedStyle(document.querySelector('.slots') as Element).columnCount);
+    assert.equal(columns, '2');
     const rowHeight = await page.locator('#parte-salida .item').first().evaluate((el) => el.getBoundingClientRect().height);
-    assert.ok(rowHeight < 110, `a song takes one compact row on a desktop (got ${rowHeight}px)`);
+    assert.ok(rowHeight < 80, `a song takes one compact row on a desktop (got ${rowHeight}px)`);
     pass('on a desktop the parts go in two columns and each song takes one compact row');
 
     assert.deepEqual(problems, [], 'no uncaught errors in the page');

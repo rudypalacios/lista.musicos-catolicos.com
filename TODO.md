@@ -39,11 +39,22 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       home-screen app only from iOS 18.4), see `DEPLOY.md`.
 - [ ] Adding several songs to one part takes a round trip per song (the picker returns to the list).
       If that is slow in practice, let the picker stay open and show what has been added.
-- [ ] Duplicate a list ("copiar listado") to start next Sunday's from this Sunday's (the "Nuevo listado" sheet with
-      "copy of the last one" was sketched with the owner; no schema change).
-- [ ] The setlist screen itself (`views/setlist.ts`) is still heavy: cards inside cards and five buttons per song.
-      Sketched with the owner as "option A": flat sections, the key stepper always visible, the other tools behind
-      a tap, and a compact header (title edited in place, the day as a chip, Imprimir/Eliminar under "⋯").
+- [ ] **Paused (owner, after the UI session).** Duplicate a list ("copiar listado") to start next Sunday's from this
+      Sunday's (the "Nuevo listado" sheet with "copy of the last one" was sketched with the owner; no schema change).
+- [ ] **UX review (owner, later).** The UI was done first; the flows are still to be weighed. To look at again: the
+      key of a list is changed only while singing (one more step than before; "Cantar desde aquí" in a song's sheet is
+      the way there, and the key could go back to that sheet if it gets in the way), creating and duplicating lists,
+      the order and wording of the sheets.
+- [x] The setlist screen (`views/setlist.ts`), lighter: flat sections, one line per song (title, "Autor · key"),
+      the whole row opens the song, a "⋯" per song (sing from here, move up/down within the part, remove with an
+      "undo"), a compact header (title edited in place and growing, the day as a chip, "▶ Cantar", and a "⋯" with
+      print and delete), an empty part as one line, two columns in the order of the Mass on a wide screen. The key is
+      no longer changed here (it is changed while singing, which saves it to the list item); it is shown to read, in
+      amber when it is not the song's own. The app's own icons are in `web/src/icons.ts` (Simple Icons is for brand
+      logos only and has none of these). Owner's check: `DEPLOY.md` "Fases 4 y 5", item 11.
+- [ ] Dragging a song to reorder it was weighed and left for phase 6 (custom parts can hold a dozen songs, and the
+      arrows move one place at a time); it would be a long press on the row, and it must keep the arrows
+      (an alternative without dragging is required). Cheap step before it: "move to the start / the end".
 
 ## Phase 2: setlists (done, awaiting the owner's devices)
 
@@ -70,8 +81,11 @@ Phase 4, quiet and quick (no schema change):
       returns to the same place in the list.
 - [x] "Aclamación memorial" explains itself with the ⓘ button.
 - [x] The same song in two parts is allowed, with a notice when it is added (not while searching) and on both rows.
-- [x] Notes of a list item are out of the way: a "Nota" button, one muted line when there is a note, a
-      field only to edit it; while singing, a "Nota" button shows it.
+- [x] Notes of a list item were out of the way (a "Nota" button, one muted line). **Replaced:** the setlist screen
+      (`views/setlist.ts`) no longer shows or edits notes (the list's, the items'); the data keeps them
+      (`Setlist.notes`, `SetlistItem.note`, `Setlists.setNote`, all untouched), so nothing is lost. **The note of a
+      song is still written while singing** (behind "⋯", with its dot). The owner will write notes in ChordPro and
+      then decide how to show them on the list (see phase 7).
 - [x] Swiping between songs: no browser rubber-band or sideways pull (`overscroll-behavior`,
       `touch-action`), and the next song slides in. **Owner's check on the Android:** the stretch is gone.
 - [x] Wide screens: parts in two columns, each song's tools on one line.
@@ -104,11 +118,13 @@ Next, in this order (design agreed with the owner):
       Android and the iPad** (`DEPLOY.md`, "Fases 4 y 5", item 10): the browser must not reload the page by itself.
       Not done: a way to sync on a computer with no touch screen (tapping the sync line in the header would do).
 - [ ] **Owner's check on the Android** for phases 4 and 5 (`DEPLOY.md`, "Fases 4 y 5", item 9 for the lists screen).
-- [ ] Phase 6, templates and tags (schema change, migration): turn parts on and off per list, add own
+- [ ] Phase 6, templates and tags (a rosary or a prayer-meeting list must not get the 15 parts of the Mass; a
+      section may hold a dozen songs, which is when dragging to reorder pays off) (schema change, migration): turn parts on and off per list, add own
       parts, a template manager (the Mass is the default); tags on songs, one per part by default; the
       picker of a part filters by its tag, with "Mostrar todos" always at hand and no filter when no
       song carries the tag; the PDF importer could tag by part.
-- [ ] Phase 7, ChordPro: the easy tier, first in `musicos-catolicos` (the reference), then ported here
+- [ ] Phase 7, ChordPro (notes first: the owner will write the notes of a list or a song in ChordPro, and then we
+      decide how to show them; the notes already stored are kept, see above): the easy tier, first in `musicos-catolicos` (the reference), then ported here
       with new golden fixtures: owner wants repeat marks like "bis" written as comments, and a chord in
       parentheses such as `[(G)]` recognised (needs the owner's confirmation of the syntax and that the
       public site changes too). Chord diagrams are not planned.

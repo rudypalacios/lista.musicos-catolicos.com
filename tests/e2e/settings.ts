@@ -265,7 +265,7 @@ try {
     await page.waitForFunction(() => document.querySelector('.perform__chrome.is-folded') === null);
     pass('the bar folds to a strip with the title when the lyrics scroll down, and comes back on scroll up or a tap');
 
-    // ----- the note of the song being sung is written behind "⋯" -----
+    // ----- the note of the song being sung is written behind "⋯" (the list screen does not show notes for now) -----
     await page.setViewportSize({ width: 1280, height: 800 });
     await scrollStage(0);
     await page.getByRole('button', { name: 'Más herramientas' }).click();
@@ -278,8 +278,9 @@ try {
     await page.keyboard.press('Escape');
     await page.locator('.sheet-layer.is-open').waitFor({ state: 'detached' });
     await page.getByRole('link', { name: 'Volver al listado' }).click();
-    await page.getByRole('button', { name: 'Editar la nota de Camino largo' }).waitFor();
-    pass('the note is written while singing, and the list shows it');
+    await page.getByRole('button', { name: 'Más opciones: Camino largo' }).waitFor();
+    assert.equal(await page.getByText('Tono alto, bajar medio tono').count(), 0, 'the list does not show the note');
+    pass('the note is written while singing; the list screen does not show it for now');
 
     assert.deepEqual(problems, [], 'no uncaught errors in the page');
     pass('no uncaught errors in the page');
