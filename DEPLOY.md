@@ -181,7 +181,9 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    (migración `0006`); no hay que hacer nada en phpMyAdmin.
 11. **Pantalla interior del listado (más limpia).** Arriba: el título (se edita tocándolo; si es largo, crece
    y se lee completo), la fecha como pastilla («dom 1 nov ✎», que abre el selector de fecha; «＋ Fecha» si no
-   hay), «N cantos», **▶ Cantar** y **⋯**. Cada parte de la misa es un rótulo azul con una línea. **Agregar
+   hay), «N cantos», **▶ Cantar** y **⋯**. Cada parte de la misa es un rótulo azul sobre una **banda** de color, y cada canto lleva un **guion «–»
+   azul** antes del título (la separación entre partes es de 1.15 rem; las filas de los cantos miden lo
+   mismo que antes, para tocarlas con comodidad). Una parte vacía es un contorno punteado. **Agregar
    un canto siempre está en la cabecera de la parte, a la derecha:** con texto («＋ Agregar») mientras la parte
    está vacía (las opcionales llevan «opcional» y ⓘ), y como un «＋» solo cuando ya tiene cantos; desde el
    cuarto canto hay además un «＋ Agregar canto» al final de la lista de esa parte.
