@@ -132,7 +132,7 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    listado. Gira la tablet: se vuelve a ajustar.
 5. Modo avión. Cierra la app, ábrela, entra al listado y toca *Cantar*: todo debe funcionar. Cambia un
    tono sin conexión: bajo la cabecera debe salir "Sin conexión · 1 sin enviar"; al quitar el modo avión, la franja desaparece y el punto queda verde.
-6. En el otro dispositivo abre *Listados*: el mismo listado, con los mismos tonos y notas.
+6. En el otro dispositivo abre *Listados*: el mismo listado, con los mismos tonos.
 7. Elimina un canto que esté en un listado: la app avisa en cuáles está. Después, ese listado muestra
    "Canto eliminado" en su lugar (y se puede quitar con *Quitar*).
 8. Cuéntame si algo no cabe, se corta o cuesta tocarlo con el dedo.
@@ -145,9 +145,9 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    atrás: debe quedar en el mismo lugar.
 3. Pon el mismo canto en dos partes: al agregarlo aparece un aviso "«…» también está en: …" (no al
    buscarlo) y en las dos filas queda "También está en…". No debe impedir nada.
-4. Las notas **no se muestran por ahora en la pantalla del listado** (ni las de cada canto ni las del listado):
-   lo que ya escribiste sigue guardado en tu cuenta, solo no se ve ni se edita ahí. **En *Cantar* la nota
-   del canto sigue** (`⋯` → *Nota*, con su punto de aviso). Volverán al listado con el formato ChordPro.
+4. **Ya no hay notas** (ni las de cada canto ni las del listado): ni en la pantalla del listado ni en *Cantar*
+   (`⋯` ya no tiene *Nota* ni su punto de aviso). Lo que ya habías escrito sigue guardado en tu cuenta, solo
+   no se ve ni se edita; el capodastro y demás anotaciones van en la letra en ChordPro (`{capo: 2}`).
 5. En *Cantar*, desliza a izquierda y derecha: **la pantalla ya no debe "ensancharse"** en los bordes y el
    canto nuevo debe entrar deslizándose. (Esto solo se puede confirmar en el teléfono.)
 6. *Ajustes* (botón de abajo a la derecha del menú): cambia el nombre de los acordes, el color de la letra y las columnas; el ejemplo
@@ -159,7 +159,7 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    («3/10 ▾») y `⋯`. La cabecera de la app (pestañas, punto de sincronización, cuenta) ya no aparece aquí. Con un canto largo, baja la
    letra: la barra se pliega a una franja delgada con el título, el tono y la posición (tócala, o sube un poco, y
    vuelve); la letra no debe moverse al plegarse. `⋯` abre un panel con tono, tamaño, `Do → C`, *Ajustar*,
-   columnas, la nota del canto (se escribe ahí mismo; un punto en `⋯` avisa que hay una), *Ajustes* y *Salir*.
+   columnas, *Ajustes* y *Salir*.
    Ya no hay modos Ensayo / Evento. El tamaño
    de letra que eliges con `A−`/`A+` se guarda aparte para *Cantar* un listado y para leer un canto de *Cantos*:
    cambiarlo en uno no cambia el otro, y cada uno se queda al pasar de canto y al volver a abrir la app. El último

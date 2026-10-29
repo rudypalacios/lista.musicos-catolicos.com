@@ -94,8 +94,6 @@ export const LIMITS = {
     notes: 2000,
     /** Songs in one setlist */
     items: 80,
-    /** Characters of the note of one item */
-    itemNote: 500,
     /** Bytes of a setlist's items as JSON */
     itemsJson: 60000,
     /** Semitones up or down */

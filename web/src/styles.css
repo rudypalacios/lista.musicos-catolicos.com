@@ -1535,7 +1535,7 @@ button.star.is-on {
     color: var(--star);
 }
 
-/* ===== Singing: the note on demand, the slide between songs, no stretching ===== */
+/* ===== Singing: the slide between songs, no stretching ===== */
 /*
  * A swipe sideways is ours (next song, previous song): the browser must not also pull the page
  * (the rubber-band or stretch at the edge, a sideways scroll). Zooming with two fingers stays.
@@ -1795,18 +1795,6 @@ body {
     font-size: 1.3rem;
 }
 
-/* A note on this song: a dot on "⋯", so it is not forgotten behind the button */
-.perform__more.has-note::after {
-    content: '';
-    position: absolute;
-    top: 0.55rem;
-    right: 0.5rem;
-    width: 0.5rem;
-    height: 0.5rem;
-    background: var(--accent);
-    border-radius: 50%;
-}
-
 .perform__title {
     flex: 1;
     min-width: 0;
@@ -1918,11 +1906,6 @@ body {
 .sheet .toolbar button {
     min-width: 3rem;
     min-height: 3rem;
-}
-
-.perform__notefield {
-    display: block;
-    width: 100%;
 }
 
 .perform__account {

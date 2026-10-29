@@ -27,8 +27,7 @@ const ADD_AT_END_FROM = 4;
  * (sing from it, move it up or down within its part, remove it with an undo). The list's own "⋯" holds
  * print and delete.
  *
- * The notes of a list and of its songs are kept in the data but are not shown or edited on this screen for
- * now (the note of a song is still written while singing, behind "⋯").
+ * The notes of a list and of its songs are kept in the data but are not shown or edited anywhere.
  */
 export async function setlistView(app: App, navigate: Navigate, initial: Setlist): Promise<View> {
     let setlist = initial;

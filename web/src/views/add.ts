@@ -18,7 +18,7 @@ const WARNING_TIME = 5000;
 
 /**
  * Picking a song of the library for one part of the Mass. Choosing one adds it at the end of
- * that part and goes back to the list, where it can be moved, put in another key or given a note.
+ * that part and goes back to the list, where it can be moved or put in another key.
  *
  * Each row shows the first lines of the song (the lines where the search matched, when it was found
  * through its lyrics) and an eye that opens the whole song to read before adding it.

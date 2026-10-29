@@ -265,22 +265,17 @@ try {
     await page.waitForFunction(() => document.querySelector('.perform__chrome.is-folded') === null);
     pass('the bar folds to a strip with the title when the lyrics scroll down, and comes back on scroll up or a tap');
 
-    // ----- the note of the song being sung is written behind "⋯" (the list screen does not show notes for now) -----
+    // ----- the tools sheet behind "⋯" (no modes, no note) -----
     await page.setViewportSize({ width: 1280, height: 800 });
     await scrollStage(0);
     await page.getByRole('button', { name: 'Más herramientas' }).click();
     assert.equal(await page.getByRole('button', { name: /Ensayo|Evento/ }).count(), 0, 'there are no modes');
-    await page.getByLabel('Nota de este canto').fill('Tono alto, bajar medio tono');
-    await page.getByLabel('Nota de este canto').blur();
-    await page.locator('.toast', { hasText: 'Guardado' }).waitFor();
-    await synced(page);
-    assert.equal(await page.locator('.perform__more.has-note').count(), 1);
+    assert.equal(await page.getByLabel('Nota de este canto').count(), 0, 'there is no note field');
     await page.keyboard.press('Escape');
     await page.locator('.sheet-layer.is-open').waitFor({ state: 'detached' });
     await page.getByRole('link', { name: 'Volver al listado' }).click();
     await page.getByRole('button', { name: 'Más opciones: Camino largo' }).waitFor();
-    assert.equal(await page.getByText('Tono alto, bajar medio tono').count(), 0, 'the list does not show the note');
-    pass('the note is written while singing; the list screen does not show it for now');
+    pass('the tools sheet has no note field and the list shows no note');
 
     assert.deepEqual(problems, [], 'no uncaught errors in the page');
     pass('no uncaught errors in the page');
