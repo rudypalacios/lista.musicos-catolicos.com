@@ -1,6 +1,6 @@
 /**
  * Browser test of phase 5: the settings screen (chord names, lyric colour, columns) and the two
- * ways of singing a list. Rehearsal shows every tool; event keeps a slim bar
+ * ways of singing a list. Rehearsal shows every tool and takes notes; event keeps a slim bar
  * with the quick tools and gives way to the lyrics when they are scrolled.
  *
  *     npm run build && node tests/e2e/settings.ts
@@ -191,7 +191,7 @@ try {
     assert.match(await page.locator('.perform__sync').innerText(), /Sincronizado|Sincronizando/);
     await page.keyboard.press('Escape');
     await page.getByRole('button', { name: 'Ajustar' }).waitFor({ state: 'hidden' });
-    pass('singing has a one-row bar; the tools and the account are behind "⋯", and Escape closes it');
+    pass('singing has a one-row bar; the tools, the note and the account are behind "⋯", and Escape closes it');
 
     // The screen is kept on while singing, and the sheet says so
     const locks = (): Promise<number> => page.evaluate(() => (window as unknown as { __locks: { count: number } }).__locks.count);
@@ -265,18 +265,22 @@ try {
     await page.waitForFunction(() => document.querySelector('.perform__chrome.is-folded') === null);
     pass('the bar folds to a strip with the title when the lyrics scroll down, and comes back on scroll up or a tap');
 
-    // ----- no notes for now: no modes, no note field behind "⋯" and no dot on it -----
+    // ----- the note of the song being sung is written behind "⋯" (the list screen does not show notes for now) -----
     await page.setViewportSize({ width: 1280, height: 800 });
     await scrollStage(0);
     await page.getByRole('button', { name: 'Más herramientas' }).click();
     assert.equal(await page.getByRole('button', { name: /Ensayo|Evento/ }).count(), 0, 'there are no modes');
-    assert.equal(await page.getByLabel('Nota de este canto').count(), 0, 'there is no note field');
-    assert.equal(await page.locator('.perform__more.has-note').count(), 0, 'and no dot on "⋯"');
+    await page.getByLabel('Nota de este canto').fill('Tono alto, bajar medio tono');
+    await page.getByLabel('Nota de este canto').blur();
+    await page.locator('.toast', { hasText: 'Guardado' }).waitFor();
+    await synced(page);
+    assert.equal(await page.locator('.perform__more.has-note').count(), 1);
     await page.keyboard.press('Escape');
     await page.locator('.sheet-layer.is-open').waitFor({ state: 'detached' });
     await page.getByRole('link', { name: 'Volver al listado' }).click();
     await page.getByRole('button', { name: 'Más opciones: Camino largo' }).waitFor();
-    pass('while singing there are no modes and no notes; the list has no note either');
+    assert.equal(await page.getByText('Tono alto, bajar medio tono').count(), 0, 'the list does not show the note');
+    pass('the note is written while singing; the list screen does not show it for now');
 
     assert.deepEqual(problems, [], 'no uncaught errors in the page');
     pass('no uncaught errors in the page');

@@ -24,7 +24,8 @@ import type { Navigate, View } from './types.ts';
  * (sing from it, move it up or down within its part, remove it with an undo). The list's own "⋯" holds
  * print and delete.
  *
- * The notes of a list and of its songs are kept in the data but are not shown or edited for now.
+ * The notes of a list and of its songs are kept in the data but are not shown or edited on this screen for
+ * now (the note of a song is still written while singing, behind "⋯").
  */
 export async function setlistView(app: App, navigate: Navigate, initial: Setlist): Promise<View> {
     let setlist = initial;
@@ -71,7 +72,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
     const saveHeader = (): Promise<unknown> => {
         error.textContent = '';
 
-        // The notes are not edited here (kept as they are)
+        // The list's notes are not edited on this screen (kept as they are)
         return app.setlists
             .update(setlist.id, { title: title.value, eventDate: day.value === '' ? null : day.value, notes: setlist.notes })
             .catch((failure: unknown) => fail(failure, 'No se pudo guardar el listado.'));

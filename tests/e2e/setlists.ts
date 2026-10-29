@@ -229,7 +229,7 @@ try {
     await closeSheet(page);
     pass('a song alone in its part has no move to offer, only singing from it and removing it');
 
-    // There are no notes on the screen for now (they are kept in the data)
+    // The list screen shows no notes for now (the note of a song is written while singing)
     assert.equal(await page.getByRole('button', { name: /nota/i }).count(), 0);
     assert.equal(await page.locator('[aria-label*="Nota"], .item__note, .item__noteline').count(), 0);
 
@@ -348,13 +348,19 @@ try {
 
     await page.keyboard.press('ArrowRight');
     await page.getByRole('heading', { name: 'Pan de vida' }).waitFor();
-    assert.equal(await page.locator('.perform__more.has-note').count(), 0, 'no dot on "⋯": notes are not shown for now');
+    assert.equal(await page.locator('.perform__more.has-note').count(), 0, 'no dot on "⋯": this song has no note yet');
+    assert.equal(await page.getByLabel('Nota de este canto').isVisible(), false, 'the note is out of the way');
     await openTools(page);
-    assert.equal(await page.getByLabel('Nota de este canto').count(), 0, 'and no note field in the sheet');
+    await page.getByLabel('Nota de este canto').fill('Sin el último coro');
+    await page.getByLabel('Nota de este canto').blur();
+    await closeSheet(page);
+    assert.equal(await page.locator('.perform__more.has-note').count(), 1, 'a dot says there is one');
+    await openTools(page);
+    assert.match(await page.getByLabel('Nota de este canto').inputValue(), /Sin el último coro/);
     await closeSheet(page);
     await page.keyboard.press('ArrowLeft');
     await page.getByRole('heading', { name: 'Gloria sencilla' }).waitFor();
-    pass('the arrow keys move between songs, and there is no note in the way');
+    pass('the arrow keys move between songs, and the note of the item is written in the sheet, not in the way');
 
     await swipe(page, 600, 200);
     await page.getByRole('heading', { name: 'Pan de vida' }).waitFor();

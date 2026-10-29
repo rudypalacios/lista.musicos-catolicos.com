@@ -39,8 +39,12 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       home-screen app only from iOS 18.4), see `DEPLOY.md`.
 - [ ] Adding several songs to one part takes a round trip per song (the picker returns to the list).
       If that is slow in practice, let the picker stay open and show what has been added.
-- [ ] Duplicate a list ("copiar listado") to start next Sunday's from this Sunday's (the "Nuevo listado" sheet with
-      "copy of the last one" was sketched with the owner; no schema change).
+- [ ] **Paused (owner, after the UI session).** Duplicate a list ("copiar listado") to start next Sunday's from this
+      Sunday's (the "Nuevo listado" sheet with "copy of the last one" was sketched with the owner; no schema change).
+- [ ] **UX review (owner, later).** The UI was done first; the flows are still to be weighed. To look at again: the
+      key of a list is changed only while singing (one more step than before; "Cantar desde aquí" in a song's sheet is
+      the way there, and the key could go back to that sheet if it gets in the way), creating and duplicating lists,
+      the order and wording of the sheets.
 - [x] The setlist screen (`views/setlist.ts`), lighter: flat sections, one line per song (title, "Autor · key"),
       the whole row opens the song, a "⋯" per song (sing from here, move up/down within the part, remove with an
       "undo"), a compact header (title edited in place and growing, the day as a chip, "▶ Cantar", and a "⋯" with
@@ -77,10 +81,11 @@ Phase 4, quiet and quick (no schema change):
       returns to the same place in the list.
 - [x] "Aclamación memorial" explains itself with the ⓘ button.
 - [x] The same song in two parts is allowed, with a notice when it is added (not while searching) and on both rows.
-- [x] Notes of a list item were out of the way (a "Nota" button, one muted line). **Replaced:** notes are now not
-      shown or edited anywhere (the list's, the items', the singing sheet); the data keeps them
-      (`Setlist.notes`, `SetlistItem.note`, `Setlists.setNote`, all untouched), so nothing is lost. The owner will
-      write them in ChordPro and then decide how to show them (see phase 7).
+- [x] Notes of a list item were out of the way (a "Nota" button, one muted line). **Replaced:** the setlist screen
+      (`views/setlist.ts`) no longer shows or edits notes (the list's, the items'); the data keeps them
+      (`Setlist.notes`, `SetlistItem.note`, `Setlists.setNote`, all untouched), so nothing is lost. **The note of a
+      song is still written while singing** (behind "⋯", with its dot). The owner will write notes in ChordPro and
+      then decide how to show them on the list (see phase 7).
 - [x] Swiping between songs: no browser rubber-band or sideways pull (`overscroll-behavior`,
       `touch-action`), and the next song slides in. **Owner's check on the Android:** the stretch is gone.
 - [x] Wide screens: parts in two columns, each song's tools on one line.
@@ -113,7 +118,8 @@ Next, in this order (design agreed with the owner):
       Android and the iPad** (`DEPLOY.md`, "Fases 4 y 5", item 10): the browser must not reload the page by itself.
       Not done: a way to sync on a computer with no touch screen (tapping the sync line in the header would do).
 - [ ] **Owner's check on the Android** for phases 4 and 5 (`DEPLOY.md`, "Fases 4 y 5", item 9 for the lists screen).
-- [ ] Phase 6, templates and tags (schema change, migration): turn parts on and off per list, add own
+- [ ] Phase 6, templates and tags (a rosary or a prayer-meeting list must not get the 15 parts of the Mass; a
+      section may hold a dozen songs, which is when dragging to reorder pays off) (schema change, migration): turn parts on and off per list, add own
       parts, a template manager (the Mass is the default); tags on songs, one per part by default; the
       picker of a part filters by its tag, with "Mostrar todos" always at hand and no filter when no
       song carries the tag; the PDF importer could tag by part.

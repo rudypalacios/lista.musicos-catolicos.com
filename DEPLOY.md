@@ -145,8 +145,9 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    atrás: debe quedar en el mismo lugar.
 3. Pon el mismo canto en dos partes: al agregarlo aparece un aviso "«…» también está en: …" (no al
    buscarlo) y en las dos filas queda "También está en…". No debe impedir nada.
-4. Las notas **no se muestran por ahora** (ni las del listado ni las de cada canto, ni en *Cantar*): lo que ya
-   escribiste sigue guardado en tu cuenta, solo no se ve ni se edita. Volverán con el formato ChordPro.
+4. Las notas **no se muestran por ahora en la pantalla del listado** (ni las de cada canto ni las del listado):
+   lo que ya escribiste sigue guardado en tu cuenta, solo no se ve ni se edita ahí. **En *Cantar* la nota
+   del canto sigue** (`⋯` → *Nota*, con su punto de aviso). Volverán al listado con el formato ChordPro.
 5. En *Cantar*, desliza a izquierda y derecha: **la pantalla ya no debe "ensancharse"** en los bordes y el
    canto nuevo debe entrar deslizándose. (Esto solo se puede confirmar en el teléfono.)
 6. *Ajustes* (arriba): cambia el nombre de los acordes, el color de la letra y las columnas; el ejemplo
@@ -158,7 +159,7 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    («3/10 ▾») y `⋯`. La barra de la app (Listas, Ajustes, Salir) ya no aparece aquí. Con un canto largo, baja la
    letra: la barra se pliega a una franja delgada con el título, el tono y la posición (tócala, o sube un poco, y
    vuelve); la letra no debe moverse al plegarse. `⋯` abre un panel con tono, tamaño, `Do → C`, *Ajustar*,
-   columnas, *Ajustes* y *Salir*.
+   columnas, la nota del canto (se escribe ahí mismo; un punto en `⋯` avisa que hay una), *Ajustes* y *Salir*.
    Ya no hay modos Ensayo / Evento. El tamaño
    de letra que eliges con `A−`/`A+` se guarda aparte para *Cantar* un listado y para leer un canto de *Cantos*:
    cambiarlo en uno no cambia el otro, y cada uno se queda al pasar de canto y al volver a abrir la app. El último
