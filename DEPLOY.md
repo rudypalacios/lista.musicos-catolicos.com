@@ -171,12 +171,12 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    "ahorro de batería" puede ser la causa). En *Ajustes* se puede apagar esta opción. En el iPad pide Safari
    16.4 o más; instalada en la pantalla de inicio, iOS 18.4 o más.
 9. **Pantalla *Listados* con destacados.** Una fila por listado, sin tarjetas: el título, y debajo «5 cantos»
-   (y el día, si lo tiene, como «dom 1 nov»). Toca la **estrella** de la derecha (☆): el listado sube a
+   (y el día, si lo tiene, como «dom 1 nov»). Toca el **«⋯»** de la derecha → «Destacar» (ver el ítem 19; antes era una estrella): el listado sube a
    «★ Destacados» (ordenados por título); los demás quedan en «Recientes», el último que editaste primero
    (el día de la misa ya no ordena nada, así que sirven los listados sin fecha: rosario, avivamiento…).
-   Mientras no hay destacados, la lista es una sola, sin texto que explique la estrella. Toca la fila (no la estrella) y abre el listado.
+   Mientras no hay destacados, la lista es una sola, sin texto que explique los destacados. Toca la fila (no el «⋯») y abre el listado.
    El buscador filtra por título y, mientras escribes, muestra una sola lista con los destacados primero.
-   «＋ Nuevo» sigue creando un listado al instante. **La estrella se sincroniza**: márcala en la tablet y mira
+   «＋ Nuevo» sigue creando un listado al instante. **Destacar se sincroniza**: márcalo en la tablet y mira
    que aparezca en el teléfono. La primera vez después de este deploy, la app crea sola la columna
    (migración `0006`); no hay que hacer nada en phpMyAdmin.
 11. **Pantalla interior del listado (más limpia).** Arriba: el título (se edita tocándolo; si es largo, crece
@@ -265,6 +265,13 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
 18. **Acordes en minúscula.** En *Nuevo canto* o *Editar canto*, escribe `[c]Hola [g]mundo [am]fe`: la vista previa ya los lee como
    acordes (Do, Sol, Lam) y, al salir de la caja de la letra o al guardar, el texto queda con mayúsculas (`[C]`, `[G]`, `[Am]`).
    No toca lo que no es un acorde (`[bis]`, `[x2]`). En *Cantar* → `⋯`, «Editar letra y acordes» tiene ahora espacio arriba y abajo de su línea.
+
+19. **El «⋯» de cada listado y duplicar.** En *Listados*, cada fila tiene a la derecha un **«⋯»** (ya no hay estrella). Tócalo: se abre una
+   hoja con el nombre del listado, «Destacar» (o «Quitar de destacados» si ya lo está) y **«Duplicar listado»**. Destacar funciona
+   como la estrella de antes (sube a «★ Destacados», se sincroniza). **Duplicar** abre al instante una copia **para hoy**, con el título
+   de un listado nuevo («Misa del 30 de octubre»), los mismos cantos en las mismas partes y **el tono que cada uno tiene en ese
+   listado**; no copia la estrella. Un aviso dice «Copiado de “…”». El original queda como estaba. Si no la querías: dentro de la copia,
+   `⋯` → *Eliminar listado*.
 
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).

@@ -6,13 +6,16 @@ import { h } from '../dom.ts';
 import { icon } from '../icons.ts';
 import { paths } from '../router.ts';
 import { filterSetlists } from '../search.ts';
+import { showToast } from '../toast.ts';
+import { createSheet, sheetAction } from './sheet.ts';
 import type { Navigate, View } from './types.ts';
 
 /**
  * The setlists. The starred ones come first (by title, so they stay where the person left
  * them), then the rest, most recently edited first: a list may be for a rosary or a prayer
  * meeting and have no day, so the day orders nothing. Searching shows one list, starred first.
- * "＋ Nuevo" still creates a list at once, for today.
+ * "＋ Nuevo" still creates a list at once, for today. The "⋯" of each row opens a sheet with what is done to
+ * that list from here: star it (or take the star off), make a copy of it.
  */
 export function listsView(app: App, navigate: Navigate): View {
     const create = h('button', { type: 'button', class: 'button button--primary lists__new', 'aria-label': 'Nuevo listado' }, '＋ Nuevo');
@@ -45,17 +48,56 @@ export function listsView(app: App, navigate: Navigate): View {
             });
     });
 
-    const star = (list: Setlist): HTMLElement => {
+    // --- "⋯" of a row: what is done to that list from here ---
+    let lists: Setlist[] = [];
+    /** The list whose "⋯" is open */
+    let target: string | null = null;
+    // The screen scrolls inside the app, so the sheet covers the window, not the page
+    const sheet = createSheet('Opciones del listado', () => fill());
+    sheet.element.classList.add('sheet-layer--window');
+    element.append(sheet.element);
+    const fail = (failure: unknown, fallback: string): void => {
+        error.textContent = failure instanceof Error ? failure.message : fallback;
+    };
+    const fill = (): void => {
+        const list = lists.find((candidate) => candidate.id === target);
+        if (list === undefined) {
+            // Deleted (here or on another device) while its sheet was open
+            sheet.close();
+
+            return;
+        }
+        const count = list.items.length;
+        sheet.body.replaceChildren(
+            h('h4', { class: 'sheet__title' }, list.title),
+            h('p', { class: 'sheet__sub' }, count === 1 ? '1 canto' : `${count} cantos`),
+            sheetAction(list.starred ? 'star-filled' : 'star', list.starred ? 'Quitar de destacados' : 'Destacar', () => {
+                error.textContent = '';
+                sheet.close();
+                app.setlists.setStarred(list.id, !list.starred).catch((failure: unknown) => fail(failure, 'No se pudo cambiar el listado.'));
+            }),
+            sheetAction('copy', 'Duplicar listado', () => {
+                error.textContent = '';
+                sheet.close(() => {
+                    app.setlists
+                        .duplicate(list.id)
+                        .then((copy) => {
+                            navigate(paths.setlist(copy.id));
+                            showToast(`Copiado de «${list.title}»`, 4000, true);
+                        })
+                        .catch((failure: unknown) => fail(failure, 'No se pudo duplicar el listado.'));
+                });
+            }, { hint: 'Una copia para hoy, con los mismos cantos y tonos' }),
+        );
+    };
+
+    const more = (list: Setlist): HTMLElement => {
         const button = h('button', {
-            type: 'button', class: list.starred ? 'star is-on' : 'star', 'aria-pressed': String(list.starred),
-            'aria-label': list.starred ? `Quitar de destacados: ${list.title}` : `Destacar: ${list.title}`,
-            'data-star': list.id,
-        }, icon(list.starred ? 'star-filled' : 'star', 24));
+            type: 'button', class: 'lrow__more', 'aria-label': `Más opciones: ${list.title}`, 'data-more': list.id,
+        }, icon('more', 22));
         button.addEventListener('click', () => {
-            error.textContent = '';
-            app.setlists.setStarred(list.id, !list.starred).catch((failure: unknown) => {
-                error.textContent = failure instanceof Error ? failure.message : 'No se pudo cambiar el listado.';
-            });
+            target = list.id;
+            sheet.open();
         });
 
         return button;
@@ -74,7 +116,7 @@ export function listsView(app: App, navigate: Navigate): View {
                 h('span', { class: 'lrow__title' }, list.title),
                 h('span', { class: 'lrow__detail' }, detail.join(' · ')),
             ),
-            star(list),
+            more(list),
         );
     };
 
@@ -85,10 +127,9 @@ export function listsView(app: App, navigate: Navigate): View {
                 h('ul', { class: 'lrows' }, ...lists.map(row))),
         ];
 
-    let lists: Setlist[] = [];
     const draw = (): void => {
-        // The star button that was pressed is replaced by the redraw: the focus goes back to it
-        const focused = document.activeElement?.getAttribute('data-star') ?? null;
+        // The button that was pressed is replaced by the redraw: the focus goes back to it
+        const focused = document.activeElement?.getAttribute('data-more') ?? null;
         const query = search.value.trim();
         const shown = filterSetlists(lists, query);
         const { starred, others } = splitStarred(shown);
@@ -105,13 +146,16 @@ export function listsView(app: App, navigate: Navigate): View {
             ? 'Todavía no hay listados. Crea uno para preparar la música de una misa.'
             : 'Ningún listado coincide con la búsqueda.';
         if (focused !== null) {
-            groups.querySelector<HTMLElement>(`[data-star="${CSS.escape(focused)}"]`)?.focus();
+            groups.querySelector<HTMLElement>(`[data-more="${CSS.escape(focused)}"]`)?.focus();
         }
     };
     const load = (): void => {
         void app.setlists.list().then((all) => {
             lists = all;
             draw();
+            if (sheet.isOpen()) {
+                fill();
+            }
         });
     };
 
@@ -119,5 +163,11 @@ export function listsView(app: App, navigate: Navigate): View {
     const stop = app.onData(load);
     load();
 
-    return { element, dispose: stop };
+    return {
+        element,
+        dispose: () => {
+            stop();
+            sheet.release();
+        },
+    };
 }

@@ -111,6 +111,12 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       touched (as the public site's). A bracket that is not wholly a chord (`[bis]`, `[x2]`) stays as written.
       **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 18. The Cantar sheet also gives its "Editar letra y acordes" room
       above and below its line.
+- [x] The lists screen: the star of each row became a "⋯" that opens a sheet (`views/lists.ts`) with "Destacar" / "Quitar de
+      destacados" and **"Duplicar listado"** (`Setlists.duplicate`: a copy for today, with the title of a new list, the songs in
+      their parts and order and the key each has in the list; no star, no notes, songs deleted since left out; it opens at once and
+      a toast says where it came from). The sheet is where sharing and other per-list actions will go. Not done: copying from
+      "＋ Nuevo" (the owner chose the row's sheet), an undo for the copy ("Eliminar listado" is inside it).
+      **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 19.
 - [ ] Adding several songs to one part takes a round trip per song (the picker returns to the list).
       If that is slow in practice, let the picker stay open and show what has been added.
 - [ ] **Paused (owner, after the UI session).** Duplicate a list ("copiar listado") to start next Sunday's from this

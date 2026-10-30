@@ -598,23 +598,25 @@ try {
     await page.getByLabel('Fecha de la misa').fill('');
     await page.getByLabel('Fecha de la misa').blur();
     await page.getByRole('link', { name: '← Listados' }).click();
-    await page.getByRole('button', { name: 'Destacar: Rosario en familia' }).waitFor();
+    await page.getByRole('button', { name: 'Más opciones: Rosario en familia' }).waitFor();
     assert.equal(await page.getByRole('heading', { name: 'Recientes' }).count(), 0, 'no headings while nothing is starred');
     assert.equal(await page.locator('.lrow__title').first().textContent(), 'Rosario en familia', 'the list edited last comes first');
     assert.equal(await page.locator('.lrow__detail').first().textContent(), '0 cantos', 'a list with no day shows no day');
     pass('with no stars the lists are one flat list, the most recently edited first, with no text explaining the star');
+    assert.equal(await page.locator('button.star').count(), 0, 'there is no star on the rows: each has a "⋯"');
 
-    await page.getByRole('button', { name: 'Destacar: Domingo, editado en la tablet' }).click();
+    await page.getByRole('button', { name: 'Más opciones: Domingo, editado en la tablet' }).click();
+    assert.deepEqual(await page.locator('.sheet-layer.is-open .sheet-action').allTextContents(), ['Destacar', 'Duplicar listadoUna copia para hoy, con los mismos cantos y tonos']);
+    await page.getByRole('button', { name: 'Destacar', exact: true }).click();
     await page.getByRole('heading', { name: '★ Destacados' }).waitFor();
     await page.getByRole('heading', { name: 'Recientes' }).waitFor();
     assert.equal(await page.locator('.lgroup').first().locator('.lrow__title').textContent(), 'Domingo, editado en la tablet');
-    assert.equal(await page.getByRole('button', { name: 'Quitar de destacados: Domingo, editado en la tablet' }).getAttribute('aria-pressed'), 'true');
-    assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-star') !== null), true, 'the focus stays on the star');
-    pass('starring a list moves it to "★ Destacados" and keeps the focus on its star');
+    assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-more') !== null), true, 'the focus goes back to its "⋯"');
+    pass('the "⋯" of a list opens its sheet; starring from it moves the list to "★ Destacados" and keeps the focus on its "⋯"');
 
-    const star = await page.getByRole('button', { name: /^Quitar de destacados/ }).boundingBox();
-    assert.ok(star !== null && star.width >= 44 && star.height >= 44, 'the star is a 44px target');
-    pass('the star is a tap target of at least 44px');
+    const more = await page.getByRole('button', { name: 'Más opciones: Domingo, editado en la tablet' }).boundingBox();
+    assert.ok(more !== null && more.width >= 44 && more.height >= 44, 'the "⋯" is a 44px target');
+    pass('the "⋯" of a row is a tap target of at least 44px');
 
     await page.getByLabel('Buscar listados').fill('ROSARIO');
     assert.equal(await page.locator('.lrow').count(), 1);
@@ -629,7 +631,7 @@ try {
     assert.equal((await serverData(page)).setlists.filter((list) => list.starred).length, 1);
     await second.evaluate(() => window.dispatchEvent(new Event('online')));
     await openSection(second, 'Listados');
-    await second.getByRole('button', { name: 'Quitar de destacados: Domingo, editado en la tablet' }).waitFor({ timeout: 15000 });
+    await second.getByRole('heading', { name: '★ Destacados' }).waitFor({ timeout: 15000 });
     pass('the star reaches the other device');
 
     // the extra list goes, so the rest of the test finds the screen as it expects
@@ -639,8 +641,26 @@ try {
     await page.getByRole('button', { name: 'Más opciones del listado' }).click();
     await page.getByRole('button', { name: 'Eliminar listado' }).click();
     await page.getByRole('heading', { name: 'Listados' }).waitFor();
-    await page.getByRole('button', { name: 'Quitar de destacados: Domingo, editado en la tablet' }).click();
-    await page.getByRole('button', { name: 'Destacar: Domingo, editado en la tablet' }).waitFor();
+    // A copy of a list: for today, with its songs and keys, in a list of its own that opens at once
+    const songsIn = async (): Promise<number> => (await serverData(page)).setlists.find((list) => list.title === 'Domingo, editado en la tablet')?.items.length ?? 0;
+    const original = await songsIn();
+    assert.ok(original > 0, 'the list to copy has songs');
+    await page.getByRole('button', { name: 'Más opciones: Domingo, editado en la tablet' }).click();
+    await page.getByRole('button', { name: /Duplicar listado/ }).click();
+    await page.locator('section.slot').first().waitFor();
+    await page.locator('.toast', { hasText: 'Copiado de «Domingo, editado en la tablet»' }).waitFor();
+    assert.match(await page.getByLabel('Título').inputValue(), /^Misa del \d{1,2} de \w+/);
+    await page.getByText(new RegExp(`${original} cantos?`)).first().waitFor();
+    await serverWhen(page, (data) => data.setlists.filter((list) => list.deletedAt === null && list.items.length === original).length >= 2);
+    pass('duplicating a list opens a copy for today with the same songs, says where it came from, and leaves the original');
+    page.once('dialog', (dialog) => void dialog.accept());
+    await page.getByRole('button', { name: 'Más opciones del listado' }).click();
+    await page.getByRole('button', { name: 'Eliminar listado' }).click();
+    await page.getByRole('heading', { name: 'Listados' }).waitFor();
+
+    await page.getByRole('button', { name: 'Más opciones: Domingo, editado en la tablet' }).click();
+    await page.getByRole('button', { name: 'Quitar de destacados', exact: true }).click();
+    await page.getByRole('heading', { name: '★ Destacados' }).waitFor({ state: 'hidden' });
     await synced(page);
 
     // ----- the way to add a song is in the head of the part -----

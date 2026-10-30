@@ -144,6 +144,39 @@ export class Setlists {
         return list;
     }
 
+    /**
+     * A copy of a list, for today: the songs in their parts and order, each in the key the list has it in. It has
+     * the title of a new list, no star and no notes; a song that was deleted since is left out.
+     */
+    duplicate(id: string): Promise<Setlist> {
+        return this.serial(async () => {
+            const source = await this.store.get('setlists', id);
+            if (source === undefined || source.deletedAt !== null) {
+                throw new Error('El listado ya no existe.');
+            }
+            const items: SetlistItem[] = [];
+            for (const item of source.items) {
+                const song = await this.store.get('songs', item.songId);
+                if (song !== undefined && song.deletedAt === null) {
+                    items.push({ id: this.newId(), part: item.part, songId: item.songId, transpose: item.transpose, note: '' });
+                }
+            }
+            const eventDate = today(new Date(this.now()));
+            const copy: Setlist = {
+                id: this.newId(),
+                ...cleanDraft({ title: defaultTitle(eventDate), eventDate, notes: '' }),
+                starred: false,
+                items,
+                updatedAt: this.now(),
+                deletedAt: null,
+            };
+            await this.store.save('setlists', copy);
+            this.afterWrite();
+
+            return copy;
+        });
+    }
+
     /** @throws ValidationError (as a rejected promise, like every other change) */
     async update(id: string, draft: SetlistDraft): Promise<Setlist> {
         const clean = cleanDraft(draft);

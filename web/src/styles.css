@@ -162,7 +162,6 @@ a.link {
     --accent-soft: rgba(108, 184, 255, 0.15);
     --changed: #f0b429;
     --changed-soft: rgba(240, 180, 41, 0.16);
-    --star: #f0b429;
 }
 
 /* An element with `hidden` must stay hidden whatever display its class gives it */
@@ -1534,20 +1533,18 @@ body:has(.update) .install-banner {
     text-decoration: underline;
 }
 
-button.star {
+button.lrow__more {
     flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     min-width: 2.75rem;
     min-height: 2.75rem;
     padding: 0;
     color: var(--muted);
     background: none;
     border: 0;
-    font-size: 1.4rem;
-    line-height: 1;
-}
-
-button.star.is-on {
-    color: var(--star);
+    cursor: pointer;
 }
 
 /* ===== Singing: the slide between songs, no stretching ===== */
