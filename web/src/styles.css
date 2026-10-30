@@ -224,6 +224,13 @@ button.button--danger {
     color: var(--danger);
 }
 
+button.button--danger-solid {
+    color: var(--bg);
+    background: var(--danger);
+    border-color: var(--danger);
+    font-weight: 600;
+}
+
 .page {
     width: 100%;
     max-width: 48rem;
@@ -2416,4 +2423,53 @@ button.notice-line__info {
     padding: 0 0.8rem 0.7rem;
     color: var(--muted);
     font-size: 0.85rem;
+}
+
+/* ===== A question before something that cannot be undone (views/confirm-dialog.ts) ===== */
+.confirm {
+    position: fixed;
+    inset: 0;
+    /* above the sheets (10) and the messages (50): nothing else is answered while it is open */
+    z-index: 60;
+    display: grid;
+    place-items: center;
+    padding: 1.25rem;
+}
+
+.confirm__scrim {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+}
+
+.confirm__panel {
+    position: relative;
+    width: 100%;
+    max-width: 22rem;
+    padding: 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+}
+
+.confirm__title {
+    margin: 0 0 0.5rem;
+    font-size: 1.05rem;
+    line-height: 1.3;
+}
+
+.confirm__text {
+    margin: 0 0 1.25rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.confirm__buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.confirm__buttons .button {
+    flex: 1;
 }

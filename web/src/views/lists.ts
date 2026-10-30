@@ -7,6 +7,7 @@ import { icon, type IconName } from '../icons.ts';
 import { paths } from '../router.ts';
 import { filterSetlists } from '../search.ts';
 import { showToast } from '../toast.ts';
+import { confirmDialog } from './confirm-dialog.ts';
 import { createSheet, sheetAction } from './sheet.ts';
 import type { Navigate, View } from './types.ts';
 
@@ -15,7 +16,7 @@ import type { Navigate, View } from './types.ts';
  * them), then the rest, most recently edited first: a list may be for a rosary or a prayer
  * meeting and have no day, so the day orders nothing. Searching shows one list, starred first.
  * "＋ Nuevo" still creates a list at once, for today. The "⋯" of each row opens a sheet with what is done to
- * that list from here: star it (or take the star off), make a copy of it.
+ * that list from here: star it (or take the star off), make a copy of it, delete it (after a question).
  */
 export function listsView(app: App, navigate: Navigate): View {
     const create = h('button', { type: 'button', class: 'button button--primary lists__new', 'aria-label': 'Nuevo listado' }, icon('plus', 18), 'Nuevo');
@@ -89,6 +90,20 @@ export function listsView(app: App, navigate: Navigate): View {
                         .catch((failure: unknown) => fail(failure, 'No se pudo duplicar el listado.'));
                 });
             }, { hint: 'Una copia para hoy, con los mismos cantos y tonos' }),
+            // Last and set apart, so it is not touched by mistake next to the others
+            sheetAction('trash', 'Eliminar listado', () => {
+                error.textContent = '';
+                sheet.close(() => {
+                    confirmDialog({
+                        title: `¿Eliminar «${list.title}»?`,
+                        text: 'Se borra el listado de todos tus dispositivos. Los cantos no se borran. No se puede deshacer.',
+                        confirm: 'Eliminar',
+                        danger: true,
+                    })
+                        .then((confirmed) => (confirmed ? app.setlists.remove(list.id).then(() => showToast('Listado eliminado', 3000, true)) : undefined))
+                        .catch((failure: unknown) => fail(failure, 'No se pudo eliminar el listado.'));
+                });
+            }, { danger: true, apart: true }),
         );
     };
 

@@ -107,9 +107,6 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
     songSheet.element.classList.add('sheet-layer--window');
     element.append(listSheet.element, songSheet.element);
 
-    /** This screen is deleting its own list: it leaves by itself, once */
-    let leaving = false;
-
     const print = (version: PrintVersion): void => {
         // Straight from the tap (a browser may refuse to print from anything later), then the sheet goes
         printPlans(
@@ -128,14 +125,6 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             h('h4', { class: 'sheet__title' }, setlist.title),
             h('p', { class: 'sheet__sub' }, rows === 1 ? '1 canto' : `${rows} cantos`),
             ...(rows > 0 ? [action('printer', 'Imprimir con acordes', () => print('chords')), action('printer', 'Imprimir solo la letra', () => print('lyrics'))] : []),
-            action('trash', 'Eliminar listado', () => {
-                listSheet.close(() => {
-                    if (confirm(`¿Eliminar “${setlist.title}”? No se puede deshacer.`)) {
-                        leaving = true;
-                        void app.setlists.remove(setlist.id).then(() => navigate(paths.lists()));
-                    }
-                });
-            }, { danger: true }),
         );
     };
     more.addEventListener('click', listSheet.open);
@@ -207,6 +196,11 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
         const strays = rows.filter((item) => partIndex(item.part) === MASS_PARTS.length);
         slots.replaceChildren(...known, ...(strays.length > 0 ? [strangers(strays)] : []));
         count.textContent = rows.length === 1 ? '1 canto' : `${rows.length} cantos`;
+        // Printing is all this sheet holds: with no songs it would open empty
+        more.hidden = rows.length === 0;
+        if (more.hidden && listSheet.isOpen()) {
+            listSheet.close();
+        }
         sing.hidden = rows.length === 0;
         if (focused !== null) {
             element.querySelector<HTMLElement>(`[data-focus="${CSS.escape(focused)}"]`)?.focus();
@@ -374,9 +368,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
         void Promise.all([app.setlists.get(setlist.id), songsById(app)]).then(([latest, all]) => {
             if (latest === undefined) {
                 // Deleted on another device while it was open
-                if (!leaving) {
-                    navigate(paths.lists(), { replace: true });
-                }
+                navigate(paths.lists(), { replace: true });
 
                 return;
             }
@@ -399,9 +391,6 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             stop();
             songSheet.release();
             listSheet.release();
-            if (leaving) {
-                return;
-            }
             // What was typed and not yet "changed" (a navigation can come before the blur) is still saved
             const unchanged = title.value === setlist.title && (day.value === '' ? null : day.value) === setlist.eventDate;
             if (!unchanged && title.value.trim() !== '') {

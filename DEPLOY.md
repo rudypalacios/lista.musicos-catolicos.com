@@ -191,8 +191,8 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    lee). **Tocar el canto lo canta desde ahí** (igual que *Cantar desde aquí*; al volver con la flecha de *Cantar* regresas al mismo sitio del listado). El **⋯** de la fila abre una hoja con: *Cantar desde aquí* (ahí se
    cambia el tono, y queda guardado en el listado), *Subir* / *Bajar en esta parte* (solo los que se pueden;
    la hoja sigue abierta para mover otra vez) y *Quitar del listado* (aviso «Quitado · Deshacer» unos
-   segundos). El **⋯** de arriba tiene *Imprimir con acordes*, *Imprimir solo la letra* y *Eliminar listado*
-   (pide confirmación). En la tablet ancha, las partes van en dos columnas que bajan en el orden de la misa.
+   segundos). El **⋯** de arriba tiene *Imprimir con acordes* e *Imprimir solo la letra* (si el listado no tiene cantos, el botón no aparece;
+   *Eliminar listado* ya no está aquí: ver el ítem 23). En la tablet ancha, las partes van en dos columnas que bajan en el orden de la misa.
    Los íconos son propios (no se cargan de ningún sitio). **Solo se confirma en el dispositivo:** que
    el selector de fecha se abra al tocar la pastilla en el iPad, y que imprimir desde la hoja abra AirPrint.
 10. **Jalar para sincronizar.** En cualquier pantalla (menos *Cantar*), con la pantalla hasta arriba, jala el dedo hacia
@@ -271,7 +271,7 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    como la estrella de antes (sube a «★ Destacados», se sincroniza). **Duplicar** abre al instante una copia **para hoy**, con el título
    de un listado nuevo («Misa del 30 de octubre»), los mismos cantos en las mismas partes y **el tono que cada uno tiene en ese
    listado**; no copia la estrella. Un aviso dice «Copiado de “…”». El original queda como estaba. Si no la querías: dentro de la copia,
-   `⋯` → *Eliminar listado*.
+   en *Listados*, `⋮` de su fila → *Eliminar listado* (ítem 23).
 
 20. **Los tres puntos, en vertical y en todas partes.** El botón de «más opciones» (el que antes se escribía «⋯») ahora son **tres puntos
    uno sobre otro (⋮)**, dibujados como imagen, en: la barra de *Cantar*, la cabecera del listado, cada canto del listado y cada
@@ -287,6 +287,13 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    ✕ de la barra de instalar, la flechita de «1/4» en *Cantar* y la estrella de «Destacados» (amarilla). Compáralos en el teléfono y
    en la tablet: deben verse idénticos. En el `⋮` de un listado: si **no** está destacado, «Destacar» lleva una **estrella vacía
    gris**; si ya lo está, «Quitar de destacados» lleva la **estrella llena amarilla**.
+
+23. **Eliminar un listado, desde *Listados*.** El `⋮` de cada fila tiene ahora, al final, en rojo y separado: **Eliminar listado**. Al
+   tocarlo sale un cuadro de la app: «¿Eliminar «…»? Se borra el listado de todos tus dispositivos. Los cantos no se borran. No se
+   puede deshacer.» con **Cancelar** (a la izquierda, ya seleccionado) y **Eliminar** (rojo). Cancelar, tocar fuera o el botón de
+   atrás de Android lo cierran sin borrar. Al eliminar sale «Listado eliminado». Dentro de un listado, su `⋮` ya **no** tiene
+   *Eliminar listado*, solo imprimir. El cuadro se ve igual en todos los aparatos (ya no es el aviso del navegador). Si el listado se
+   borró en otro aparato, desaparece del tuyo al sincronizar.
 
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).

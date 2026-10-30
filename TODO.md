@@ -115,7 +115,7 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       destacados" and **"Duplicar listado"** (`Setlists.duplicate`: a copy for today, with the title of a new list, the songs in
       their parts and order and the key each has in the list; no star, no notes, songs deleted since left out; it opens at once and
       a toast says where it came from). The sheet is where sharing and other per-list actions will go. Not done: copying from
-      "＋ Nuevo" (the owner chose the row's sheet), an undo for the copy ("Eliminar listado" is inside it).
+      "＋ Nuevo" (the owner chose the row's sheet), an undo for the copy ("Eliminar listado" is in the same sheet).
       **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 19.
 - [x] "More options" is one drawn icon, three dots one above the other, on every screen (owner's choice; Cantar's bar no longer
       types a character). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 20.
@@ -127,6 +127,12 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       "Quitar de destacados" the filled yellow one. The reader's old key group (− / key / +, only used before `externalTone`)
       is gone. Back links are named "Volver a …" for screen readers (their text is still the name of the screen).
       **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 22.
+- [x] **"Eliminar listado" moved to the lists screen**: it is the last action (red, set apart) of the row's "⋮" sheet, and it
+      asks first with a dialog drawn by the app (`views/confirm-dialog.ts`: "Cancelar" is the focused answer, Escape, a touch
+      outside and the back button also cancel) instead of the browser's `confirm()`, which looks different on each device. A
+      toast says "Listado eliminado". It is gone from inside a list, whose "⋮" now only prints (so it is hidden while the list has
+      no songs). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 23. Still on the browser's `confirm()`: deleting a song
+      (`views/edit.ts`) and signing out with unsent changes (`signOut`): move them to `confirmDialog` when the owner wants.
 - [ ] Adding several songs to one part takes a round trip per song (the picker returns to the list).
       If that is slow in practice, let the picker stay open and show what has been added.
 - [ ] **Paused (owner, after the UI session).** Duplicate a list ("copiar listado") to start next Sunday's from this
