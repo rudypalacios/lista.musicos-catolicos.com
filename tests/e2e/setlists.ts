@@ -234,10 +234,15 @@ try {
     await openTools(page);
     await page.getByRole('button', { name: 'Subir un semitono' }).click();
     await page.getByRole('button', { name: 'Subir un semitono' }).click();
+    await page.locator('.tone-control__hint').waitFor();
+    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+    await page.locator('.toast', { hasText: 'Tono guardado en este listado' }).waitFor();
+    await page.locator('.tone-control__hint').waitFor({ state: 'hidden' });
     await closeSheet(page);
     await page.getByRole('link', { name: 'Volver al listado' }).click();
     await entrada.locator('.item__key.is-changed', { hasText: 'Re' }).waitFor();
-    pass('the list shows the key to read; it is changed while singing, and shows in amber when it is not the song\'s own (Do → Re)');
+    assert.equal(await entrada.locator('.item__today').count(), 0, 'a saved key is not "hoy"');
+    pass('the list shows the key to read; it is changed while singing, saved with "Guardar", and shows in amber when it is not the song\'s own (Do → Re)');
 
     await openSection(page, 'Cantos');
     await page.getByRole('link', { name: 'Abrimos la puerta' }).click();
@@ -446,6 +451,7 @@ try {
 
     await openTools(page);
     await page.getByRole('button', { name: 'Subir un semitono' }).click();
+    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
     await closeSheet(page);
     await page.waitForFunction(() => document.querySelector('#song-sheet .ch')?.textContent === 'Lab');
     assert.deepEqual(await chords(page), ['Lab', 'Mib']);
@@ -454,6 +460,37 @@ try {
     assert.equal(afterShift.setlists[0]?.items.length, 3);
     assert.equal(afterShift.songs.find((song) => song.title === 'Gloria sencilla')?.body, SONGS[1]?.[1], 'the song on the server is unchanged');
     pass('changing the key while singing is saved to the item of the list, not to the song');
+
+    // A change that is not saved is only for today: it is shown, it survives a reload, and the list keeps its key
+    await openTools(page);
+    await page.getByRole('button', { name: 'Subir un semitono' }).click();
+    await page.getByRole('button', { name: 'Subir un semitono' }).click();
+    await page.locator('.perform__strip-key.is-today').waitFor();
+    assert.deepEqual(await chords(page), ['Sib', 'Fa']);
+    await closeSheet(page);
+    await page.reload();
+    await page.getByRole('heading', { name: 'Gloria sencilla' }).waitFor();
+    assert.deepEqual(await chords(page), ['Sib', 'Fa'], 'the key of today survives a reload');
+    await page.getByRole('link', { name: 'Volver al listado' }).click();
+    await slot(page, 'Canto de comunión').locator('.item__today', { hasText: 'hoy' }).waitFor();
+    assert.equal(await serverData(page).then((data) =>
+        data.setlists[0]?.items.find((item) => item.part === 'comunion' && item.songId === data.songs.find((s) => s.title === 'Gloria sencilla')?.id)?.transpose), 1,
+    'nothing was written to the list');
+    await page.getByRole('link', { name: 'Cantar' }).click();
+    await jumpTo(page, 2);
+    await page.getByRole('heading', { name: 'Gloria sencilla' }).waitFor();
+    assert.deepEqual(await chords(page), ['Sib', 'Fa'], 'the key of today is there when the song is opened from the list');
+    await openTools(page);
+    await page.getByRole('button', { name: /Volver al tono del listado/ }).click();
+    await page.locator('.tone-control__hint').waitFor({ state: 'hidden' });
+    assert.deepEqual(await chords(page), ['Lab', 'Mib']);
+    await closeSheet(page);
+    await page.getByRole('link', { name: 'Volver al listado' }).click();
+    await page.locator('section.slot').first().waitFor();
+    assert.equal(await page.locator('.item__today').count(), 0, 'going back to the saved key clears "hoy"');
+    pass('a key that is not saved is only for today: amber in the strip, "hoy" in the list, kept through a reload, nothing written, and "Listado" goes back');
+    await page.getByRole('link', { name: 'Cantar' }).click();
+    await jumpTo(page, 2);
 
     // ----- offline -----
     await ipad.setOffline(true);
@@ -467,6 +504,7 @@ try {
 
     await openTools(page);
     await page.getByRole('button', { name: 'Bajar un semitono' }).click();
+    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
     await closeSheet(page);
     await page.getByRole('link', { name: 'Volver al listado' }).click();
     await page.locator('section.slot').first().waitFor();

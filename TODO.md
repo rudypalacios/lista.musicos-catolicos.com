@@ -69,6 +69,19 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       the lines that matched, also on Cantos). No highlight of the matched words on purpose: showing the matching
       line does the job with no offset mapping across accents. Not added: searching inside the key or chords.
       **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 14.
+- [x] The key of a song in a list (PR 1 of 3, the owner's design: `maquetas del tono`): in Cantar's "⋯" sheet, **Tono**
+      (`views/tone-control.ts`): − / + move the key **for today only** (kept on the device in `today-keys.ts`, never synced,
+      expiring at 5 in the morning, surviving a reload) and **Guardar** leaves it in the list; "Listado Fa" goes back to the
+      saved key. The row of the list shows "hoy" beside a key of today and the folded strip shows it in amber. The sheet
+      is Tono + Letra only: Nota (already gone), Pantalla, Ajustes and Salir left it; a screen lock that fails now says so
+      with a toast. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 15.
+- [ ] The key of a song in a list, PR 2 of 3: **"mi tono"**: a field of the song (migration + sync) that a song starts in when it
+      is added to a list (copied to the item, not followed), "Guardar ▾" with "Solo hoy / En este listado / Como mi tono /
+      En el listado y como mi tono", "Mío Re" in the reference line, and the same control on the song page in Cantos.
+- [ ] The key of a song in a list, PR 3 of 3: **touching a row opens Cantar there** (today it does nothing), and **"Editar letra y
+      acordes"** in the "⋯" sheet (it comes back to Cantar), with the one-line notices "Está en 3 listados" and "El tono
+      original pasó de Do a Re" (each opens its text with an info button) and the rule that editing a chart never changes the
+      key a person sings in (the offsets are adjusted when the original key moves).
 - [ ] Adding several songs to one part takes a round trip per song (the picker returns to the list).
       If that is slow in practice, let the picker stay open and show what has been added.
 - [ ] **Paused (owner, after the UI session).** Duplicate a list ("copiar listado") to start next Sunday's from this

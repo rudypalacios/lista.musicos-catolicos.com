@@ -233,6 +233,17 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    título o el autor salen primero, y si el canto salió por la letra, las dos líneas son las que coinciden.
    En la pantalla *Cantos* pasa igual, con esas líneas solo cuando el canto salió por la letra. Probar también sin conexión.
 
+15. **El tono de un canto en un listado: «solo hoy» y «Guardar».** En *Cantar*, toca `⋯`: la hoja tiene **Tono** y **Letra**
+   (ya no tiene Pantalla, Ajustes ni Salir; esos están en el menú del listado y en Ajustes). En *Tono* hay `− Do +`: moverlo
+   **no guarda nada**, solo cambia el tono **por hoy**: el número sale en ámbar con «Solo hoy» y aparece **Guardar**. Debajo
+   dice «Original Do · Listado Fa»; tocar «Fa» vuelve al tono del listado. Prueba:
+   (a) sube un semitono, **no** guardes, sal al listado: ese canto dice «hoy» junto al tono (la fila no cambia en nada más), y
+   al volver a *Cantar* sigue en el tono de hoy; con la barra plegada, el tono sale en ámbar. (b) Recarga la página en medio:
+   el tono de hoy sigue. (c) Toca **Guardar**: aviso «Tono guardado en este listado», desaparece «Solo hoy» y la fila ya no dice
+   «hoy». (d) Al día siguiente (pasadas las 5 de la mañana) un tono de hoy sin guardar ya no está. (e) En otro dispositivo, el
+   tono de hoy **no** aparece (es solo de este aparato). (f) Si el aparato no puede mantener la pantalla encendida, sale un aviso
+   mientras cantas; el ajuste está en *Ajustes*. Probar también sin conexión.
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.

@@ -168,7 +168,7 @@ function routeView(data: App, route: Route, navigate: Navigate): Promise<View> {
                     return setlistView(data, navigate, setlist);
                 }
                 if (route.name === 'perform') {
-                    return performView(data, navigate, setlist, route.n, accountOf(data));
+                    return performView(data, navigate, setlist, route.n);
                 }
                 const part = MASS_PARTS.find((candidate) => candidate.id === route.part);
 

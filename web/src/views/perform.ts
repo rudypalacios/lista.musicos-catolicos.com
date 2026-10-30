@@ -5,12 +5,15 @@ import { h, link } from '../dom.ts';
 import { nextFold, type FoldState } from '../fold.ts';
 import { MASS_PARTS } from '../mass.ts';
 import { readKeepAwake } from '../prefs.ts';
+import { todayKeys } from '../today-keys.ts';
+import { showToast } from '../toast.ts';
 import { paths } from '../router.ts';
 import { dragOffset, isSwipe, swipeAxis, type Axis } from '../swipe.ts';
 import { describeAwake, screenKeeper } from '../wakelock.ts';
-import { createReader } from './reader.ts';
+import { createReader, type Reader } from './reader.ts';
 import { createSheet } from './sheet.ts';
-import type { Account, Navigate, View } from './types.ts';
+import { createToneControl, type ToneControl } from './tone-control.ts';
+import type { Navigate, View } from './types.ts';
 
 /** How long (ms) the song takes to leave the screen once the finger lets go */
 const EXIT_TIME = 140;
@@ -32,9 +35,9 @@ function partName(item: SetlistItem): string {
 /**
  * Singing a setlist: the songs in the order of the Mass, one at a time, big. Between songs by a
  * swipe (the song follows the finger), the arrow keys, or the position button, which lists them all.
- * The key a song is read in is the one of its item; changing it here is saved to the item (it is
- * the same "for this list" change as in the list). Everything comes from the device, so it works
- * with no connection.
+ * The key a song is read in is the one of its item, or the one of today if there is one: − and + in
+ * "⋯" only change it for today (kept on this device, expiring the next morning) and "Guardar" leaves
+ * it in the item, "for this list". Everything comes from the device, so it works with no connection.
  *
  * The bar floats over the lyrics (so folding it never moves them): one row with the way back, the
  * song, its position and "⋯" for every other tool; it folds to a thin strip with the song and its key
@@ -42,7 +45,7 @@ function partName(item: SetlistItem): string {
  *
  * @param n 1-based position in the order of the Mass; out of range is brought into range
  */
-export async function performView(app: App, navigate: Navigate, setlist: Setlist, n: number, account: Account): Promise<View> {
+export async function performView(app: App, navigate: Navigate, setlist: Setlist, n: number): Promise<View> {
     const order = inMassOrder(setlist.items);
     if (order.length === 0) {
         const back = link(paths.setlist(setlist.id), '← Listado', 'button back');
@@ -87,6 +90,7 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     // --- the song ---
     let stage: HTMLElement;
     let tools: HTMLElement | null = null;
+    let tone: ToneControl | null = null;
     let dispose: () => void = () => undefined;
     if (song === undefined) {
         stage = h(
@@ -95,52 +99,76 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
             h('div', { class: 'viewer-content' }, h('h2', {}, 'Canto eliminado'), h('p', {}, 'Este canto ya no está en la biblioteca. Quítalo del listado o sigue con el siguiente.')),
         );
     } else {
-        const reader = createReader(song, {
+        /** The key saved in the list for this song (it changes when the person saves) */
+        let saved = item.transpose;
+        let today = todayKeys.get(setlist.id, item.id);
+        if (today === saved) {
+            // The list was changed to the key of today (on another device, say): nothing is left to remember
+            todayKeys.clear(setlist.id, item.id);
+            today = null;
+        }
+        let reader: Reader | undefined;
+        const markStrip = (): void => {
+            stripKey.classList.toggle('is-today', reader !== undefined && reader.shift() !== saved);
+        };
+        reader = createReader(song, {
             sizeScope: 'setlist',
-            shift: item.transpose,
+            shift: today ?? saved,
+            externalTone: true,
             onShift: (shift) => {
                 error.textContent = '';
-                app.setlists.setTranspose(setlist.id, item.id, shift).catch((failure: unknown) => {
-                    error.textContent = failure instanceof Error ? failure.message : 'No se pudo guardar el tono.';
-                });
+                if (shift === saved) {
+                    todayKeys.clear(setlist.id, item.id);
+                } else {
+                    todayKeys.set(setlist.id, item.id, shift);
+                }
+                markStrip();
             },
             onKey: (key) => {
                 stripKey.textContent = key ?? '';
+                markStrip();
+                tone?.refresh();
             },
         });
-        tools = reader.toolbar;
-        stage = reader.stage;
-        dispose = reader.dispose;
+        const own = reader;
+        markStrip();
+        tone = createToneControl({
+            reader: own,
+            saved: () => saved,
+            save: async (shift) => {
+                error.textContent = '';
+                try {
+                    await app.setlists.setTranspose(setlist.id, item.id, shift);
+                } catch (failure) {
+                    error.textContent = failure instanceof Error ? failure.message : 'No se pudo guardar el tono.';
+
+                    return;
+                }
+                saved = shift;
+                todayKeys.clear(setlist.id, item.id);
+                markStrip();
+                showToast('Tono guardado en este listado', 3500, true);
+            },
+        });
+        tools = own.toolbar;
+        stage = own.stage;
+        dispose = own.dispose;
     }
 
-    // --- "⋯": every tool and the account ---
-    const toolsSheet = createSheet('Herramientas');
-    const sync = h('span', { class: 'perform__sync', role: 'status' }, account.syncText());
-    const stopSync = account.onSync((text) => {
-        sync.textContent = text;
-    });
-    // Leave through the sheet's own close, so the history entry it holds is given back first
-    const settingsLink = link(paths.settings(), 'Ajustes', 'button');
-    settingsLink.addEventListener('click', (click) => {
-        click.preventDefault();
-        toolsSheet.close(() => navigate(paths.settings()));
-    });
-    const signOut = h('button', { type: 'button', class: 'button button--danger' }, 'Salir');
-    signOut.addEventListener('click', () => account.signOut());
-    toolsSheet.body.append(...(tools !== null ? [h('h3', {}, 'Tono y letra'), tools] : []));
-    // The screen stays on while a song is on screen, unless the person turned that off in Ajustes
+    // --- "⋯": the key and the lyrics tools ---
+    const toolsSheet = createSheet('Tono y letra');
+    if (tools !== null && tone !== null) {
+        toolsSheet.body.append(h('h3', {}, 'Tono'), tone.element, h('h3', {}, 'Letra'), tools);
+    }
+    // The screen stays on while a song is on screen, unless the person turned that off in Ajustes. Nothing
+    // on screen says so any more: only a failure is worth a word.
     const keepAwake = readKeepAwake();
     const releaseScreen = keepAwake ? screenKeeper.hold() : (): void => undefined;
-    const awake = h('p', { class: 'perform__awake', role: 'status' }, describeAwake(keepAwake, screenKeeper.state()));
     const stopAwake = screenKeeper.onChange((state) => {
-        awake.textContent = describeAwake(keepAwake, state);
+        if (keepAwake && state === 'blocked') {
+            showToast(describeAwake(true, 'blocked'), 6000, true);
+        }
     });
-    toolsSheet.body.append(
-        h('h3', {}, 'Pantalla'), awake,
-        h('h3', {}, 'Cuenta'),
-        h('div', { class: 'perform__account' }, settingsLink, signOut),
-        sync,
-    );
     moreButton.addEventListener('click', toolsSheet.open);
 
     // --- the position button: the songs of the list, to jump to one ---
@@ -273,7 +301,6 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
             document.removeEventListener('keydown', onKey);
             toolsSheet.release();
             jumpSheet.release();
-            stopSync();
             stopAwake();
             releaseScreen();
             dispose();

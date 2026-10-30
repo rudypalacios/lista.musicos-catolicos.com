@@ -1755,6 +1755,11 @@ body {
     font-weight: 700;
 }
 
+/* A key set only for today: amber, like a key that is not the song's own */
+.perform__strip-key.is-today {
+    color: var(--warn);
+}
+
 .perform__strip-count {
     font-weight: 700;
     font-variant-numeric: tabular-nums;
@@ -1906,25 +1911,6 @@ body {
 .sheet .toolbar button {
     min-width: 3rem;
     min-height: 3rem;
-}
-
-.perform__account {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
-.perform__awake {
-    margin: 0;
-    color: var(--muted);
-    font-size: 0.85rem;
-}
-
-.perform__sync {
-    display: block;
-    margin-top: 0.6rem;
-    color: var(--muted);
-    font-size: 0.85rem;
 }
 
 .perform__songs {
@@ -2128,4 +2114,92 @@ button.sheet-action.is-danger .icon {
     border: 0;
     font-weight: 700;
     pointer-events: auto;
+}
+
+/* ===== The key of a song in a list: − / + for today, "Guardar" for the list ===== */
+.tone-control__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tone-control__step {
+    display: flex;
+    align-items: center;
+    min-height: 2.75rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 0.6rem;
+}
+
+.tone-control__step button {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    font: inherit;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+}
+
+.tone-control__key {
+    min-width: 3.6rem;
+    text-align: center;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.tone-control__step.is-changed {
+    border-color: var(--warn);
+}
+
+.tone-control__step.is-changed .tone-control__key {
+    color: var(--warn);
+}
+
+.tone-control__hint {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--warn);
+}
+
+.tone-control__refs {
+    margin: 0.65rem 0 0;
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.tone-control__refs b {
+    color: var(--text);
+    font-weight: 600;
+}
+
+/* "Listado Fa" while there is a change: tapping it goes back to the saved key */
+.tone-control__back {
+    padding: 0.5rem 0.25rem;
+    margin: -0.5rem 0;
+    font: inherit;
+    font-weight: 600;
+    color: var(--warn);
+    background: transparent;
+    border: 0;
+    text-decoration: underline;
+    text-underline-offset: 0.18rem;
+    cursor: pointer;
+}
+
+/* "hoy" beside the key of a row in the list */
+.item__today {
+    display: inline-block;
+    margin-left: 0.35rem;
+    padding: 0 0.45rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
 }

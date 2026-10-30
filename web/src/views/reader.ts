@@ -21,6 +21,8 @@ export interface ReaderOptions {
      * shown, or null when the song has none. For whoever shows the key somewhere else too.
      */
     onKey?: (key: string | null) => void;
+    /** The key is changed from somewhere else (`Reader.setShift`): the toolbar leaves out its own − / + buttons */
+    externalTone?: boolean;
 }
 
 /** Columns button: auto → two → one → auto */
@@ -28,8 +30,14 @@ const NEXT_COLUMNS: Readonly<Record<ColumnMode, ColumnMode>> = { auto: 'two', tw
 const COLUMNS_LABEL: Readonly<Record<ColumnMode, string>> = { auto: 'Columnas: auto', two: 'Columnas: 2', one: 'Columnas: 1' };
 
 export interface Reader {
-    /** Key, notation, lyrics size and fit */
+    /** Key (unless `externalTone`), notation, lyrics size and fit */
     toolbar: HTMLElement;
+    /** The key on screen, in semitones from the song's own */
+    shift: () => number;
+    /** Puts the song in another key, as if the person had pressed − / +: it calls `onShift` when it changes */
+    setShift: (next: number) => void;
+    /** The name of the key `shift` semitones from the song's own, in the notation shown; null when the song has no key */
+    keyName: (shift: number) => string | null;
     /** Where the song is drawn: give it all the space left, it fits the song to it */
     stage: HTMLElement;
     dispose: () => void;
@@ -94,7 +102,7 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
     const toolbar = h(
         'div',
         { class: 'toolbar', role: 'toolbar', 'aria-label': 'Herramientas de la letra' },
-        h('div', { class: 'group' }, down, keyButton, up),
+        ...(options.externalTone === true ? [] : [h('div', { class: 'group' }, down, keyButton, up)]),
         h('div', { class: 'group' }, smaller, bigger),
         extra,
         live,
@@ -204,6 +212,16 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
 
     return {
         toolbar,
+        shift: () => t,
+        setShift: (next) => {
+            const before = t;
+            t = next % 12;
+            update();
+            if (t !== before) {
+                options.onShift(t);
+            }
+        },
+        keyName: (shift) => (original === null ? null : transpose(original, shift, notation)),
         stage,
         dispose: () => {
             observer.disconnect();
