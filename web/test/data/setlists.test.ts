@@ -413,46 +413,13 @@ describe('Setlists', () => {
         });
 
         it('keeps working after a change that failed', async () => {
-            const failed = lists.setNote(list.id, first, 'a'.repeat(LIMITS.itemNote + 1));
+            const failed = lists.addItem(list.id, 'no-existe', 's1');
             const fine = lists.shiftItem(list.id, first, 1);
 
-            await assert.rejects(failed, /nota.*larga/);
+            await assert.rejects(failed, /no existe/);
             await fine;
 
             assert.equal(await transposeOf(list.id, first), 1);
-        });
-
-        it('keeps a trimmed note and refuses one over the limit', async () => {
-            await lists.setNote(list.id, first, '  sin el último coro ');
-
-            assert.equal((await itemsOf(list.id))[0]?.note, 'sin el último coro');
-            await assert.rejects(lists.setNote(list.id, first, 'ñ'.repeat(LIMITS.itemNote + 1)), /demasiado larga/);
-            await lists.setNote(list.id, first, 'ñ'.repeat(LIMITS.itemNote));
-            assert.equal(Array.from((await itemsOf(list.id))[0]?.note ?? '').length, LIMITS.itemNote);
-        });
-
-        it('refuses a change that would make the list too big for the server, and saves nothing', async () => {
-            const emoji = '🎵'.repeat(LIMITS.itemNote);
-            let refused: unknown = null;
-            for (let i = 0; i < 30 && refused === null; i++) {
-                await lists.addItem(list.id, 'salida', 's1');
-            }
-            const ids = (await itemsOf(list.id)).map((item) => item.id);
-            let saved = 0;
-            for (const id of ids) {
-                try {
-                    await lists.setNote(list.id, id, emoji);
-                    saved++;
-                } catch (error) {
-                    refused = error;
-                    break;
-                }
-            }
-
-            assert.ok(refused instanceof ValidationError && /demasiado grande/.test(refused.message));
-            assert.ok(saved >= 1 && saved < ids.length);
-            const bytes = new TextEncoder().encode(JSON.stringify((await lists.get(list.id))?.items)).length;
-            assert.ok(bytes <= LIMITS.itemsJson, `what is stored fits (${bytes} bytes)`);
         });
     });
 

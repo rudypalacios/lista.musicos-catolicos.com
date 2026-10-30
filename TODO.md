@@ -92,8 +92,7 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
 
 - [x] Mass template from `MASS_PARTS` (`web/src/mass.ts`): every part is a slot, five are marked
       "opcional", and the sign of peace has its explanation behind a visible ⓘ button.
-- [x] One or several songs per part; key per item (semitones, −11…11) **for that list only**; a note per
-      item; order within the part; at most 80 items and 60,000 bytes of items per list.
+- [x] One or several songs per part; key per item (semitones, −11…11) **for that list only**; order within the part; at most 80 items and 60,000 bytes of items per list.
 - [x] A list is one record with its items inside, in the same store, queue and sync as songs, with one
       change counter for both (`Sequence`, `ChangeFeed`; `GET`/`POST /api/sync` carry `songs` and `setlists`).
 - [x] Screens: `/listados`, `/listados/:id`, `/listados/:id/agregar/:part`, `/listados/:id/cantar/:n`, and
@@ -113,11 +112,11 @@ Phase 4, quiet and quick (no schema change):
       returns to the same place in the list.
 - [x] "Aclamación memorial" explains itself with the ⓘ button.
 - [x] The same song in two parts is allowed, with a notice when it is added (not while searching) and on both rows.
-- [x] Notes of a list item were out of the way (a "Nota" button, one muted line). **Replaced:** the setlist screen
-      (`views/setlist.ts`) no longer shows or edits notes (the list's, the items'); the data keeps them
-      (`Setlist.notes`, `SetlistItem.note`, `Setlists.setNote`, all untouched), so nothing is lost. **The note of a
-      song is still written while singing** (behind "⋯", with its dot). The owner will write notes in ChordPro and
-      then decide how to show them on the list (see phase 7).
+- [x] No notes anywhere (owner's call: unused; a capo goes in the lyrics as `{capo: 2}`). The "Nota" field behind "⋯"
+      while singing, its dot on "⋯" and `Setlists.setNote` are gone, and the setlist screen showed none already.
+      **The data keeps them** (`Setlist.notes`, `SetlistItem.note`, the API and the columns, untouched), so what was
+      written is not lost and an old copy of the app still syncs; they are just not shown or edited. Removing the
+      fields from the API and the database would be a destructive migration: only if the owner asks.
 - [x] Swiping between songs: no browser rubber-band or sideways pull (`overscroll-behavior`,
       `touch-action`), and the next song slides in. **Owner's check on the Android:** the stretch is gone.
 - [x] Wide screens: parts in two columns, each song's tools on one line.
@@ -167,8 +166,7 @@ Next, in this order (design agreed with the owner):
       parts, a template manager (the Mass is the default); tags on songs, one per part by default; the
       picker of a part filters by its tag, with "Mostrar todos" always at hand and no filter when no
       song carries the tag; the PDF importer could tag by part.
-- [ ] Phase 7, ChordPro (notes first: the owner will write the notes of a list or a song in ChordPro, and then we
-      decide how to show them; the notes already stored are kept, see above): the easy tier, first in `musicos-catolicos` (the reference), then ported here
+- [ ] Phase 7, ChordPro (the easy tier, first in `musicos-catolicos` (the reference), then ported here
       with new golden fixtures: owner wants repeat marks like "bis" written as comments, and a chord in
       parentheses such as `[(G)]` recognised (needs the owner's confirmation of the syntax and that the
       public site changes too). Chord diagrams are not planned.
@@ -215,7 +213,7 @@ Next, in this order (design agreed with the owner):
 - A song is limited to 60,000 bytes of lyrics (the MySQL `TEXT` column).
 - A setlist is one record: if two devices edit the same list while apart, the later edit wins as a whole
   and the other is lost (a personal tool, where that is rare). Edit a list on one device at a time.
-- The notes of a list are limited to 2,000 characters, the note of an item to 500, a list to 80 items
+- The (no longer shown) notes of a list are limited to 2,000 characters, the note of an item to 500, a list to 80 items
   and 60,000 bytes of items.
 - An upgrade of the on-device database waits while another window of an older version of the app is open
   (the splash says to close it).

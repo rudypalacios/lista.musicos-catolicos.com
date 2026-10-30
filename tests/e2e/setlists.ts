@@ -388,15 +388,9 @@ try {
 
     await page.keyboard.press('ArrowRight');
     await page.getByRole('heading', { name: 'Pan de vida' }).waitFor();
-    assert.equal(await page.locator('.perform__more.has-note').count(), 0, 'no dot on "⋯": this song has no note yet');
-    assert.equal(await page.getByLabel('Nota de este canto').isVisible(), false, 'the note is out of the way');
     await openTools(page);
-    await page.getByLabel('Nota de este canto').fill('Sin el último coro');
-    await page.getByLabel('Nota de este canto').blur();
-    await closeSheet(page);
-    assert.equal(await page.locator('.perform__more.has-note').count(), 1, 'a dot says there is one');
-    await openTools(page);
-    assert.match(await page.getByLabel('Nota de este canto').inputValue(), /Sin el último coro/);
+    assert.equal(await page.getByLabel('Nota de este canto').count(), 0, 'singing has no note field');
+    assert.equal(await page.locator('.perform__more.has-note').count(), 0);
     await closeSheet(page);
     await page.keyboard.press('ArrowLeft');
     await page.getByRole('heading', { name: 'Gloria sencilla' }).waitFor();

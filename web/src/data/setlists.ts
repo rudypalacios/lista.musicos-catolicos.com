@@ -244,16 +244,6 @@ export class Setlists {
         );
     }
 
-    /** @throws ValidationError */
-    setNote(id: string, itemId: string, note: string): Promise<Setlist> {
-        const text = note.trim();
-        if (Array.from(text).length > LIMITS.itemNote) {
-            return Promise.reject(new ValidationError(`La nota es demasiado larga (máximo ${LIMITS.itemNote} caracteres).`));
-        }
-
-        return this.editItems(id, (items) => items.map((item) => (item.id === itemId ? { ...item, note: text } : item)));
-    }
-
     // --- internals ---
 
     private editItems(id: string, change: (items: readonly SetlistItem[]) => readonly SetlistItem[]): Promise<Setlist> {
