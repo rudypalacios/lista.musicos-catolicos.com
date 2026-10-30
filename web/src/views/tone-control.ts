@@ -1,5 +1,6 @@
 import { h } from '../dom.ts';
 import { icon } from '../icons.ts';
+import { showToast } from '../toast.ts';
 import type { Reader } from './reader.ts';
 
 /** Somewhere the key on screen can be saved to */
@@ -23,7 +24,7 @@ export interface ToneControlOptions {
     hint: string;
     /** What the main button says when there is a change ("Guardar", "Guardar como mi tono") */
     primaryLabel: string;
-    /** The first is what the main button does; with more than one, an arrow opens the rest */
+    /** The first is what the main button does at first; with more than one, an arrow opens the menu where another can be marked */
     destinations: readonly ToneDestination[];
     /** Where the room is short (the song page): the line under the control shows only while there is a change */
     compact?: boolean;
@@ -40,7 +41,8 @@ const signed = (shift: number): string => (shift > 0 ? `+${shift}` : String(shif
 
 /**
  * The key of a song: − and + move it for now only (nothing is written), and "Guardar" leaves it
- * somewhere: in a list, that is the list; the arrow offers the person's own key as well. Under it,
+ * somewhere: in a list, that is the list; the arrow's menu marks what "Guardar" does (the list, the person's own key,
+ * both, or "solo hoy", which writes nowhere), and "Guardar" always does what is marked. Under it,
  * where the key comes from (the song's own, the person's, the list's); the saved one is a button
  * back to it while there is a change.
  */
@@ -62,6 +64,8 @@ export function createToneControl(options: ToneControlOptions): ToneControl {
     const row = h('div', { class: 'tone-control__row' }, step, split, hint);
     const element = h('div', { class: 'tone-control' }, row, menu, references, live);
 
+    /** What "Guardar" does: a destination, or null for "solo hoy" (nothing is written). Starts on the first destination. */
+    let chosen: ToneDestination | null = options.destinations[0] ?? null;
     const nameOf = (shift: number): string => reader.keyName(shift) ?? signed(shift);
     let spoken = '';
 
@@ -78,14 +82,21 @@ export function createToneControl(options: ToneControlOptions): ToneControl {
         }).catch(() => undefined);
     };
     const fillMenu = (): void => {
-        const stay = h('button', { type: 'button', class: 'tone-control__option is-current', 'aria-current': 'true' },
-            h('span', {}, options.hint), h('span', { class: 'tone-control__check', 'aria-hidden': 'true' }));
-        stay.addEventListener('click', closeMenu);
-        menu.replaceChildren(stay, ...options.destinations.map((destination) => {
-            const option = h('button', { type: 'button', class: 'tone-control__option' }, h('span', {}, destination.label));
-            option.addEventListener('click', () => run(destination, option));
+        const entry = (text: string, destination: ToneDestination | null): HTMLElement => {
+            const marked = destination === chosen;
+            const option = h('button', { type: 'button', class: `tone-control__option${marked ? ' is-current' : ''}`, ...(marked ? { 'aria-current': 'true' } : {}) },
+                h('span', {}, text), ...(marked ? [h('span', { class: 'tone-control__check', 'aria-hidden': 'true' })] : []));
+            // Marks it: nothing is written until "Guardar"
+            option.addEventListener('click', () => {
+                chosen = destination;
+                closeMenu();
+                fillMenu();
+                more.focus({ preventScroll: true });
+            });
+
             return option;
-        }));
+        };
+        menu.replaceChildren(entry(options.hint, null), ...options.destinations.map((destination) => entry(destination.label, destination)));
     };
 
     function refresh(): void {
@@ -98,6 +109,11 @@ export function createToneControl(options: ToneControlOptions): ToneControl {
         hint.hidden = !changed;
         if (!changed) {
             closeMenu();
+            // Whatever was marked is forgotten with the change: the next one starts on the first destination again
+            if (chosen !== (options.destinations[0] ?? null)) {
+                chosen = options.destinations[0] ?? null;
+                fillMenu();
+            }
         }
         const own = reader.keyName(0);
         references.replaceChildren();
@@ -129,9 +145,11 @@ export function createToneControl(options: ToneControlOptions): ToneControl {
     down.addEventListener('click', () => reader.setShift(reader.shift() - 1));
     up.addEventListener('click', () => reader.setShift(reader.shift() + 1));
     save.addEventListener('click', () => {
-        const [primary] = options.destinations;
-        if (primary !== undefined) {
-            run(primary, save);
+        if (chosen === null) {
+            // "Solo hoy" is marked: the key stays as it is and nothing is written
+            showToast('Queda solo para hoy', 3500, true);
+        } else {
+            run(chosen, save);
         }
     });
     more.addEventListener('click', () => {

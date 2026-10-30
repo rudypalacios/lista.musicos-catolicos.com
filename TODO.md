@@ -127,6 +127,9 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       "Quitar de destacados" the filled yellow one. The reader's old key group (− / key / +, only used before `externalTone`)
       is gone. Back links are named "Volver a …" for screen readers (their text is still the name of the screen).
       **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 22.
+- [x] **"Guardar" does what is marked** in the arrow's menu (`views/tone-control.ts`): touching an option only marks it (it starts on
+      "En este listado"; the mark is forgotten when the change goes), and "Guardar" does the marked one. With "Solo hoy" marked it
+      writes nowhere and says "Queda solo para hoy". The look of the menu is unchanged. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 16.
 - [x] **"Eliminar listado" moved to the lists screen**: it is the last action (red, set apart) of the row's "⋮" sheet, and it
       asks first with a dialog drawn by the app (`views/confirm-dialog.ts`: "Cancelar" is the focused answer, Escape, a touch
       outside and the back button also cancel) instead of the browser's `confirm()`, which looks different on each device. A
