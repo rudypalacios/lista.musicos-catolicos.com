@@ -26,6 +26,12 @@ const ENGLISH_OF: Readonly<Record<string, string>> = Object.fromEntries(
     Object.entries(LATIN).map(([english, latin]) => [latin.toLowerCase(), english]),
 );
 
+/**
+ * A chord in parentheses ("(G)": played only on some repetitions). The parentheses are kept in every
+ * notation and through transposition; the chord inside is read like any other.
+ */
+const OPTIONAL_PATTERN = /^\([ \t\n\v\f\r]*([^()]+?)[ \t\n\v\f\r]*\)$/;
+
 /** Chromatic scale for transposing: flats for the black keys, as the site does */
 const SCALE = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'] as const;
 const SEMITONE: Readonly<Record<string, number>> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
@@ -37,6 +43,10 @@ const SEMITONE: Readonly<Record<string, number>> = { C: 0, D: 2, E: 4, F: 5, G: 
 export function english(chord: string): string {
     // Latin first: "Fa#m7" would also match the English pattern (F + "a#m7")
     const name = trim(chord);
+    const optional = OPTIONAL_PATTERN.exec(name);
+    if (optional !== null) {
+        return `(${english(optional[1] ?? '')})`;
+    }
     const m = LATIN_PATTERN.exec(name);
     if (m === null) {
         return name;
@@ -49,6 +59,10 @@ export function english(chord: string): string {
 
 /** "F#m7/C#" → "Fa#m7/Do#". Only the note names change; unknown names are returned as is. */
 export function latin(chord: string): string {
+    const optional = OPTIONAL_PATTERN.exec(chord);
+    if (optional !== null) {
+        return `(${latin(optional[1] ?? '')})`;
+    }
     const m = ENGLISH_PATTERN.exec(chord);
     if (m === null) {
         return chord;
@@ -64,6 +78,10 @@ export function latin(chord: string): string {
  * "Cmaj7" → "C", "D/F#" → "D". Null when it is not a chord.
  */
 export function key(chord: string): string | null {
+    const optional = OPTIONAL_PATTERN.exec(chord);
+    if (optional !== null) {
+        return key(optional[1] ?? '');
+    }
     const m = ENGLISH_PATTERN.exec(chord);
     if (m === null) {
         return null;
@@ -91,6 +109,10 @@ function note(letter: string, accidental: string, shift: number, notation: Notat
  * +2 → "E/G#". Anything that is not a chord stays as written (song.js `chordName`).
  */
 export function transpose(chord: string, shift: number, notation: Notation): string {
+    const optional = OPTIONAL_PATTERN.exec(chord);
+    if (optional !== null) {
+        return `(${transpose(optional[1] ?? '', shift, notation)})`;
+    }
     const m = ENGLISH_PATTERN.exec(chord);
     if (m === null) {
         return chord;

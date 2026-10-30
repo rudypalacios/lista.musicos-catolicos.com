@@ -29,4 +29,9 @@ describe('capitaliseChords', () => {
     it('trims the inside of the bracket', () => {
         assert.equal(capitaliseChords('[ c ]Hola'), '[C]Hola');
     });
+
+    it('capitalises a chord in parentheses, and leaves other parentheses alone', () => {
+        assert.equal(capitaliseChords('[(g)]a [(am7)]b [(g/b)]c'), '[(G)]a [(Am7)]b [(G/B)]c');
+        assert.equal(capitaliseChords('[(x2)]a [(bis)]b [()]c'), '[(x2)]a [(bis)]b [()]c');
+    });
 });

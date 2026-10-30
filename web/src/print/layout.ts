@@ -116,7 +116,10 @@ function lineRows(line: Line, version: PrintVersion, m: Metrics): number {
         return version === 'chords' && hasChords ? m.chords : 0.0;
     }
 
-    const rows = Math.max(1, Math.ceil(chars(text).length / m.width));
+    // The note of the line (parser.ts) shares its last row, with a gap, and can push it onto another
+    const note = line[line.length - 1]?.note;
+    const length = chars(text).length + (note === undefined ? 0 : chars(note).length + 2);
+    const rows = Math.max(1, Math.ceil(length / m.width));
 
     return rows * (m.row + (hasChords ? m.chords : 0.0));
 }

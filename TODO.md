@@ -249,10 +249,15 @@ Next, in this order (design agreed with the owner):
       parts, a template manager (the Mass is the default); tags on songs, one per part by default; the
       picker of a part filters by its tag, with "Mostrar todos" always at hand and no filter when no
       song carries the tag; the PDF importer could tag by part.
-- [ ] Phase 7, ChordPro (the easy tier, first in `musicos-catolicos` (the reference), then ported here
-      with new golden fixtures: owner wants repeat marks like "bis" written as comments, and a chord in
-      parentheses such as `[(G)]` recognised (needs the owner's confirmation of the syntax and that the
-      public site changes too). Chord diagrams are not planned.
+- [x] Phase 7, ChordPro (the owner's mockup, done first in `musicos-catolicos` [#43](https://github.com/rudypalacios/musicos-catolicos/pull/43),
+      the reference, then ported here with new golden fixtures): **a note at the end of a line of lyrics**
+      (`{ci: bis}` / `{comment_italic: …}` after the words) is drawn beside the words, in italics (`line__note`; the last segment
+      carries `note`), on screen and on paper; on a line of its own an annotation stays below the stanza as before (`{ci: x2}`);
+      **a chord in parentheses** (`[(G)]`, played only on some repetitions) keeps them, shows `(Sol)` and transposes (`(La)`), the
+      importer keeps the parentheses (before it dropped them: `(G)` came out as `G`), and the editor capitalises `[(g)]`. Decided with
+      the owner: no special case for "bis" on its own line (it stays below like any note; write it at the end of the line). Nothing
+      stored changes. **Merge order:** #43 of `musicos-catolicos` first (the fixtures were made from it). **Owner's check:** `DEPLOY.md`
+      "Fases 4 y 5", item 27. Chord diagrams are not planned.
 
 ## Phase 3: print and safety nets
 
