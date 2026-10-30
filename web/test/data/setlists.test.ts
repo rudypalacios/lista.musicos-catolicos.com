@@ -288,6 +288,43 @@ describe('Setlists', () => {
         });
     });
 
+    describe('a song whose written key moved', () => {
+        it('moves every use of it the other way, so each sounds as it did, and leaves the other songs alone', async () => {
+            const first = await lists.create();
+            const second = await lists.create();
+            await lists.addItem(first.id, 'entrada', 's1');
+            await lists.addItem(first.id, 'salida', 's2');
+            await lists.addItem(second.id, 'comunion', 's1');
+            const [one, two] = await itemsOf(first.id);
+            await lists.setTranspose(first.id, one?.id ?? '', 5);
+            await lists.setTranspose(first.id, two?.id ?? '', 3);
+
+            const touched = await lists.retuneSong('s1', 2);
+
+            assert.equal(touched.length, 2);
+            assert.deepEqual((await itemsOf(first.id)).map((item) => item.transpose), [3, 3]);
+            assert.deepEqual((await itemsOf(second.id)).map((item) => item.transpose), [-2]);
+        });
+
+        it('keeps the shift the shortest way round', async () => {
+            const list = await lists.create();
+            await lists.addItem(list.id, 'entrada', 's1');
+            const [only] = await itemsOf(list.id);
+            await lists.setTranspose(list.id, only?.id ?? '', -5);
+
+            await lists.retuneSong('s1', 3);
+
+            assert.deepEqual((await itemsOf(list.id)).map((item) => item.transpose), [4]);
+        });
+
+        it('writes nothing for a song that is in no list', async () => {
+            const before = writes;
+
+            assert.deepEqual(await lists.retuneSong('s1', 2), []);
+            assert.equal(writes, before);
+        });
+    });
+
     describe('adding songs', () => {
         it('starts a song in the key its owner sings it in, and keeps it when "mi tono" changes later', async () => {
             await store.save('songs', song('s3', 1, { myShift: 2 }));

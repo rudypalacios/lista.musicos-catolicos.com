@@ -2,6 +2,7 @@ import { isValidDate, shortDate, today } from '../dates.ts';
 import { MASS_PARTS } from '../mass.ts';
 import { ValidationError } from './library.ts';
 import type { LocalStore } from './store.ts';
+import { nearestShift } from '../keys.ts';
 import { LIMITS, type Setlist, type SetlistItem } from './types.ts';
 
 /** What the person edits in the header of a list */
@@ -231,6 +232,26 @@ export class Setlists {
 
             return items.map((item) => (item === moved ? neighbour : item === neighbour ? moved : item));
         });
+    }
+
+    /**
+     * The key a song is written in moved by `moved` semitones (the chart was corrected): every use of it in a
+     * list moves the other way, so each sounds as it did. Returns the items it touched.
+     */
+    async retuneSong(songId: string, moved: number): Promise<{ setlistId: string; itemId: string }[]> {
+        const touched: { setlistId: string; itemId: string }[] = [];
+        for (const list of await this.using(songId)) {
+            await this.editItems(list.id, (items) => items.map((item) => {
+                if (item.songId !== songId) {
+                    return item;
+                }
+                touched.push({ setlistId: list.id, itemId: item.id });
+
+                return { ...item, transpose: nearestShift(item.transpose - moved) };
+            }));
+        }
+
+        return touched;
     }
 
     /** Raises or lowers the key of this use of the song by `delta` semitones, around the octave */

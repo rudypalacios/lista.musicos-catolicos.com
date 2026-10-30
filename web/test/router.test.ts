@@ -136,3 +136,25 @@ describe('a new song written from the picker of a part', () => {
         assert.deepEqual(parentOf({ name: 'new' }), { path: paths.list(), label: 'Cantos' });
     });
 });
+
+describe('editing a song from singing', () => {
+    const back = `/listados/${ID}/cantar/2`;
+
+    it('carries where to come back to', () => {
+        const path = paths.edit(ID, back);
+        const [pathname, search] = path.split('?');
+        assert.deepEqual(matchRoute(pathname ?? '', `?${search ?? ''}`), { name: 'edit', id: ID, back });
+        assert.deepEqual(matchRoute(paths.edit(ID)), { name: 'edit', id: ID });
+    });
+
+    it('follows nothing but a song being sung', () => {
+        for (const wrong of ['https://example.com/', '//example.com', '/ajustes', `/listados/${ID}`, `/listados/${ID}/cantar/x`, 'javascript:alert(1)']) {
+            assert.deepEqual(matchRoute(`/cantos/${ID}/editar`, `?volver=${encodeURIComponent(wrong)}`), { name: 'edit', id: ID }, wrong);
+        }
+    });
+
+    it('goes back to the song being sung', () => {
+        assert.deepEqual(parentOf({ name: 'edit', id: ID, back }), { path: back, label: 'Volver a cantar' });
+        assert.deepEqual(parentOf({ name: 'edit', id: ID }), { path: paths.view(ID), label: 'Canto' });
+    });
+});

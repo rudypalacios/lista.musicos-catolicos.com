@@ -1,3 +1,4 @@
+import { nearestShift } from './keys.ts';
 import { api, errorKinds, remote } from './api.ts';
 import { IdbStore } from './data/idb-store.ts';
 import { Library, type SongDraft } from './data/library.ts';
@@ -116,6 +117,24 @@ export class App {
 
     async update(id: string, draft: SongDraft): Promise<Song> {
         return this.afterWrite(await this.library.update(id, draft));
+    }
+
+    /**
+     * Saves an edit of a song whose written key moved by `moved` semitones (0 when it did not), and moves the
+     * keys people sing it in the other way ("mi tono" and every use of it in a list), so each sounds as it did.
+     * Returns the uses in lists it touched.
+     */
+    async updateKeepingKeys(id: string, draft: SongDraft, moved: number): Promise<{ song: Song; touched: { setlistId: string; itemId: string }[] }> {
+        let song = await this.library.update(id, draft);
+        let touched: { setlistId: string; itemId: string }[] = [];
+        if (moved !== 0) {
+            if (song.myShift !== 0) {
+                song = await this.library.setMyShift(id, nearestShift(song.myShift - moved));
+            }
+            touched = await this.setlists.retuneSong(id, moved);
+        }
+
+        return this.afterWrite({ song, touched });
     }
 
     /** Sets "mi tono" of a song (see `Library.setMyShift`) */

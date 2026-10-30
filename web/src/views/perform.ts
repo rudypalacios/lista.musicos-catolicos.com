@@ -2,6 +2,7 @@ import type { App } from '../app.ts';
 import { inMassOrder } from '../data/setlists.ts';
 import type { Setlist, SetlistItem, Song } from '../data/types.ts';
 import { h, link } from '../dom.ts';
+import { icon } from '../icons.ts';
 import { nextFold, type FoldState } from '../fold.ts';
 import { MASS_PARTS } from '../mass.ts';
 import { readKeepAwake } from '../prefs.ts';
@@ -189,8 +190,12 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
 
     // --- "⋯": the key and the lyrics tools ---
     const toolsSheet = createSheet('Tono y letra');
-    if (tools !== null && tone !== null) {
-        toolsSheet.body.append(h('h3', {}, 'Tono'), tone.element, h('h3', {}, 'Letra'), tools);
+    if (tools !== null && tone !== null && song !== undefined) {
+        // The lyrics and chords belong to the song, so the edit is the song's (it comes back here when it ends)
+        const edit = h('button', { type: 'button', class: 'sheet-action' }, icon('pencil', 20),
+            h('span', { class: 'sheet-action__text' }, 'Editar letra y acordes', h('small', {}, 'Se cambia en todos los listados donde está')));
+        edit.addEventListener('click', () => toolsSheet.close(() => navigate(paths.edit(song.id, paths.perform(setlist.id, position)))));
+        toolsSheet.body.append(h('h3', {}, 'Tono'), tone.element, h('h3', {}, 'Letra'), tools, edit);
     }
     // The screen stays on while a song is on screen, unless the person turned that off in Ajustes. Nothing
     // on screen says so any more: only a failure is worth a word.

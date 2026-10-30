@@ -1176,7 +1176,7 @@ button.info {
     border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
 }
 
-/* The row only shows the song; "⋯" is the only thing to touch in it */
+/* Touching the song sings it from here; "⋯" opens what can be done with it */
 .item__open {
     /* Contains the hidden "Tono" for screen readers: an absolute element with no positioned parent would
        escape the scrolling screen and lengthen the whole page */
@@ -1190,6 +1190,21 @@ button.info {
     padding: 0.4rem 0 0.4rem 1.4rem;
     color: var(--text);
     text-decoration: none;
+}
+
+button.item__open {
+    align-items: flex-start;
+    font: inherit;
+    text-align: left;
+    background: none;
+    border: 0;
+    cursor: pointer;
+}
+
+button.item__open:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+    border-radius: 0.4rem;
 }
 
 .item__title {
@@ -2311,4 +2326,61 @@ button.sheet-action.is-danger .icon {
 
 .toolbar .tone-control {
     padding: 0 0.15rem;
+}
+
+/* ===== Editing a song that is in lists: one line each, the why behind a button ===== */
+.notices {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.notices:empty {
+    display: none;
+}
+
+.notice-line {
+    background: var(--warn-soft, rgba(240, 180, 41, 0.16));
+    border: 1px solid var(--warn);
+    border-radius: 0.7rem;
+    font-size: 0.9rem;
+}
+
+.notice-line--tone {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+}
+
+.notice-line__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding-left: 0.8rem;
+}
+
+.notice-line__text {
+    min-width: 0;
+}
+
+button.notice-line__info {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    color: var(--muted);
+    background: none;
+    border: 0;
+    cursor: pointer;
+}
+
+.notice-line__details {
+    margin: 0;
+    padding: 0 0.8rem 0.7rem;
+    color: var(--muted);
+    font-size: 0.85rem;
 }
