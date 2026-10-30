@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { chordOf, importChordsOverLyrics, importMany, isChordLine } from '../src/importer.ts';
+import { chordOf, convertPastedSheet, importChordsOverLyrics, importMany, isChordLine } from '../src/importer.ts';
 import { isVerseLabel, parse } from '../src/chordpro/parser.ts';
 import { MASS_PARTS, plain } from '../src/mass.ts';
 
@@ -426,5 +426,34 @@ describe('mass parts', () => {
 
     it('compares names without accents or case', () => {
         assert.equal(plain('Aclamación  ANTES del Evangelio!'), 'aclamacion antes del evangelio');
+    });
+
+    describe('convertPastedSheet', () => {
+        const SHEET = 'C            Am\n1.  Un pueblo que espera el mañana,\n';
+
+        it('converts chords over the words and counts them', () => {
+            const pasted = convertPastedSheet(SHEET);
+
+            assert.equal(pasted?.chords, 2);
+            assert.match(pasted?.body ?? '', /\[C\]Un pueblo \[Am\]que espera el mañana,/);
+        });
+
+        it('hands over the title of a header, to fill an empty field', () => {
+            assert.equal(convertPastedSheet('ENTRADA: Caminamos\n\n' + SHEET)?.title, 'Caminamos');
+        });
+
+        it('leaves ChordPro alone, with chords in brackets or directives', () => {
+            assert.equal(convertPastedSheet('[C]Un pueblo [Am]que espera'), null);
+            assert.equal(convertPastedSheet('{c: Coro}\nUn pueblo que espera'), null);
+        });
+
+        it('leaves a plain lyric alone, even one line of it', () => {
+            assert.equal(convertPastedSheet('Un pueblo que espera\nel mañana'), null);
+            assert.equal(convertPastedSheet('Un pueblo que espera'), null);
+        });
+
+        it('leaves chords with no words under them alone', () => {
+            assert.equal(convertPastedSheet('C   Am\nF   G'), null);
+        });
     });
 });

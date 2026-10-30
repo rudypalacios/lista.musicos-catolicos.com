@@ -186,6 +186,36 @@ function classify(lines: string[]): Row[] {
     });
 }
 
+/** A sheet pasted into the editor, read with the chords it had above the words */
+export interface PastedSheet extends Pick<Imported, 'title' | 'author' | 'body'> {
+    /** How many chords were put in the text */
+    chords: number;
+}
+
+/**
+ * Reads text pasted into the editor as a sheet with the chords on a line above the words, or null when it
+ * is not one: text that already has [chords] or {directives} is ChordPro and is left as it is, and so is
+ * text with no chord line standing over a line of words (a plain lyric).
+ */
+export function convertPastedSheet(text: string): PastedSheet | null {
+    if (/\[[^\]]*\]/.test(text) || /^\s*\{\w+/m.test(text)) {
+        return null;
+    }
+    const lines = text.split(/\r\n|[\n\r\u2028\u2029]/);
+    const overWords = lines.some((line, index) => {
+        const below = lines[index + 1] ?? '';
+
+        return line.trim() !== '' && isChordLine(line) && below.trim() !== '' && !isChordLine(below);
+    });
+    if (!overWords) {
+        return null;
+    }
+    const { title, author, body } = importChordsOverLyrics(text);
+    const chords = (body.match(/\[[^\]]*\]/g) ?? []).length;
+
+    return chords === 0 ? null : { title, author, body, chords };
+}
+
 export function isChordLine(text: string): boolean {
     const tokens = text.trim().split(/\s+/);
 

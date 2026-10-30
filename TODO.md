@@ -145,10 +145,13 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       title first, the lyrics later); a **repeated title is neither warned nor blocked** (the owner: several "Santo" and "Gloria"
       exist); Importar draws its own "Elegir PDF" button instead of the browser's, with a shorter explanation; the import cards
       capitalise a lowercase chord (preview and save) like the editor. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 25.
-- [ ] **New song, PR B (approved by the owner, mockup first):** a "Escribir | Ver" switch so the preview is in view on a phone with
-      Guardar/Cancelar fixed at the foot; pasting chords over the words into "Nuevo canto" converts them with the importer (one
-      line says how many, with undo); a draft kept on the device and recovered. Not done on purpose: converting Latin chord names
-      to English on save (the owner has not decided; the parser already reads both), "Agregar a un listado" after saving from Cantos.
+- [ ] A help page (FAQ) in the app: `faq.md` holds the first notes (the draft of "Nuevo canto"); make it a screen later, in Spanish, reachable from Ajustes.
+- [x] **New song, PR B** (`views/edit.ts`, `song-draft.ts`, `importer.ts` `convertPastedSheet`; the owner approved the mockup): "Escribir | Ver"
+      above the lyrics on a phone (side by side from 900px), Guardar / Cancelar fixed at the foot, a sheet pasted with chords over the words is
+      converted once with "N acordes convertidos" and "Deshacer", and a draft of the new song is kept on the device (`localStorage`, one per
+      device, cleared by Guardar, Cancelar, Descartar and sign-out; not used when the song starts from a part's picker). **Owner's check:**
+      `DEPLOY.md` "Fases 4 y 5", item 26. Not done on purpose: converting Latin chord names to English on save (the owner has not decided; the
+      parser already reads both), "Agregar a un listado" after saving from Cantos.
 - [ ] Adding several songs to one part takes a round trip per song (the picker returns to the list).
       If that is slow in practice, let the picker stay open and show what has been added.
 - [ ] **Paused (owner, after the UI session).** Duplicate a list ("copiar listado") to start next Sunday's from this
