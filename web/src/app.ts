@@ -7,6 +7,7 @@ import { Setlists } from './data/setlists.ts';
 import type { LocalStore } from './data/store.ts';
 import { SyncEngine, SyncStopped } from './data/sync.ts';
 import type { Song } from './data/types.ts';
+import { newSongDraft } from './song-draft.ts';
 
 export type SyncState = 'idle' | 'syncing' | 'offline' | 'signed-out' | 'error';
 
@@ -277,6 +278,8 @@ export async function signOut(app: App, confirmLoss: (unsent: number) => boolean
         // Offline: the cookie stays until it can be cleared, but this device forgets the songs
     }
     await app.wipe();
+    // What was written for a new song and not saved is this person's too: it does not wait for the next one
+    newSongDraft.clear();
 
     return true;
 }

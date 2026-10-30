@@ -308,6 +308,19 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    archivos en el Android y, al final, en el iPad. La explicación de arriba es más corta. (d) Si corriges a mano un acorde en
    minúscula en una tarjeta de *Importar* (`[am]`), la vista previa y lo guardado lo ponen en mayúscula, como en el editor.
 
+26. **Nuevo canto en el teléfono (PR B de la revisión).** En «Nuevo canto» y «Editar canto»: (a) **«Escribir | Ver»** justo encima de la
+   letra (en el teléfono y en la tablet en vertical): «Ver» muestra la hoja tal como se leerá, con el tono y los acordes en tu notación;
+   desde 900 px (tablet horizontal) no hay interruptor, la letra va a la izquierda y la vista previa a la derecha. (b) **Guardar y Cancelar
+   quedan fijos al pie**, encima del menú, aunque la letra sea larga; «Eliminar» (al editar) sigue debajo de la letra. (c) **Pegar una hoja
+   con los acordes sobre la letra** (por ejemplo copiada de un PDF o de otra app): se convierte sola en la letra con acordes entre corchetes, una
+   línea dice «N acordes convertidos» con **Deshacer** (que devuelve el texto tal como lo pegaste), y si el título o el autor estaban vacíos
+   se llenan con el encabezado de la hoja. Un texto que ya trae `[acordes]` o `{directivas}`, o una letra sin acordes, se pega tal cual.
+   (d) **Borrador:** lo que escribes en un canto nuevo se guarda en el dispositivo (no se envía); si sales sin guardar (menú, flecha de volver,
+   cerrar la app) y vuelves a «Nuevo canto», aparece «Borrador recuperado» con **Descartar**. **Guardar** y **Cancelar** lo borran, y **Salir**
+   también. Un solo borrador por dispositivo; un canto empezado desde el selector de una parte no usa borrador. **Prueba en el Android:** pega una hoja
+   con los acordes arriba, mira «Ver», sal por el menú y vuelve, y con el teclado abierto comprueba que Guardar se ve sobre el teclado. En el iPad,
+   al final: lo mismo, y que el pie no quede escondido bajo el teclado ni bajo el gesto de inicio.
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.

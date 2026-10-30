@@ -121,7 +121,12 @@ try {
     await page.getByLabel('Título').fill('Caminamos con alegría');
     await page.getByLabel('Letra con acordes').fill(SHORT);
     assert.deepEqual(await page.locator('.preview .ch').allTextContents(), ['Do', 'Sol']);
+    // At this width the lyrics and the preview take turns: "Ver" shows the preview, "Escribir" comes back
+    assert.equal(await page.locator('.preview').isVisible(), false);
+    await page.getByRole('tab', { name: 'Ver' }).click();
     await page.getByText('Tono Do').first().waitFor();
+    await page.getByRole('tab', { name: 'Escribir' }).click();
+    assert.equal(await page.getByLabel('Letra con acordes').isVisible(), true);
     pass('the editor previews the song as it will be read, with the key');
 
     // A chord typed in lowercase ([c], [g]) is read as the capital, shown so in the preview, and written so
@@ -368,6 +373,72 @@ try {
     await page.getByRole('button', { name: 'Guardar' }).click();
     await page.locator('.toast', { hasText: '“Solo el título” se guardó sin letra todavía.' }).waitFor();
     pass('a song saved with no lyrics says so');
+
+    // ----- the draft of a new song, and a sheet pasted with the chords above the words -----
+    const pasteSheet = (text: string): Promise<void> =>
+        page.evaluate((sheet) => {
+            const area = document.getElementById('body') as HTMLTextAreaElement;
+            area.focus();
+            const data = new DataTransfer();
+            data.setData('text/plain', sheet);
+            area.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }));
+        }, text);
+    const SHEET = 'ENTRADA: Camino nuevo\n\nC            G\nCaminamos con alegría, Señor,\n';
+    await page.goto(BASE + '/cantos/nuevo');
+    await pasteSheet(SHEET);
+    await page.getByText('2 acordes convertidos').waitFor();
+    assert.equal(await page.getByLabel('Título').inputValue(), 'Camino nuevo');
+    assert.match(await page.getByLabel('Letra con acordes').inputValue(), /^\[C\]Caminamos con \[G\]alegría, Señor,/);
+    await page.getByRole('button', { name: 'Deshacer' }).click();
+    assert.equal(await page.getByLabel('Letra con acordes').inputValue(), SHEET);
+    assert.equal(await page.getByLabel('Título').inputValue(), '');
+    pass('a sheet pasted with the chords above the words is converted, says how many, and gives back what was pasted');
+
+    await pasteSheet('Una letra sin acordes\nen dos líneas');
+    assert.equal(await page.getByText('acordes convertidos').isVisible(), false);
+    pass('a plain lyric pasted is left alone');
+
+    // Leaving by the menu keeps what was written; coming back offers it
+    await page.getByLabel('Título').fill('Borrador de prueba');
+    await page.getByLabel('Letra con acordes').fill('[C]Algo que no se guardó');
+    await openSection(page, 'Listados');
+    await openSection(page, 'Cantos');
+    await page.getByRole('link', { name: 'Nuevo canto' }).click();
+    await page.getByText('Borrador recuperado').waitFor();
+    assert.equal(await page.getByLabel('Título').inputValue(), 'Borrador de prueba');
+    assert.equal(await page.getByLabel('Letra con acordes').inputValue(), '[C]Algo que no se guardó');
+    pass('what was written and not saved is recovered, as a draft, after leaving by the menu');
+
+    // Closing the app (a reload) keeps it too; "Descartar" empties it for good
+    await page.goto(BASE + '/cantos/nuevo');
+    await page.getByText('Borrador recuperado').waitFor();
+    await page.getByRole('button', { name: 'Descartar' }).click();
+    assert.equal(await page.getByLabel('Título').inputValue(), '');
+    await page.goto(BASE + '/cantos/nuevo');
+    await page.getByRole('heading', { name: 'Nuevo canto' }).waitFor();
+    assert.equal(await page.getByText('Borrador recuperado').isVisible(), false);
+    pass('a draft survives a reload, and "Descartar" removes it');
+
+    // "Cancelar" and "Guardar" are the two ways to say the draft is not wanted any more
+    await page.getByLabel('Título').fill('Lo cancelé');
+    await page.getByRole('link', { name: 'Cancelar' }).click();
+    await page.getByRole('link', { name: 'Nuevo canto' }).click();
+    await page.getByRole('heading', { name: 'Nuevo canto' }).waitFor();
+    assert.equal(await page.getByText('Borrador recuperado').isVisible(), false);
+    await page.getByLabel('Título').fill('Lo guardé');
+    await page.getByRole('button', { name: 'Guardar' }).click();
+    await page.getByRole('heading', { name: 'Lo guardé' }).waitFor();
+    await openSection(page, 'Cantos');
+    await page.getByRole('link', { name: 'Nuevo canto' }).click();
+    await page.getByRole('heading', { name: 'Nuevo canto' }).waitFor();
+    assert.equal(await page.getByText('Borrador recuperado').isVisible(), false);
+    pass('cancelling or saving a new song clears its draft');
+
+    // Guardar stays in view however long the lyrics are
+    await page.getByLabel('Letra con acordes').fill(longSong(30));
+    const foot = await page.locator('.edit-foot').boundingBox();
+    assert.ok(foot !== null && foot.y + foot.height <= 1180, 'the foot is inside the screen');
+    pass('Guardar and Cancelar stay in view with a long song');
 
     // ----- signing out -----
     await synced(page);

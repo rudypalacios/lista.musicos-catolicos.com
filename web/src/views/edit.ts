@@ -3,11 +3,13 @@ import { capitaliseChords } from '../chordpro/capitalise.ts';
 import { parse, songKey } from '../chordpro/parser.ts';
 import { sheetHtml } from '../chordpro/sheet.ts';
 import { ValidationError } from '../data/library.ts';
+import { convertPastedSheet } from '../importer.ts';
 import type { Setlist, Song } from '../data/types.ts';
 import { h, link, setSheet } from '../dom.ts';
 import { icon } from '../icons.ts';
 import { keyDistance, nearestShift } from '../keys.ts';
 import { paths, type Placement } from '../router.ts';
+import { newSongDraft } from '../song-draft.ts';
 import { todayKeys } from '../today-keys.ts';
 import { showToast } from '../toast.ts';
 import { transpose } from '../chordpro/chord.ts';
@@ -36,6 +38,9 @@ cantando vamos hacia tu [Am]casa.
 {soc}
 [G]Coro: las líneas entre {soc} y {eoc}
 {eoc}`;
+
+/** How long after the last key pressed the draft is kept (ms): not at every letter of a long lyric */
+const DRAFT_DELAY = 500;
 
 /** What a new song starts from: a title already typed, and the part of a list it is for */
 export interface NewSongStart {
@@ -88,9 +93,159 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
     draw();
 
     const save = h('button', { type: 'submit', class: 'button button--primary' }, 'Guardar');
-    const actions = h('div', { class: 'actions' }, save, link(cancelPath(existing, start.into, start.back), 'Cancelar', 'button'));
+    const cancel = link(cancelPath(existing, start.into, start.back), 'Cancelar', 'button');
+    // Always in view (the keyboard and a long song push the end of the form out of sight)
+    const foot = h('div', { class: 'actions edit-foot' }, save, cancel);
+
+    // ----- the draft: what was written and not saved is kept on the device, for a song that does not exist yet -----
+    // Started from the picker of a part the song is for that part and that title: a draft is not mixed in
+    const keepsDraft = existing === undefined && start.into === undefined && (start.title ?? '') === '';
+    let discarded = false;
+    let keepTimer: ReturnType<typeof setTimeout> | undefined;
+    const keepNow = (): void => {
+        clearTimeout(keepTimer);
+        keepTimer = undefined;
+        if (keepsDraft && !discarded) {
+            newSongDraft.keep({ title: title.value, author: author.value, body: body.value });
+        }
+    };
+    const keepSoon = (): void => {
+        if (keepsDraft) {
+            clearTimeout(keepTimer);
+            keepTimer = setTimeout(keepNow, DRAFT_DELAY);
+        }
+    };
+    /** The song was saved or the person said they do not want it: nothing more is kept */
+    const dropDraft = (): void => {
+        discarded = true;
+        clearTimeout(keepTimer);
+        newSongDraft.clear();
+    };
+    // Closing the app or switching to another one gives no later chance
+    const keepWhenHidden = (): void => {
+        if (document.visibilityState === 'hidden') {
+            keepNow();
+        }
+    };
+    if (keepsDraft) {
+        for (const field of [title, author, body]) {
+            field.addEventListener('input', keepSoon);
+        }
+        body.addEventListener('change', keepSoon);
+        window.addEventListener('pagehide', keepNow);
+        document.addEventListener('visibilitychange', keepWhenHidden);
+        cancel.addEventListener('click', dropDraft);
+    }
+
+    const recovered = h('div', { class: 'note-bar note-bar--draft', role: 'status', hidden: true });
+    const discard = h('button', { type: 'button', class: 'note-bar__action' }, 'Descartar');
+    recovered.append(h('span', {}, 'Borrador recuperado'), discard);
+    const resumed = keepsDraft ? newSongDraft.load() : null;
+    if (resumed !== null) {
+        title.value = resumed.title;
+        author.value = resumed.author;
+        body.value = resumed.body;
+        recovered.hidden = false;
+        draw();
+    }
+    discard.addEventListener('click', () => {
+        newSongDraft.clear();
+        clearTimeout(keepTimer);
+        title.value = '';
+        author.value = '';
+        body.value = '';
+        recovered.hidden = true;
+        draw();
+        title.focus();
+    });
+
+    // ----- a sheet pasted with the chords above the words is converted, once, and says so -----
+    const converted = h('div', { class: 'note-bar note-bar--ok', role: 'status', hidden: true });
+    const undo = h('button', { type: 'button', class: 'note-bar__action' }, 'Deshacer');
+    const convertedText = h('span', {});
+    converted.append(convertedText, undo);
+    let revert: (() => void) | null = null;
+    body.addEventListener('paste', (event) => {
+        const raw = event.clipboardData?.getData('text/plain') ?? '';
+        const sheet = convertPastedSheet(raw);
+        if (sheet === null) {
+            return;
+        }
+        event.preventDefault();
+        const before = body.value;
+        const from = body.selectionStart;
+        const to = body.selectionEnd;
+        // A header on the sheet ("ENTRADA: Caminamos") gives the title and the author, where they are still empty
+        const fillsTitle = title.value.trim() === '' && sheet.title !== '';
+        const fillsAuthor = author.value.trim() === '' && sheet.author !== '';
+        body.setRangeText(sheet.body, from, to, 'end');
+        if (fillsTitle) {
+            title.value = sheet.title;
+        }
+        if (fillsAuthor) {
+            author.value = sheet.author;
+        }
+        convertedText.textContent = sheet.chords === 1 ? '1 acorde convertido' : `${sheet.chords} acordes convertidos`;
+        converted.hidden = false;
+        revert = () => {
+            body.value = before.slice(0, from) + raw + before.slice(to);
+            body.setSelectionRange(from + raw.length, from + raw.length);
+            if (fillsTitle) {
+                title.value = '';
+            }
+            if (fillsAuthor) {
+                author.value = '';
+            }
+        };
+        draw();
+        keepSoon();
+    });
+    undo.addEventListener('click', () => {
+        revert?.();
+        revert = null;
+        converted.hidden = true;
+        draw();
+        keepSoon();
+        body.focus();
+    });
+    // The offer is for the paste just made: once the text is edited there is nothing to give back
+    body.addEventListener('input', () => {
+        converted.hidden = true;
+        revert = null;
+    });
+
+    // ----- on a phone the lyrics and their preview share the screen by turns; from 900px they sit side by side -----
+    const writeTab = h('button', { type: 'button', role: 'tab', id: 'tab-write', 'aria-controls': 'pane-write', 'aria-selected': 'true' }, 'Escribir');
+    const seeTab = h('button', { type: 'button', role: 'tab', id: 'tab-see', 'aria-controls': 'pane-see', 'aria-selected': 'false' }, 'Ver');
+    const switcher = h('div', { class: 'pane-switch', role: 'tablist', 'aria-label': 'Escribir o ver cómo queda' }, writeTab, seeTab);
+    const writePane = h('div', { class: 'edit-pane edit-pane--write', id: 'pane-write', role: 'tabpanel', 'aria-labelledby': 'tab-write' });
+    const seePane = h('div', { class: 'edit-pane edit-pane--see', id: 'pane-see', role: 'tabpanel', 'aria-labelledby': 'tab-see' }, preview);
+    const panes = h('div', { class: 'edit-panes', 'data-pane': 'write' }, writePane, seePane);
+    const showPane = (pane: 'write' | 'see'): void => {
+        panes.dataset['pane'] = pane;
+        writeTab.setAttribute('aria-selected', String(pane === 'write'));
+        seeTab.setAttribute('aria-selected', String(pane === 'see'));
+    };
+    writeTab.addEventListener('click', () => showPane('write'));
+    seeTab.addEventListener('click', () => showPane('see'));
+
+    writePane.append(
+        h('label', { for: 'body' }, 'Letra con acordes'),
+        body,
+        converted,
+        h(
+            'details',
+            { class: 'help' },
+            h('summary', {}, 'Cómo escribir los acordes'),
+            h('p', {}, 'Los acordes van entre corchetes, justo antes de la sílaba donde cambian. Puedes escribirlos en cifrado americano (C, Am, F#m7) o en español (Do, Lam, Fa#m7).'),
+            h('pre', {}, HELP),
+            h('p', {}, '{c: Coro} abre una sección con nombre; {soc} … {eoc} es un coro; {ci: x2} es una nota en cursiva. Las líneas que empiezan con # no se muestran.'),
+            h('p', {}, 'También puedes pegar una hoja con los acordes en una línea arriba de la letra: se convierte sola.'),
+        ),
+    );
+    // Deleting stays under the lyrics, away from Guardar
     if (existing !== undefined) {
-        const remove = h('button', { type: 'button', class: 'button button--danger' }, 'Eliminar');
+        const remove = h('button', { type: 'button', class: 'button button--danger edit-remove' }, 'Eliminar');
         remove.addEventListener('click', () => {
             // A song in a list stays there as "Canto eliminado": say so before it happens
             void app.setlists.using(existing.id).then((lists) => {
@@ -99,29 +254,21 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
                 }
             });
         });
-        actions.append(remove);
+        writePane.append(remove);
     }
 
     const form = h(
         'form',
-        { class: 'form', novalidate: true },
+        { class: 'form form--edit', novalidate: true },
         h('label', { for: 'title' }, 'Título'),
         title,
         titleError,
         h('label', { for: 'author' }, 'Autor (opcional)'),
         author,
-        h('label', { for: 'body' }, 'Letra con acordes'),
-        body,
-        h(
-            'details',
-            { class: 'help' },
-            h('summary', {}, 'Cómo escribir los acordes'),
-            h('p', {}, 'Los acordes van entre corchetes, justo antes de la sílaba donde cambian. Puedes escribirlos en cifrado americano (C, Am, F#m7) o en español (Do, Lam, Fa#m7).'),
-            h('pre', {}, HELP),
-            h('p', {}, '{c: Coro} abre una sección con nombre; {soc} … {eoc} es un coro; {ci: x2} es una nota en cursiva. Las líneas que empiezan con # no se muestran.'),
-        ),
+        switcher,
+        panes,
         error,
-        actions,
+        foot,
     );
 
     form.addEventListener('submit', (event) => {
@@ -141,6 +288,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         const saved = existing === undefined ? app.create(draft) : saveEdit(app, existing, draft);
         saved
             .then((song) => {
+                dropDraft();
                 // Allowed (a title first, the lyrics later), but not in silence
                 if (song.body.trim() === '') {
                     showToast(`“${song.title}” se guardó sin letra todavía.`, 4000, true);
@@ -185,11 +333,18 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         });
     }
 
-    const element = h('div', { class: 'page' }, h('h2', {}, existing === undefined ? 'Nuevo canto' : 'Editar canto'), notices, form, preview);
-    // With the title already typed from the search, the lyrics are what is missing
+    const element = h('div', { class: 'page page--edit' }, h('h2', {}, existing === undefined ? 'Nuevo canto' : 'Editar canto'), recovered, notices, form);
+    // With the title already typed (from the search, or a draft), the lyrics are what is missing
     queueMicrotask(() => (existing === undefined && title.value === '' ? title : body).focus());
 
-    return { element };
+    return {
+        element,
+        dispose: () => {
+            keepNow();
+            window.removeEventListener('pagehide', keepNow);
+            document.removeEventListener('visibilitychange', keepWhenHidden);
+        },
+    };
 }
 
 /**

@@ -11,7 +11,7 @@ la opción de descartarlo. Salir por el menú, la flecha de volver o cerrando la
 
 **¿Cuándo se borra el borrador?**
 Al tocar **Guardar** (el canto ya está guardado) y al tocar **Cancelar**, que es la forma de decir
-«no lo quiero». Salir por cualquier otra vía no lo borra.
+«no lo quiero». También se borra al cerrar la sesión con **Salir**. Salir por cualquier otra vía no lo borra.
 
 **¿Hay un borrador por cada canto?**
 No. Hay uno solo por dispositivo, el último, y solo para un canto nuevo: un canto que ya existe se

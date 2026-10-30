@@ -443,6 +443,153 @@ textarea.mono {
     tab-size: 4;
 }
 
+/* ===== New song / edit song: the lyrics and their preview by turns on a phone, side by side from 900px ===== */
+/* The page fills the screen so the lyrics take the room that is left, and the foot rests at the bottom */
+.page--edit {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+}
+
+.form--edit {
+    flex: 1;
+}
+
+.edit-panes {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+}
+
+.edit-pane {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.edit-pane--write textarea {
+    flex: 1;
+    min-height: 14rem;
+}
+
+.edit-pane--see .preview {
+    margin-top: 0.25rem;
+}
+
+.edit-panes[data-pane='write'] > .edit-pane--see,
+.edit-panes[data-pane='see'] > .edit-pane--write {
+    display: none;
+}
+
+/* "Escribir | Ver": two halves of 44px that sit just above the lyrics */
+.pane-switch {
+    display: flex;
+    gap: 0.2rem;
+    margin: 0.5rem 0 0.25rem;
+    padding: 0.2rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0.7rem;
+}
+
+.pane-switch button {
+    flex: 1;
+    min-height: 2.75rem;
+    color: var(--muted);
+    background: transparent;
+    border: 0;
+    border-radius: 0.5rem;
+    font-weight: 600;
+}
+
+.pane-switch button[aria-selected='true'] {
+    color: var(--accent);
+    background: var(--accent-soft);
+}
+
+/* Guardar and Cancelar stay in view above the menu (or the keyboard) while the lyrics scroll under them */
+.edit-foot {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    flex-wrap: nowrap;
+    margin: 0.75rem -1rem calc(-1rem - env(safe-area-inset-bottom, 0px));
+    padding: 0.6rem 1rem calc(0.6rem + env(safe-area-inset-bottom, 0px));
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+}
+
+.edit-foot .button--primary {
+    flex: 1;
+}
+
+.edit-remove {
+    align-self: flex-start;
+    margin-top: 0.5rem;
+}
+
+/* One line of news about the form ("Borrador recuperado", "6 acordes convertidos") with its one action */
+.note-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.25rem 0;
+    padding: 0 0.25rem 0 0.75rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 0.6rem;
+    font-size: 0.9rem;
+}
+
+.note-bar > span {
+    flex: 1;
+}
+
+.note-bar--draft {
+    border-color: var(--warn);
+}
+
+.note-bar--ok {
+    border-color: var(--ok);
+}
+
+.note-bar__action {
+    min-height: 2.75rem;
+    padding: 0 0.75rem;
+    color: var(--accent);
+    background: none;
+    border: 0;
+    font-weight: 600;
+}
+
+@media (min-width: 900px) {
+    .page--edit {
+        max-width: 64rem;
+    }
+
+    .pane-switch {
+        display: none;
+    }
+
+    .edit-panes {
+        display: grid;
+        flex: none;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .edit-panes[data-pane] > .edit-pane {
+        display: flex;
+    }
+
+    .edit-pane--write textarea {
+        min-height: 24rem;
+    }
+}
+
 details.help {
     margin: 0.5rem 0;
     color: var(--muted);
