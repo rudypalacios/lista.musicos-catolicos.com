@@ -1,5 +1,6 @@
 :root {
     color-scheme: dark;
+    --star: #f0b429;
     --bg: #101216;
     --surface: #181b21;
     --border: #2e3440;
@@ -1526,6 +1527,15 @@ body:has(.update) .install-banner {
 .lrow__detail {
     font-size: 0.85rem;
     color: var(--muted);
+}
+
+/* The star of a starred list, as tall as the letters beside it */
+.lrow__detail .icon {
+    width: 0.9em;
+    height: 0.9em;
+    margin-left: 0.15rem;
+    vertical-align: -0.1em;
+    color: var(--star);
 }
 
 .lrow:has(.lrow__link:hover) .lrow__title,

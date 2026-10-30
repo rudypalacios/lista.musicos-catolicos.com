@@ -114,7 +114,9 @@ export function listsView(app: App, navigate: Navigate): View {
                 'a',
                 { class: 'lrow__link', href: paths.setlist(list.id), 'data-link': true },
                 h('span', { class: 'lrow__title' }, list.title),
-                h('span', { class: 'lrow__detail' }, detail.join(' · ')),
+                h('span', { class: 'lrow__detail' }, detail.join(' · '),
+                    // A starred list says so beside its details, small and yellow (the star itself is toggled in the "⋯")
+                    ...(list.starred ? [' ', icon('star-filled', 14), h('span', { class: 'sr-only' }, 'Destacado')] : [])),
             ),
             more(list),
         );

@@ -614,6 +614,15 @@ try {
     assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-more') !== null), true, 'the focus goes back to its "⋯"');
     pass('the "⋯" of a list opens its sheet; starring from it moves the list to "★ Destacados" and keeps the focus on its "⋯"');
 
+    const starredRow = page.locator('.lrow', { hasText: 'Domingo, editado en la tablet' });
+    await starredRow.locator('.lrow__detail svg').waitFor();
+    assert.match(await starredRow.locator('.lrow__detail .sr-only').textContent() ?? '', /Destacado/);
+    assert.equal(await page.locator('.lrow', { hasText: 'Rosario en familia' }).locator('.lrow__detail svg').count(), 0, 'a list that is not starred has no star');
+    const mark = await starredRow.locator('.lrow__detail svg').evaluate((el) => ({ color: getComputedStyle(el).color, height: el.getBoundingClientRect().height }));
+    assert.equal(mark.color, 'rgb(240, 180, 41)', 'the star is yellow');
+    assert.ok(mark.height > 8 && mark.height < 20, `and small, as tall as the letters (got ${mark.height}px)`);
+    pass('a starred list shows a small yellow star beside its details');
+
     const more = await page.getByRole('button', { name: 'Más opciones: Domingo, editado en la tablet' }).boundingBox();
     assert.ok(more !== null && more.width >= 44 && more.height >= 44, 'the "⋯" is a 44px target');
     pass('the "⋯" of a row is a tap target of at least 44px');
