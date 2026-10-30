@@ -36,6 +36,19 @@ async function noTypedIcons(page: Page, where: string): Promise<void> {
 }
 
 /** The slot of a part of the Mass, by its name */
+/**
+ * Deletes the list that is open the way a person does now: from the "⋯" of its row on the lists screen, answering
+ * the question. Ends on the lists screen.
+ */
+async function deleteOpenList(page: Page): Promise<void> {
+    const id = new URL(page.url()).pathname.split('/').at(-1) ?? '';
+    await openSection(page, 'Listados');
+    await page.locator(`[data-more="${id}"]`).click();
+    await page.getByRole('button', { name: 'Eliminar listado' }).click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Eliminar', exact: true }).click();
+    await page.locator('.toast', { hasText: 'Listado eliminado' }).waitFor();
+}
+
 function slot(page: Page, part: string) {
     return page.locator('section.slot', { has: page.getByRole('heading', { name: part, exact: true }) });
 }
@@ -616,7 +629,7 @@ try {
     assert.equal(await page.locator('button.star').count(), 0, 'there is no star on the rows: each has a "⋯"');
 
     await page.getByRole('button', { name: 'Más opciones: Domingo, editado en la tablet' }).click();
-    assert.deepEqual(await page.locator('.sheet-layer.is-open .sheet-action').allTextContents(), ['Destacar', 'Duplicar listadoUna copia para hoy, con los mismos cantos y tonos']);
+    assert.deepEqual(await page.locator('.sheet-layer.is-open .sheet-action').allTextContents(), ['Destacar', 'Duplicar listadoUna copia para hoy, con los mismos cantos y tonos', 'Eliminar listado']);
     await page.getByRole('button', { name: 'Destacar', exact: true }).click();
     await page.getByRole('heading', { name: 'Destacados' }).waitFor();
     await page.getByRole('heading', { name: 'Recientes' }).waitFor();
@@ -655,12 +668,10 @@ try {
     pass('the star reaches the other device');
 
     // the extra list goes, so the rest of the test finds the screen as it expects
+    // (inside a list there is no "Eliminar listado" any more: it is in the row's sheet, behind a question)
     await page.getByLabel('Buscar listados').fill('rosario');
     await page.getByRole('link', { name: /Rosario en familia/ }).click();
-    page.once('dialog', (dialog) => void dialog.accept());
-    await page.getByRole('button', { name: 'Más opciones del listado' }).click();
-    await page.getByRole('button', { name: 'Eliminar listado' }).click();
-    await page.getByRole('heading', { name: 'Listados' }).waitFor();
+    await deleteOpenList(page);
     // A copy of a list: for today, with its songs and keys, in a list of its own that opens at once
     const songsIn = async (): Promise<number> => (await serverData(page)).setlists.find((list) => list.title === 'Domingo, editado en la tablet')?.items.length ?? 0;
     const original = await songsIn();
@@ -673,10 +684,7 @@ try {
     await page.getByText(new RegExp(`${original} cantos?`)).first().waitFor();
     await serverWhen(page, (data) => data.setlists.filter((list) => list.deletedAt === null && list.items.length === original).length >= 2);
     pass('duplicating a list opens a copy for today with the same songs, says where it came from, and leaves the original');
-    page.once('dialog', (dialog) => void dialog.accept());
-    await page.getByRole('button', { name: 'Más opciones del listado' }).click();
-    await page.getByRole('button', { name: 'Eliminar listado' }).click();
-    await page.getByRole('heading', { name: 'Listados' }).waitFor();
+    await deleteOpenList(page);
 
     await page.getByRole('button', { name: 'Más opciones: Domingo, editado en la tablet' }).click();
     await page.getByRole('button', { name: 'Quitar de destacados', exact: true }).click();
@@ -702,10 +710,7 @@ try {
     assert.ok(plus !== null && plus.width >= 44 && plus.height >= 44, 'the "+" is a 44px target');
     pass('"Agregar" is always in the head of the part: words while it is empty, a "+" with songs, and from four songs also one at the end');
 
-    page.once('dialog', (dialog) => void dialog.accept());
-    await page.getByRole('button', { name: 'Más opciones del listado' }).click();
-    await page.getByRole('button', { name: 'Eliminar listado' }).click();
-    await page.getByRole('heading', { name: 'Listados' }).waitFor();
+    await deleteOpenList(page);
     await synced(page);
 
     // ----- deleting a song that is in a list -----
@@ -746,11 +751,34 @@ try {
     await page.locator('.setlist-head__meta').getByText('2 cantos').waitFor();
     pass('the deleted song can be removed from the list');
 
-    // ----- deleting the list -----
-    page.once('dialog', (dialog) => void dialog.accept());
+    // ----- deleting the list: from the lists screen, behind a question -----
     await page.getByRole('button', { name: 'Más opciones del listado' }).click();
+    await page.getByRole('button', { name: 'Imprimir con acordes' }).waitFor();
+    assert.equal(await page.getByRole('button', { name: 'Eliminar listado' }).count(), 0, 'inside a list there is no way to delete it');
+    await page.keyboard.press('Escape');
+    const openId = new URL(page.url()).pathname.split('/').at(-1) ?? '';
+    await openSection(page, 'Listados');
+    await page.locator(`[data-more="${openId}"]`).click();
+    const last = page.getByRole('button', { name: 'Eliminar listado' });
+    await last.waitFor();
+    assert.equal((await page.locator('.sheet-layer.is-open .sheet-action').allTextContents()).at(-1), 'Eliminar listado', 'it is the last action of the sheet');
+    await last.click();
+    const question = page.getByRole('alertdialog');
+    await question.getByText('No se puede deshacer').waitFor();
+    assert.equal(await question.evaluate((node) => node.contains(document.activeElement)), true, 'focus is inside the question');
+    await question.getByRole('button', { name: 'Cancelar' }).click();
+    await question.waitFor({ state: 'hidden' });
+    assert.equal(await page.locator(`[data-more="${openId}"]`).count(), 1, 'cancelling keeps the list');
+    await page.locator(`[data-more="${openId}"]`).click();
     await page.getByRole('button', { name: 'Eliminar listado' }).click();
-    await page.getByRole('heading', { name: 'Listados' }).waitFor();
+    await page.keyboard.press('Escape');
+    await question.waitFor({ state: 'hidden' });
+    assert.equal(await page.locator(`[data-more="${openId}"]`).count(), 1, 'Escape also keeps it');
+    pass('a list is deleted from its row on the lists screen, after a question that Cancel and Escape answer with "no"');
+    await page.locator(`[data-more="${openId}"]`).click();
+    await page.getByRole('button', { name: 'Eliminar listado' }).click();
+    await question.getByRole('button', { name: 'Eliminar', exact: true }).click();
+    await page.locator('.toast', { hasText: 'Listado eliminado' }).waitFor();
     await page.getByText('Todavía no hay listados.').waitFor();
     await synced(page);
     assert.ok((await serverData(page)).setlists.every((list) => list.deletedAt !== null));

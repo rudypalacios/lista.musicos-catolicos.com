@@ -128,11 +128,15 @@ the code really does.
 
 ## Working with the owner
 
+- **One branch per PR, cut from `main`.** Before pushing, check the branch's PR is not merged (never push to a merged or closed
+  PR; open a new one). If the environment fixes a branch name, use it only when its previous PR is merged, and restart it on
+  `main` (`git fetch origin main && git checkout -B <branch> origin/main`) without bringing its old history; if that is not
+  possible, tell the owner before going on. Never merge an old branch back in: with squash merges it fills the PR with commits
+  that are not that change. This replaces the older advice to merge `main` into the work branch.
 - The owner works only from claude.ai: they cannot run scripts, so everything must be doable by the
   app, the deploy or a SQL query in phpMyAdmin. Ask for one thing at a time, with the exact steps.
 - Claude runs every check; GitHub only deploys. Claude opens PRs and **never merges**: the owner merges
-  (squash). After a squash merge the work branch is brought up to date by merging `main` into it
-  (a force-push is blocked in the sandbox), then new work continues on it.
+  (squash). After a squash merge, new work starts on a fresh branch from `main` (see the first rule of this section).
 - Production: cPanel shared host, PHP 8.3, MySQL (the database was created as plain `utf8`, migration
   `0003` fixes the tables), FTPS deploy by the `production` environment; the site is
   `lista.musicos-catolicos.com`. The public site and the admin (`musicos-catolicos`,
