@@ -52,7 +52,7 @@ async function chords(page: Page): Promise<string[]> {
 async function serverData(page: Page) {
     return page.evaluate(async () => {
         const answer = (await (await fetch('/api/sync?since=0')).json()) as {
-            songs: { id: string; title: string; body: string; deletedAt: number | null }[];
+            songs: { id: string; title: string; body: string; myShift: number; deletedAt: number | null }[];
             setlists: {
                 id: string; title: string; eventDate: string | null; notes: string; starred: boolean; deletedAt: number | null;
                 items: { id: string; part: string; songId: string; transpose: number; note: string }[];
@@ -489,6 +489,34 @@ try {
     await page.locator('section.slot').first().waitFor();
     assert.equal(await page.locator('.item__today').count(), 0, 'going back to the saved key clears "hoy"');
     pass('a key that is not saved is only for today: amber in the strip, "hoy" in the list, kept through a reload, nothing written, and "Listado" goes back');
+    // "Mi tono": saved from the list as well, with the arrow beside "Guardar"; a song added later starts in it
+    await page.getByRole('link', { name: 'Cantar' }).click();
+    await jumpTo(page, 2);
+    await openTools(page);
+    await page.getByRole('button', { name: 'Subir un semitono' }).click();
+    await page.getByRole('button', { name: 'Otros sitios donde guardar' }).click();
+    assert.deepEqual(await page.locator('.tone-control__option').allTextContents(), ['Solo hoy', 'En este listado', 'Como mi tono', 'En el listado y como mi tono']);
+    await page.getByRole('button', { name: 'En el listado y como mi tono' }).click();
+    await page.locator('.toast', { hasText: 'Tono guardado en este listado y como tu tono' }).waitFor();
+    await page.locator('.tone-control__hint').waitFor({ state: 'hidden' });
+    await page.getByText('Mío', { exact: false }).first().waitFor();
+    const both = await serverWhen(page, (data) =>
+        data.songs.find((song) => song.title === 'Gloria sencilla')?.myShift === 2
+        && (data.setlists[0]?.items.some((item) => item.part === 'comunion' && item.transpose === 2) ?? false));
+    assert.equal(both.songs.find((song) => song.title === 'Gloria sencilla')?.body, SONGS[1]?.[1], 'the text of the song is not touched');
+    await page.getByRole('button', { name: 'Bajar un semitono' }).click();
+    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+    await page.locator('.toast', { hasText: 'Tono guardado en este listado' }).waitFor();
+    await page.getByRole('button', { name: 'Bajar un semitono' }).click();
+    await page.getByRole('button', { name: 'Otros sitios donde guardar' }).click();
+    await page.getByRole('button', { name: 'Como mi tono', exact: true }).click();
+    await serverWhen(page, (data) => data.songs.find((song) => song.title === 'Gloria sencilla')?.myShift === 0);
+    await page.getByRole('button', { name: /Volver al tono del listado/ }).click();
+    assert.deepEqual(await chords(page), ['Lab', 'Mib']);
+    await closeSheet(page);
+    pass('"mi tono" is saved from the list too, apart from the key of the list or together with it, and it syncs');
+    await page.getByRole('link', { name: 'Volver al listado' }).click();
+    await page.locator('section.slot').first().waitFor();
     await page.getByRole('link', { name: 'Cantar' }).click();
     await jumpTo(page, 2);
 

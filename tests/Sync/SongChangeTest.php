@@ -35,6 +35,14 @@ final class SongChangeTest extends TestCase
         $this->assertFalse($change->deleted);
     }
 
+    public function testMyKeyIsReadWithinAnOctaveAndAnOlderClientSendsNone(): void
+    {
+        $this->assertNull(SongChange::fromArray($this->data(), self::NOW)->myShift);
+        $this->assertSame(2, SongChange::fromArray($this->data(['myShift' => 2]), self::NOW)->myShift);
+        $this->assertSame(-11, SongChange::fromArray($this->data(['myShift' => -11]), self::NOW)->myShift);
+        $this->assertSame(0, SongChange::fromArray($this->data(['myShift' => 0]), self::NOW)->myShift);
+    }
+
     public function testTitleAndAuthorAreTrimmedAndTheAuthorIsOptional(): void
     {
         $change = SongChange::fromArray($this->data(['title' => '  Hola  ', 'author' => null]), self::NOW);
@@ -61,6 +69,10 @@ final class SongChangeTest extends TestCase
             'no date' => [['updatedAt' => null], 'fecha'],
             'date as text' => [['updatedAt' => '1700000000000'], 'fecha'],
             'negative date' => [['updatedAt' => -1], 'fecha'],
+            'shift beyond an octave' => [['myShift' => 12], 'tono'],
+            'shift beyond an octave, down' => [['myShift' => -12], 'tono'],
+            'shift as text' => [['myShift' => '2'], 'tono'],
+            'shift as a decimal' => [['myShift' => 2.5], 'tono'],
         ];
     }
 

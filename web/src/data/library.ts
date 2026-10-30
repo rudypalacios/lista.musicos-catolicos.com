@@ -36,7 +36,7 @@ export class Library {
 
     /** The songs that are not deleted, by title (Spanish order: "Ángel" among the A's) */
     async list(): Promise<Song[]> {
-        const songs = (await this.store.all('songs')).filter((song) => song.deletedAt === null);
+        const songs = (await this.store.all('songs')).filter((song) => song.deletedAt === null).map(withShift);
 
         return songs.sort((a, b) => a.title.localeCompare(b.title, 'es', { sensitivity: 'base' }));
     }
@@ -45,11 +45,11 @@ export class Library {
     async get(id: string): Promise<Song | undefined> {
         const song = await this.store.get('songs', id);
 
-        return song !== undefined && song.deletedAt === null ? song : undefined;
+        return song !== undefined && song.deletedAt === null ? withShift(song) : undefined;
     }
 
     async create(draft: SongDraft): Promise<Song> {
-        const song: Song = { ...clean(draft), id: this.newId(), updatedAt: this.now(), deletedAt: null };
+        const song: Song = { ...clean(draft), myShift: 0, id: this.newId(), updatedAt: this.now(), deletedAt: null };
         await this.store.save('songs', song);
 
         return song;
@@ -62,6 +62,29 @@ export class Library {
             throw new Error('La canción ya no existe.');
         }
         const song: Song = { ...current, ...clean(draft), updatedAt: this.stamp(current) };
+        await this.store.save('songs', song);
+
+        return song;
+    }
+
+    /**
+     * Sets "mi tono": the key the person sings the song in, in semitones from the written one. A song
+     * added to a list from now on starts in it; the lists that already have it keep theirs.
+     *
+     * @throws ValidationError, or Error when the song does not exist
+     */
+    async setMyShift(id: string, shift: number): Promise<Song> {
+        if (!Number.isInteger(shift) || Math.abs(shift) > LIMITS.transpose) {
+            throw new ValidationError('El tono no es válido.');
+        }
+        const current = await this.get(id);
+        if (current === undefined) {
+            throw new Error('La canción ya no existe.');
+        }
+        if (current.myShift === shift) {
+            return current;
+        }
+        const song: Song = { ...current, myShift: shift, updatedAt: this.stamp(current) };
         await this.store.save('songs', song);
 
         return song;
@@ -81,6 +104,11 @@ export class Library {
     private stamp(previous: Song): number {
         return Math.max(this.now(), previous.updatedAt + 1);
     }
+}
+
+/** A song saved by a version of the app that had no "mi tono" has none */
+function withShift(song: Song): Song {
+    return Number.isInteger(song.myShift) ? song : { ...song, myShift: 0 };
 }
 
 function clean(draft: SongDraft): SongDraft {

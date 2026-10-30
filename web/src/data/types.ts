@@ -6,6 +6,8 @@ export interface Song {
     readonly author: string;
     /** The lyrics in ChordPro */
     readonly body: string;
+    /** "Mi tono": the key the person sings it in, in semitones from the written one (−11…11; 0 is the same as none) */
+    readonly myShift: number;
     /** When this version was written, by the clock of the device that wrote it (epoch ms) */
     readonly updatedAt: number;
     /** When it was deleted, or null. A deleted song stays as a tombstone so the deletion syncs */

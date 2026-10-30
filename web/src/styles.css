@@ -2203,3 +2203,112 @@ button.sheet-action.is-danger .icon {
     border: 1px solid var(--accent);
     border-radius: 999px;
 }
+
+/* "Guardar" and the arrow beside it, one pill: the main button saves to the list, the arrow opens the other places */
+.tone-control__split {
+    display: inline-flex;
+    border: 1px solid var(--accent);
+    border-radius: 0.6rem;
+    overflow: hidden;
+}
+
+.tone-control__save,
+.tone-control__more {
+    min-height: 2.75rem;
+    padding: 0 0.9rem;
+    font: inherit;
+    font-weight: 700;
+    color: var(--on-accent);
+    background: var(--accent);
+    border: 0;
+    cursor: pointer;
+}
+
+.tone-control__more {
+    min-width: 2.75rem;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    border-left: 1px solid rgba(11, 18, 32, 0.35);
+}
+
+/* The arrow is drawn, not typed: a corner of a box, turned */
+.tone-control__chevron {
+    width: 0.55rem;
+    height: 0.55rem;
+    border: solid currentColor;
+    border-width: 0 2px 2px 0;
+    transform: translateY(-0.15rem) rotate(45deg);
+}
+
+.tone-control__more[aria-expanded='true'] .tone-control__chevron {
+    transform: translateY(0.15rem) rotate(225deg);
+}
+
+.tone-control__menu {
+    margin-top: 0.5rem;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 0.7rem;
+    overflow: hidden;
+}
+
+.tone-control__option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0 0.9rem;
+    font: inherit;
+    text-align: left;
+    color: var(--text);
+    background: transparent;
+    border: 0;
+    border-top: 1px solid var(--border);
+    cursor: pointer;
+}
+
+.tone-control__option:first-child {
+    border-top: 0;
+}
+
+.tone-control__option.is-current {
+    color: var(--muted);
+}
+
+/* A check mark drawn with two borders, like the arrow */
+.tone-control__check {
+    width: 0.4rem;
+    height: 0.8rem;
+    border: solid var(--accent);
+    border-width: 0 2px 2px 0;
+    transform: translateY(-0.1rem) rotate(45deg);
+}
+
+/* Inside the song page's toolbar (`.toolbar button` would flatten these) */
+.toolbar .tone-control__save,
+.toolbar .tone-control__more {
+    color: var(--on-accent);
+    background: var(--accent);
+    border-radius: 0;
+}
+
+.toolbar .tone-control__option {
+    border-radius: 0;
+}
+
+.toolbar .tone-control__back {
+    min-width: 0;
+    min-height: 0;
+    color: var(--warn);
+}
+
+.toolbar .tone-control__step button {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+}
+
+.toolbar .tone-control {
+    padding: 0 0.15rem;
+}

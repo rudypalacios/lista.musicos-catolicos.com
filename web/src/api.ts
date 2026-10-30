@@ -71,8 +71,9 @@ interface PulledPage {
     hasMore: boolean;
 }
 
-const pickSong = ({ id, title, author, body, updatedAt, deletedAt }: Song): Song => ({
-    id, title, author, body, updatedAt, deletedAt,
+/** A server from before "mi tono" sends none: that is 0, the written key */
+const pickSong = ({ id, title, author, body, myShift, updatedAt, deletedAt }: Song): Song => ({
+    id, title, author, body, myShift: myShift ?? 0, updatedAt, deletedAt,
 });
 
 const pickSetlist = ({ id, title, eventDate, notes, starred, items, updatedAt, deletedAt }: Setlist): Setlist => ({

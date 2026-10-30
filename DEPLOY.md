@@ -244,6 +244,15 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    tono de hoy **no** aparece (es solo de este aparato). (f) Si el aparato no puede mantener la pantalla encendida, sale un aviso
    mientras cantas; el ajuste está en *Ajustes*. Probar también sin conexión.
 
+16. **«Mi tono».** Es el tono en que **tú** cantas un canto (el original puede estar en Do y tú cantarlo en Re). Se guarda en
+   el canto y se sincroniza. Dónde se pone: (a) en *Cantos*, abre un canto, sube dos semitonos y toca **Guardar como mi tono**
+   (aviso «Tono guardado como tu tono»); el canto vuelve a abrirse en ese tono y la dirección ya no lleva `?t=`; (b) en *Cantar*,
+   `⋯` → *Tono*: al mover − / + aparece **Guardar** con una flecha; la flecha ofrece «Solo hoy» (marcada), «En este listado»,
+   «Como mi tono» y «En el listado y como mi tono». Debajo dice «Original Do · Mío Re · Listado Fa». Pruebas: guarda «Como mi tono»
+   en Re, agrega ese canto a **otro** listado: entra en Re; el listado que ya lo tenía **no** cambia. Cambiar «mi tono» después
+   tampoco mueve los listados viejos (cada listado guarda su tono). En otro dispositivo, tras sincronizar, el canto abre en tu tono.
+   La primera vez después de este deploy la app crea sola la columna (migración `0007`); no hay que hacer nada en phpMyAdmin.
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.

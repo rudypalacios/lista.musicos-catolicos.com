@@ -289,6 +289,17 @@ describe('Setlists', () => {
     });
 
     describe('adding songs', () => {
+        it('starts a song in the key its owner sings it in, and keeps it when "mi tono" changes later', async () => {
+            await store.save('songs', song('s3', 1, { myShift: 2 }));
+            const list = await lists.create();
+
+            await lists.addItem(list.id, 'entrada', 's3');
+            await store.save('songs', song('s3', 2, { myShift: -4 }));
+            await lists.addItem(list.id, 'salida', 's1');
+
+            assert.deepEqual((await itemsOf(list.id)).map((item) => item.transpose), [2, 0]);
+        });
+
         it('adds at the end of the part with no change of key, and one song can be there twice', async () => {
             const list = await lists.create();
 
