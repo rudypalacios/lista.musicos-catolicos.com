@@ -9,15 +9,28 @@
 
 const LOWERCASE_CHORD = /^([a-g])([#b]?)((?:maj|min|dim|aug|sus|add|m|M|\+|°|-|\d|#|b|\(|\))*)(?:\/([a-g])([#b]?))?$/;
 
-/** "[c]Hola [am7]mundo [g/b]" → "[C]Hola [Am7]mundo [G/B]" */
+/** "[c]Hola [am7]mundo [g/b]" → "[C]Hola [Am7]mundo [G/B]"; a chord in parentheses too: "[(g)]" → "[(G)]" */
 export function capitaliseChords(text: string): string {
     return text.replace(/\[([^\]]*)\]/g, (bracket: string, inner: string) => {
-        const m = LOWERCASE_CHORD.exec(inner.trim());
-        if (m === null) {
-            return bracket;
-        }
-        const bass = m[4] === undefined ? '' : `/${m[4].toUpperCase()}${m[5] ?? ''}`;
+        const name = capitalised(inner.trim());
 
-        return `[${(m[1] ?? '').toUpperCase()}${m[2] ?? ''}${m[3] ?? ''}${bass}]`;
+        return name === null ? bracket : `[${name}]`;
     });
+}
+
+/** The chord with its capitals, or null when it is not wholly a lowercase chord */
+function capitalised(name: string): string | null {
+    const optional = /^\(([^()]+)\)$/.exec(name);
+    if (optional !== null) {
+        const chord = capitalised(optional[1] ?? '');
+
+        return chord === null ? null : `(${chord})`;
+    }
+    const m = LOWERCASE_CHORD.exec(name);
+    if (m === null) {
+        return null;
+    }
+    const bass = m[4] === undefined ? '' : `/${m[4].toUpperCase()}${m[5] ?? ''}`;
+
+    return `${(m[1] ?? '').toUpperCase()}${m[2] ?? ''}${m[3] ?? ''}${bass}`;
 }

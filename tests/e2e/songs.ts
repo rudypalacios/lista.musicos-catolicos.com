@@ -374,6 +374,29 @@ try {
     await page.locator('.toast', { hasText: '“Solo el título” se guardó sin letra todavía.' }).waitFor();
     pass('a song saved with no lyrics says so');
 
+    // A note at the end of a line sits beside the words; a chord in parentheses keeps them and transposes
+    await page.goto(BASE + '/cantos/nuevo');
+    await page.getByLabel('Título').fill('Aleluya con notas');
+    await page.getByLabel('Letra con acordes').fill('[C]aleluya [Em]aleluya [(G)]ya {ci: bis}\n{ci: x2}');
+    await page.getByRole('button', { name: 'Guardar' }).click();
+    await page.getByRole('heading', { name: 'Aleluya con notas' }).waitFor();
+    assert.equal(await page.locator('.line__note').textContent(), 'bis');
+    assert.equal(await page.locator('.line--note').textContent(), 'x2');
+    const sameRow = await page.evaluate(() => {
+        const line = document.querySelector('.line:not(.line--note)') as HTMLElement;
+        const note = line.querySelector('.line__note') as HTMLElement;
+        const last = Array.from(line.querySelectorAll('.w')).pop() as HTMLElement;
+
+        return note.getBoundingClientRect().left >= last.getBoundingClientRect().right - 1
+            && Math.abs(note.getBoundingClientRect().bottom - last.getBoundingClientRect().bottom) < 20;
+    });
+    assert.equal(sameRow, true, 'the note is beside the last word, not under it');
+    assert.deepEqual(await chordNames(page), ['Do', 'Mim', '(Sol)']);
+    await page.getByRole('button', { name: 'Subir un semitono' }).click();
+    await page.getByRole('button', { name: 'Subir un semitono' }).click();
+    assert.deepEqual(await chordNames(page), ['Re', 'Fa#m', '(La)']);
+    pass('a note at the end of a line sits beside it, and a chord in parentheses transposes with the others');
+
     // ----- the draft of a new song, and a sheet pasted with the chords above the words -----
     const pasteSheet = (text: string): Promise<void> =>
         page.evaluate((sheet) => {
@@ -385,6 +408,7 @@ try {
         }, text);
     const SHEET = 'ENTRADA: Camino nuevo\n\nC            G\nCaminamos con alegría, Señor,\n';
     await page.goto(BASE + '/cantos/nuevo');
+    await page.getByRole('heading', { name: 'Nuevo canto' }).waitFor();
     await pasteSheet(SHEET);
     await page.getByText('2 acordes convertidos').waitFor();
     assert.equal(await page.getByLabel('Título').inputValue(), 'Camino nuevo');

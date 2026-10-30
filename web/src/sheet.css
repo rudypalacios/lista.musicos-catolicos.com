@@ -60,7 +60,17 @@
     display: block;
 }
 
-/* An annotation in the stanza ({ci: x2}) */
+/* A note at the end of a line of lyrics ({ci: bis}): beside the words, in italics. It travels with the
+   last word when the line wraps, and stays on one row itself */
+.song-sheet .line__note {
+    margin-left: 0.7em;
+    font-size: 0.85em;
+    font-style: italic;
+    color: var(--faint);
+    white-space: nowrap;
+}
+
+/* An annotation on a line of its own, in the stanza ({ci: x2}) */
 .song-sheet .line--note {
     display: block;
     font-size: 0.8em;

@@ -321,6 +321,15 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    con los acordes arriba, mira «Ver», sal por el menú y vuelve, y con el teclado abierto comprueba que Guardar se ve sobre el teclado. En el iPad,
    al final: lo mismo, y que el pie no quede escondido bajo el teclado ni bajo el gesto de inicio.
 
+27. **Notas al final de la línea y acordes entre paréntesis (fase 7).** (a) Escribe `{ci: bis}` (o `{ci: 2ª vez}`, `{ci: (Bis)}`) **al final
+   de una línea de letra**: sale a la derecha de la línea, en cursiva y más tenue; si la línea es larga y baja, la nota se va con la última
+   palabra. Una nota **en su propia línea** (`{ci: x2}` debajo de la estrofa) sigue saliendo abajo, como antes. (b) Un acorde entre paréntesis,
+   `[(G)]`, se ve «(Sol)» y **se transpone** con los demás («(La)» dos semitonos arriba); antes se quedaba en «(Sol)» y salía mal. Al
+   **importar** una hoja con acordes arriba, «(G)» conserva los paréntesis (antes quedaba como «G»). Escribir `[(g)]` en minúscula también se
+   pone en mayúscula. (c) Lo mismo en la **impresión** (normal, compacta, dos columnas). Tus cantos no cambian: lo guardado es el mismo texto,
+   solo se dibuja distinto; un `{ci: …}` que ya tenías al final de una línea ahora sale como nota en vez de como texto con llaves.
+   **Prueba en el Android:** un canto con `{ci: bis}` al final de una línea y `[(G)]`, cambiar el tono, e imprimir (vista previa). En el iPad, al final.
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.

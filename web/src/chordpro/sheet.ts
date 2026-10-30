@@ -15,8 +15,10 @@
  *       </div>
  *       <div class="line line--plain">Sin acordes</div>     ← a line without chords
  *       <div class="line line--chords">…</div>              ← chords only, no words (an intro)
- *       <div class="line line--note">x2</div>               ← an annotation ({ci: x2})
+ *       <div class="line line--note">x2</div>               ← an annotation on a line of its own ({ci: x2})
  *     </div>
+ *
+ * A note at the end of a line ({ci: bis} after the words) is a <span class="line__note"> last in that line.
  *
  * data-chord keeps the stored English name; the visible name is Latin (the default notation)
  * and the viewer rewrites it when the key or the notation change, without touching the lyrics.
@@ -53,9 +55,12 @@ export function sheetHtml(sheet: Pick<Sheet, 'sections'>): string {
 
 /** `first`: the first sung line of its section */
 function lineHtml(segments: Segment[], first: boolean): string {
+    // The note of the line rides on its last segment (parser.ts)
+    const note = segments[segments.length - 1]?.note;
+    const noteHtml = note === undefined ? '' : `<span class="line__note">${escapeHtml(note)}</span>`;
     const classes = 'line' + (first ? ' line--first' : '');
     if (!segments.some((segment) => segment.chord !== null)) {
-        return `<div class="${classes} line--plain">${escapeHtml(trim(segments.map((s) => s.text).join('')))}</div>`;
+        return `<div class="${classes} line--plain">${escapeHtml(trim(segments.map((s) => s.text).join('')))}${noteHtml}</div>`;
     }
 
     // Chords with no words under them (an intro): the printout drops the empty text row
@@ -82,7 +87,7 @@ function lineHtml(segments: Segment[], first: boolean): string {
         html += '</span>';
     });
 
-    return html + '</div>';
+    return html + noteHtml + '</div>';
 }
 
 /** `rest`: this segment and the ones after it in the word */

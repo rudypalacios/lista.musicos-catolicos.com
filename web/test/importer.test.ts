@@ -8,7 +8,7 @@ describe('chordOf', () => {
     const chords: [string, string][] = [
         ['C', 'C'], ['Am', 'Am'], ['F#m7', 'F#m7'], ['Bb', 'Bb'], ['G/B', 'G/B'], ['Asus4', 'Asus4'], ['Cmaj7', 'Cmaj7'],
         ['A-', 'Am'], ['D-', 'Dm'], ['D-7', 'Dm7'], ['A-/G', 'Am/G'],
-        ['(G)', 'G'], ['(E', 'E'], ['Am)', 'Am'],
+        ['(G)', '(G)'], ['(Sol)', '(G)'], ['(Re/Fa#)', '(D/F#)'], ['(E', 'E'], ['Am)', 'Am'],
         ['SOL', 'G'], ['RE', 'D'], ['RE7', 'D7'], ['MIm', 'Em'], ['SIm', 'Bm'], ['FA#', 'F#'], ['SOLm', 'Gm'],
         ['Rem', 'Dm'], ['Solm', 'Gm'], ['La7', 'A7'], ['Sib', 'Bb'], ['Do', 'C'], ['Fa', 'F'], ['Lam', 'Am'],
     ];
@@ -203,8 +203,15 @@ describe('importChordsOverLyrics: chord names and warnings', () => {
     it('writes minor, Latin and parenthesised chords in the standard form, and counts them', () => {
         const imported = importChordsOverLyrics('A-   SOL   (Re)   C\nuno dos tres cuatro');
 
-        assert.match(imported.body, /\[Am\].*\[G\].*\[D\].*\[C\]/);
+        // The parentheses mean "only on some repetitions": they are kept, the chord inside is written in English
+        assert.match(imported.body, /\[Am\].*\[G\].*\[\(D\)\].*\[C\]/);
         assert.ok(imported.warnings.some((w) => w.startsWith('3 acordes')), imported.warnings.join('|'));
+    });
+
+    it('keeps the parentheses of a chord played only on some repetitions', () => {
+        const imported = importChordsOverLyrics('C      Em  F  G     C (G)\naleluya, aleluya (bis)');
+
+        assert.match(imported.body, /\[\(G\)\]/);
     });
 
     it('says when there are no chords at all', () => {

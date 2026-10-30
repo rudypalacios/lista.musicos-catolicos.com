@@ -230,6 +230,13 @@ export function isChordLine(text: string): boolean {
  * the preview is where the person catches that.
  */
 export function chordOf(token: string): string | null {
+    // A chord wholly in parentheses ("(G)": played only on some repetitions) keeps them
+    const optional = /^\(([^()]+)\)$/.exec(token);
+    if (optional !== null) {
+        const inner = chordOf(optional[1] ?? '');
+
+        return inner === null ? null : `(${inner})`;
+    }
     const bare = token.replace(/^\(+/, '').replace(/\)+$/, '');
     if (bare === '' || !/^[A-Z]/.test(bare)) {
         return null;
@@ -335,7 +342,9 @@ function place(chords: string, lyric: string, offset: number, chordsOnly: boolea
         if (chord === null) {
             continue;
         }
-        if (chord !== match[0].replace(/^\(+|\)+$/g, '')) {
+        // Parentheses around a whole chord are part of what was written; stray ones are not
+        const written = /^\([^()]+\)$/.test(match[0]) ? match[0] : match[0].replace(/^\(+|\)+$/g, '');
+        if (chord !== written) {
             normalised++;
         }
         found.push({ column: match.index ?? 0, chord });

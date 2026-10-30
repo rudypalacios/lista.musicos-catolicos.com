@@ -28,7 +28,8 @@ This app must behave the same:
   never change the behaviour on your own. When the public site changes, regenerate the fixtures
   (`npm run fixtures -- ../musicos-catolicos`) and read the diff.
 - Ported so far: parser, chords and transposition, the lyrics HTML and the syllable splitter
-  (`web/src/chordpro/`). Not yet: the print cascade (`PrintLayout.php`), phase 3.
+  (`web/src/chordpro/`), and the print cascade (`web/src/print/layout.ts`). The note at the end of a line and the
+  chord in parentheses (phase 7) come from the public site's PR #43.
 - Chords are stored in English notation, shown in Latin by default. Minor written as `A-` or
   Latin uppercase (`SOL`, `MIm`) is normalised only by the importer, never by the parser. A chord typed
   with a lowercase letter (`[c]`, `[am]`) is capitalised by the editor when it previews and saves

@@ -36,6 +36,8 @@ export type SectionKind = 'verse' | 'chorus' | 'other';
 export interface Segment {
     chord: string | null;
     text: string;
+    /** A note of the whole line ("bis", "2ª vez"): only on the last segment of the line */
+    note?: string;
 }
 
 /** A line of sung segments, or an annotation ("x2") */
@@ -147,7 +149,17 @@ export function parse(source: string | null | undefined): Sheet {
             continue;
         }
 
-        const segments = segmentsOf(line);
+        const [lyrics, note] = trailingNote(line);
+        const segments = segmentsOf(lyrics);
+        if (note !== null) {
+            // The note belongs to the line, not to a syllable: it rides on the last segment
+            const last = segments[segments.length - 1];
+            if (last === undefined) {
+                segments.push({ chord: null, text: '', note });
+            } else {
+                last.note = note;
+            }
+        }
         for (const segment of segments) {
             if (segment.chord !== null) {
                 sheet.hasChords = true;
@@ -192,6 +204,24 @@ export function songKey(sheet: Pick<Sheet, 'meta' | 'firstChord'>): string | nul
     const declared = sheet.meta['key'] !== undefined ? chordKey(english(sheet.meta['key'])) : null;
 
     return declared ?? (sheet.firstChord !== null ? chordKey(sheet.firstChord) : null);
+}
+
+/** PHP's whitespace for a pattern without /u: ASCII only */
+const WS = '[ \\t\\n\\v\\f\\r]';
+
+const TRAILING_NOTE = new RegExp(`^(.*?)${WS}*\\{${WS}*(?:${ANNOTATIONS.join('|')})${WS}*:${WS}*([^{}]*?)${WS}*\\}$`, 'i');
+
+/**
+ * "Aleluya {ci: bis}" → ["Aleluya", "bis"]: an annotation at the end of a line of lyrics is a note of that
+ * line. Anywhere else, or with nothing in it, the text is left as written.
+ */
+function trailingNote(line: string): [string, string | null] {
+    const m = TRAILING_NOTE.exec(line);
+    if (m === null || m[2] === '') {
+        return [line, null];
+    }
+
+    return [m[1] ?? '', m[2] ?? ''];
 }
 
 /**

@@ -30,6 +30,21 @@ export const SONGS: Record<string, string> = {
         + '{c: Verso 2}\nOcho\n\n{c: Estrofa 3}\nNueve\n\n{c: Todos}\nDiez\n\n{c: Solo de guitarra}\n[E]Once',
     labelAlternatives: '{comment: Coro}\nUno\n{cb: Puente}\nDos\n{comment_box: Verso 1}\nTres',
     annotations: '{c: Coro}\n[G]Hosanna\n{ci: x2}\n\n{comment_italic: Repetir coro}\n\nSin sección {ci: ignorada}',
+    noteAtEnd: '[C]aleluya, [G]aleluya {ci: bis}\n{ci: x2}',
+    noteOnPlainLine: 'Sin acordes {comment_italic: (Bis)}\nOtra {CI: 2ª vez}',
+    noteInTheMiddle: 'Uno {ci: bis} dos',
+    noteEmptyAtEnd: 'Uno {ci: }\nDos {ci}\nTres {ci:}',
+    noteSpacing: '[G]Uno    {ci:   2ª vez   }   ',
+    noteTwoAtEnd: 'Uno {ci: a} dos {ci: b}',
+    noteEscaped: '[G]Hola {ci: <b> & "x"}',
+    noteAfterAChord: '[G]Hola [D]{ci: bis}',
+    noteOnAChordsOnlyLine: '{c: Intro}\n[G] [D] {ci: dos veces}\n[G]Letra',
+    noteOnAnEmptyBracket: '[] {ci: solo}',
+    noteBeforeABlankLine: '[C]Primera {ci: bis}\n\n[G]Segunda',
+    noteInAChorus: '{soc}\n[G]Coro {ci: 2ª vez}\n{eoc}\nVerso {ci: bis}',
+    parenChords: '[C]aleluya [Sol]aleluya [(G)]ya [( Re )]x [(x2)]y [G(add9)]z [(Sol)]',
+    parenChordFirst: '[(Em7)]Uno [C]dos',
+    parenChordLine: '[C]aleluya [Em]aleluya [F]a [G]le [C]lu [(G)]ya {ci: bis}',
     annotationFirst: '{ci: antes de todo}\n[G]Luego la letra',
     annotationEmptyValue: '{ci}\n{c}\n[G]Uno',
     chorusRepeat: '{soc}\n[G]Coro\n{eoc}\nVerso\n{chorus}\n{chorus: Repetir el coro}\nFin',
@@ -86,7 +101,7 @@ export const CHORDS: string[] = [
     ...['D/F#', 'G/B', 'C/E', 'Am/G', 'F#m7/C#', 'Bb/D', 'C/Bb', 'E/G#'],
     ...['Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Si', 'Do#', 'Reb', 'Fa#m7', 'Sibmaj7', 'Re/Fa#', 'sol', 'SOL', 'MIm', 'SIm', 'Rem', 'Solm', 'La7'],
     ...['Dosus4', 'Lam', 'Mi7', 'Sib', 'FA#', 'RE7', 'mi/sol#'],
-    ...['N.C.', 'x2', '', ' G ', '(G)', 'A-', 'D-', 'H', 'G/', '/G', 'Gmaj7/', 'Xyz', 'e', 'a', 'Cb', 'E#', 'B#', 'Fb'],
+    ...['N.C.', 'x2', '', ' G ', '(G)', '(Sol)', '(F#m7)', '( G )', '(D/F#)', '(Re/Fa#)', '(x2)', '(sol)', '()', '( )', '(G', 'G)', '((G))', 'G(add9)', '(G)/B', 'A-', 'D-', 'H', 'G/', '/G', 'Gmaj7/', 'Xyz', 'e', 'a', 'Cb', 'E#', 'B#', 'Fb'],
 ];
 
 /** Words (and fragments) for the syllable splitter: what follows a chord, starting where it falls */
@@ -129,6 +144,9 @@ export const PRINT_SONGS: Record<string, string> = (() => {
     }
     songs['verseLabelsAndChorus'] = '{c: Verso 1}\n' + withChords.repeat(6) + '\n{c: Coro}\n' + withChords.repeat(6)
         + '\n{c: Verso 2}\n' + withChords.repeat(6) + '\n{c: Puente}\n' + withChords.repeat(6) + '\n{ci: x2}\n';
+    songs['notesAtTheEnd'] = '{c: Coro}\n' + '[C]aleluya, [G]aleluya {ci: bis}\n'.repeat(8)
+        + '[Am]Caminamos con ale[E]gría, Señor, y cantamos con fe en el camino de la paz {ci: 2ª vez}\n'.repeat(4);
+    songs['notesAtTheEndPlain'] = 'x'.repeat(66) + ' {ci: bis}\n' + 'x'.repeat(60) + ' {ci: bis}\n';
     songs['introsAndAnnotations'] = '{c: Intro}\n[G] [D] [Em]\n\n{c: Verso}\n' + withChords.repeat(14) + '{ci: (BIS)}\n'.repeat(6);
 
     return songs;
