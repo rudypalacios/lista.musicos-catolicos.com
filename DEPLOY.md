@@ -300,6 +300,14 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    ponerla otra vez). Pruébalo en el **iPad**, donde el selector de fecha no siempre trae «Borrar». Un listado sin fecha en *Listados* solo dice
    sus cantos. **Duplicar listado** ya no pone la fecha de hoy: la copia sale sin fecha. «＋ Nuevo» sigue creando para hoy.
 
+25. **Nuevo canto e Importar, pulidos (PR A de la revisión de «Nuevo canto»).** (a) Guardar un canto **sin título** ya no deja el mensaje
+   abajo, junto a los botones: el campo *Título* se marca en rojo, recibe el foco y el mensaje aparece justo debajo; desaparece al escribir.
+   (b) Un canto guardado **sin letra** (solo el título) se guarda igual, pero dice «“X” se guardó sin letra todavía». Un título repetido
+   **no** se avisa ni se bloquea (hay varios «Santo» y varios «Gloria»). (c) En *Importar*, el botón del archivo es **«Elegir PDF»**,
+   dibujado por la app (antes era el del navegador, en inglés y distinto en cada aparato); toca y confirma que abre el selector de
+   archivos en el Android y, al final, en el iPad. La explicación de arriba es más corta. (d) Si corriges a mano un acorde en
+   minúscula en una tarjeta de *Importar* (`[am]`), la vista previa y lo guardado lo ponen en mayúscula, como en el editor.
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.

@@ -129,6 +129,21 @@ a.link {
     margin: 0.75rem 0 0;
 }
 
+/* The message of one field sits right under it, and takes no room while it is empty */
+.error.field-error {
+    min-height: 0;
+    margin: 0.25rem 0 0;
+    font-size: 0.9rem;
+}
+
+.error.field-error:empty {
+    display: none;
+}
+
+input[aria-invalid='true'] {
+    border-color: var(--danger);
+}
+
 .update {
     position: fixed;
     z-index: 20;
@@ -686,14 +701,15 @@ input[type='search'] {
     background: var(--bg);
 }
 
-input[type='file'] {
-    width: 100%;
-    padding: 0.5rem;
-    color: var(--text);
-    background: var(--bg);
-    border: 1px dashed var(--border);
-    border-radius: 0.5rem;
-    font: inherit;
+/* The button that picks a PDF: the label is drawn, the real input is only there to open the picker */
+.file-pick {
+    position: relative;
+    margin: 0.25rem 0;
+}
+
+.file-pick:focus-within {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
 }
 
 .help {

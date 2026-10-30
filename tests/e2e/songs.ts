@@ -132,6 +132,16 @@ try {
     await page.getByLabel('Letra con acordes').fill(SHORT);
     pass('chords typed in lowercase are read, previewed and written as capitals');
 
+    // No title: said at the field, which gets the focus, and nothing is saved
+    await page.getByLabel('Título').fill('');
+    await page.getByRole('button', { name: 'Guardar' }).click();
+    await page.locator('#title-error', { hasText: 'El canto necesita un título.' }).waitFor();
+    assert.equal(await page.getByLabel('Título').getAttribute('aria-invalid'), 'true');
+    assert.equal(await page.evaluate(() => document.activeElement?.id), 'title');
+    await page.getByLabel('Título').fill('Caminamos con alegría');
+    assert.equal(await page.locator('#title-error').textContent(), '');
+    pass('a song with no title says so at the title field, which gets the focus');
+
     await page.getByRole('button', { name: 'Guardar' }).click();
     await page.getByRole('heading', { name: 'Caminamos con alegría' }).waitFor();
     await synced(page);
@@ -325,8 +335,12 @@ try {
     assert.match(converted, /\[Em\]/);
     assert.match(converted, /\{c: Coro\}/);
     await page.getByText('Parte de la misa que dice el encabezado: Ofertorio.').waitFor();
+    // A chord corrected by hand in lowercase is previewed and saved as the capital, as in the editor
+    await page.getByLabel('Letra con acordes (ChordPro)').fill(converted + '\n[am]Extra');
+    assert.ok((await page.locator('.import-card .preview .ch').allTextContents()).includes('Lam'));
     await page.getByRole('button', { name: 'Guardar canto' }).click();
     await page.getByRole('heading', { name: 'Sobre la mesa' }).waitFor();
+    assert.ok((await chordNames(page)).includes('Lam'));
     assert.ok((await chordNames(page)).length >= 6);
     pass('importing: chords above the words become a song, reviewed before saving');
 
@@ -347,6 +361,13 @@ try {
         await page.getByRole('link', { name: title }).waitFor();
     }
     pass('importing: a whole Mass with a song per page becomes one song each');
+
+    // A song with a title and no lyrics is allowed, but says so
+    await page.goto(BASE + '/cantos/nuevo');
+    await page.getByLabel('Título').fill('Solo el título');
+    await page.getByRole('button', { name: 'Guardar' }).click();
+    await page.locator('.toast', { hasText: '“Solo el título” se guardó sin letra todavía.' }).waitFor();
+    pass('a song saved with no lyrics says so');
 
     // ----- signing out -----
     await synced(page);

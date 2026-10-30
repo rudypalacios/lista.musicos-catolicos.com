@@ -140,6 +140,15 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       toast says "Listado eliminado". It is gone from inside a list, whose "⋮" now only prints (so it is hidden while the list has
       no songs). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 23. Still on the browser's `confirm()`: deleting a song
       (`views/edit.ts`) and signing out with unsent changes (`signOut`): move them to `confirmDialog` when the owner wants.
+- [x] **New song, PR A of the review** (`views/edit.ts`, `views/import.ts`): a missing title is said at the title field (marked,
+      focused, message under it) and no longer at the foot of the form; a song saved with no lyrics says so in a toast (allowed: a
+      title first, the lyrics later); a **repeated title is neither warned nor blocked** (the owner: several "Santo" and "Gloria"
+      exist); Importar draws its own "Elegir PDF" button instead of the browser's, with a shorter explanation; the import cards
+      capitalise a lowercase chord (preview and save) like the editor. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 25.
+- [ ] **New song, PR B (approved by the owner, mockup first):** a "Escribir | Ver" switch so the preview is in view on a phone with
+      Guardar/Cancelar fixed at the foot; pasting chords over the words into "Nuevo canto" converts them with the importer (one
+      line says how many, with undo); a draft kept on the device and recovered. Not done on purpose: converting Latin chord names
+      to English on save (the owner has not decided; the parser already reads both), "Agregar a un listado" after saving from Cantos.
 - [ ] Adding several songs to one part takes a round trip per song (the picker returns to the list).
       If that is slow in practice, let the picker stay open and show what has been added.
 - [ ] **Paused (owner, after the UI session).** Duplicate a list ("copiar listado") to start next Sunday's from this

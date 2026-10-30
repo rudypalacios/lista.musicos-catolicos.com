@@ -1,4 +1,5 @@
 import type { App } from '../app.ts';
+import { capitaliseChords } from '../chordpro/capitalise.ts';
 import { parse } from '../chordpro/parser.ts';
 import { sheetHtml } from '../chordpro/sheet.ts';
 import { ValidationError } from '../data/library.ts';
@@ -31,7 +32,8 @@ export function importView(app: App, navigate: Navigate): View {
     });
     const convert = h('button', { type: 'button', class: 'button button--primary' }, 'Convertir');
     const pasteError = h('p', { class: 'error', role: 'alert' });
-    const pdf = h('input', { id: 'pdf', type: 'file', accept: 'application/pdf,.pdf' });
+    // The device's own file button reads differently on each one (and in the browser's language): the app draws its own
+    const pdf = h('input', { class: 'sr-only', type: 'file', accept: 'application/pdf,.pdf' });
     const pdfStatus = h('p', { class: 'help', role: 'status' });
 
     // A PDF is read where the chords really are (their position on the page), which a paste cannot say
@@ -111,10 +113,9 @@ export function importView(app: App, navigate: Navigate): View {
         'div',
         { class: 'page' },
         h('h2', {}, 'Importar cantos'),
-        h('p', {}, 'Sube un PDF (lo más exacto: lee dónde está cada acorde en la hoja) o pega el texto, con los acordes en una línea arriba de la letra. Si hay varios cantos (una misa con un canto por hoja), se separan solos. Se convierten a ChordPro y los revisas antes de guardarlos.'),
+        h('p', {}, 'Sube un PDF o pega el texto con los acordes sobre la letra. Si trae varios cantos, se separan solos; los revisas antes de guardar.'),
+        h('label', { class: 'button file-pick' }, 'Elegir PDF', pdf),
         h('p', { class: 'help' }, 'El PDF se lee en tu dispositivo: no se envía a ningún servidor.'),
-        h('label', { for: 'pdf' }, 'Subir un PDF'),
-        pdf,
         pdfStatus,
         h('label', { for: 'paste' }, 'O pegar el texto'),
         paste,
@@ -135,7 +136,8 @@ async function saveAll(app: App, cards: Card[]): Promise<string[]> {
             continue;
         }
         try {
-            const song = await app.create({ title: card.title.value, author: card.author.value, body: card.body.value });
+            // What the card previewed is what is saved: a chord corrected by hand as [am] is read as [Am]
+            const song = await app.create({ title: card.title.value, author: card.author.value, body: capitaliseChords(card.body.value) });
             saved.push(song.id);
             // Saved: it must not be saved again if a later one fails and the person tries again
             card.include.checked = false;
@@ -166,7 +168,7 @@ function card(song: Imported, index: number, total: number): Card {
     const part = MASS_PARTS.find((p) => p.id === song.part);
     const notes = h('ul', { class: 'notes' }, ...song.warnings.map((warning) => h('li', {}, warning)));
     const sheet = h('div', { class: 'song-sheet' });
-    const draw = (): void => setSheet(sheet, sheetHtml(parse(body.value)));
+    const draw = (): void => setSheet(sheet, sheetHtml(parse(capitaliseChords(body.value))));
     body.addEventListener('input', draw);
     draw();
 

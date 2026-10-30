@@ -61,6 +61,13 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
     body.value = existing?.body ?? '';
 
     const error = h('p', { class: 'error', role: 'alert' });
+    const titleError = h('p', { class: 'error field-error', id: 'title-error', role: 'alert' });
+    title.setAttribute('aria-describedby', 'title-error');
+    // The message and the mark go as soon as the person starts to fix the title
+    title.addEventListener('input', () => {
+        titleError.textContent = '';
+        title.removeAttribute('aria-invalid');
+    });
     const keyChip = h('span', { class: 'chip', hidden: true });
     const sheet = h('div', { class: 'song-sheet' });
     const preview = h('section', { class: 'preview', 'aria-label': 'Vista previa' }, h('h3', {}, 'Vista previa '), keyChip, sheet);
@@ -100,6 +107,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         { class: 'form', novalidate: true },
         h('label', { for: 'title' }, 'Título'),
         title,
+        titleError,
         h('label', { for: 'author' }, 'Autor (opcional)'),
         author,
         h('label', { for: 'body' }, 'Letra con acordes'),
@@ -119,12 +127,24 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
     form.addEventListener('submit', (event) => {
         event.preventDefault();
         error.textContent = '';
+        // Said at the field, which gets the focus: with the keyboard open the buttons are out of sight
+        if (title.value.trim() === '') {
+            titleError.textContent = 'El canto necesita un título.';
+            title.setAttribute('aria-invalid', 'true');
+            title.focus();
+
+            return;
+        }
         save.disabled = true;
         body.value = capitaliseChords(body.value);
         const draft = { title: title.value, author: author.value, body: body.value };
         const saved = existing === undefined ? app.create(draft) : saveEdit(app, existing, draft);
         saved
             .then((song) => {
+                // Allowed (a title first, the lyrics later), but not in silence
+                if (song.body.trim() === '') {
+                    showToast(`“${song.title}” se guardó sin letra todavía.`, 4000, true);
+                }
                 if (existing === undefined && start.into !== undefined) {
                     return placeInPart(app, navigate, song, start.into);
                 }
