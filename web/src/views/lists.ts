@@ -3,7 +3,7 @@ import type { Setlist } from '../data/types.ts';
 import { splitStarred } from '../data/setlists.ts';
 import { shortDay } from '../dates.ts';
 import { h } from '../dom.ts';
-import { icon } from '../icons.ts';
+import { icon, type IconName } from '../icons.ts';
 import { paths } from '../router.ts';
 import { filterSetlists } from '../search.ts';
 import { showToast } from '../toast.ts';
@@ -18,7 +18,7 @@ import type { Navigate, View } from './types.ts';
  * that list from here: star it (or take the star off), make a copy of it.
  */
 export function listsView(app: App, navigate: Navigate): View {
-    const create = h('button', { type: 'button', class: 'button button--primary lists__new', 'aria-label': 'Nuevo listado' }, '＋ Nuevo');
+    const create = h('button', { type: 'button', class: 'button button--primary lists__new', 'aria-label': 'Nuevo listado' }, icon('plus', 18), 'Nuevo');
     const search = h('input', {
         type: 'search', id: 'search', placeholder: 'Buscar listado', 'aria-label': 'Buscar listados',
         autocomplete: 'off', enterkeyhint: 'search',
@@ -71,11 +71,12 @@ export function listsView(app: App, navigate: Navigate): View {
         sheet.body.replaceChildren(
             h('h4', { class: 'sheet__title' }, list.title),
             h('p', { class: 'sheet__sub' }, count === 1 ? '1 canto' : `${count} cantos`),
+            // Not starred: an empty grey star. Starred: the filled yellow one it has on the list
             sheetAction(list.starred ? 'star-filled' : 'star', list.starred ? 'Quitar de destacados' : 'Destacar', () => {
                 error.textContent = '';
                 sheet.close();
                 app.setlists.setStarred(list.id, !list.starred).catch((failure: unknown) => fail(failure, 'No se pudo cambiar el listado.'));
-            }),
+            }, { lit: list.starred }),
             sheetAction('copy', 'Duplicar listado', () => {
                 error.textContent = '';
                 sheet.close(() => {
@@ -122,10 +123,10 @@ export function listsView(app: App, navigate: Navigate): View {
         );
     };
 
-    const group = (label: string | null, lists: readonly Setlist[]): HTMLElement[] =>
+    const group = (label: string | null, lists: readonly Setlist[], mark?: IconName): HTMLElement[] =>
         lists.length === 0 ? [] : [
             h('section', { class: 'lgroup' },
-                ...(label === null ? [] : [h('h3', { class: 'lgroup__label' }, label)]),
+                ...(label === null ? [] : [h('h3', { class: 'lgroup__label' }, ...(mark === undefined ? [] : [icon(mark, 14)]), label)]),
                 h('ul', { class: 'lrows' }, ...lists.map(row))),
         ];
 
@@ -141,7 +142,7 @@ export function listsView(app: App, navigate: Navigate): View {
         groups.replaceChildren(
             ...(query !== '' ? group(null, [...starred, ...others])
                 : starred.length === 0 ? group(null, others)
-                    : [...group('★ Destacados', starred), ...group('Recientes', others)]),
+                    : [...group('Destacados', starred, 'star-filled'), ...group('Recientes', others)]),
         );
         empty.hidden = shown.length > 0;
         empty.textContent = lists.length === 0

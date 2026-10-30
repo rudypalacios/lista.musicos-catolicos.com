@@ -1,4 +1,5 @@
 import { h } from '../dom.ts';
+import { icon } from '../icons.ts';
 import type { Reader } from './reader.ts';
 
 /** Somewhere the key on screen can be saved to */
@@ -10,7 +11,7 @@ export interface ToneDestination {
 }
 
 export interface ToneControlOptions {
-    /** The reader whose song this changes (`externalTone`) */
+    /** The reader whose song this changes */
     reader: Pick<Reader, 'shift' | 'setShift' | 'keyName'>;
     /** The key the control compares with, in semitones from the song's own: the list's, or the person's own on the song page */
     saved: () => number;
@@ -46,8 +47,8 @@ const signed = (shift: number): string => (shift > 0 ? `+${shift}` : String(shif
 export function createToneControl(options: ToneControlOptions): ToneControl {
     const { reader } = options;
     const live = h('span', { class: 'sr-only', 'aria-live': 'polite' });
-    const down = h('button', { type: 'button', 'aria-label': 'Bajar un semitono' }, '−');
-    const up = h('button', { type: 'button', 'aria-label': 'Subir un semitono' }, '+');
+    const down = h('button', { type: 'button', 'aria-label': 'Bajar un semitono' }, icon('minus', 20));
+    const up = h('button', { type: 'button', 'aria-label': 'Subir un semitono' }, icon('plus', 20));
     const label = h('span', { class: 'tone-control__key' });
     const step = h('div', { class: 'tone-control__step' }, down, label, up);
     const hint = h('span', { class: 'tone-control__hint' }, options.hint);

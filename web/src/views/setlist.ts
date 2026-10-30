@@ -89,9 +89,15 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             title.blur();
         }
     });
-    day.addEventListener('input', () => {
-        dayText.textContent = day.value === '' ? '＋ Fecha' : shortDay(day.value);
-    });
+    /** The day on its chip: "＋ Fecha" (the plus drawn) when there is none */
+    const showDay = (value: string | null): void => {
+        if (value === null || value === '') {
+            dayText.replaceChildren(icon('plus', 14), 'Fecha');
+        } else {
+            dayText.textContent = shortDay(value);
+        }
+    };
+    day.addEventListener('input', () => showDay(day.value));
 
     // --- the sheets ---
     // The screen scrolls inside the app, so a sheet here covers the window, not the page
@@ -362,7 +368,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             }
         }
         fitTitle();
-        dayText.textContent = setlist.eventDate === null ? '＋ Fecha' : shortDay(setlist.eventDate);
+        showDay(setlist.eventDate);
     };
     const reload = (): void => {
         void Promise.all([app.setlists.get(setlist.id), songsById(app)]).then(([latest, all]) => {

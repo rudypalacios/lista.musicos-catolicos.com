@@ -55,10 +55,10 @@ try {
     // ----- starting with a network that never answers -----
     await context.route('**/api/me', () => undefined); // the request hangs: no answer, no error
     await page.reload();
-    await page.getByRole('link', { name: '← Cantos' }).waitFor({ timeout: 5000 });
+    await page.getByRole('link', { name: 'Volver a Cantos' }).waitFor({ timeout: 5000 });
     pass('a /api/me that never answers does not blank the app: it opens from the device');
 
-    await page.getByRole('link', { name: '← Cantos' }).click();
+    await page.getByRole('link', { name: 'Volver a Cantos' }).click();
     await page.getByRole('link', { name: 'Canto que debe sobrevivir' }).waitFor();
     pass('and the songs are there');
 
@@ -81,7 +81,7 @@ try {
     await page.getByText('Actualizando la app…').waitFor({ timeout: 3000 });
     pass('accepting it shows "Actualizando la app…" at once, not a frozen screen');
 
-    await page.getByText('✓ App actualizada').waitFor({ timeout: 15000 });
+    await page.getByText('App actualizada').waitFor({ timeout: 15000 });
     await page.getByRole('link', { name: 'Canto que debe sobrevivir' }).waitFor();
     const cacheNames = await page.evaluate(() => caches.keys());
     assert.equal(cacheNames.length, 1, 'the old copy of the app is gone');
@@ -106,7 +106,7 @@ try {
 
     await page.evaluate(() => (globalThis as unknown as { restoreWorker: () => void }).restoreWorker());
     await page.getByRole('button', { name: 'Reintentar' }).click();
-    await page.getByText('✓ App actualizada').waitFor({ timeout: 15000 });
+    await page.getByText('App actualizada').waitFor({ timeout: 15000 });
     pass('and "Reintentar" gets it through');
 
     assert.deepEqual(problems, [], 'no uncaught errors in the page');

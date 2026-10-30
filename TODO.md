@@ -121,6 +121,12 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       types a character). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 20.
 - [x] A starred list shows a small yellow star (drawn, `--star`) after its details on the lists screen ("10 cantos · mar 1 sep ★"),
       so the yellow is seen without opening the sheet. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 21.
+- [x] Every icon is drawn (SVG, `icons.ts`), none typed: the back arrows, the "＋" of "Nuevo" and "Fecha", the − and + of the key
+      and of A− / A+, the arrow of "Do → C", the check of "App actualizada", the ✕ of the install bar, the chevron of the
+      position button and the star of "Destacados" (yellow). In the lists sheet "Destacar" shows an empty grey star and
+      "Quitar de destacados" the filled yellow one. The reader's old key group (− / key / +, only used before `externalTone`)
+      is gone. Back links are named "Volver a …" for screen readers (their text is still the name of the screen).
+      **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 22.
 - [ ] Adding several songs to one part takes a round trip per song (the picker returns to the list).
       If that is slow in practice, let the picker stay open and show what has been added.
 - [ ] **Paused (owner, after the UI session).** Duplicate a list ("copiar listado") to start next Sunday's from this

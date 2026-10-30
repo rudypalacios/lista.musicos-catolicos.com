@@ -10,6 +10,7 @@
  *   (no answer after a few seconds) → "La actualización tarda" [Reintentar] [Reiniciar la app]
  *   after the reload → "App actualizada" for a moment
  */
+import { icon } from './icons.ts';
 import { h } from './dom.ts';
 
 export type UpdateState =
@@ -203,7 +204,7 @@ export function startUpdates(): void {
     try {
         if (sessionStorage.getItem(JUST_UPDATED) === '1') {
             sessionStorage.removeItem(JUST_UPDATED);
-            const note = h('div', { class: 'toast', role: 'status' }, '✓ App actualizada');
+            const note = h('div', { class: 'toast toast--done', role: 'status' }, icon('check', 18), ' App actualizada');
             container.append(note);
             setTimeout(() => note.remove(), 3500);
         }
