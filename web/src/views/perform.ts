@@ -192,7 +192,7 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     const toolsSheet = createSheet('Tono y letra');
     if (tools !== null && tone !== null && song !== undefined) {
         // The lyrics and chords belong to the song, so the edit is the song's (it comes back here when it ends)
-        const edit = h('button', { type: 'button', class: 'sheet-action' }, icon('pencil', 20),
+        const edit = h('button', { type: 'button', class: 'sheet-action sheet-action--apart' }, icon('pencil', 20),
             h('span', { class: 'sheet-action__text' }, 'Editar letra y acordes', h('small', {}, 'Se cambia en todos los listados donde está')));
         edit.addEventListener('click', () => toolsSheet.close(() => navigate(paths.edit(song.id, paths.perform(setlist.id, position)))));
         toolsSheet.body.append(h('h3', {}, 'Tono'), tone.element, h('h3', {}, 'Letra'), tools, edit);

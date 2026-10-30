@@ -2095,6 +2095,12 @@ button.sheet-action {
     text-align: left;
 }
 
+/* Set apart from the tools above it: room before its line and between the line and the words */
+button.sheet-action--apart {
+    margin-top: 1.1rem;
+    padding: 0.6rem 0;
+}
+
 button.sheet-action .icon {
     flex: none;
     color: var(--muted);

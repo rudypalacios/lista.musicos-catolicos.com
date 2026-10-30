@@ -124,6 +124,14 @@ try {
     await page.getByText('Tono Do').first().waitFor();
     pass('the editor previews the song as it will be read, with the key');
 
+    // A chord typed in lowercase ([c], [g]) is read as the capital, shown so in the preview, and written so
+    await page.getByLabel('Letra con acordes').fill('[c]Caminamos con a[g]legría y [am]fe');
+    assert.deepEqual(await page.locator('.preview .ch').allTextContents(), ['Do', 'Sol', 'Lam']);
+    await page.getByLabel('Letra con acordes').blur();
+    assert.equal(await page.getByLabel('Letra con acordes').inputValue(), '[C]Caminamos con a[G]legría y [Am]fe');
+    await page.getByLabel('Letra con acordes').fill(SHORT);
+    pass('chords typed in lowercase are read, previewed and written as capitals');
+
     await page.getByRole('button', { name: 'Guardar' }).click();
     await page.getByRole('heading', { name: 'Caminamos con alegría' }).waitFor();
     await synced(page);
