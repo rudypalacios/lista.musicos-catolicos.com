@@ -81,10 +81,13 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       page in Cantos has the same control (compact: the line shows only while there is a change) with "Guardar como mi tono", and
       the song opens in it (the address carries `?t=` only when the key is not the person's own). **Owner's check:** `DEPLOY.md`
       "Fases 4 y 5", item 16.
-- [ ] The key of a song in a list, PR 3 of 3: **touching a row opens Cantar there** (today it does nothing), and **"Editar letra y
-      acordes"** in the "⋯" sheet (it comes back to Cantar), with the one-line notices "Está en 3 listados" and "El tono
-      original pasó de Do a Re" (each opens its text with an info button) and the rule that editing a chart never changes the
-      key a person sings in (the offsets are adjusted when the original key moves).
+- [x] The key of a song in a list, PR 3 of 3: **touching a row sings it from there** (a button, no longer nothing), and **"Editar
+      letra y acordes"** at the end of Cantar's "⋯" sheet (`/cantos/:id/editar?volver=…`, which comes back to Cantar). The edit
+      screen says in one line "Está en 3 listados" and, when the edit moves the song's written key, "El tono original pasó de
+      Do a Re" (each opens its text with an info button). **Rule:** editing a chart never changes what is sung: when the written key
+      moves, "mi tono" (if set), every use of the song in a list and the keys of today move the other way (`keys.ts`,
+      `Setlists.retuneSong`, `App.updateKeepingKeys`). A song with no key (no chords, no `{key}`) is never retuned.
+      **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 17.
 - [ ] Adding several songs to one part takes a round trip per song (the picker returns to the list).
       If that is slow in practice, let the picker stay open and show what has been added.
 - [ ] **Paused (owner, after the UI session).** Duplicate a list ("copiar listado") to start next Sunday's from this

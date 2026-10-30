@@ -23,7 +23,7 @@ const ADD_AT_END_FROM = 4;
 /**
  * One setlist: its title and day, and the template of the Mass with a slot for every part. A part
  * with no song is one quiet line; a part with songs is a heading and one row per song. A row only
- * shows the song (its title is not a link; the key is read-only here: it is changed while singing, so
+ * shows the song (touching it sings it from there; the key is read-only here: it is changed while singing, so
  * it is saved to the list and not to the song); "⋯" opens a sheet with what is done now and then to one song
  * (sing from it, move it up or down within its part, remove it with an undo). The list's own "⋯" holds
  * print and delete.
@@ -283,8 +283,14 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
                 lines.push(h('span', { class: 'item__also', role: 'note' }, `También está en: ${elsewhere.join(', ')}`));
             }
         }
-        // The song is not a link here: touching its title does nothing (it is opened by singing from it)
-        li.append(h('div', { class: 'item__open' }, ...lines));
+        // Touching the song sings it from here (the same as "Cantar desde aquí"); a song that is gone has nothing to open
+        if (song === undefined) {
+            li.append(h('div', { class: 'item__open' }, ...lines));
+        } else {
+            const open = h('button', { type: 'button', class: 'item__open', 'data-focus': `open:${item.id}` }, ...lines);
+            open.addEventListener('click', () => navigate(paths.perform(setlist.id, positionInMass(setlist.items, item.id))));
+            li.append(open);
+        }
         const options = h('button', {
             type: 'button', class: 'item__more', 'aria-label': `Más opciones: ${name}`, 'data-focus': `more:${item.id}`,
         }, icon('more', 22));

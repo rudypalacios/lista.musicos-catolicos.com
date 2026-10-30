@@ -515,6 +515,34 @@ try {
     assert.deepEqual(await chords(page), ['Lab', 'Mib']);
     await closeSheet(page);
     pass('"mi tono" is saved from the list too, apart from the key of the list or together with it, and it syncs');
+
+    // Editing the chart from singing: the scope is said, a moved key moves what is sung the other way, and it comes back
+    await page.getByRole('button', { name: 'Más herramientas' }).waitFor();
+    await openTools(page);
+    await page.getByRole('button', { name: /Editar letra y acordes/ }).click();
+    await page.getByRole('heading', { name: 'Editar canto' }).waitFor();
+    assert.match(page.url(), /\/cantos\/[^/]+\/editar\?volver=/);
+    await page.getByText(/Está en/).first().waitFor();
+    assert.match(await page.locator('.notice-line').first().innerText(), /Está en 1 listado/);
+    assert.equal(await page.locator('.notice-line__details:not([hidden])').count(), 0, 'the why is behind its button');
+    await page.getByRole('button', { name: 'Más información' }).first().click();
+    await page.locator('.notice-line__details:not([hidden])').waitFor();
+    await page.getByLabel('Letra con acordes').fill('[A]Gloria a [E]Dios en el cielo');
+    await page.getByText('El tono original pasó de').waitFor();
+    assert.match(await page.locator('.notice-line--tone').innerText(), /Sol.*La/);
+    await page.getByRole('button', { name: 'Guardar' }).click();
+    await page.getByRole('heading', { name: 'Gloria sencilla' }).waitFor();
+    assert.match(page.url(), /\/cantar\/2$/, 'it comes back to the song being sung');
+    assert.deepEqual(await chords(page), ['Lab', 'Mib'], 'what is sung did not change: the key of the list moved the other way');
+    await serverWhen(page, (data) => {
+        const gloria = data.songs.find((song) => song.title === 'Gloria sencilla');
+
+        return gloria?.body === '[A]Gloria a [E]Dios en el cielo'
+            && data.setlists[0]?.items.find((item) => item.songId === gloria.id)?.transpose === -1;
+    });
+    pass('editing the chart from singing says where it applies, keeps what is sung (the key of the list moves the other way) and comes back');
+    await page.goBack().catch(() => undefined);
+    await page.getByRole('heading', { name: 'Gloria sencilla' }).waitFor();
     await page.getByRole('link', { name: 'Volver al listado' }).click();
     await page.locator('section.slot').first().waitFor();
     await page.getByRole('link', { name: 'Cantar' }).click();
@@ -725,15 +753,17 @@ try {
     });
     const before = await page.evaluate(() => document.querySelector('#view')?.scrollTop ?? 0);
     assert.ok(before > 0, 'the list is long enough to scroll');
-    // Touching the title of a song does nothing on this screen: it is not a link
+    // Touching a song sings it from here, and back returns to the same place
     const salidaRow = slot(page, 'Canto de salida').locator('.item').first();
-    const urlBefore = page.url();
-    assert.equal(await page.locator('.slots a.item__open').count(), 0, 'no song of the list is a link');
+    assert.equal(await page.locator('.slots a.item__open').count(), 0, 'a song of the list is a button, not a link');
     await salidaRow.locator('.item__title').click();
-    await page.waitForTimeout(300);
-    assert.equal(page.url(), urlBefore, 'touching a title goes nowhere');
-    assert.equal(await page.locator('.sheet-layer.is-open').count(), 0, 'and opens nothing');
-    pass('touching the title of a song in the list does nothing');
+    await page.getByRole('heading', { name: 'Abrimos la puerta' }).waitFor();
+    assert.match(page.url(), /\/cantar\/\d+$/);
+    await page.goBack();
+    await page.locator('section.slot').first().waitFor();
+    await page.waitForFunction((top) => (document.querySelector('#view')?.scrollTop ?? 0) >= top - 2, before);
+    assert.equal(await page.locator('.sheet-layer.is-open').count(), 0);
+    pass('touching a song in the list sings it from there, and back returns to the same place');
 
     // Back from singing a song returns to the same place in the list
     await slot(page, 'Canto de salida').getByRole('button', { name: 'Más opciones: Abrimos la puerta' }).click();

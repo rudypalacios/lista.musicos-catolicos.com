@@ -13,7 +13,7 @@ export type Route =
     | { name: 'new'; into?: Placement; title?: string }
     | { name: 'import' }
     | { name: 'view'; id: string }
-    | { name: 'edit'; id: string }
+    | { name: 'edit'; id: string; back?: string }
     | { name: 'lists' }
     | { name: 'setlist'; id: string }
     | { name: 'add'; id: string; part: string }
@@ -43,7 +43,12 @@ export function matchRoute(path: string, search = ''): Route {
     }
     const edit = new RegExp(`^/cantos/${ID}/editar$`).exec(clean);
     if (edit?.[1] !== undefined) {
-        return { name: 'edit', id: edit[1] };
+        const back = new URLSearchParams(search).get('volver') ?? '';
+
+        // Only a place of the app to sing from: nothing else is followed
+        return new RegExp(`^/listados/${ID}/cantar/\\d{1,3}$`).test(back)
+            ? { name: 'edit', id: edit[1], back }
+            : { name: 'edit', id: edit[1] };
     }
 
     if (clean === '/listados') {
@@ -108,7 +113,8 @@ export const paths = {
     },
     import: (): string => '/cantos/importar',
     view: (id: string): string => `/cantos/${id}`,
-    edit: (id: string): string => `/cantos/${id}/editar`,
+    /** `back` is where to return to afterwards: a song being sung (`paths.perform`) */
+    edit: (id: string, back?: string): string => (back === undefined ? `/cantos/${id}/editar` : `/cantos/${id}/editar?volver=${encodeURIComponent(back)}`),
     lists: (): string => '/listados',
     setlist: (id: string): string => `/listados/${id}`,
     addToSetlist: (id: string, part: string): string => `/listados/${id}/agregar/${part}`,
@@ -165,7 +171,9 @@ export function parentOf(route: Route): { path: string; label: string } | null {
         case 'import':
             return { path: paths.list(), label: 'Cantos' };
         case 'edit':
-            return { path: paths.view(route.id), label: 'Canto' };
+            return route.back === undefined
+                ? { path: paths.view(route.id), label: 'Canto' }
+                : { path: route.back, label: 'Volver a cantar' };
         case 'setlist':
             return { path: paths.lists(), label: 'Listados' };
         case 'add':

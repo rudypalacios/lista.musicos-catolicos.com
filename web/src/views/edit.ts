@@ -4,7 +4,10 @@ import { sheetHtml } from '../chordpro/sheet.ts';
 import { ValidationError } from '../data/library.ts';
 import type { Setlist, Song } from '../data/types.ts';
 import { h, link, setSheet } from '../dom.ts';
+import { icon } from '../icons.ts';
+import { keyDistance, nearestShift } from '../keys.ts';
 import { paths, type Placement } from '../router.ts';
+import { todayKeys } from '../today-keys.ts';
 import { showToast } from '../toast.ts';
 import { transpose } from '../chordpro/chord.ts';
 import { readNotation } from '../prefs.ts';
@@ -37,6 +40,8 @@ cantando vamos hacia tu [Am]casa.
 export interface NewSongStart {
     title?: string;
     into?: Placement;
+    /** A song being sung (`paths.perform`): where to come back to when the edit ends */
+    back?: string;
 }
 
 /**
@@ -70,7 +75,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
     draw();
 
     const save = h('button', { type: 'submit', class: 'button button--primary' }, 'Guardar');
-    const actions = h('div', { class: 'actions' }, save, link(cancelPath(existing, start.into), 'Cancelar', 'button'));
+    const actions = h('div', { class: 'actions' }, save, link(cancelPath(existing, start.into, start.back), 'Cancelar', 'button'));
     if (existing !== undefined) {
         const remove = h('button', { type: 'button', class: 'button button--danger' }, 'Eliminar');
         remove.addEventListener('click', () => {
@@ -110,25 +115,96 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         error.textContent = '';
         save.disabled = true;
         const draft = { title: title.value, author: author.value, body: body.value };
-        const saved = existing === undefined ? app.create(draft) : app.update(existing.id, draft);
+        const saved = existing === undefined ? app.create(draft) : saveEdit(app, existing, draft);
         saved
-            .then((song) => (existing === undefined && start.into !== undefined ? placeInPart(app, navigate, song, start.into) : navigate(paths.view(song.id))))
+            .then((song) => {
+                if (existing === undefined && start.into !== undefined) {
+                    return placeInPart(app, navigate, song, start.into);
+                }
+
+                // Back to the song being sung, replacing this screen so "back" does not return to the form
+                return start.back !== undefined ? navigate(start.back, { replace: true }) : navigate(paths.view(song.id));
+            })
             .catch((failure: unknown) => {
                 error.textContent = failure instanceof ValidationError || failure instanceof Error ? failure.message : 'No se pudo guardar.';
                 save.disabled = false;
             });
     });
 
-    const element = h('div', { class: 'page' }, h('h2', {}, existing === undefined ? 'Nuevo canto' : 'Editar canto'), form, preview);
+    // What editing a song that is already used means, one line each (the text opens with its button)
+    const notices = h('div', { class: 'notices' });
+    if (existing !== undefined) {
+        const own = songKey(parse(existing.body));
+        const scope = notice('', false);
+        void app.setlists.using(existing.id).then((lists) => {
+            if (lists.length > 0) {
+                const count = lists.length === 1 ? '1 listado' : `${lists.length} listados`;
+                scope.set([`Está en `, h('b', {}, count), ': los cambios de letra y acordes van a todos'],
+                    `${lists.map((list) => `«${list.title}»`).join(', ')}. El tono se cambia aparte, desde Cantar.`);
+                notices.prepend(scope.element);
+            }
+        });
+        const moved = notice('', true);
+        body.addEventListener('input', () => {
+            const now = songKey(parse(body.value));
+            const by = keyDistance(own, now);
+            if (own !== null && now !== null && by !== null && by !== 0) {
+                moved.set(['El tono original pasó de ', h('b', {}, transpose(own, 0, readNotation())), ' a ', h('b', {}, transpose(now, 0, readNotation()))],
+                    'Lo que cantas no cambia: tu tono y el de cada listado se ajustan solos para sonar igual que antes.');
+                notices.append(moved.element);
+            } else {
+                moved.element.remove();
+            }
+        });
+    }
+
+    const element = h('div', { class: 'page' }, h('h2', {}, existing === undefined ? 'Nuevo canto' : 'Editar canto'), notices, form, preview);
     // With the title already typed from the search, the lyrics are what is missing
     queueMicrotask(() => (existing === undefined && title.value === '' ? title : body).focus());
 
     return { element };
 }
 
-function cancelPath(existing: Song | undefined, into: Placement | undefined): string {
+/**
+ * Saves an edit. If it moved the key the song is written in, the keys people sing it in move the other way,
+ * so editing a chart never changes what is sung (and the keys of today, which live on this device, with them).
+ */
+async function saveEdit(app: App, existing: Song, draft: { title: string; author: string; body: string }): Promise<Song> {
+    const moved = keyDistance(songKey(parse(existing.body)), songKey(parse(draft.body))) ?? 0;
+    const { song, touched } = await app.updateKeepingKeys(existing.id, draft, moved);
+    for (const { setlistId, itemId } of touched) {
+        const today = todayKeys.get(setlistId, itemId);
+        if (today !== null) {
+            todayKeys.set(setlistId, itemId, nearestShift(today - moved));
+        }
+    }
+
+    return song;
+}
+
+/** A line with a button that opens its explanation: the short fact stays in view, the why is one touch away */
+function notice(text: string, tone: boolean): { element: HTMLElement; set: (summary: Array<Node | string>, details: string) => void } {
+    const summary = h('span', { class: 'notice-line__text' }, text);
+    const details = h('p', { class: 'notice-line__details', hidden: true });
+    const button = h('button', { type: 'button', class: 'notice-line__info', 'aria-label': 'Más información', 'aria-expanded': 'false' }, icon('info', 20));
+    button.addEventListener('click', () => {
+        details.hidden = !details.hidden;
+        button.setAttribute('aria-expanded', String(!details.hidden));
+    });
+    const element = h('div', { class: tone ? 'notice-line notice-line--tone' : 'notice-line' }, h('div', { class: 'notice-line__row' }, summary, button), details);
+
+    return {
+        element,
+        set: (parts, why) => {
+            summary.replaceChildren(...parts);
+            details.textContent = why;
+        },
+    };
+}
+
+function cancelPath(existing: Song | undefined, into: Placement | undefined, back: string | undefined): string {
     if (existing !== undefined) {
-        return paths.view(existing.id);
+        return back ?? paths.view(existing.id);
     }
 
     return into === undefined ? paths.list() : paths.addToSetlist(into.setlist, into.part);

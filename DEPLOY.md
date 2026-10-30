@@ -188,7 +188,7 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    está vacía (las opcionales llevan «opcional» y ⓘ), y como un «＋» solo cuando ya tiene cantos; desde el
    cuarto canto hay además un «＋ Agregar canto» al final de la lista de esa parte.
    Cada canto es una fila: título, y debajo «Autor · Tono» (el tono en ámbar si lo cambiaste; aquí solo se
-   lee). **Tocar el título no hace nada** (el canto no es un enlace en esta pantalla; se abre cantando desde él). El **⋯** de la fila abre una hoja con: *Cantar desde aquí* (ahí se
+   lee). **Tocar el canto lo canta desde ahí** (igual que *Cantar desde aquí*; al volver con la flecha de *Cantar* regresas al mismo sitio del listado). El **⋯** de la fila abre una hoja con: *Cantar desde aquí* (ahí se
    cambia el tono, y queda guardado en el listado), *Subir* / *Bajar en esta parte* (solo los que se pueden;
    la hoja sigue abierta para mover otra vez) y *Quitar del listado* (aviso «Quitado · Deshacer» unos
    segundos). El **⋯** de arriba tiene *Imprimir con acordes*, *Imprimir solo la letra* y *Eliminar listado*
@@ -252,6 +252,15 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    en Re, agrega ese canto a **otro** listado: entra en Re; el listado que ya lo tenía **no** cambia. Cambiar «mi tono» después
    tampoco mueve los listados viejos (cada listado guarda su tono). En otro dispositivo, tras sincronizar, el canto abre en tu tono.
    La primera vez después de este deploy la app crea sola la columna (migración `0007`); no hay que hacer nada en phpMyAdmin.
+
+17. **Corregir la letra o los acordes desde un listado.** En el listado, toca un canto: se abre *Cantar* en ese canto. Toca `⋯`:
+   al final está **Editar letra y acordes** (dice que se cambia en todos los listados donde está). Se abre *Editar canto*, con
+   una línea arriba: «Está en 3 listados: los cambios de letra y acordes van a todos»; el botón de información de esa línea
+   muestra cuáles. Prueba: cambia un acorde de adentro del canto (no el primero): no pasa nada con los tonos. Luego cambia el
+   **primer** acorde (de Do a Re, por ejemplo): aparece otra línea, «El tono original pasó de Do a Re», y su botón explica que
+   lo que cantas no cambia. Toca **Guardar**: vuelves a *Cantar* en el mismo canto y **suena igual que antes** (si cantabas en Fa,
+   sigue en Fa; el número «Listado» de *Tono* se ajusta solo), y lo mismo en los otros listados que lo tengan y en «Mío».
+   «Cancelar» y «← Volver a cantar» regresan a *Cantar*.
 
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
