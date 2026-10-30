@@ -85,7 +85,9 @@ export function createHeader(options: HeaderOptions): Header {
             back.hidden = parent === null;
             if (parent !== null) {
                 back.href = parent.path;
-                back.textContent = `← ${parent.label}`;
+                // The arrow is drawn; the name says where it goes ("Volver a Listados")
+                back.replaceChildren(icon('arrow-left', 18), parent.label);
+                back.setAttribute('aria-label', parent.label.startsWith('Volver') ? parent.label : `Volver a ${parent.label}`);
             }
             const section = sectionOf(route);
             for (const { entry, element } of entries) {

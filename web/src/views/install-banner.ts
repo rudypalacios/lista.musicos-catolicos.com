@@ -1,5 +1,6 @@
 import { currentInstallOffer, dismissInstallOffer, HOME_SCREEN_STEPS, onInstallChange, promptInstall } from '../install.ts';
 import { h } from '../dom.ts';
+import { icon } from '../icons.ts';
 
 export interface InstallBanner {
     element: HTMLElement;
@@ -20,7 +21,7 @@ export function createInstallBanner(): InstallBanner {
     const how = h('button', { type: 'button', class: 'install-banner__action', 'aria-label': 'Cómo instalar', 'aria-expanded': 'false' }, 'Cómo');
     const steps = h('ol', { class: 'install-banner__steps' }, ...HOME_SCREEN_STEPS.map((step) => h('li', {}, step)));
     steps.hidden = true;
-    const later = h('button', { type: 'button', class: 'install-banner__close', 'aria-label': 'Ahora no' }, '✕');
+    const later = h('button', { type: 'button', class: 'install-banner__close', 'aria-label': 'Ahora no' }, icon('x', 18));
     const element = h('div', { class: 'install-banner', role: 'region', 'aria-label': 'Instalar la app' }, text, install, how, later, steps);
     let away = false;
 

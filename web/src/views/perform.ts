@@ -49,7 +49,8 @@ function partName(item: SetlistItem): string {
 export async function performView(app: App, navigate: Navigate, setlist: Setlist, n: number): Promise<View> {
     const order = inMassOrder(setlist.items);
     if (order.length === 0) {
-        const back = link(paths.setlist(setlist.id), '← Listado', 'button back');
+        const back = link(paths.setlist(setlist.id), '', 'button back');
+        back.replaceChildren(icon('arrow-left', 18), 'Listado');
         const empty = h('div', { class: 'page' }, h('p', { class: 'card' }, 'Este listado no tiene cantos todavía.'), h('div', { class: 'actions' }, back));
 
         return { element: empty };
@@ -73,11 +74,12 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     };
 
     // --- the bar: full row, and the strip it folds to ---
-    const back = link(paths.setlist(setlist.id), '←', 'perform__back');
+    const back = link(paths.setlist(setlist.id), '', 'perform__back');
+    back.append(icon('arrow-left', 22));
     back.setAttribute('aria-label', 'Volver al listado');
     const heading = h('span', { class: 'perform__title' }, h('small', { class: 'perform__part' }, partName(item)), h('strong', { class: 'perform__song' }, title));
     const jumpButton = h('button', { type: 'button', class: 'perform__jump', 'aria-label': `Ir a otro canto. Canto ${position} de ${order.length}` },
-        h('span', { class: 'perform__count' }, countText), ' ▾');
+        h('span', { class: 'perform__count' }, countText), icon('chevron-down', 16));
     const moreButton = h('button', { type: 'button', class: 'perform__more', 'aria-label': 'Más herramientas' }, icon('more', 22));
     const full = h('div', { class: 'perform__full' }, back, heading, jumpButton, moreButton);
     const stripKey = h('span', { class: 'perform__strip-key' });
@@ -115,7 +117,6 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
         reader = createReader(song, {
             sizeScope: 'setlist',
             shift: today ?? saved,
-            externalTone: true,
             onShift: (shift) => {
                 error.textContent = '';
                 if (shift === saved) {

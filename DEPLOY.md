@@ -278,6 +278,16 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    fila de *Listados*. Se ven igual en todos los aparatos; en *Cantar* ya no es una letra. Mismo tamaño de toque (44 px) y mismo
    efecto. Se sigue llamando «⋯» en estas notas solo por costumbre.
 
+21. **La estrella amarilla en *Listados*.** Un listado destacado muestra, después de sus datos, una **estrellita amarilla** del tamaño de la
+   letra: «10 cantos · mar 1 sep ★». Los que no están destacados no la llevan. Se quita o se pone desde el `⋮` de la fila → «Quitar de
+   destacados» / «Destacar».
+
+22. **Todos los iconos dibujados.** Ya no queda ninguno escrito como letra (se veían distinto según el aparato): las flechas de «volver»
+   (←), el «＋» de «Nuevo» y de «Fecha», el − y el + del tono y de A− / A+, la flecha de «Do → C», la palomita de «App actualizada», la
+   ✕ de la barra de instalar, la flechita de «1/4» en *Cantar* y la estrella de «Destacados» (amarilla). Compáralos en el teléfono y
+   en la tablet: deben verse idénticos. En el `⋮` de un listado: si **no** está destacado, «Destacar» lleva una **estrella vacía
+   gris**; si ya lo está, «Quitar de destacados» lleva la **estrella llena amarilla**.
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.

@@ -29,6 +29,12 @@ async function createSong(page: Page, title: string, body: string): Promise<void
     await page.getByRole('heading', { name: title }).waitFor();
 }
 
+/** No icon is a typed character (it would look different on each device): only drawn ones */
+async function noTypedIcons(page: Page, where: string): Promise<void> {
+    const found = await page.evaluate(() => (document.body.innerText.match(/[←→↑↓▾▸▶▼★☆✎✓✕×↺⋯⋮＋−]/g) ?? []).join(''));
+    assert.equal(found, '', `${where}: no icon typed as a character`);
+}
+
 /** The slot of a part of the Mass, by its name */
 function slot(page: Page, part: string) {
     return page.locator('section.slot', { has: page.getByRole('heading', { name: part, exact: true }) });
@@ -39,7 +45,7 @@ async function addToSlot(page: Page, part: string, song: string): Promise<void> 
     await page.getByRole('heading', { name: `Agregar a ${part}` }).waitFor();
     await page.getByLabel('Buscar cantos').fill(song);
     await page.locator('button.song-item', { hasText: song }).click();
-    await page.getByRole('link', { name: '← Listados' }).waitFor();
+    await page.getByRole('link', { name: 'Volver a Listados' }).waitFor();
 }
 
 /** What the song on screen shows as chords */
@@ -228,13 +234,17 @@ try {
     const entrada = slot(page, 'Canto de entrada');
     assert.match((await entrada.locator('.item__key').textContent()) ?? '', /Do$/);
     assert.equal(await page.getByRole('button', { name: /semitono/ }).count(), 0, 'the list has no key buttons');
+    await noTypedIcons(page, 'a list');
     await entrada.getByRole('button', { name: 'Más opciones: Abrimos la puerta' }).click();
     await page.getByRole('button', { name: /Cantar desde aquí/ }).click();
     await page.getByRole('heading', { name: 'Abrimos la puerta' }).waitFor();
+    await noTypedIcons(page, 'singing');
     await openTools(page);
+    await noTypedIcons(page, 'the sheet of singing');
     await page.getByRole('button', { name: 'Subir un semitono' }).click();
     await page.getByRole('button', { name: 'Subir un semitono' }).click();
     await page.locator('.tone-control__hint').waitFor();
+    await noTypedIcons(page, 'the key control with a change');
     await page.getByRole('button', { name: 'Guardar', exact: true }).click();
     await page.locator('.toast', { hasText: 'Tono guardado en este listado' }).waitFor();
     await page.locator('.tone-control__hint').waitFor({ state: 'hidden' });
@@ -586,7 +596,7 @@ try {
     await second.getByLabel('Título').blur();
     await synced(second);
     await page.evaluate(() => window.dispatchEvent(new Event('online')));
-    await page.getByRole('link', { name: '← Listados' }).click();
+    await page.getByRole('link', { name: 'Volver a Listados' }).click();
     await page.getByRole('link', { name: /Domingo, editado en la tablet/ }).waitFor();
     pass('an edit of the list made on one device shows up on the other');
 
@@ -597,7 +607,7 @@ try {
     await page.getByLabel('Título').blur();
     await page.getByLabel('Fecha de la misa').fill('');
     await page.getByLabel('Fecha de la misa').blur();
-    await page.getByRole('link', { name: '← Listados' }).click();
+    await page.getByRole('link', { name: 'Volver a Listados' }).click();
     await page.getByRole('button', { name: 'Más opciones: Rosario en familia' }).waitFor();
     assert.equal(await page.getByRole('heading', { name: 'Recientes' }).count(), 0, 'no headings while nothing is starred');
     assert.equal(await page.locator('.lrow__title').first().textContent(), 'Rosario en familia', 'the list edited last comes first');
@@ -608,11 +618,21 @@ try {
     await page.getByRole('button', { name: 'Más opciones: Domingo, editado en la tablet' }).click();
     assert.deepEqual(await page.locator('.sheet-layer.is-open .sheet-action').allTextContents(), ['Destacar', 'Duplicar listadoUna copia para hoy, con los mismos cantos y tonos']);
     await page.getByRole('button', { name: 'Destacar', exact: true }).click();
-    await page.getByRole('heading', { name: '★ Destacados' }).waitFor();
+    await page.getByRole('heading', { name: 'Destacados' }).waitFor();
     await page.getByRole('heading', { name: 'Recientes' }).waitFor();
     assert.equal(await page.locator('.lgroup').first().locator('.lrow__title').textContent(), 'Domingo, editado en la tablet');
     assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-more') !== null), true, 'the focus goes back to its "⋯"');
-    pass('the "⋯" of a list opens its sheet; starring from it moves the list to "★ Destacados" and keeps the focus on its "⋯"');
+    pass('the "⋯" of a list opens its sheet; starring from it moves the list to "Destacados" and keeps the focus on its "⋯"');
+
+    const starredRow = page.locator('.lrow', { hasText: 'Domingo, editado en la tablet' });
+    await starredRow.locator('.lrow__detail svg').waitFor();
+    assert.match(await starredRow.locator('.lrow__detail .sr-only').textContent() ?? '', /Destacado/);
+    assert.equal(await page.locator('.lrow', { hasText: 'Rosario en familia' }).locator('.lrow__detail svg').count(), 0, 'a list that is not starred has no star');
+    const mark = await starredRow.locator('.lrow__detail svg').evaluate((el) => ({ color: getComputedStyle(el).color, height: el.getBoundingClientRect().height }));
+    assert.equal(mark.color, 'rgb(240, 180, 41)', 'the star is yellow');
+    assert.ok(mark.height > 8 && mark.height < 20, `and small, as tall as the letters (got ${mark.height}px)`);
+    pass('a starred list shows a small yellow star beside its details');
+    await noTypedIcons(page, 'the lists screen');
 
     const more = await page.getByRole('button', { name: 'Más opciones: Domingo, editado en la tablet' }).boundingBox();
     assert.ok(more !== null && more.width >= 44 && more.height >= 44, 'the "⋯" is a 44px target');
@@ -624,14 +644,14 @@ try {
     await page.getByLabel('Buscar listados').fill('cuaresma');
     await page.getByText('Ningún listado coincide con la búsqueda.').waitFor();
     await page.getByLabel('Buscar listados').fill('');
-    await page.getByRole('heading', { name: '★ Destacados' }).waitFor();
+    await page.getByRole('heading', { name: 'Destacados' }).waitFor();
     pass('the search finds a list by title, ignoring case, and says when nothing matches');
 
     await synced(page);
     assert.equal((await serverData(page)).setlists.filter((list) => list.starred).length, 1);
     await second.evaluate(() => window.dispatchEvent(new Event('online')));
     await openSection(second, 'Listados');
-    await second.getByRole('heading', { name: '★ Destacados' }).waitFor({ timeout: 15000 });
+    await second.getByRole('heading', { name: 'Destacados' }).waitFor({ timeout: 15000 });
     pass('the star reaches the other device');
 
     // the extra list goes, so the rest of the test finds the screen as it expects
@@ -660,7 +680,7 @@ try {
 
     await page.getByRole('button', { name: 'Más opciones: Domingo, editado en la tablet' }).click();
     await page.getByRole('button', { name: 'Quitar de destacados', exact: true }).click();
-    await page.getByRole('heading', { name: '★ Destacados' }).waitFor({ state: 'hidden' });
+    await page.getByRole('heading', { name: 'Destacados' }).waitFor({ state: 'hidden' });
     await synced(page);
 
     // ----- the way to add a song is in the head of the part -----

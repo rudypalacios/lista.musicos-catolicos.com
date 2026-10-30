@@ -1,5 +1,6 @@
 :root {
     color-scheme: dark;
+    --star: #f0b429;
     --bg: #101216;
     --surface: #181b21;
     --border: #2e3440;
@@ -199,6 +200,7 @@ summary.button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 0.4rem;
     min-height: 2.75rem;
     padding: 0 1rem;
     color: var(--text);
@@ -533,6 +535,10 @@ ul.notes {
 }
 
 .toolbar button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
     min-width: 2.5rem;
     min-height: 2.5rem;
     padding: 0 0.6rem;
@@ -541,6 +547,10 @@ ul.notes {
     border: 0;
     border-radius: 0.45rem;
     font-weight: 600;
+}
+
+.toolbar button[data-notation] {
+    gap: 0.35rem;
 }
 
 .toolbar button:hover,
@@ -786,6 +796,7 @@ input[type='file'] {
     display: inline-flex;
     flex: 1;
     align-items: center;
+    gap: 0.4rem;
     min-height: 3rem;
     color: var(--accent);
     font-weight: 600;
@@ -1489,6 +1500,13 @@ body:has(.update) .install-banner {
     text-transform: uppercase;
 }
 
+/* The star of "Destacados" is the yellow one of the lists */
+.lgroup__label .icon {
+    margin-right: 0.35rem;
+    vertical-align: -0.1em;
+    color: var(--star);
+}
+
 .lgroup:first-child .lgroup__label {
     margin-top: 0.25rem;
 }
@@ -1526,6 +1544,15 @@ body:has(.update) .install-banner {
 .lrow__detail {
     font-size: 0.85rem;
     color: var(--muted);
+}
+
+/* The star of a starred list, as tall as the letters beside it */
+.lrow__detail .icon {
+    width: 0.9em;
+    height: 0.9em;
+    margin-left: 0.15rem;
+    vertical-align: -0.1em;
+    color: var(--star);
 }
 
 .lrow:has(.lrow__link:hover) .lrow__title,
@@ -2095,6 +2122,10 @@ button.sheet-action {
 button.sheet-action--apart {
     margin-top: 1.1rem;
     padding: 0.6rem 0;
+}
+
+button.sheet-action.is-lit .icon {
+    color: var(--star);
 }
 
 button.sheet-action .icon {

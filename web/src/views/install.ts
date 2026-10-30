@@ -36,7 +36,7 @@ export function installView(): View {
         h('h3', {}, 'Android (Chrome)'),
         steps(
             'Abre Lista en Chrome e inicia sesión.',
-            'Toca el menú ⋮ y elige «Instalar aplicación» (o «Añadir a la pantalla de inicio»).',
+            'Toca el menú de los tres puntos y elige «Instalar aplicación» (o «Añadir a la pantalla de inicio»).',
             'Ábrela desde el ícono.',
         ),
         h(

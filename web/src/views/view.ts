@@ -43,7 +43,6 @@ export function viewView(app: App, song: Song): View {
     const reader = createReader(song, {
         sizeScope: 'songs',
         shift,
-        externalTone: true,
         onShift: (t) => {
             shown = t;
             writeTransposition(t, mine);

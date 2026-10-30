@@ -171,7 +171,7 @@ try {
         await page.getByRole('link', { name: `Agregar canto a ${part}` }).click();
         await page.getByLabel('Buscar cantos').fill(song);
         await page.locator('button.song-item', { hasText: song }).click();
-        await page.getByRole('link', { name: '← Listados' }).waitFor();
+        await page.getByRole('link', { name: 'Volver a Listados' }).waitFor();
     }
     await synced(page);
 

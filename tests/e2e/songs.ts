@@ -31,7 +31,7 @@ function longSong(stanzas: number): string {
 
 async function createSong(page: Page, title: string, body: string, author = ''): Promise<void> {
     // "Nuevo canto" is on the list; from a song, go back to it first
-    const back = page.getByRole('link', { name: '← Cantos' });
+    const back = page.getByRole('link', { name: 'Volver a Cantos' });
     if (await back.isVisible()) {
         await back.click();
     }
@@ -46,7 +46,7 @@ async function createSong(page: Page, title: string, body: string, author = ''):
 }
 
 async function openFromList(page: Page, title: string): Promise<void> {
-    await page.getByRole('link', { name: '← Cantos' }).click();
+    await page.getByRole('link', { name: 'Volver a Cantos' }).click();
     await page.getByRole('link', { name: title }).click();
     await page.getByRole('heading', { name: title }).waitFor();
 }
@@ -180,11 +180,11 @@ try {
     assert.equal((await serverSongs(page))[0]?.myShift, 0);
     pass('"Guardar como mi tono": the song opens in it, it is not in the address, and it syncs');
 
-    await page.getByRole('button', { name: 'Do → C' }).click();
+    await page.getByRole('button', { name: 'Cambiar la notación de Do a C' }).click();
     assert.deepEqual(await chordNames(page), ['C', 'G']);
     await page.reload();
     assert.deepEqual(await chordNames(page), ['C', 'G'], 'the notation is remembered on this device');
-    await page.getByRole('button', { name: 'C → Do' }).click();
+    await page.getByRole('button', { name: 'Cambiar la notación de C a Do' }).click();
     pass('English notation, remembered');
 
     // ----- reading: fit to the screen -----
@@ -294,7 +294,7 @@ try {
     }
 
     await page.evaluate(() => window.dispatchEvent(new Event('online')));
-    await page.getByRole('link', { name: '← Cantos' }).click();
+    await page.getByRole('link', { name: 'Volver a Cantos' }).click();
     await page.getByRole('link', { name: 'Editado en la otra tablet' }).waitFor();
     pass('an edit made on one device shows up on the other');
 
