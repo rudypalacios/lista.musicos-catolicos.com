@@ -78,7 +78,7 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     const heading = h('span', { class: 'perform__title' }, h('small', { class: 'perform__part' }, partName(item)), h('strong', { class: 'perform__song' }, title));
     const jumpButton = h('button', { type: 'button', class: 'perform__jump', 'aria-label': `Ir a otro canto. Canto ${position} de ${order.length}` },
         h('span', { class: 'perform__count' }, countText), ' ▾');
-    const moreButton = h('button', { type: 'button', class: 'perform__more', 'aria-label': 'Más herramientas' }, '⋯');
+    const moreButton = h('button', { type: 'button', class: 'perform__more', 'aria-label': 'Más herramientas' }, icon('more', 22));
     const full = h('div', { class: 'perform__full' }, back, heading, jumpButton, moreButton);
     const stripKey = h('span', { class: 'perform__strip-key' });
     const strip = h('button', { type: 'button', class: 'perform__strip', 'aria-label': 'Mostrar la barra' },

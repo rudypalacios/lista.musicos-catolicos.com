@@ -1,4 +1,5 @@
 import { h } from '../dom.ts';
+import { icon, type IconName } from '../icons.ts';
 
 /** The sheets that are open now, last one on top: the back button closes the top one */
 const opened: Array<{ closeFromBack: () => void }> = [];
@@ -136,4 +137,13 @@ export function createSheet(label: string, onOpen?: () => void | Promise<void>):
             });
         },
     };
+}
+
+/** A row of a sheet: an icon and what it does, big enough to tap, and a quiet line under it if it needs one */
+export function sheetAction(name: IconName, label: string, run: () => void, options: { danger?: boolean; hint?: string } = {}): HTMLElement {
+    const button = h('button', { type: 'button', class: options.danger === true ? 'sheet-action is-danger' : 'sheet-action' },
+        icon(name, 20), h('span', { class: 'sheet-action__text' }, label, ...(options.hint === undefined ? [] : [h('small', {}, options.hint)])));
+    button.addEventListener('click', run);
+
+    return button;
 }

@@ -16,7 +16,8 @@ interface Drawing {
 const STAR = 'M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z';
 
 const DRAWINGS = {
-    more: { filled: true, shapes: [['circle', { cx: '5', cy: '12', r: '1.8' }], ['circle', { cx: '12', cy: '12', r: '1.8' }], ['circle', { cx: '19', cy: '12', r: '1.8' }]] },
+    /** "More options": three dots one above the other, the same on every screen (the owner's choice) */
+    more: { filled: true, shapes: [['circle', { cx: '12', cy: '5', r: '1.8' }], ['circle', { cx: '12', cy: '12', r: '1.8' }], ['circle', { cx: '12', cy: '19', r: '1.8' }]] },
     play: { filled: true, shapes: [['path', { d: 'M7 4l14 8-14 8z' }]] },
     pencil: { shapes: [['path', { d: 'M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z' }], ['path', { d: 'M14 6l4 4' }]] },
     plus: { shapes: [['path', { d: 'M12 5v14M5 12h14' }]] },
@@ -30,6 +31,7 @@ const DRAWINGS = {
     list: { shapes: [['path', { d: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01' }]] },
     settings: { shapes: [['circle', { cx: '12', cy: '12', r: '3' }], ['path', { d: 'M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1' }]] },
     eye: { shapes: [['path', { d: 'M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z' }], ['circle', { cx: '12', cy: '12', r: '3' }]] },
+    copy: { shapes: [['rect', { x: '9', y: '9', width: '11', height: '11', rx: '2' }], ['path', { d: 'M5 15V6a2 2 0 0 1 2-2h9' }]] },
     star: { shapes: [['path', { d: STAR }]] },
     'star-filled': { filled: true, shapes: [['path', { d: STAR }]] },
 } as const satisfies Record<string, Drawing>;

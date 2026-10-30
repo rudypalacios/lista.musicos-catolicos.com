@@ -74,11 +74,6 @@ export function splitStarred(lists: readonly Setlist[]): { starred: Setlist[]; o
     };
 }
 
-/** A list saved by a version of the app that had no stars has none */
-function withStar(list: Setlist): Setlist {
-    return { ...list, starred: list.starred === true };
-}
-
 // --- writing ------------------------------------------------------------------------------
 
 /**
@@ -113,14 +108,14 @@ export class Setlists {
     async list(): Promise<Setlist[]> {
         const lists = (await this.store.all('setlists')).filter((list) => list.deletedAt === null);
 
-        return lists.map(withStar).sort(recentFirst);
+        return lists.sort(recentFirst);
     }
 
     /** A list, or undefined if it does not exist or was deleted */
     async get(id: string): Promise<Setlist | undefined> {
         const list = await this.store.get('setlists', id);
 
-        return list !== undefined && list.deletedAt === null ? withStar(list) : undefined;
+        return list !== undefined && list.deletedAt === null ? list : undefined;
     }
 
     /** The lists that use a song, so deleting it can warn first */
@@ -147,6 +142,39 @@ export class Setlists {
         this.afterWrite();
 
         return list;
+    }
+
+    /**
+     * A copy of a list, for today: the songs in their parts and order, each in the key the list has it in. It has
+     * the title of a new list, no star and no notes; a song that was deleted since is left out.
+     */
+    duplicate(id: string): Promise<Setlist> {
+        return this.serial(async () => {
+            const source = await this.store.get('setlists', id);
+            if (source === undefined || source.deletedAt !== null) {
+                throw new Error('El listado ya no existe.');
+            }
+            const items: SetlistItem[] = [];
+            for (const item of source.items) {
+                const song = await this.store.get('songs', item.songId);
+                if (song !== undefined && song.deletedAt === null) {
+                    items.push({ id: this.newId(), part: item.part, songId: item.songId, transpose: item.transpose, note: '' });
+                }
+            }
+            const eventDate = today(new Date(this.now()));
+            const copy: Setlist = {
+                id: this.newId(),
+                ...cleanDraft({ title: defaultTitle(eventDate), eventDate, notes: '' }),
+                starred: false,
+                items,
+                updatedAt: this.now(),
+                deletedAt: null,
+            };
+            await this.store.save('setlists', copy);
+            this.afterWrite();
+
+            return copy;
+        });
     }
 
     /** @throws ValidationError (as a rejected promise, like every other change) */

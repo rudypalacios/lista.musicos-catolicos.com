@@ -127,14 +127,6 @@ describe('Setlists', () => {
             assert.equal((await lists.get(list.id))?.starred, true);
         });
 
-        it('reads a list saved before stars existed as not starred', async () => {
-            const { starred: _gone, ...legacy } = setlist('old', 1);
-            await store.save('setlists', legacy as Setlist);
-
-            assert.equal((await lists.get('old'))?.starred, false);
-            assert.equal((await lists.list())[0]?.starred, false);
-        });
-
         it('says so for a list that no longer exists', async () => {
             await assert.rejects(lists.setStarred('nope', true), /ya no existe/);
         });
@@ -147,6 +139,51 @@ describe('Setlists', () => {
             await lists.remove(list.id);
 
             assert.equal((await store.get('setlists', list.id))?.starred, false);
+        });
+    });
+
+    describe('duplicating', () => {
+        it('copies the songs in their parts and order, with the keys of the list, for today, starred no more', async () => {
+            const source = await lists.create({ title: 'Misa del domingo', eventDate: '2026-10-25', notes: 'algo' });
+            await lists.addItem(source.id, 'comunion', 's2');
+            await lists.addItem(source.id, 'entrada', 's1');
+            await lists.addItem(source.id, 'comunion', 's1');
+            const [first] = await itemsOf(source.id);
+            await lists.setTranspose(source.id, first?.id ?? '', 3);
+            await lists.setStarred(source.id, true);
+
+            const copy = await lists.duplicate(source.id);
+
+            assert.notEqual(copy.id, source.id);
+            assert.equal(copy.title, 'Misa del 1 de noviembre');
+            assert.equal(copy.eventDate, '2026-11-01');
+            assert.equal(copy.starred, false);
+            assert.equal(copy.notes, '');
+            assert.deepEqual(copy.items.map((item) => [item.part, item.songId, item.transpose, item.note]), [
+                ['comunion', 's2', 3, ''], ['entrada', 's1', 0, ''], ['comunion', 's1', 0, ''],
+            ]);
+            const sourceIds = new Set((await itemsOf(source.id)).map((item) => item.id));
+            assert.ok(copy.items.every((item) => !sourceIds.has(item.id)), 'its songs have ids of their own');
+            assert.equal((await lists.get(source.id))?.starred, true, 'the original is left as it was');
+            assert.deepEqual((await store.pending('setlists')).map((queued) => queued.id).includes(copy.id), true, 'it is queued to sync');
+        });
+
+        it('leaves out a song that was deleted since', async () => {
+            const source = await lists.create();
+            await lists.addItem(source.id, 'entrada', 's1');
+            await lists.addItem(source.id, 'salida', 's2');
+            await store.save('songs', { ...song('s2', 5), deletedAt: 5 });
+
+            const copy = await lists.duplicate(source.id);
+
+            assert.deepEqual(copy.items.map((item) => item.songId), ['s1']);
+        });
+
+        it('says so for a list that no longer exists', async () => {
+            await assert.rejects(lists.duplicate('nope'), /ya no existe/);
+            const gone = await lists.create();
+            await lists.remove(gone.id);
+            await assert.rejects(lists.duplicate(gone.id), /ya no existe/);
         });
     });
 
