@@ -519,7 +519,19 @@ try {
     await page.getByRole('button', { name: 'Subir un semitono' }).click();
     await page.getByRole('button', { name: 'Otros sitios donde guardar' }).click();
     assert.deepEqual(await page.locator('.tone-control__option').allTextContents(), ['Solo hoy', 'En este listado', 'Como mi tono', 'En el listado y como mi tono']);
+    assert.equal(await page.locator('.tone-control__option.is-current').innerText(), 'En este listado', 'it starts marked on the list');
+    // "Guardar" does what is marked. "Solo hoy": nothing is written, with the menu open or closed
+    await page.getByRole('button', { name: 'Solo hoy', exact: true }).click();
+    assert.equal(await page.locator('.tone-control__menu').isVisible(), false, 'marking closes the menu');
+    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+    await page.locator('.toast', { hasText: 'Queda solo para hoy' }).waitFor();
+    assert.equal(await page.locator('.tone-control__hint').isVisible(), true, 'the key is still only for today');
+    assert.equal(await page.locator('.item__today').count() + await page.locator('.toast', { hasText: 'Tono guardado' }).count(), 0, 'nothing was saved');
+    await page.getByRole('button', { name: 'Otros sitios donde guardar' }).click();
+    assert.equal(await page.locator('.tone-control__option.is-current').innerText(), 'Solo hoy', 'the mark stays on "Solo hoy"');
     await page.getByRole('button', { name: 'En el listado y como mi tono' }).click();
+    assert.equal(await page.locator('.tone-control__hint').isVisible(), true, 'marking an option saves nothing yet');
+    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
     await page.locator('.toast', { hasText: 'Tono guardado en este listado y como tu tono' }).waitFor();
     await page.locator('.tone-control__hint').waitFor({ state: 'hidden' });
     await page.getByText('Mío', { exact: false }).first().waitFor();
@@ -533,6 +545,7 @@ try {
     await page.getByRole('button', { name: 'Bajar un semitono' }).click();
     await page.getByRole('button', { name: 'Otros sitios donde guardar' }).click();
     await page.getByRole('button', { name: 'Como mi tono', exact: true }).click();
+    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
     await serverWhen(page, (data) => data.songs.find((song) => song.title === 'Gloria sencilla')?.myShift === 0);
     await page.getByRole('button', { name: /Volver al tono del listado/ }).click();
     assert.deepEqual(await chords(page), ['Lab', 'Mib']);

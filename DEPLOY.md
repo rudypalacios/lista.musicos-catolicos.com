@@ -248,7 +248,7 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    el canto y se sincroniza. Dónde se pone: (a) en *Cantos*, abre un canto, sube dos semitonos y toca **Guardar como mi tono**
    (aviso «Tono guardado como tu tono»); el canto vuelve a abrirse en ese tono y la dirección ya no lleva `?t=`; (b) en *Cantar*,
    `⋯` → *Tono*: al mover − / + aparece **Guardar** con una flecha; la flecha ofrece «Solo hoy» (marcada), «En este listado»,
-   «Como mi tono» y «En el listado y como mi tono». Debajo dice «Original Do · Mío Re · Listado Fa». Pruebas: guarda «Como mi tono»
+   «Como mi tono» y «En el listado y como mi tono»; **tocar una opción solo la marca** (empieza marcada «En este listado») y **Guardar hace siempre lo marcado**. Con «Solo hoy» marcada, Guardar no escribe en ningún lado y dice «Queda solo para hoy»; el tono sigue en ámbar. Debajo dice «Original Do · Mío Re · Listado Fa». Pruebas: guarda «Como mi tono»
    en Re, agrega ese canto a **otro** listado: entra en Re; el listado que ya lo tenía **no** cambia. Cambiar «mi tono» después
    tampoco mueve los listados viejos (cada listado guarda su tono). En otro dispositivo, tras sincronizar, el canto abre en tu tono.
    La primera vez después de este deploy la app crea sola la columna (migración `0007`); no hay que hacer nada en phpMyAdmin.
