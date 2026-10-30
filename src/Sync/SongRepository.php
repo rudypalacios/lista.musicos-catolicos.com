@@ -53,17 +53,17 @@ final class SongRepository
             if (is_array($row)) {
                 $this->pdo
                     ->prepare(
-                        'UPDATE songs SET title = ?, author = ?, body = ?, updated_at = ?, deleted_at = ?, seq = ? '
-                        . 'WHERE id = ?'
+                        'UPDATE songs SET title = ?, author = ?, body = ?, updated_at = ?, deleted_at = ?, seq = ?, '
+                        . 'my_shift = COALESCE(?, my_shift) WHERE id = ?'
                     )
-                    ->execute([...$values, $change->id]);
+                    ->execute([...$values, $change->myShift, $change->id]);
             } else {
                 $this->pdo
                     ->prepare(
-                        'INSERT INTO songs (title, author, body, updated_at, deleted_at, seq, id, user_id) '
-                        . 'VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+                        'INSERT INTO songs (title, author, body, updated_at, deleted_at, seq, my_shift, id, user_id) '
+                        . 'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
                     )
-                    ->execute([...$values, $change->id, $userId]);
+                    ->execute([...$values, $change->myShift ?? 0, $change->id, $userId]);
             }
             $this->pdo->commit();
         } catch (\Throwable $e) {
@@ -79,13 +79,13 @@ final class SongRepository
      *
      * @return list<array{
      *     id: string, title: string, author: string, body: string,
-     *     updatedAt: int, deletedAt: ?int, seq: int
+     *     updatedAt: int, deletedAt: ?int, seq: int, myShift: int
      * }>
      */
     public function changedSince(string $userId, int $since, int $limit): array
     {
         $statement = $this->pdo->prepare(
-            'SELECT id, title, author, body, updated_at, deleted_at, seq FROM songs '
+            'SELECT id, title, author, body, updated_at, deleted_at, seq, my_shift FROM songs '
             . 'WHERE user_id = ? AND seq > ? ORDER BY seq ASC LIMIT ' . max(1, $limit)
         );
         $statement->execute([$userId, $since]);
@@ -100,6 +100,7 @@ final class SongRepository
                 'updatedAt' => (int) $row['updated_at'],
                 'deletedAt' => $row['deleted_at'] === null ? null : (int) $row['deleted_at'],
                 'seq' => (int) $row['seq'],
+                'myShift' => (int) $row['my_shift'],
             ];
         }
 

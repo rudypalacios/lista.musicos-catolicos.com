@@ -59,7 +59,7 @@ All JSON, Spanish messages, `Cache-Control: no-store`. Requests that change data
 | `POST /api/logout` | `200 {ok}` and clears the cookie |
 | `GET /api/me` | `200 {email}` · `401` |
 | `GET /api/sync?since=N` | `200 {songs, setlists, cursor, hasMore}`: songs and setlists changed after change number N (one counter for both), tombstones included · `400` · `401` |
-| `POST /api/sync` `{songs?: [{id, title, author, body, updatedAt, deleted}], setlists?: [{id, title, eventDate, notes, starred?, items, updatedAt, deleted}]}` (`starred` left out keeps the stored value) | `200 {applied, ignored}`; the newest `updatedAt` (client clock, epoch ms) wins · `400` (nothing stored; `invalid_song` or `invalid_setlist`) · `401` |
+| `POST /api/sync` `{songs?: [{id, title, author, body, myShift?, updatedAt, deleted}], setlists?: [{id, title, eventDate, notes, starred?, items, updatedAt, deleted}]}` (`starred` and `myShift`, "mi tono" in semitones from the written key, −11…11, left out keep the stored value) | `200 {applied, ignored}`; the newest `updatedAt` (client clock, epoch ms) wins · `400` (nothing stored; `invalid_song` or `invalid_setlist`) · `401` |
 
 A setlist is one record: `items` is a list of at most 80 `{id, part, songId, transpose, note}` (a song in a
 part of the Mass, with its key in semitones for that list only) and travels inside it. The whole list is the

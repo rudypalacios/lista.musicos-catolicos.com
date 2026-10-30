@@ -132,23 +132,55 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
         });
         const own = reader;
         markStrip();
+        /** The person's own key for this song ("mi tono"); the list's is `saved` */
+        let mine = song.myShift;
+        const fail = (failure: unknown, fallback: string): false => {
+            error.textContent = failure instanceof Error ? failure.message : fallback;
+
+            return false;
+        };
+        const writeList = async (shift: number): Promise<boolean> => {
+            try {
+                await app.setlists.setTranspose(setlist.id, item.id, shift);
+            } catch (failure) {
+                return fail(failure, 'No se pudo guardar el tono.');
+            }
+            saved = shift;
+            todayKeys.clear(setlist.id, item.id);
+            markStrip();
+
+            return true;
+        };
+        const writeMine = async (shift: number): Promise<boolean> => {
+            try {
+                await app.setMyShift(song.id, shift);
+            } catch (failure) {
+                return fail(failure, 'No se pudo guardar tu tono.');
+            }
+            mine = shift;
+
+            return true;
+        };
+        /** Saves where `where` says and tells the person where it went */
+        const saveTo = (where: { list: boolean; mine: boolean }, said: string) => async (shift: number): Promise<void> => {
+            error.textContent = '';
+            if ((where.list && !(await writeList(shift))) || (where.mine && !(await writeMine(shift)))) {
+                return;
+            }
+            showToast(said, 3500, true);
+        };
         tone = createToneControl({
             reader: own,
             saved: () => saved,
-            save: async (shift) => {
-                error.textContent = '';
-                try {
-                    await app.setlists.setTranspose(setlist.id, item.id, shift);
-                } catch (failure) {
-                    error.textContent = failure instanceof Error ? failure.message : 'No se pudo guardar el tono.';
-
-                    return;
-                }
-                saved = shift;
-                todayKeys.clear(setlist.id, item.id);
-                markStrip();
-                showToast('Tono guardado en este listado', 3500, true);
-            },
+            savedName: 'Listado',
+            mine: () => mine,
+            hint: 'Solo hoy',
+            primaryLabel: 'Guardar',
+            destinations: [
+                { label: 'En este listado', save: saveTo({ list: true, mine: false }, 'Tono guardado en este listado') },
+                { label: 'Como mi tono', save: saveTo({ list: false, mine: true }, 'Tono guardado como tu tono') },
+                { label: 'En el listado y como mi tono', save: saveTo({ list: true, mine: true }, 'Tono guardado en este listado y como tu tono') },
+            ],
         });
         tools = own.toolbar;
         stage = own.stage;

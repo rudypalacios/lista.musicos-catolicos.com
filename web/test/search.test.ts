@@ -4,7 +4,7 @@ import { filterSetlists, filterSongs, foundInLyricsOnly, songSnippet } from '../
 import type { Setlist, Song } from '../src/data/types.ts';
 
 const song = (title: string, author = ''): Song => ({
-    id: title, title, author, body: '', updatedAt: 1, deletedAt: null,
+    id: title, title, author, body: '', myShift: 0, updatedAt: 1, deletedAt: null,
 });
 const songs = [song('Caminamos con alegría'), song('Ángel de Dios', 'Anónimo'), song('Dijiste Sí'), song('Padre nuestro', 'Martín Valverde')];
 

@@ -20,9 +20,64 @@ describe('Library', () => {
         const song = await library.create({ title: '  Caminamos con alegría ', author: ' Anónimo ', body: '[C]Caminamos' });
 
         assert.deepEqual(song, {
-            id: 'id-0', title: 'Caminamos con alegría', author: 'Anónimo', body: '[C]Caminamos', updatedAt: 1000, deletedAt: null,
+            id: 'id-0', title: 'Caminamos con alegría', author: 'Anónimo', body: '[C]Caminamos', myShift: 0, updatedAt: 1000, deletedAt: null,
         });
         assert.deepEqual(await store.pending('songs'), [song]);
+    });
+
+    describe('"mi tono"', () => {
+        it('starts at 0, the written key', async () => {
+            const song = await library.create({ title: 'Uno', author: '', body: '[C]a' });
+
+            assert.equal(song.myShift, 0);
+        });
+
+        it('is set with a newer stamp and queued, and the song keeps its text', async () => {
+            const song = await library.create({ title: 'Uno', author: '', body: '[C]a' });
+            now = 5_000;
+
+            const mine = await library.setMyShift(song.id, 2);
+
+            assert.equal(mine.myShift, 2);
+            assert.equal(mine.updatedAt, 5000);
+            assert.equal((await library.get(song.id))?.body, '[C]a');
+            assert.deepEqual((await store.pending('songs')).map((queued) => queued.myShift), [2]);
+        });
+
+        it('survives an edit of the song', async () => {
+            const song = await library.create({ title: 'Uno', author: '', body: 'a' });
+            await library.setMyShift(song.id, -3);
+
+            const edited = await library.update(song.id, { title: 'Uno bis', author: '', body: 'b' });
+
+            assert.equal(edited.myShift, -3);
+        });
+
+        it('writes nothing when it is already that', async () => {
+            const song = await library.create({ title: 'Uno', author: '', body: 'a' });
+            const first = await library.setMyShift(song.id, 4);
+            now = 9_000;
+
+            const again = await library.setMyShift(song.id, 4);
+
+            assert.equal(again.updatedAt, first.updatedAt);
+        });
+
+        it('refuses a key beyond an octave or not a whole number, and a song that is gone', async () => {
+            const song = await library.create({ title: 'Uno', author: '', body: 'a' });
+
+            await assert.rejects(library.setMyShift(song.id, 12), ValidationError);
+            await assert.rejects(library.setMyShift(song.id, 1.5), ValidationError);
+            await assert.rejects(library.setMyShift('nope', 1), /ya no existe/);
+        });
+
+        it('reads a song saved before "mi tono" as 0', async () => {
+            const { myShift: _unused, ...old } = (await library.create({ title: 'Viejo', author: '', body: 'a' }));
+            await store.save('songs', old as never);
+
+            assert.equal((await library.list())[0]?.myShift, 0);
+            assert.equal((await library.get('id-0'))?.myShift, 0);
+        });
     });
 
     it('lists by title in Spanish order, without the deleted ones', async () => {

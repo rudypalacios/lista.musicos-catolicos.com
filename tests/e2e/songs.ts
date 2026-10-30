@@ -84,10 +84,10 @@ async function measure(page: Page): Promise<Fit> {
     });
 }
 
-async function serverSongs(page: Page): Promise<{ id: string; title: string; deletedAt: number | null }[]> {
+async function serverSongs(page: Page): Promise<{ id: string; title: string; myShift: number; deletedAt: number | null }[]> {
     return page.evaluate(async () => {
         const answer = (await (await fetch('/api/sync?since=0')).json()) as {
-            songs: { id: string; title: string; deletedAt: number | null }[];
+            songs: { id: string; title: string; myShift: number; deletedAt: number | null }[];
         };
 
         return answer.songs;
@@ -136,21 +136,42 @@ try {
     await page.getByRole('button', { name: 'Subir un semitono' }).click();
     assert.deepEqual(await chordNames(page), ['Re', 'La']);
     assert.match(page.url(), /\?t=2$/);
-    await page.getByRole('button', { name: /Volver al tono original/ }).waitFor();
+    await page.getByRole('button', { name: /Volver al tono mío/ }).waitFor();
     pass('transposing two semitones changes the chords and the URL');
 
     await page.reload();
     assert.deepEqual(await chordNames(page), ['Re', 'La']);
     pass('the transposition survives a reload (it is in the URL)');
 
-    await page.getByRole('button', { name: /Volver al tono original/ }).click();
+    await page.getByRole('button', { name: /Volver al tono mío/ }).click();
     assert.deepEqual(await chordNames(page), ['Do', 'Sol']);
     assert.ok(!page.url().includes('t='));
     await page.getByRole('button', { name: 'Bajar un semitono' }).click();
     assert.deepEqual(await chordNames(page), ['Si', 'Fa#']);
     pass('back to the original key, and down a semitone (Do → Si, Sol → Fa#)');
 
-    await page.getByRole('button', { name: /Volver al tono original/ }).click();
+    // "Mi tono": the key the person sings it in; the song opens in it, and it is a field of the song that syncs
+    await page.getByRole('button', { name: /Volver al tono mío/ }).click();
+    await page.getByRole('button', { name: 'Subir un semitono' }).click();
+    await page.getByRole('button', { name: 'Subir un semitono' }).click();
+    await page.getByRole('button', { name: 'Guardar como mi tono' }).click();
+    await page.locator('.toast', { hasText: 'Tono guardado como tu tono' }).waitFor();
+    assert.ok(!page.url().includes('t='), 'the key of the person is the default: nothing in the address');
+    assert.deepEqual(await chordNames(page), ['Re', 'La']);
+    await synced(page);
+    assert.equal((await serverSongs(page))[0]?.myShift, 2, 'the server holds "mi tono"');
+    await page.reload();
+    assert.deepEqual(await chordNames(page), ['Re', 'La'], 'the song opens in the key of the person');
+    await page.getByRole('button', { name: 'Bajar un semitono' }).click();
+    await page.getByRole('button', { name: 'Bajar un semitono' }).click();
+    assert.match(page.url(), /\?t=0$/, 'another key than the person\'s is in the address');
+    await page.getByRole('button', { name: 'Guardar como mi tono' }).click();
+    await page.locator('.toast', { hasText: 'Tono guardado como tu tono' }).waitFor();
+    assert.deepEqual(await chordNames(page), ['Do', 'Sol']);
+    await synced(page);
+    assert.equal((await serverSongs(page))[0]?.myShift, 0);
+    pass('"Guardar como mi tono": the song opens in it, it is not in the address, and it syncs');
+
     await page.getByRole('button', { name: 'Do → C' }).click();
     assert.deepEqual(await chordNames(page), ['C', 'G']);
     await page.reload();

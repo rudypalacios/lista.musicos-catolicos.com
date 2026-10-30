@@ -75,9 +75,12 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       saved key. The row of the list shows "hoy" beside a key of today and the folded strip shows it in amber. The sheet
       is Tono + Letra only: Nota (already gone), Pantalla, Ajustes and Salir left it; a screen lock that fails now says so
       with a toast. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 15.
-- [ ] The key of a song in a list, PR 2 of 3: **"mi tono"**: a field of the song (migration + sync) that a song starts in when it
-      is added to a list (copied to the item, not followed), "Guardar ▾" with "Solo hoy / En este listado / Como mi tono /
-      En el listado y como mi tono", "Mío Re" in the reference line, and the same control on the song page in Cantos.
+- [x] The key of a song in a list, PR 2 of 3: **"mi tono"** (`Song.myShift`, migration `0007`, synced; 0 is the written key, the
+      same as none): a song added to a list starts in it (copied to the item, not followed). "Guardar ▾" in Cantar offers
+      "Solo hoy / En este listado / Como mi tono / En el listado y como mi tono" and the line under it says "Mío Re"; the song
+      page in Cantos has the same control (compact: the line shows only while there is a change) with "Guardar como mi tono", and
+      the song opens in it (the address carries `?t=` only when the key is not the person's own). **Owner's check:** `DEPLOY.md`
+      "Fases 4 y 5", item 16.
 - [ ] The key of a song in a list, PR 3 of 3: **touching a row opens Cantar there** (today it does nothing), and **"Editar letra y
       acordes"** in the "⋯" sheet (it comes back to Cantar), with the one-line notices "Está en 3 listados" and "El tono
       original pasó de Do a Re" (each opens its text with an info button) and the rule that editing a chart never changes the

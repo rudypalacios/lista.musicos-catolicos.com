@@ -118,6 +118,11 @@ export class App {
         return this.afterWrite(await this.library.update(id, draft));
     }
 
+    /** Sets "mi tono" of a song (see `Library.setMyShift`) */
+    async setMyShift(id: string, shift: number): Promise<Song> {
+        return this.afterWrite(await this.library.setMyShift(id, shift));
+    }
+
     async remove(id: string): Promise<void> {
         await this.library.remove(id);
         await this.afterWrite(undefined);

@@ -26,9 +26,14 @@ final class SongRepositoryTest extends TestCase
         $this->sequence = new Sequence($pdo);
     }
 
-    private function change(string $title, int $at, bool $deleted = false, string $id = self::SONG): SongChange
-    {
-        return new SongChange($id, $title, 'Autor', "[G]Letra de $title", $at, $deleted);
+    private function change(
+        string $title,
+        int $at,
+        bool $deleted = false,
+        string $id = self::SONG,
+        ?int $myShift = null
+    ): SongChange {
+        return new SongChange($id, $title, 'Autor', "[G]Letra de $title", $at, $deleted, $myShift);
     }
 
     public function testANewSongIsStoredAndNumbered(): void
@@ -55,6 +60,35 @@ final class SongRepositoryTest extends TestCase
         $this->assertCount(1, $rows);
         $this->assertSame('Uno editado', $rows[0]['title']);
         $this->assertSame(2, $rows[0]['seq']);
+    }
+
+    public function testMyKeyIsStoredAndReturned(): void
+    {
+        $this->songs->apply(self::ME, $this->change('Uno', 1000));
+        $this->assertSame(0, $this->songs->changedSince(self::ME, 0, 10)[0]['myShift'], 'a song with none starts at 0');
+
+        $this->songs->apply(self::ME, $this->change('Uno', 2000, false, self::SONG, 2));
+
+        $this->assertSame(2, $this->songs->changedSince(self::ME, 0, 10)[0]['myShift']);
+    }
+
+    public function testAnOlderClientThatSendsNoKeyKeepsTheStoredOne(): void
+    {
+        $this->songs->apply(self::ME, $this->change('Uno', 1000, false, self::SONG, -3));
+
+        $this->songs->apply(self::ME, $this->change('Uno editado', 2000));
+
+        $row = $this->songs->changedSince(self::ME, 0, 10)[0];
+        $this->assertSame('Uno editado', $row['title']);
+        $this->assertSame(-3, $row['myShift']);
+    }
+
+    public function testAKeyOfZeroClearsIt(): void
+    {
+        $this->songs->apply(self::ME, $this->change('Uno', 1000, false, self::SONG, 4));
+        $this->songs->apply(self::ME, $this->change('Uno', 2000, false, self::SONG, 0));
+
+        $this->assertSame(0, $this->songs->changedSince(self::ME, 0, 10)[0]['myShift']);
     }
 
     public function testAnOlderEditSyncedLateDoesNotOverwriteANewerOne(): void

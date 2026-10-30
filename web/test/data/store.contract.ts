@@ -9,7 +9,7 @@ import type { LocalStore } from '../../src/data/store.ts';
 import type { Collection, Records, Setlist, Song } from '../../src/data/types.ts';
 
 export function song(id: string, at: number, extra: Partial<Song> = {}): Song {
-    return { id, title: `Canto ${id}`, author: '', body: `[G]${id}`, updatedAt: at, deletedAt: null, ...extra };
+    return { id, title: `Canto ${id}`, author: '', body: `[G]${id}`, myShift: 0, updatedAt: at, deletedAt: null, ...extra };
 }
 
 export function setlist(id: string, at: number, extra: Partial<Setlist> = {}): Setlist {

@@ -187,7 +187,10 @@ export class Setlists {
                 throw new ValidationError(`Un listado admite hasta ${LIMITS.items} cantos.`);
             }
 
-            return { items: [...list.items, { id: this.newId(), part, songId, transpose: 0, note: '' }] };
+            // The song starts in the key its owner sings it in (copied: changing "mi tono" later leaves this list alone)
+            const shift = Number.isInteger(song.myShift) ? song.myShift : 0;
+
+            return { items: [...list.items, { id: this.newId(), part, songId, transpose: shift, note: '' }] };
         });
     }
 

@@ -19,6 +19,8 @@ final class SongChange
     public const MAX_BODY = 60000;
     /** A clock this far ahead is wrong; its stamp is pulled back so it cannot win forever */
     public const MAX_FUTURE_MS = 300000;
+    /** "Mi tono" is within an octave of the written key, either way */
+    public const MAX_SHIFT = 11;
 
     public function __construct(
         public readonly string $id,
@@ -27,6 +29,8 @@ final class SongChange
         public readonly string $body,
         public readonly int $updatedAt,
         public readonly bool $deleted,
+        /** Semitones from the written key; `null` means the client did not say (an older one): keep what is stored */
+        public readonly ?int $myShift = null,
     ) {
     }
 
@@ -64,7 +68,23 @@ final class SongChange
             $body,
             min($updatedAt, $nowMs + self::MAX_FUTURE_MS),
             $deleted,
+            self::shift($data['myShift'] ?? null),
         );
+    }
+
+    /**
+     * @throws InvalidSong
+     */
+    private static function shift(mixed $value): ?int
+    {
+        if ($value === null) {
+            return null;
+        }
+        if (!is_int($value) || abs($value) > self::MAX_SHIFT) {
+            throw new InvalidSong('El tono personal no es válido.');
+        }
+
+        return $value;
     }
 
     /**
