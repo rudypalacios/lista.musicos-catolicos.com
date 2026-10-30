@@ -377,10 +377,10 @@ try {
     // A note at the end of a line sits beside the words; a chord in parentheses keeps them and transposes
     await page.goto(BASE + '/cantos/nuevo');
     await page.getByLabel('Título').fill('Aleluya con notas');
-    await page.getByLabel('Letra con acordes').fill('[C]aleluya [Em]aleluya [(G)]ya {ci: bis}\n{ci: x2}');
+    await page.getByLabel('Letra con acordes').fill('[C]aleluya [Em]aleluya [(G)]ya {ci: bis}\n{ci: x2}\n[C]Un pueblo que es[F]pera [(G)]{ci : (Bis)}');
     await page.getByRole('button', { name: 'Guardar' }).click();
     await page.getByRole('heading', { name: 'Aleluya con notas' }).waitFor();
-    assert.equal(await page.locator('.line__note').textContent(), 'bis');
+    assert.equal(await page.locator('.line__note').first().textContent(), 'bis');
     assert.equal(await page.locator('.line--note').textContent(), 'x2');
     const sameRow = await page.evaluate(() => {
         const line = document.querySelector('.line:not(.line--note)') as HTMLElement;
@@ -391,10 +391,19 @@ try {
             && Math.abs(note.getBoundingClientRect().bottom - last.getBoundingClientRect().bottom) < 20;
     });
     assert.equal(sameRow, true, 'the note is beside the last word, not under it');
-    assert.deepEqual(await chordNames(page), ['Do', 'Mim', '(Sol)']);
+    // After a chord that ends the line, the note sits one space from the words (under the chord), not past its column
+    const gap = await page.evaluate(() => {
+        const line = Array.from(document.querySelectorAll('.line:not(.line--note)')).pop() as HTMLElement;
+        const note = line.querySelector('.line__note') as HTMLElement;
+        const words = Array.from(line.querySelectorAll('.w:not(.w--tail)')).pop() as HTMLElement;
+
+        return note.getBoundingClientRect().left - words.getBoundingClientRect().right;
+    });
+    assert.ok(gap >= 0 && gap < 24, `the note is next to the words (${gap}px)`);
+    assert.deepEqual(await chordNames(page), ['Do', 'Mim', '(Sol)', 'Do', 'Fa', '(Sol)']);
     await page.getByRole('button', { name: 'Subir un semitono' }).click();
     await page.getByRole('button', { name: 'Subir un semitono' }).click();
-    assert.deepEqual(await chordNames(page), ['Re', 'Fa#m', '(La)']);
+    assert.deepEqual(await chordNames(page), ['Re', 'Fa#m', '(La)', 'Re', 'Sol', '(La)']);
     pass('a note at the end of a line sits beside it, and a chord in parentheses transposes with the others');
 
     // ----- the draft of a new song, and a sheet pasted with the chords above the words -----

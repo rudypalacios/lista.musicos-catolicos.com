@@ -70,6 +70,11 @@
     white-space: nowrap;
 }
 
+/* Under the chords that end a line the note is already beside the words: no gap of its own */
+.song-sheet .lyr .line__note {
+    margin-left: 0;
+}
+
 /* An annotation on a line of its own, in the stanza ({ci: x2}) */
 .song-sheet .line--note {
     display: block;

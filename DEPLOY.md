@@ -323,7 +323,8 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
 
 27. **Notas al final de la línea y acordes entre paréntesis (fase 7).** (a) Escribe `{ci: bis}` (o `{ci: 2ª vez}`, `{ci: (Bis)}`) **al final
    de una línea de letra**: sale a la derecha de la línea, en cursiva y más tenue; si la línea es larga y baja, la nota se va con la última
-   palabra. Una nota **en su propia línea** (`{ci: x2}` debajo de la estrofa) sigue saliendo abajo, como antes. (b) Un acorde entre paréntesis,
+   palabra. Si la línea termina en un acorde (`[C]Un pueblo que es[F]pera [(G)]{ci: (Bis)}`), la nota queda **debajo de ese acorde**, a un espacio de
+   la letra, y no después de la columna del acorde. Una nota **en su propia línea** (`{ci: x2}` debajo de la estrofa) sigue saliendo abajo, como antes. (b) Un acorde entre paréntesis,
    `[(G)]`, se ve «(Sol)» y **se transpone** con los demás («(La)» dos semitonos arriba); antes se quedaba en «(Sol)» y salía mal. Al
    **importar** una hoja con acordes arriba, «(G)» conserva los paréntesis (antes quedaba como «G»). Escribir `[(g)]` en minúscula también se
    pone en mayúscula. (c) Lo mismo en la **impresión** (normal, compacta, dos columnas). Tus cantos no cambian: lo guardado es el mismo texto,
