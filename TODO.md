@@ -145,6 +145,7 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       title first, the lyrics later); a **repeated title is neither warned nor blocked** (the owner: several "Santo" and "Gloria"
       exist); Importar draws its own "Elegir PDF" button instead of the browser's, with a shorter explanation; the import cards
       capitalise a lowercase chord (preview and save) like the editor. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 25.
+- [ ] A help page (FAQ) in the app: `faq.md` holds the first notes (the draft of "Nuevo canto"); make it a screen later, in Spanish, reachable from Ajustes.
 - [ ] **New song, PR B (approved by the owner, mockup first):** a "Escribir | Ver" switch so the preview is in view on a phone with
       Guardar/Cancelar fixed at the foot; pasting chords over the words into "Nuevo canto" converts them with the importer (one
       line says how many, with undo); a draft kept on the device and recovered. Not done on purpose: converting Latin chord names
