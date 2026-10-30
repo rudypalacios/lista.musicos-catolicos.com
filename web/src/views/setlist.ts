@@ -50,6 +50,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
     const dayText = h('span', {});
     const day = h('input', { id: 'day', type: 'date', class: 'chip__input', 'aria-label': 'Fecha de la misa' });
     const dayChip = h('label', { class: 'chip chip--day' }, dayText, icon('pencil', 14), day);
+    const clearDay = h('button', { type: 'button', class: 'button button--icon', 'aria-label': 'Quitar la fecha' }, icon('x', 18));
     const count = h('span', { class: 'muted' });
     const error = h('p', { class: 'error setlist__error', role: 'alert' });
     const sing = h('a', { class: 'button button--primary', 'data-link': true, href: paths.perform(setlist.id, 1) }, icon('play', 16), 'Cantar');
@@ -61,7 +62,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
         { class: 'page' },
         h('header', { class: 'setlist-head' },
             title,
-            h('div', { class: 'setlist-head__meta' }, dayChip, count),
+            h('div', { class: 'setlist-head__meta' }, dayChip, clearDay, count),
             error,
             h('div', { class: 'setlist-head__actions' }, sing, more)),
         slots,
@@ -89,8 +90,9 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             title.blur();
         }
     });
-    /** The day on its chip: "＋ Fecha" (the plus drawn) when there is none */
+    /** The day on its chip: "＋ Fecha" (the plus drawn) when there is none, and then nothing to remove */
     const showDay = (value: string | null): void => {
+        clearDay.hidden = value === null || value === '';
         if (value === null || value === '') {
             dayText.replaceChildren(icon('plus', 14), 'Fecha');
         } else {
@@ -98,6 +100,12 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
         }
     };
     day.addEventListener('input', () => showDay(day.value));
+    // A date field cannot always be emptied by hand (an iPad's picker has no "clear"): the list may have no day
+    clearDay.addEventListener('click', () => {
+        day.value = '';
+        showDay('');
+        void saveHeader();
+    });
 
     // --- the sheets ---
     // The screen scrolls inside the app, so a sheet here covers the window, not the page

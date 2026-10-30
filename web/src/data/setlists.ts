@@ -55,6 +55,18 @@ export function defaultTitle(eventDate: string): string {
     return `Misa del ${shortDate(eventDate)}`;
 }
 
+const COPY_PREFIX = 'Copia de ';
+
+/**
+ * The title of a copy: "Copia de" and the name it comes from. A copy of a copy keeps the one prefix, and the
+ * result is cut to the longest title a list may have, so a long name never makes the copy fail.
+ */
+export function copyTitle(title: string): string {
+    const full = title.startsWith(COPY_PREFIX) ? title : `${COPY_PREFIX}${title}`;
+
+    return Array.from(full).slice(0, LIMITS.title).join('').trim();
+}
+
 /**
  * Most recently edited first. Not by the day of the Mass: a list may be for a rosary or a
  * prayer meeting and have no day at all.
@@ -161,10 +173,10 @@ export class Setlists {
                     items.push({ id: this.newId(), part: item.part, songId: item.songId, transpose: item.transpose, note: '' });
                 }
             }
-            const eventDate = today(new Date(this.now()));
             const copy: Setlist = {
                 id: this.newId(),
-                ...cleanDraft({ title: defaultTitle(eventDate), eventDate, notes: '' }),
+                // No day: a list may serve for a whole month, and the person gives it one if it needs it
+                ...cleanDraft({ title: copyTitle(source.title), eventDate: null, notes: '' }),
                 starred: false,
                 items,
                 updatedAt: this.now(),

@@ -89,7 +89,7 @@ export function listsView(app: App, navigate: Navigate): View {
                         })
                         .catch((failure: unknown) => fail(failure, 'No se pudo duplicar el listado.'));
                 });
-            }, { hint: 'Una copia para hoy, con los mismos cantos y tonos' }),
+            }, { hint: 'Una copia sin fecha, con los mismos cantos y tonos' }),
             // Last and set apart, so it is not touched by mistake next to the others
             sheetAction('trash', 'Eliminar listado', () => {
                 error.textContent = '';

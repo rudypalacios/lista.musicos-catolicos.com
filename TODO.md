@@ -112,7 +112,7 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 18. The Cantar sheet also gives its "Editar letra y acordes" room
       above and below its line.
 - [x] The lists screen: the star of each row became a "⋯" that opens a sheet (`views/lists.ts`) with "Destacar" / "Quitar de
-      destacados" and **"Duplicar listado"** (`Setlists.duplicate`: a copy for today, with the title of a new list, the songs in
+      destacados" and **"Duplicar listado"** (`Setlists.duplicate`: a copy with the title "Copia de …" and no day, the songs in
       their parts and order and the key each has in the list; no star, no notes, songs deleted since left out; it opens at once and
       a toast says where it came from). The sheet is where sharing and other per-list actions will go. Not done: copying from
       "＋ Nuevo" (the owner chose the row's sheet), an undo for the copy ("Eliminar listado" is in the same sheet).
@@ -130,6 +130,10 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
 - [x] **"Guardar" does what is marked** in the arrow's menu (`views/tone-control.ts`): touching an option only marks it (it starts on
       "En este listado"; the mark is forgotten when the change goes), and "Guardar" does the marked one. With "Solo hoy" marked it
       writes nowhere and says "Queda solo para hoy". The look of the menu is unchanged. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 16.
+- [x] **A copy of a list is "Copia de …" with no day** (`copyTitle`; a copy of a copy keeps one "Copia de", and a long name is cut to
+      the limit), and **a day can be removed** from a list: a "✕" of 44px (`Quitar la fecha`) beside the day chip, only while there is
+      a day (a date field cannot always be emptied by hand, e.g. on an iPad). The day was already optional in the model;
+      "＋ Nuevo" still starts for today. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 24.
 - [x] **"Eliminar listado" moved to the lists screen**: it is the last action (red, set apart) of the row's "⋮" sheet, and it
       asks first with a dialog drawn by the app (`views/confirm-dialog.ts`: "Cancelar" is the focused answer, Escape, a touch
       outside and the back button also cancel) instead of the browser's `confirm()`, which looks different on each device. A
