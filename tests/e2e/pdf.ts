@@ -197,7 +197,7 @@ try {
 
     await signIn(page, server.base);
     await page.getByRole('link', { name: 'Importar' }).click();
-    await page.getByLabel('Subir un PDF').setInputFiles(pdfPath);
+    await page.getByLabel('Elegir PDF').setInputFiles(pdfPath);
     await page.getByRole('heading', { name: /Se encontraron 3 cantos/ }).waitFor();
     assert.equal(await page.locator('.import-card').count(), 3);
     pass('importing: a PDF with a song per page becomes three songs');
@@ -237,7 +237,7 @@ try {
     await app.reload();
     assert.equal(await app.evaluate(() => navigator.serviceWorker.controller !== null), true);
     await app.getByRole('link', { name: 'Importar' }).click();
-    await app.getByLabel('Subir un PDF').setInputFiles(pdfPath);
+    await app.getByLabel('Elegir PDF').setInputFiles(pdfPath);
     await app.getByRole('heading', { name: /Se encontraron 3 cantos/ }).waitFor();
     pass('importing a PDF also works with the service worker in control');
 
