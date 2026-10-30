@@ -72,11 +72,32 @@ hand (`DEPLOY.md`, "Pruebas en los dispositivos").
   update says what it is doing at each step (`web/src/updates.ts`, its states are a tested pure
   function). Anything slower than a moment shows a spinner and a sentence.
 
+## Not in production yet (the owner's decision, 2026-10-29)
+
+The app has no real users and no data worth keeping: what is on the owner's server and devices is
+test data. **Compatibility with data or clients of earlier versions is not a requirement** until the
+owner says production has started. So:
+
+- Do not write shims for old records or old clients: no "a record saved before this field has none"
+  fallbacks, no "an older app that sends no value keeps what is stored" rules for a new field, no
+  upgrade path that preserves an earlier on-device database (a version may clear it and pull again).
+  Shims that already exist (`withStar`, `withShift`, `pickSong`'s `?? 0`, the `COALESCE` for absent
+  `starred` / `myShift`) may be removed when the code around them is touched.
+- A change of shape is still a **new** migration file (the owner's database has already run the earlier
+  ones and the app applies only new files); do not edit an applied one. When resetting the test data
+  would make a change simpler, say so and ask the owner (they can only use phpMyAdmin: give the exact steps).
+- Say it in `DEPLOY.md` when a change makes the old test data unreadable or wrong.
+- **Unchanged:** the offline-first rules, the update flow, validating every input, the tests, and
+  `DESIGN-LOCK.md`.
+- **It ends** when the owner announces the first production use. From then on the rules below hold in full:
+  never edit a deployed migration, keep older apps and stored data working, and write the shims back where a
+  change needs them.
+
 ## Database
 
 Migrations are numbered `.sql` files in `migrations/`, applied by the app itself on the first
 request after a deploy (the host has no shell and the CI only deploys). Never edit one that
-has been deployed; add a new file. Write for MySQL **and** SQLite (tests use SQLite): the
+has been deployed; add a new file (see "Not in production yet"). Write for MySQL **and** SQLite (tests use SQLite): the
 common subset, one `;` per statement, idempotent (`IF NOT EXISTS`). What the subset cannot say
 (table charsets) goes in a file named `NNNN_name.mysql.sql` or `.sqlite.sql`, which only that
 database applies. Every new MySQL table needs a `.mysql.sql` follow-up that makes it `utf8mb4`:

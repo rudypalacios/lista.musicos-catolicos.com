@@ -34,6 +34,17 @@ Candidates already noted: the key only while singing; duplicating a list; the or
 adding several songs to a part without leaving the picker; moving a song to the start or the end of its part;
 dragging to reorder (phase 6).
 
+## Clean-ups while the app is not in production
+
+The owner decided (`CLAUDE.md`, "Not in production yet") that compatibility with data and clients of earlier
+versions does not matter until production starts. Shims written before that can go, when convenient:
+
+- [ ] `withStar` (`data/setlists.ts`), `withShift` (`data/library.ts`) and the `?? 0` in `pickSong` (`api.ts`).
+- [ ] The server rule that a record sent without `starred` / `myShift` keeps the stored value (`COALESCE` in
+      `SetlistRepository` / `SongRepository`, `null` in `SetlistChange` / `SongChange`): both would become required.
+- [ ] The on-device upgrade from IndexedDB version 1 (`data/` store): a version may clear the database and pull again.
+- [ ] Old test data on the owner's server and devices: nothing to migrate; reset it when it gets in the way.
+
 ## Owner's checks (cannot be done from the sandbox: Safari, real devices, the host)
 
 **Deferred to the end of all the phases:** every iPad check below waits until then, when Claude writes
