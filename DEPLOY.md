@@ -268,8 +268,8 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
 
 19. **El «⋯» de cada listado y duplicar.** En *Listados*, cada fila tiene a la derecha un **«⋯»** (ya no hay estrella). Tócalo: se abre una
    hoja con el nombre del listado, «Destacar» (o «Quitar de destacados» si ya lo está) y **«Duplicar listado»**. Destacar funciona
-   como la estrella de antes (sube a «★ Destacados», se sincroniza). **Duplicar** abre al instante una copia **para hoy**, con el título
-   de un listado nuevo («Misa del 30 de octubre»), los mismos cantos en las mismas partes y **el tono que cada uno tiene en ese
+   como la estrella de antes (sube a «★ Destacados», se sincroniza). **Duplicar** abre al instante una copia **sin fecha**, con el título
+   «Copia de …» y el nombre del original («Copia de Misa de octubre»; la copia de una copia no repite el «Copia de»), los mismos cantos en las mismas partes y **el tono que cada uno tiene en ese
    listado**; no copia la estrella. Un aviso dice «Copiado de “…”». El original queda como estaba. Si no la querías: dentro de la copia,
    en *Listados*, `⋮` de su fila → *Eliminar listado* (ítem 23).
 
@@ -294,6 +294,11 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    atrás de Android lo cierran sin borrar. Al eliminar sale «Listado eliminado». Dentro de un listado, su `⋮` ya **no** tiene
    *Eliminar listado*, solo imprimir. El cuadro se ve igual en todos los aparatos (ya no es el aviso del navegador). Si el listado se
    borró en otro aparato, desaparece del tuyo al sincronizar.
+
+24. **La fecha es opcional, y se puede quitar.** Un listado puede no tener fecha (por ejemplo, una misa que sirve para octubre y noviembre).
+   Si tiene, junto a la fecha aparece una **✕** («Quitar la fecha», de 44 px): tócala y el listado queda sin fecha («＋ Fecha» para
+   ponerla otra vez). Pruébalo en el **iPad**, donde el selector de fecha no siempre trae «Borrar». Un listado sin fecha en *Listados* solo dice
+   sus cantos. **Duplicar listado** ya no pone la fecha de hoy: la copia sale sin fecha. «＋ Nuevo» sigue creando para hoy.
 
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).

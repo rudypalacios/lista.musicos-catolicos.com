@@ -3,7 +3,7 @@ import { beforeEach, describe, it } from 'node:test';
 import { ValidationError } from '../../src/data/library.ts';
 import { MemoryStore } from '../../src/data/memory-store.ts';
 import {
-    defaultTitle, inMassOrder, itemsOfPart, moveOptions, partIndex, positionInMass, recentFirst, Setlists, splitStarred,
+    copyTitle, defaultTitle, inMassOrder, itemsOfPart, moveOptions, partIndex, positionInMass, recentFirst, Setlists, splitStarred,
 } from '../../src/data/setlists.ts';
 import { LIMITS, type Setlist, type SetlistItem } from '../../src/data/types.ts';
 import { MASS_PARTS } from '../../src/mass.ts';
@@ -143,7 +143,7 @@ describe('Setlists', () => {
     });
 
     describe('duplicating', () => {
-        it('copies the songs in their parts and order, with the keys of the list, for today, starred no more', async () => {
+        it('copies the songs in their parts and order, with the keys of the list, as "Copia de …" with no day, starred no more', async () => {
             const source = await lists.create({ title: 'Misa del domingo', eventDate: '2026-10-25', notes: 'algo' });
             await lists.addItem(source.id, 'comunion', 's2');
             await lists.addItem(source.id, 'entrada', 's1');
@@ -155,8 +155,8 @@ describe('Setlists', () => {
             const copy = await lists.duplicate(source.id);
 
             assert.notEqual(copy.id, source.id);
-            assert.equal(copy.title, 'Misa del 1 de noviembre');
-            assert.equal(copy.eventDate, '2026-11-01');
+            assert.equal(copy.title, 'Copia de Misa del domingo');
+            assert.equal(copy.eventDate, null);
             assert.equal(copy.starred, false);
             assert.equal(copy.notes, '');
             assert.deepEqual(copy.items.map((item) => [item.part, item.songId, item.transpose, item.note]), [
@@ -166,6 +166,14 @@ describe('Setlists', () => {
             assert.ok(copy.items.every((item) => !sourceIds.has(item.id)), 'its songs have ids of their own');
             assert.equal((await lists.get(source.id))?.starred, true, 'the original is left as it was');
             assert.deepEqual((await store.pending('setlists')).map((queued) => queued.id).includes(copy.id), true, 'it is queued to sync');
+        });
+
+        it('names a copy "Copia de" once, and cuts a long name to the limit', () => {
+            assert.equal(copyTitle('Misa de octubre'), 'Copia de Misa de octubre');
+            assert.equal(copyTitle('Copia de Misa de octubre'), 'Copia de Misa de octubre');
+            const long = copyTitle('ñ'.repeat(LIMITS.title));
+            assert.equal(Array.from(long).length, LIMITS.title);
+            assert.ok(long.startsWith('Copia de ñ'));
         });
 
         it('leaves out a song that was deleted since', async () => {

@@ -642,7 +642,7 @@ try {
     assert.equal(await page.locator('button.star').count(), 0, 'there is no star on the rows: each has a "⋯"');
 
     await page.getByRole('button', { name: 'Más opciones: Domingo, editado en la tablet' }).click();
-    assert.deepEqual(await page.locator('.sheet-layer.is-open .sheet-action').allTextContents(), ['Destacar', 'Duplicar listadoUna copia para hoy, con los mismos cantos y tonos', 'Eliminar listado']);
+    assert.deepEqual(await page.locator('.sheet-layer.is-open .sheet-action').allTextContents(), ['Destacar', 'Duplicar listadoUna copia sin fecha, con los mismos cantos y tonos', 'Eliminar listado']);
     await page.getByRole('button', { name: 'Destacar', exact: true }).click();
     await page.getByRole('heading', { name: 'Destacados' }).waitFor();
     await page.getByRole('heading', { name: 'Recientes' }).waitFor();
@@ -693,10 +693,26 @@ try {
     await page.getByRole('button', { name: /Duplicar listado/ }).click();
     await page.locator('section.slot').first().waitFor();
     await page.locator('.toast', { hasText: 'Copiado de «Domingo, editado en la tablet»' }).waitFor();
-    assert.match(await page.getByLabel('Título').inputValue(), /^Misa del \d{1,2} de \w+/);
+    assert.equal(await page.getByLabel('Título').inputValue(), 'Copia de Domingo, editado en la tablet');
+    // The copy has no day: the chip offers one and there is nothing to remove
+    await page.getByText('Fecha', { exact: true }).waitFor();
+    assert.equal(await page.getByRole('button', { name: 'Quitar la fecha' }).isVisible(), false, 'no day, nothing to remove');
     await page.getByText(new RegExp(`${original} cantos?`)).first().waitFor();
     await serverWhen(page, (data) => data.setlists.filter((list) => list.deletedAt === null && list.items.length === original).length >= 2);
-    pass('duplicating a list opens a copy for today with the same songs, says where it came from, and leaves the original');
+    pass('duplicating a list opens "Copia de …" with no day and the same songs, says where it came from, and leaves the original');
+    // A day can be set and taken away again: the list may serve for a month
+    await page.getByLabel('Fecha de la misa').fill('2026-11-08');
+    await page.getByLabel('Fecha de la misa').blur();
+    const clear = page.getByRole('button', { name: 'Quitar la fecha' });
+    await clear.waitFor();
+    const clearBox = await clear.boundingBox();
+    assert.ok(clearBox !== null && clearBox.width >= 44 && clearBox.height >= 44, '"Quitar la fecha" is a 44px target');
+    await serverWhen(page, (data) => data.setlists.some((list) => list.title.startsWith('Copia de') && list.eventDate === '2026-11-08'));
+    await clear.click();
+    await page.getByText('Fecha', { exact: true }).waitFor();
+    await clear.waitFor({ state: 'hidden' });
+    await serverWhen(page, (data) => data.setlists.some((list) => list.title.startsWith('Copia de') && list.eventDate === null && list.deletedAt === null));
+    pass('a day can be set and removed again with the "✕" beside it, and that reaches the server');
     await deleteOpenList(page);
 
     await page.getByRole('button', { name: 'Más opciones: Domingo, editado en la tablet' }).click();
