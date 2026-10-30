@@ -395,4 +395,9 @@
         width: 0;
         min-width: 0;
     }
+
+    /* … unless it carries the note of the line: that one is read, so it keeps its room */
+    .print-page[data-print="chords"] :is(.song-sheet--columns-chords, .song-sheet--pages-chords) .w--tail:has(.line__note) {
+        width: auto;
+    }
 }

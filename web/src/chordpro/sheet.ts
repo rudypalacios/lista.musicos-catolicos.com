@@ -18,7 +18,9 @@
  *       <div class="line line--note">x2</div>               ← an annotation on a line of its own ({ci: x2})
  *     </div>
  *
- * A note at the end of a line ({ci: bis} after the words) is a <span class="line__note"> last in that line.
+ * A note at the end of a line ({ci: bis} after the words) is a <span class="line__note"> last in that line;
+ * when the line ends in chords after the last word, it goes under the first of them (in the row of the
+ * words), so it stays next to the words instead of after the chord's column.
  *
  * data-chord keeps the stored English name; the visible name is Latin (the default notation)
  * and the viewer rewrites it when the key or the notation change, without touching the lyrics.
@@ -79,24 +81,31 @@ function lineHtml(segments: Segment[], first: boolean): string {
         // One tail for all of them, so they keep their order and never overlap
         words = [...words.slice(0, lastSung + 1), words.slice(lastSung + 1).flat()];
     }
+    const noteInTail = note !== undefined && hasWords && lastSung < words.length - 1;
     words.forEach((word, index) => {
-        html += hasWords && index > lastSung ? '<span class="w w--tail">' : '<span class="w">';
+        const isTail = hasWords && index > lastSung;
+        html += isTail ? '<span class="w w--tail">' : '<span class="w">';
         word.forEach((segment, segmentIndex) => {
-            html += segmentHtml(segment, word.slice(segmentIndex));
+            const under = noteInTail && isTail && segmentIndex === 0 ? note : undefined;
+            html += segmentHtml(segment, word.slice(segmentIndex), under);
         });
         html += '</span>';
     });
 
-    return html + noteHtml + '</div>';
+    return html + (noteInTail ? '' : noteHtml) + '</div>';
 }
 
-/** `rest`: this segment and the ones after it in the word */
-function segmentHtml(segment: Segment, rest: Segment[]): string {
+/**
+ * `rest`: this segment and the ones after it in the word. `note`: the line's note, when it goes in the row of
+ * this segment's text (a chord after the last word, whose text is blank)
+ */
+function segmentHtml(segment: Segment, rest: Segment[], note?: string): string {
     const text = segment.text;
     let html = '<span class="seg">';
+    const noteHtml = note === undefined ? '' : `<span class="line__note">${escapeHtml(note)}</span>`;
 
     if (segment.chord === null) {
-        return `${html}<span class="lyr">${escapeHtml(text)}</span></span>`;
+        return `${html}<span class="lyr">${escapeHtml(text)}${noteHtml}</span></span>`;
     }
 
     // The syllable may go on in the next segment ("pa[D]labra"): measure it on the whole
@@ -107,6 +116,11 @@ function segmentHtml(segment: Segment, rest: Segment[]): string {
     const length = Math.min(syllable, letters);
 
     html += `<span class="ch" data-chord="${escapeHtml(segment.chord)}">${escapeHtml(latin(segment.chord))}</span>`;
+
+    if (note !== undefined) {
+        // After the last word the text is blank: the note takes its place, under the chord
+        return `${html}<span class="lyr">${noteHtml}</span></span>`;
+    }
 
     if (text === '') {
         // A chord with nothing under it (end of line, or two chords in a row) keeps the row's height

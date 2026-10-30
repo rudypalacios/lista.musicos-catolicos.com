@@ -939,7 +939,7 @@
     "hasChords": true,
     "firstChord": "G"
    },
-   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">Ho</span>la </span></span></span><span class=\"w w--tail\"><span class=\"seg\"><span class=\"ch\" data-chord=\"D\">Re</span><span class=\"lyr\"> </span></span></span><span class=\"line__note\">bis</span></div></div>",
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">Ho</span>la </span></span></span><span class=\"w w--tail\"><span class=\"seg\"><span class=\"ch\" data-chord=\"D\">Re</span><span class=\"lyr\"><span class=\"line__note\">bis</span></span></span></span></div></div>",
    "key": "G"
   },
   {
@@ -1080,6 +1080,168 @@
    },
    "html": "<div class=\"song-section song-section--chorus\"><h3 class=\"song-section__label\">Coro</h3><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"><span class=\"syl\">Co</span>ro</span></span></span><span class=\"line__note\">2ª vez</span></div></div><div class=\"song-section song-section--verse\"><div class=\"line line--first line--plain\">Verso<span class=\"line__note\">bis</span></div></div>",
    "key": "G"
+  },
+  {
+   "name": "noteAfterTailChords",
+   "input": "[C]Un pueblo que es[F]pera [(G)]{ci : (Bis)}",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "C",
+         "text": "Un pueblo que es"
+        },
+        {
+         "chord": "F",
+         "text": "pera "
+        },
+        {
+         "chord": "(G)",
+         "text": "",
+         "note": "(Bis)"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "C"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">Un</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">pueblo </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">que </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">es</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"F\">Fa</span><span class=\"lyr\"><span class=\"syl\">pe</span>ra </span></span></span><span class=\"w w--tail\"><span class=\"seg\"><span class=\"ch\" data-chord=\"(G)\">(Sol)</span><span class=\"lyr\"><span class=\"line__note\">(Bis)</span></span></span></span></div></div>",
+   "key": "C"
+  },
+  {
+   "name": "noteAfterSeveralTailChords",
+   "input": "[C]Un pueblo [F]pera [(G)] [D] {ci: bis}",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "C",
+         "text": "Un pueblo "
+        },
+        {
+         "chord": "F",
+         "text": "pera "
+        },
+        {
+         "chord": "(G)",
+         "text": " "
+        },
+        {
+         "chord": "D",
+         "text": "",
+         "note": "bis"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "C"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">Un</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">pueblo </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"F\">Fa</span><span class=\"lyr\"><span class=\"syl\">pe</span>ra </span></span></span><span class=\"w w--tail\"><span class=\"seg\"><span class=\"ch\" data-chord=\"(G)\">(Sol)</span><span class=\"lyr\"><span class=\"line__note\">bis</span></span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"D\">Re</span><span class=\"lyr\"> </span></span></span></div></div>",
+   "key": "C"
+  },
+  {
+   "name": "noteAfterTailChordWithSpaces",
+   "input": "[C]Aleluya [(G)]   {ci: 2ª vez}   ",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "C",
+         "text": "Aleluya "
+        },
+        {
+         "chord": "(G)",
+         "text": "",
+         "note": "2ª vez"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "C"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">A</span>leluya </span></span></span><span class=\"w w--tail\"><span class=\"seg\"><span class=\"ch\" data-chord=\"(G)\">(Sol)</span><span class=\"lyr\"><span class=\"line__note\">2ª vez</span></span></span></span></div></div>",
+   "key": "C"
+  },
+  {
+   "name": "noteAfterChordsOnlyLine",
+   "input": "[G] [D] {ci: dos veces}",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "G",
+         "text": " "
+        },
+        {
+         "chord": "D",
+         "text": "",
+         "note": "dos veces"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "G"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first line--chords\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"G\">Sol</span><span class=\"lyr\"> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"D\">Re</span><span class=\"lyr\"> </span></span></span><span class=\"line__note\">dos veces</span></div></div>",
+   "key": "G"
+  },
+  {
+   "name": "noteWithoutTailChords",
+   "input": "[C]Un pueblo que es[F]pera {ci: (Bis)}",
+   "sheet": {
+    "sections": [
+     {
+      "label": null,
+      "kind": "verse",
+      "lines": [
+       [
+        {
+         "chord": "C",
+         "text": "Un pueblo que es"
+        },
+        {
+         "chord": "F",
+         "text": "pera",
+         "note": "(Bis)"
+        }
+       ]
+      ]
+     }
+    ],
+    "meta": {},
+    "hasChords": true,
+    "firstChord": "C"
+   },
+   "html": "<div class=\"song-section song-section--verse\"><div class=\"line line--first\"><span class=\"w\"><span class=\"seg\"><span class=\"ch\" data-chord=\"C\">Do</span><span class=\"lyr\"><span class=\"syl\">Un</span> </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">pueblo </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">que </span></span></span><span class=\"w\"><span class=\"seg\"><span class=\"lyr\">es</span></span><span class=\"seg\"><span class=\"ch\" data-chord=\"F\">Fa</span><span class=\"lyr\"><span class=\"syl\">pe</span>ra</span></span></span><span class=\"line__note\">(Bis)</span></div></div>",
+   "key": "C"
   },
   {
    "name": "parenChords",
@@ -4830,6 +4992,146 @@
      "height": 110.80000000000001,
      "compactHeight": 105.80000000000001,
      "columnHeight": 105.80000000000001,
+     "layouts": [
+      "normal",
+      "normal",
+      "normal",
+      "normal"
+     ]
+    }
+   }
+  },
+  {
+   "name": "noteAfterTailChords",
+   "input": "[C]Un pueblo que es[F]pera [(G)]{ci : (Bis)}",
+   "versions": {
+    "chords": {
+     "height": 92,
+     "compactHeight": 89.5,
+     "columnHeight": 89.5,
+     "layouts": [
+      "normal",
+      "normal",
+      "normal",
+      "normal"
+     ]
+    },
+    "lyrics": {
+     "height": 62.4,
+     "compactHeight": 59.9,
+     "columnHeight": 59.9,
+     "layouts": [
+      "normal",
+      "normal",
+      "normal",
+      "normal"
+     ]
+    }
+   }
+  },
+  {
+   "name": "noteAfterSeveralTailChords",
+   "input": "[C]Un pueblo [F]pera [(G)] [D] {ci: bis}",
+   "versions": {
+    "chords": {
+     "height": 92,
+     "compactHeight": 89.5,
+     "columnHeight": 89.5,
+     "layouts": [
+      "normal",
+      "normal",
+      "normal",
+      "normal"
+     ]
+    },
+    "lyrics": {
+     "height": 62.4,
+     "compactHeight": 59.9,
+     "columnHeight": 59.9,
+     "layouts": [
+      "normal",
+      "normal",
+      "normal",
+      "normal"
+     ]
+    }
+   }
+  },
+  {
+   "name": "noteAfterTailChordWithSpaces",
+   "input": "[C]Aleluya [(G)]   {ci: 2ª vez}   ",
+   "versions": {
+    "chords": {
+     "height": 92,
+     "compactHeight": 89.5,
+     "columnHeight": 89.5,
+     "layouts": [
+      "normal",
+      "normal",
+      "normal",
+      "normal"
+     ]
+    },
+    "lyrics": {
+     "height": 62.4,
+     "compactHeight": 59.9,
+     "columnHeight": 59.9,
+     "layouts": [
+      "normal",
+      "normal",
+      "normal",
+      "normal"
+     ]
+    }
+   }
+  },
+  {
+   "name": "noteAfterChordsOnlyLine",
+   "input": "[G] [D] {ci: dos veces}",
+   "versions": {
+    "chords": {
+     "height": 77.8,
+     "compactHeight": 76.4,
+     "columnHeight": 76.4,
+     "layouts": [
+      "normal",
+      "normal",
+      "normal",
+      "normal"
+     ]
+    },
+    "lyrics": {
+     "height": 40,
+     "compactHeight": 40,
+     "columnHeight": 40,
+     "layouts": [
+      "normal",
+      "normal",
+      "normal",
+      "normal"
+     ]
+    }
+   }
+  },
+  {
+   "name": "noteWithoutTailChords",
+   "input": "[C]Un pueblo que es[F]pera {ci: (Bis)}",
+   "versions": {
+    "chords": {
+     "height": 92,
+     "compactHeight": 89.5,
+     "columnHeight": 89.5,
+     "layouts": [
+      "normal",
+      "normal",
+      "normal",
+      "normal"
+     ]
+    },
+    "lyrics": {
+     "height": 62.4,
+     "compactHeight": 59.9,
+     "columnHeight": 59.9,
      "layouts": [
       "normal",
       "normal",

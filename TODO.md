@@ -253,6 +253,7 @@ Next, in this order (design agreed with the owner):
       the reference, then ported here with new golden fixtures): **a note at the end of a line of lyrics**
       (`{ci: bis}` / `{comment_italic: …}` after the words) is drawn beside the words, in italics (`line__note`; the last segment
       carries `note`), on screen and on paper; on a line of its own an annotation stays below the stanza as before (`{ci: x2}`);
+      when the line ends in chords after the last word the note goes under the first of them, one space from the words;
       **a chord in parentheses** (`[(G)]`, played only on some repetitions) keeps them, shows `(Sol)` and transposes (`(La)`), the
       importer keeps the parentheses (before it dropped them: `(G)` came out as `G`), and the editor capitalises `[(g)]`. Decided with
       the owner: no special case for "bis" on its own line (it stays below like any note; write it at the end of the line). Nothing
