@@ -71,9 +71,8 @@ interface PulledPage {
     hasMore: boolean;
 }
 
-/** A server from before "mi tono" sends none: that is 0, the written key */
 const pickSong = ({ id, title, author, body, myShift, updatedAt, deletedAt }: Song): Song => ({
-    id, title, author, body, myShift: myShift ?? 0, updatedAt, deletedAt,
+    id, title, author, body, myShift, updatedAt, deletedAt,
 });
 
 const pickSetlist = ({ id, title, eventDate, notes, starred, items, updatedAt, deletedAt }: Setlist): Setlist => ({
@@ -102,8 +101,7 @@ export const api = {
         request<PulledPage>('GET', `/api/sync?since=${since}`).then((page) => ({
             ...page,
             songs: page.songs.map(pickSong),
-            // A server from before setlists answers with songs only
-            setlists: (page.setlists ?? []).map(pickSetlist),
+            setlists: page.setlists.map(pickSetlist),
         })),
     push: <C extends Collection>(collection: C, records: readonly Records[C][]): Promise<Pushed> =>
         request<Pushed>('POST', '/api/sync', { [collection]: records.map(toWire) }),

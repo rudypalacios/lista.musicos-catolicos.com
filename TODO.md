@@ -34,6 +34,24 @@ Candidates already noted: the key only while singing; duplicating a list; the or
 adding several songs to a part without leaving the picker; moving a song to the start or the end of its part;
 dragging to reorder (phase 6).
 
+## Compatibility shims (what is kept, and why)
+
+The owner has real data in the app (`CLAUDE.md`, "Compatibility with the owner's data"). A shim stays while
+something the owner has could break without it:
+
+- `withShift` (`data/library.ts`) and the `Number.isInteger(song.myShift)` guard in `Setlists.addItem`: songs saved
+  on a device before "mi tono" have no `myShift` until they change; without the default the song page and the key
+  of a new item would be `NaN`.
+- `myShift` / `starred` optional on the server (`SongChange`, `SetlistChange`, the `COALESCE` in both repositories):
+  a record queued or saved on a device before those fields is pushed without them, and must keep what is stored.
+- `songs` / `setlists` each optional in `PushAction` (at least one): an app from before the lists pushes songs only.
+- The upgrade of the on-device database from version 1 (`data/idb-store.ts`, cursor reset): a device that has not
+  been opened since the lists existed would otherwise never pull the lists the server already holds.
+
+Removed (nothing the owner has needs them): `withStar` (a list with no star reads as falsy anyway), `myShift ?? 0`
+and `page.setlists ?? []` in `api.ts` (the server always sends both). When the owner confirms every device was
+opened after the lists and "mi tono" shipped, the rest can go too.
+
 ## Owner's checks (cannot be done from the sandbox: Safari, real devices, the host)
 
 **Deferred to the end of all the phases:** every iPad check below waits until then, when Claude writes

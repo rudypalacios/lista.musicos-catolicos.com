@@ -127,14 +127,6 @@ describe('Setlists', () => {
             assert.equal((await lists.get(list.id))?.starred, true);
         });
 
-        it('reads a list saved before stars existed as not starred', async () => {
-            const { starred: _gone, ...legacy } = setlist('old', 1);
-            await store.save('setlists', legacy as Setlist);
-
-            assert.equal((await lists.get('old'))?.starred, false);
-            assert.equal((await lists.list())[0]?.starred, false);
-        });
-
         it('says so for a list that no longer exists', async () => {
             await assert.rejects(lists.setStarred('nope', true), /ya no existe/);
         });

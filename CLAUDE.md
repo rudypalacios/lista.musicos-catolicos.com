@@ -74,6 +74,20 @@ hand (`DEPLOY.md`, "Pruebas en los dispositivos").
   update says what it is doing at each step (`web/src/updates.ts`, its states are a tested pure
   function). Anything slower than a moment shows a spinner and a sentence.
 
+## Compatibility with the owner's data (the owner's decision, 2026-10-29)
+
+The app is not in production, but **the owner has real information in it** (on their devices and on their
+server), and some of it must keep working for certain. So:
+
+- **Keep a shim when removing it would break the app today** with what the owner's devices and server hold
+  (a stored record without a field the code now reads, an older app or a queued write that omits a value, the
+  upgrade of the on-device database from an earlier version). When in doubt about safety, keep it.
+- **Remove a shim when nothing the owner has needs it** (a fallback for a server or a record that cannot exist
+  any more). Do not add shims for cases that cannot happen.
+- The shims that are kept, and why, are listed in `TODO.md` ("Compatibility shims"). Say in `DEPLOY.md` when a
+  change makes data the owner has unreadable or wrong.
+- A change of shape is a **new** migration file; never edit an applied one.
+
 ## Database
 
 Migrations are numbered `.sql` files in `migrations/`, applied by the app itself on the first

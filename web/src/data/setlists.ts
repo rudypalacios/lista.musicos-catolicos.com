@@ -74,11 +74,6 @@ export function splitStarred(lists: readonly Setlist[]): { starred: Setlist[]; o
     };
 }
 
-/** A list saved by a version of the app that had no stars has none */
-function withStar(list: Setlist): Setlist {
-    return { ...list, starred: list.starred === true };
-}
-
 // --- writing ------------------------------------------------------------------------------
 
 /**
@@ -113,14 +108,14 @@ export class Setlists {
     async list(): Promise<Setlist[]> {
         const lists = (await this.store.all('setlists')).filter((list) => list.deletedAt === null);
 
-        return lists.map(withStar).sort(recentFirst);
+        return lists.sort(recentFirst);
     }
 
     /** A list, or undefined if it does not exist or was deleted */
     async get(id: string): Promise<Setlist | undefined> {
         const list = await this.store.get('setlists', id);
 
-        return list !== undefined && list.deletedAt === null ? withStar(list) : undefined;
+        return list !== undefined && list.deletedAt === null ? list : undefined;
     }
 
     /** The lists that use a song, so deleting it can warn first */
