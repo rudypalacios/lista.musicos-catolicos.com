@@ -273,6 +273,11 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    listado**; no copia la estrella. Un aviso dice «Copiado de “…”». El original queda como estaba. Si no la querías: dentro de la copia,
    `⋯` → *Eliminar listado*.
 
+20. **Los tres puntos, en vertical y en todas partes.** El botón de «más opciones» (el que antes se escribía «⋯») ahora son **tres puntos
+   uno sobre otro (⋮)**, dibujados como imagen, en: la barra de *Cantar*, la cabecera del listado, cada canto del listado y cada
+   fila de *Listados*. Se ven igual en todos los aparatos; en *Cantar* ya no es una letra. Mismo tamaño de toque (44 px) y mismo
+   efecto. Se sigue llamando «⋯» en estas notas solo por costumbre.
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.

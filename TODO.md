@@ -117,6 +117,8 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       a toast says where it came from). The sheet is where sharing and other per-list actions will go. Not done: copying from
       "＋ Nuevo" (the owner chose the row's sheet), an undo for the copy ("Eliminar listado" is inside it).
       **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 19.
+- [x] "More options" is one drawn icon, three dots one above the other, on every screen (owner's choice; Cantar's bar no longer
+      types a character). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 20.
 - [ ] Adding several songs to one part takes a round trip per song (the picker returns to the list).
       If that is slow in practice, let the picker stay open and show what has been added.
 - [ ] **Paused (owner, after the UI session).** Duplicate a list ("copiar listado") to start next Sunday's from this

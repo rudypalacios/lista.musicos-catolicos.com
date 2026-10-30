@@ -16,7 +16,8 @@ interface Drawing {
 const STAR = 'M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z';
 
 const DRAWINGS = {
-    more: { filled: true, shapes: [['circle', { cx: '5', cy: '12', r: '1.8' }], ['circle', { cx: '12', cy: '12', r: '1.8' }], ['circle', { cx: '19', cy: '12', r: '1.8' }]] },
+    /** "More options": three dots one above the other, the same on every screen (the owner's choice) */
+    more: { filled: true, shapes: [['circle', { cx: '12', cy: '5', r: '1.8' }], ['circle', { cx: '12', cy: '12', r: '1.8' }], ['circle', { cx: '12', cy: '19', r: '1.8' }]] },
     play: { filled: true, shapes: [['path', { d: 'M7 4l14 8-14 8z' }]] },
     pencil: { shapes: [['path', { d: 'M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z' }], ['path', { d: 'M14 6l4 4' }]] },
     plus: { shapes: [['path', { d: 'M12 5v14M5 12h14' }]] },

@@ -25,6 +25,8 @@ Everything not in the table is not locked, but it keeps the same look and the st
 - **It looks the same on every device.** No icon, mark or symbol drawn by the device's font (a
   `▪` or `♪` typed as text varies by device and OS): shapes are drawn with CSS or SVG, as in
   `web/src/icons.ts`.
+- **"More options" is one icon: three dots one above the other, drawn (SVG, `more` in `web/src/icons.ts`)** on every
+  screen (the bar of singing, the head of a list, the rows of the lists and of the songs). It is never typed as a character.
 - **Spacing is in `rem`**, in the steps the app already uses; do not introduce pixel values.
 - **Touch targets of at least 44px** for what is pressed.
 - **One way to do each thing in one place:** one "back", one name per screen.
