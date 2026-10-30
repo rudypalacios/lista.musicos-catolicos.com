@@ -88,6 +88,11 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       moves, "mi tono" (if set), every use of the song in a list and the keys of today move the other way (`keys.ts`,
       `Setlists.retuneSong`, `App.updateKeepingKeys`). A song with no key (no chords, no `{key}`) is never retuned.
       **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 17.
+- [x] A chord typed in lowercase (`[c]`, `[am]`, `[bb]`, `[g/b]`) is capitalised by the editor when it previews and
+      saves (`chordpro/capitalise.ts`), so it is read as a chord without the person fixing the case; the parser is not
+      touched (as the public site's). A bracket that is not wholly a chord (`[bis]`, `[x2]`) stays as written.
+      **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 18. The Cantar sheet also gives its "Editar letra y acordes" room
+      above and below its line.
 - [ ] Adding several songs to one part takes a round trip per song (the picker returns to the list).
       If that is slow in practice, let the picker stay open and show what has been added.
 - [ ] **Paused (owner, after the UI session).** Duplicate a list ("copiar listado") to start next Sunday's from this

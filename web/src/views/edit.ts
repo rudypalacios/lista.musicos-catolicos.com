@@ -1,4 +1,5 @@
 import type { App } from '../app.ts';
+import { capitaliseChords } from '../chordpro/capitalise.ts';
 import { parse, songKey } from '../chordpro/parser.ts';
 import { sheetHtml } from '../chordpro/sheet.ts';
 import { ValidationError } from '../data/library.ts';
@@ -65,13 +66,18 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
     const preview = h('section', { class: 'preview', 'aria-label': 'Vista previa' }, h('h3', {}, 'Vista previa '), keyChip, sheet);
 
     const draw = (): void => {
-        const parsed = parse(body.value);
+        // What is previewed is what is saved: a chord typed [c] is read as [C]
+        const parsed = parse(capitaliseChords(body.value));
         setSheet(sheet, sheetHtml(parsed));
         const key = songKey(parsed);
         keyChip.hidden = key === null;
         keyChip.textContent = key === null ? '' : `Tono ${transpose(key, 0, readNotation())}`;
     };
     body.addEventListener('input', draw);
+    // Leaving the box writes the capitals for real (not while typing: the text under the cursor would jump)
+    body.addEventListener('change', () => {
+        body.value = capitaliseChords(body.value);
+    });
     draw();
 
     const save = h('button', { type: 'submit', class: 'button button--primary' }, 'Guardar');
@@ -114,6 +120,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         event.preventDefault();
         error.textContent = '';
         save.disabled = true;
+        body.value = capitaliseChords(body.value);
         const draft = { title: title.value, author: author.value, body: body.value };
         const saved = existing === undefined ? app.create(draft) : saveEdit(app, existing, draft);
         saved
@@ -146,7 +153,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         });
         const moved = notice('', true);
         body.addEventListener('input', () => {
-            const now = songKey(parse(body.value));
+            const now = songKey(parse(capitaliseChords(body.value)));
             const by = keyDistance(own, now);
             if (own !== null && now !== null && by !== null && by !== 0) {
                 moved.set(['El tono original pasó de ', h('b', {}, transpose(own, 0, readNotation())), ' a ', h('b', {}, transpose(now, 0, readNotation()))],

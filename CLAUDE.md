@@ -30,7 +30,9 @@ This app must behave the same:
 - Ported so far: parser, chords and transposition, the lyrics HTML and the syllable splitter
   (`web/src/chordpro/`). Not yet: the print cascade (`PrintLayout.php`), phase 3.
 - Chords are stored in English notation, shown in Latin by default. Minor written as `A-` or
-  Latin uppercase (`SOL`, `MIm`) is normalised only by the importer, never by the parser.
+  Latin uppercase (`SOL`, `MIm`) is normalised only by the importer, never by the parser. A chord typed
+  with a lowercase letter (`[c]`, `[am]`) is capitalised by the editor when it previews and saves
+  (`web/src/chordpro/capitalise.ts`), also not by the parser.
 - Mass parts use the standard names of the Roman Missal (Ofertorio, Señor, ten piedad,
   Cordero de Dios…), not local ones.
 

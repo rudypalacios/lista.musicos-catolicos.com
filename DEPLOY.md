@@ -262,6 +262,10 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    sigue en Fa; el número «Listado» de *Tono* se ajusta solo), y lo mismo en los otros listados que lo tengan y en «Mío».
    «Cancelar» y «← Volver a cantar» regresan a *Cantar*.
 
+18. **Acordes en minúscula.** En *Nuevo canto* o *Editar canto*, escribe `[c]Hola [g]mundo [am]fe`: la vista previa ya los lee como
+   acordes (Do, Sol, Lam) y, al salir de la caja de la letra o al guardar, el texto queda con mayúsculas (`[C]`, `[G]`, `[Am]`).
+   No toca lo que no es un acorde (`[bis]`, `[x2]`). En *Cantar* → `⋯`, «Editar letra y acordes» tiene ahora espacio arriba y abajo de su línea.
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.
