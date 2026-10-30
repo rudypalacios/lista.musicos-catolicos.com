@@ -13,6 +13,7 @@ import { printPlans } from '../print/print.ts';
 import { readNotation } from '../prefs.ts';
 import { paths } from '../router.ts';
 import { showUndoToast } from '../toast.ts';
+import { todayKeys } from '../today-keys.ts';
 import { createSheet } from './sheet.ts';
 import type { Navigate, View } from './types.ts';
 
@@ -268,6 +269,10 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             if (key !== null) {
                 const label = h('span', { class: key.changed ? 'item__key is-changed' : 'item__key' }, h('span', { class: 'sr-only' }, 'Tono '), key.text);
                 sub.push(...(sub.length > 0 ? [' · ', label] : [label]));
+                // A key set only for today (while rehearsing or singing, not saved): say so beside it
+                if (key.today) {
+                    sub.push(h('span', { class: 'item__today' }, 'hoy'));
+                }
             }
             if (sub.length > 0) {
                 lines.push(h('span', { class: 'item__sub' }, ...sub));
@@ -292,15 +297,20 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
         return li;
     };
 
-    /** The key of this use of the song, to read: changed in amber. Songs with no key show only a change. */
-    const keyOf = (item: SetlistItem, song: Song): { text: string; changed: boolean } | null => {
+    /**
+     * The key of this use of the song, to read: changed in amber. Songs with no key show only a change.
+     * A key of today, if there is one, takes the place of the saved one.
+     */
+    const keyOf = (item: SetlistItem, song: Song): { text: string; changed: boolean; today: boolean } | null => {
         const original = songKey(parse(song.body));
-        const changed = item.transpose !== 0;
+        const shift = todayKeys.get(setlist.id, item.id) ?? item.transpose;
+        const today = shift !== item.transpose;
+        const changed = shift !== 0;
         if (original === null) {
-            return changed ? { text: `${item.transpose > 0 ? '+' : ''}${item.transpose}`, changed } : null;
+            return changed ? { text: `${shift > 0 ? '+' : ''}${shift}`, changed, today } : null;
         }
 
-        return { text: transpose(original, item.transpose, readNotation()), changed };
+        return { text: transpose(original, shift, readNotation()), changed, today };
     };
 
     /** A row of a sheet: an icon and what it does, big enough to tap, and a quiet line under it if it needs one */

@@ -186,35 +186,31 @@ try {
     await page.getByRole('button', { name: 'Más herramientas' }).click();
     assert.equal(await page.getByRole('button', { name: 'Ajustar' }).isVisible(), true);
     assert.equal(await page.getByRole('button', { name: 'Subir un semitono' }).isVisible(), true);
-    assert.equal(await page.getByRole('link', { name: 'Ajustes' }).isVisible(), true);
-    assert.equal(await page.getByRole('button', { name: 'Salir' }).isVisible(), true);
-    assert.match(await page.locator('.perform__sync').innerText(), /Sincronizado|Sincronizando/);
+    assert.equal(await page.getByRole('link', { name: 'Ajustes' }).count(), 0, 'no Ajustes in the sheet: the menu is on the list');
+    assert.equal(await page.getByRole('button', { name: 'Salir' }).count(), 0, 'no Salir in the sheet: the account is in Ajustes');
     await page.keyboard.press('Escape');
     await page.getByRole('button', { name: 'Ajustar' }).waitFor({ state: 'hidden' });
-    pass('singing has a one-row bar; the tools, the note and the account are behind "⋯", and Escape closes it');
+    pass('singing has a one-row bar; the key and the lyrics tools are behind "⋯", and Escape closes it');
 
-    // The screen is kept on while singing, and the sheet says so
+    // The screen is kept on while singing (the setting is in Ajustes; the sheet says nothing about it)
     const locks = (): Promise<number> => page.evaluate(() => (window as unknown as { __locks: { count: number } }).__locks.count);
     await page.waitForFunction(() => (window as unknown as { __locks: { count: number } }).__locks.count === 1);
-    await page.getByRole('button', { name: 'Más herramientas' }).click();
-    assert.match(await page.locator('.perform__awake').innerText(), /se mantiene encendida/);
-    pass('singing keeps the screen on (one lock) and the sheet says so');
+    pass('singing keeps the screen on (one lock)');
 
-    // Leaving through the sheet (Ajustes) leaves no stray entry: back returns to the song, once
-    await page.getByRole('link', { name: 'Ajustes' }).click();
-    await page.getByRole('heading', { name: 'Ajustes' }).waitFor();
+    // Turning the setting off in Ajustes: singing asks for no lock
+    await page.getByRole('link', { name: 'Volver al listado' }).click();
     await page.waitForFunction(() => (window as unknown as { __locks: { count: number } }).__locks.count === 0);
+    await openSection(page, 'Ajustes');
+    await page.getByRole('heading', { name: 'Ajustes' }).waitFor();
     await page.getByLabel('Mantener la pantalla encendida al leer o cantar un canto').uncheck();
-    await page.goBack();
+    await openSection(page, 'Listados');
+    await page.locator('.lrow__link').first().click();
+    await page.getByRole('link', { name: 'Cantar' }).click();
     await page.getByRole('heading', { name: 'Camino largo' }).waitFor();
     await page.getByRole('button', { name: 'Más herramientas' }).waitFor();
     assert.equal(await has(page, '.sheet-layer.is-open'), false);
-    pass('Ajustes from the sheet opens the settings and back returns to the song');
     assert.equal(await locks(), 0, 'with the setting off, no lock is asked for');
-    await page.getByRole('button', { name: 'Más herramientas' }).click();
-    assert.match(await page.locator('.perform__awake').innerText(), /se apaga según el dispositivo/);
-    await page.keyboard.press('Escape');
-    pass('the setting turns the screen lock off, and the sheet says the device decides');
+    pass('the setting in Ajustes turns the screen lock off');
 
     // The key is changed from the sheet, and the strip shows it
     await page.getByRole('button', { name: 'Más herramientas' }).click();
