@@ -20,6 +20,7 @@ const DRAWINGS = {
     more: { filled: true, shapes: [['circle', { cx: '12', cy: '5', r: '1.8' }], ['circle', { cx: '12', cy: '12', r: '1.8' }], ['circle', { cx: '12', cy: '19', r: '1.8' }]] },
     play: { filled: true, shapes: [['path', { d: 'M7 4l14 8-14 8z' }]] },
     pencil: { shapes: [['path', { d: 'M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z' }], ['path', { d: 'M14 6l4 4' }]] },
+    upload: { shapes: [['path', { d: 'M12 16V4M7 9l5-5 5 5M5 20h14' }]] },
     plus: { shapes: [['path', { d: 'M12 5v14M5 12h14' }]] },
     minus: { shapes: [['path', { d: 'M5 12h14' }]] },
     check: { shapes: [['path', { d: 'M5 12l5 5 9-10' }]] },

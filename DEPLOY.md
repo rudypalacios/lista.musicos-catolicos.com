@@ -291,8 +291,8 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
 23. **Eliminar un listado, desde *Listados*.** El `⋮` de cada fila tiene ahora, al final, en rojo y separado: **Eliminar listado**. Al
    tocarlo sale un cuadro de la app: «¿Eliminar «…»? Se borra el listado de todos tus dispositivos. Los cantos no se borran. No se
    puede deshacer.» con **Cancelar** (a la izquierda, ya seleccionado) y **Eliminar** (rojo). Cancelar, tocar fuera o el botón de
-   atrás de Android lo cierran sin borrar. Al eliminar sale «Listado eliminado». Dentro de un listado, su `⋮` ya **no** tiene
-   *Eliminar listado*, solo imprimir. El cuadro se ve igual en todos los aparatos (ya no es el aviso del navegador). Si el listado se
+   atrás de Android lo cierran sin borrar. Al eliminar sale «Listado eliminado». **Dentro de un listado** su `⋮` también tiene
+   *Eliminar listado* (ver el punto 28). El cuadro se ve igual en todos los aparatos (ya no es el aviso del navegador). Si el listado se
    borró en otro aparato, desaparece del tuyo al sincronizar.
 
 24. **La fecha es opcional, y se puede quitar.** Un listado puede no tener fecha (por ejemplo, una misa que sirve para octubre y noviembre).
@@ -330,6 +330,20 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    pone en mayúscula. (c) Lo mismo en la **impresión** (normal, compacta, dos columnas). Tus cantos no cambian: lo guardado es el mismo texto,
    solo se dibuja distinto; un `{ci: …}` que ya tenías al final de una línea ahora sale como nota en vez de como texto con llaves.
    **Prueba en el Android:** un canto con `{ci: bis}` al final de una línea y `[(G)]`, cambiar el tono, e imprimir (vista previa). En el iPad, al final.
+
+28. **Dentro de un listado: el `⋮` en la esquina, y *Eliminar listado* desde ahí.** El nombre del listado lleva a su derecha el `⋮`, que
+   **siempre está** (también en un listado sin cantos; antes desaparecía). Debajo hay una sola fila: la fecha (o «＋ Fecha», con su ✕ si ya
+   hay fecha), «N cantos» y, a la derecha, **Cantar** (más pequeño que antes). En un teléfono, si la fila no cabe, «Cantar» baja a su propia
+   línea, a la derecha. La hoja del `⋮` tiene *Imprimir con acordes* e *Imprimir solo la letra* (solo si hay cantos) y, al final, en rojo y
+   separado, **Eliminar listado**, con el mismo cuadro que en *Listados*. Al eliminar vuelves a *Listados* y sale «Listado eliminado».
+   Prueba un listado vacío (solo «Eliminar listado») y uno con cantos, en el teléfono y en la compu.
+
+29. **Cantos, como Listados.** (a) Arriba, en la compu: el buscador, **Importar** y **Nuevo canto** en una fila (en el teléfono el buscador va
+   solo y los dos botones debajo, del mismo ancho), y «N cantos» debajo (con una búsqueda, «2 cantos de 40»). (b) Los cantos son filas planas
+   en **una sola columna**, como las de *Listados*: el título, el autor debajo, el tono a un lado y un `⋮` al final; tocar el canto lo abre,
+   como antes. (c) El `⋮` abre una hoja con **Editar letra y acordes** y, aparte y en rojo, **Eliminar canto**. (d) Eliminar un canto (también
+   el botón *Eliminar* de la pantalla de editar) pregunta con el cuadro de la app, no con el aviso del navegador, y nombra los listados donde
+   está el canto («ahí aparecerá como «Canto eliminado»»); al confirmar sale «Canto eliminado». Prueba en el teléfono y en la compu.
 
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
