@@ -26,14 +26,16 @@ export class PdfError extends Error {
 /**
  * The text of a PDF, one form feed between pages (what importMany splits on).
  *
+ * @param onProgress called with (pages read, pages in all): once as soon as the PDF is open (0 read) and after each page,
+ *                   so the screen can show a bar that really moves
  * @throws PdfError with a Spanish message when it cannot be read or has no text
  */
-export async function readPdf(file: File): Promise<string> {
+export async function readPdf(file: File, onProgress?: (read: number, total: number) => void): Promise<string> {
     let pdfjs: typeof import('pdfjs-dist/legacy/build/pdf.mjs');
     try {
         pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
     } catch {
-        throw new PdfError('No se pudo cargar el lector de PDF. Se necesita conexión para leer un PDF.');
+        throw new PdfError('No se pudo cargar el lector de PDF. Leer un PDF necesita conexión; pegar el texto funciona sin ella.');
     }
     pdfjs.GlobalWorkerOptions.workerSrc = __PDF_WORKER_URL__;
 
@@ -50,12 +52,14 @@ export async function readPdf(file: File): Promise<string> {
 
     const measure = canvasMeasure();
     const pages: string[] = [];
+    onProgress?.(0, doc.numPages);
     try {
         for (let number = 1; number <= doc.numPages; number++) {
             const page = await doc.getPage(number);
             const content = await page.getTextContent();
             pages.push(pageToText(toItems(content.items as PdfItem[]), measure));
             page.cleanup();
+            onProgress?.(number, doc.numPages);
         }
     } finally {
         void task.destroy();

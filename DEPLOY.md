@@ -369,6 +369,16 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    agregarlo. Las primeras líneas de la letra siguen debajo para distinguir cantos con el mismo título. **Prueba:** abre «Agregar» en una parte y compárala
    con *Cantos*; un canto que ya está en esa parte dice «Ya está aquí».
 
+34. **Importar cantos: elegir el PDF, ver qué pasa y revisar con pestañas.** (a) «Elegir PDF» es una **tarjeta con icono** (en la compu dice
+   también «o suéltalo aquí» y acepta el archivo arrastrado); «Pegar el texto» queda debajo, separado por una «o». (b) Al elegir el archivo
+   sale su **nombre, sus páginas y su tamaño**, una **barra que avanza por página** («Leyendo página 2 de 4…») y, al terminar, «Listo» con
+   «N cantos encontrados» y **Cambiar PDF**; mientras tanto la tarjeta de elegir y la caja de pegar se apartan. El texto del PDF ya no se vuelca
+   en la caja de pegar. (c) Cada canto abierto trae **Letra con acordes | Vista previa** y **abre en la vista previa**; el cuadro de letra está
+   en la otra pestaña. (d) Un canto que **se repite dentro del mismo PDF** (la misma hoja dos veces) sale con «Repetido» y sin marcar: se guarda
+   una sola copia. (e) Sin conexión, el PDF no se puede leer (el lector no se guarda en el dispositivo: pesa unos 1,7 MB); el aviso lo dice y
+   recuerda que pegar el texto sí funciona. **Prueba:** con un PDF de varias hojas, en el teléfono y en la compu; luego el mismo PDF dos veces
+   («Ya la tienes»); y sin conexión, que el aviso sea claro.
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.

@@ -202,6 +202,16 @@ try {
     assert.equal(await page.locator('.import-card').count(), 3);
     pass('importing: a PDF with a song per page becomes three songs');
 
+    // The file is named and its reading is told: the card keeps its name, pages and a "Listo"
+    const fileCard = page.locator('.file-card');
+    await fileCard.getByText('misa.pdf').waitFor();
+    await fileCard.getByText(/3 páginas · .* KB · Listo/).waitFor();
+    await fileCard.getByText('3 cantos encontrados').waitFor();
+    await fileCard.getByRole('button', { name: 'Cambiar PDF' }).waitFor();
+    assert.equal(await page.locator('#paste').isVisible(), false, 'the ways to give text rest while a PDF is read');
+    assert.equal(await page.locator('#paste').inputValue(), '', "the PDF's text is not poured into the box");
+    pass('importing: the file card shows the name, the pages and "Listo"; the paste box stays empty');
+
     const titles = await page.locator('.import-card input[id$="-title"]').evaluate(() => 0).catch(() => 0);
     assert.equal(titles, 0);
     const bodies = await page.evaluate(() =>

@@ -344,16 +344,21 @@ try {
 
     // ----- importing -----
     await page.goto(BASE + '/cantos/importar');
-    await page.getByLabel('O pegar el texto').fill(IMPORTED);
+    await page.getByLabel('Pegar el texto con los acordes').fill(IMPORTED);
     await page.getByRole('button', { name: 'Convertir' }).click();
     await page.getByRole('heading', { name: 'Revisa el resultado' }).waitFor();
     assert.equal(await page.getByLabel('Título').inputValue(), 'Sobre la mesa');
+    // The preview is what shows first; the text is one tab away
+    assert.equal(await page.getByRole('tab', { name: 'Vista previa' }).getAttribute('aria-selected'), 'true');
+    assert.equal(await page.locator('.import-card .preview .ch').first().isVisible(), true);
+    await page.getByRole('tab', { name: 'Letra con acordes' }).click();
     const converted = await page.getByLabel('Letra con acordes (ChordPro)').inputValue();
     assert.match(converted, /\[Em\]/);
     assert.match(converted, /\{c: Coro\}/);
     await page.getByText('Parte de la misa que dice el encabezado: Ofertorio.').waitFor();
     // A chord corrected by hand in lowercase is previewed and saved as the capital, as in the editor
     await page.getByLabel('Letra con acordes (ChordPro)').fill(converted + '\n[am]Extra');
+    await page.getByRole('tab', { name: 'Vista previa' }).click();
     assert.ok((await page.locator('.import-card .preview .ch').allTextContents()).includes('Lam'));
     await page.getByRole('button', { name: 'Guardar canto' }).click();
     await page.getByRole('heading', { name: 'Sobre la mesa' }).waitFor();
@@ -368,7 +373,7 @@ try {
         'SALIDA: Canto de despedida\n\n  G        D\nVamos en paz a servir\n',
     ].join('\f');
     await page.goto(BASE + '/cantos/importar');
-    await page.getByLabel('O pegar el texto').fill(mass);
+    await page.getByLabel('Pegar el texto con los acordes').fill(mass);
     await page.getByRole('button', { name: 'Convertir' }).click();
     await page.getByRole('heading', { name: /Se encontraron 3 cantos/ }).waitFor();
     assert.equal(await page.locator('.import-card').count(), 3);
@@ -378,6 +383,23 @@ try {
         await page.getByRole('link', { name: title }).waitFor();
     }
     pass('importing: a whole Mass with a song per page becomes one song each');
+
+    // The same song twice in one import (a repeated page): the second is flagged and starts unmarked, one copy is saved
+    const twice = ['ENTRADA: Aleluya del domingo\n\n  C        G\nAleluya, aleluya\n', 'ENTRADA: Aleluya del domingo\n\n  C        G\nAleluya, aleluya\n'].join('\f');
+    await page.goto(BASE + '/cantos/importar');
+    await page.getByLabel('Pegar el texto con los acordes').fill(twice);
+    await page.getByRole('button', { name: 'Convertir' }).click();
+    await page.getByRole('heading', { name: /Se encontraron 2 cantos/ }).waitFor();
+    const twin = page.locator('.import-card');
+    assert.equal(await twin.nth(0).getByRole('checkbox').isChecked(), true);
+    assert.equal(await twin.nth(1).getByRole('checkbox').isChecked(), false);
+    await twin.nth(1).getByText('Repetido').waitFor();
+    await page.getByRole('button', { name: 'Guardar canto' }).click();
+    await page.getByRole('heading', { name: 'Aleluya del domingo' }).waitFor();
+    await page.goto(BASE + '/cantos');
+    await page.locator('.song-list').waitFor();
+    assert.equal(await page.getByRole('link', { name: 'Aleluya del domingo' }).count(), 1);
+    pass('importing: a song repeated in one file is flagged "Repetido" and saved once');
 
     // The review of an import: pasting converts at once, a song with no title blocks the save until it has one (its first
     // line is offered), and a song already held starts unmarked
