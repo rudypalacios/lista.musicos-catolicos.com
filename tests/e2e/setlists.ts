@@ -1027,6 +1027,62 @@ try {
     await deleteOpenList(page);
     pass('"Etiquetarlos": the songs the lists use in a section are tagged with its tag after a sheet that names them, with "Deshacer"');
 
+    // ----- moving a song inside its section: "al inicio" / "al final" in its sheet, and holding it to drag it -----
+    for (const title of ['Arrastre uno', 'Arrastre dos', 'Arrastre tres']) {
+        await createSong(page, title, '[C]Una [G]letra');
+    }
+    await openSection(page, 'Listados');
+    await newList(page);
+    await page.locator('section.slot').first().waitFor();
+    for (const title of ['Arrastre uno', 'Arrastre dos', 'Arrastre tres']) {
+        await addToSlot(page, 'Canto de comunión', title);
+    }
+    const order = (): Promise<string[]> => page.locator('section.slot[data-part="comunion"] .item__title').allTextContents();
+    assert.deepEqual(await order(), ['Arrastre uno', 'Arrastre dos', 'Arrastre tres']);
+    await slot(page, 'Canto de comunión').getByRole('button', { name: 'Más opciones: Arrastre dos' }).click();
+    await page.locator('.sheet-layer.is-open').waitFor();
+    await page.getByRole('button', { name: 'Al final de esta sección' }).click();
+    await page.waitForFunction(() => document.querySelector('section.slot[data-part="comunion"] .item:last-child .item__title')?.textContent === 'Arrastre dos');
+    assert.deepEqual(await order(), ['Arrastre uno', 'Arrastre tres', 'Arrastre dos']);
+    assert.equal(await page.getByRole('button', { name: 'Al final de esta sección' }).count(), 0, 'now the last, it has no "al final"');
+    await page.getByRole('button', { name: 'Al inicio de esta sección' }).click();
+    await page.waitForFunction(() => document.querySelector('section.slot[data-part="comunion"] .item .item__title')?.textContent === 'Arrastre dos');
+    assert.deepEqual(await order(), ['Arrastre dos', 'Arrastre uno', 'Arrastre tres']);
+    await noTypedIcons(page, 'the sheet with "al inicio" and "al final"');
+    await closeSheet(page);
+
+    // Holding the first song and moving it past the last drops it at the end; a short touch still sings (checked above)
+    const rows = page.locator('section.slot[data-part="comunion"] .item__open');
+    const topBox = (await rows.nth(0).boundingBox())!;
+    const bottomBox = (await rows.nth(2).boundingBox())!;
+    await page.mouse.move(topBox.x + topBox.width / 2, topBox.y + topBox.height / 2);
+    await page.mouse.down();
+    await page.waitForTimeout(650);
+    await page.locator('section.slot[data-part="comunion"] .item.is-lifted').waitFor();
+    await page.mouse.move(bottomBox.x + bottomBox.width / 2, bottomBox.y + bottomBox.height * 1.4, { steps: 8 });
+    await page.locator('.drag-line').waitFor();
+    await page.mouse.up();
+    await page.waitForFunction(() => document.querySelector('section.slot[data-part="comunion"] .item:last-child .item__title')?.textContent === 'Arrastre dos');
+    assert.deepEqual(await order(), ['Arrastre uno', 'Arrastre tres', 'Arrastre dos']);
+    assert.ok(!/\/cantar\//.test(page.url()), 'dropping a song does not sing it');
+    assert.equal(await page.locator('.item.is-lifted, .drag-line').count(), 0, 'nothing is left floating');
+    await serverWhen(page, (data) => {
+        const items = data.setlists.find((list) => list.deletedAt === null && list.items.some((item) => item.part === 'comunion'))?.items ?? [];
+        return items.length === 3;
+    });
+
+    // A touch that moves before the press is long is a scroll: nothing is lifted or moved
+    const again = (await rows.nth(0).boundingBox())!;
+    await page.mouse.move(again.x + again.width / 2, again.y + again.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(again.x + again.width / 2, again.y + again.height * 3, { steps: 4 });
+    await page.waitForTimeout(650);
+    assert.equal(await page.locator('.item.is-lifted').count(), 0);
+    await page.mouse.up();
+    assert.deepEqual(await order(), ['Arrastre uno', 'Arrastre tres', 'Arrastre dos']);
+    await deleteOpenList(page);
+    pass('moving a song inside its section: "al inicio" and "al final" in its sheet, and a long press lifts it and drops it where the line shows (a short or a moving touch does not)');
+
     // ----- an empty list: the "⋯" is there, with nothing to print, and the list can be deleted from inside -----
     await newList(page);
     await page.locator('section.slot').first().waitFor();

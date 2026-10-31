@@ -222,9 +222,7 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       The head of a part is a band, a song has no mark, only the indent of its row (a dash, a square, a dot, a note and a bar were weighed with the owner; the marks that depend on the device's font were ruled out: everything must look the same on every device), empty parts are a dashed outline, and the gap between
       parts is 1.15rem (the rows keep their 3.5rem: they are what is touched).
       Owner's check: `DEPLOY.md` "Fases 4 y 5", item 11.
-- [ ] Dragging a song to reorder it was weighed and left for phase 6 (custom parts can hold a dozen songs, and the
-      arrows move one place at a time); it would be a long press on the row, and it must keep the arrows
-      (an alternative without dragging is required). Cheap step before it: "move to the start / the end".
+- [x] Dragging a song to reorder it, and "al inicio / al final" (phase 6, PR 6, above).
 
 ## Phase 2: setlists (done, awaiting the owner's devices)
 
@@ -340,7 +338,11 @@ Next, in this order (design agreed with the owner):
          songs the lists already use in that section and lack its tag ("6 cantos de tus listados están en Canto de entrada y no tienen la etiqueta «Entrada»") with one button; it opens a sheet that names the songs
          (five, then "Y N más") and says what is added and what is not touched; "Etiquetar N cantos" does it and the toast says so with "Deshacer", which takes off exactly the tag it put. It is per section (clearer than a global
          button) and only appears when there is something to tag (so it shows nothing until lists hold songs). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 44.
-      6. [ ] Drag to reorder (long press, the arrows stay, "Al inicio / Al final").
+      6. [x] **Drag to reorder** (`drag-reorder.ts`, `Setlists.reorderItem` / `reordered`; the owner unlocked "Inside a list"): holding a song (0.45 s) lifts its row, the finger moves it among the songs of its
+         own section with a line showing where it lands, and letting go drops it there; auto-scrolls at the edges; a short touch still sings, a touch that moves first scrolls, the drop does not sing
+         and is not a pull to sync (`pull.ts`), a sync that arrives meanwhile waits for the drop. The song's sheet keeps "Subir / Bajar en esta sección" and gains **"Al inicio / Al final de esta sección"**
+         (only with more than two songs in the section). A tip, "Mantén pulsado un canto para moverlo", is said once per device the first time a list has a section with two songs or more. Not done on purpose:
+         dragging between sections and dragging the sections themselves. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 43 (a real finger: Android and, at the end, the iPad).
       Not done on purpose: ready-made templates, updating lists when a template changes, lists with no sections, dragging between sections.
       **Revisit with the templates (PR 3):** "Nuevo listado" in "Agregar a un listado" creates a Mass list (it must ask which template).
 - [x] Phase 7, ChordPro (the owner's mockup, done first in `musicos-catolicos` [#43](https://github.com/rudypalacios/musicos-catolicos/pull/43),

@@ -459,6 +459,14 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    la Misa). **Prueba:** importa el PDF de una Misa completa y mira que cada canto diga su parte; quita la etiqueta de uno; guarda; abre el selector de una sección y mira el filtro.
    Sin cambios en los datos ni migración.
 
+43. **Arrastrar un canto para reordenarlo (fase 6, PR 6).** En un listado, **mantén pulsado un canto** (casi medio segundo): la fila se levanta (flota bajo tu dedo, con sombra y un borde azul) y,
+   al mover el dedo arriba o abajo, **una línea azul muestra dónde va a caer**; al soltar queda ahí. Se mueve **solo dentro de su sección** (para pasarlo a otra, quítalo y agrégalo). Si llegas al borde de la
+   pantalla, ésta se desplaza sola. Un toque corto sigue **cantando** el canto; si mueves el dedo antes de que pase el medio segundo es un desplazamiento normal (no levanta nada); soltar un canto no lo canta ni
+   sincroniza. En la hoja `⋯` de cada canto siguen **Subir** y **Bajar en esta sección** (la alternativa sin arrastrar) y ahora hay **Al inicio** y **Al final de esta sección** (cuando la sección tiene más de dos
+   cantos). La primera vez que abres un listado con una sección de dos cantos o más, un aviso dice «Mantén pulsado un canto para moverlo». **Prueba (con el dedo, en el teléfono; el iPad al final):** arrastra el
+   primer canto de una sección al final y al medio; suelta fuera de la lista; intenta con el dedo desde la parte de arriba de la pantalla (no debe sincronizar); mira que un toque corto canta; prueba
+   «Al inicio» y «Al final»; mira en el otro aparato que llegue el orden nuevo. Si tu teléfono abre un menú al mantener pulsado, dímelo.
+
 44. **«Etiquetarlos como …» (fase 6, botón aparte).** En el selector de una sección («Agregar a Canto de entrada»), si **tus listados ya usan cantos en esa sección que no tienen su etiqueta**, arriba aparece una tarjeta:
    «**6 cantos** de tus listados están en **Canto de entrada** y no tienen la etiqueta «Entrada»», con el botón **Etiquetarlos como «Entrada»**. Al tocarlo se abre una hoja que **nombra los cantos** (los cinco primeros y «Y N más»)
    y dice «Se les agrega la etiqueta «Entrada». No cambia la letra, ni tus listados, ni las otras etiquetas que ya tengan». **Etiquetar N cantos** lo hace; el aviso dice «N cantos etiquetados como «Entrada»» y trae **Deshacer**,
