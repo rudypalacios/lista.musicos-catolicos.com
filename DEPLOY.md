@@ -388,6 +388,15 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    vuelve a la lista). **Prueba:** abre un canto en el teléfono y en la compu; mueve el tono y guárdalo; cambia el tamaño; abre el `⋯`
    y prueba cada opción (imprimir con acordes, solo la letra, editar, eliminar y cancelar). Los datos no cambian.
 
+36. **Agregar un canto a un listado desde su página.** En un canto, `⋯` → **Agregar a un listado** (arriba de *Imprimir*). La hoja pasa por dos pasos:
+   (1) el **listado** (destacados primero, luego recientes, cada uno con su número de cantos; al final **Nuevo listado**, que crea uno para hoy y sigue
+   a la parte) y (2) la **parte de la misa**, con cuántos cantos tiene cada una, «opcional» en las que lo son y **«Ya está aquí»** donde el canto
+   ya está (se puede agregar igual). Al tocar la parte, el canto se agrega **al final de esa parte**, la hoja se cierra, sigues en el canto y un aviso dice
+   dónde quedó. **El tono:** si en la pantalla tienes el canto en otro tono que el tuyo (con − / +), entra **en ese tono** y la hoja lo dice
+   («Entra en Re (el tono que ves)»); si es el tuyo, entra en tu tono y no dice nada. La flecha de la esquina vuelve un paso (al listado, y de ahí a las
+   opciones); el botón atrás de Android cierra la hoja. **Prueba:** sin conexión también; sube el tono, agrega a una parte y mira el listado (la
+   fila dice ese tono); vuelve al tuyo y agrégalo a otra parte; crea un listado desde ahí. Los datos no cambian.
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.
