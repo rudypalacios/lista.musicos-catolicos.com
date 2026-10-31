@@ -92,6 +92,8 @@ export interface PullSource {
 }
 
 /** Touches that belong to something else: typing, choosing, a sheet that scrolls on its own */
+/** A song held in the air to be moved (`drag-reorder.ts`): its finger belongs to the drag */
+const LIFTED = '.is-lifted';
 const OWN_TOUCH = 'input, textarea, select, [contenteditable], dialog, [role="dialog"], .sheet';
 
 /**
@@ -161,6 +163,12 @@ export function createPullToRefresh(container: HTMLElement, source: PullSource):
     container.addEventListener('touchmove', (event) => {
         const [touch] = Array.from(event.touches);
         if (origin === null || touch === undefined) {
+            return;
+        }
+        // A song lifted by a long press is being moved with this finger: the drag is not a pull to sync
+        if (touched?.closest(LIFTED) != null) {
+            origin = null;
+
             return;
         }
         const dx = touch.clientX - origin.x;

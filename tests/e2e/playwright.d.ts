@@ -7,6 +7,7 @@ declare module 'playwright' {
     }
     interface Locator {
         click(options?: { force?: boolean }): Promise<void>;
+        tap(): Promise<void>;
         check(): Promise<void>;
         uncheck(): Promise<void>;
         isChecked(): Promise<boolean>;
@@ -59,12 +60,14 @@ declare module 'playwright' {
         getByText(text: string | RegExp, options?: { exact?: boolean }): Locator;
         locator(selector: string, options?: LocatorOptions): Locator;
         keyboard: { press(key: string): Promise<void> };
+        mouse: { move(x: number, y: number, options?: { steps?: number }): Promise<void>; down(): Promise<void>; up(): Promise<void> };
         goto(url: string): Promise<unknown>;
         on(event: 'pageerror', listener: (error: Error) => void): void;
         on(event: 'dialog', listener: (dialog: Dialog) => void): void;
         once(event: 'dialog', listener: (dialog: Dialog) => void): void;
         reload(): Promise<unknown>;
         goBack(): Promise<unknown>;
+        waitForURL(match: (url: URL) => boolean): Promise<void>;
         addInitScript(script: () => void): Promise<void>;
         url(): string;
         setViewportSize(size: { width: number; height: number }): Promise<void>;
@@ -78,6 +81,7 @@ declare module 'playwright' {
         addInitScript(script: () => void): Promise<void>;
         close(): Promise<void>;
         route(url: string | RegExp, handler: (route: Route) => unknown): Promise<void>;
+        newCDPSession(page: Page): Promise<{ send(method: string, params?: object): Promise<unknown> }>;
     }
     interface Browser {
         close(): Promise<void>;

@@ -3216,3 +3216,40 @@ button.srow__tool:disabled {
 .tag-filter small {
     color: var(--muted);
 }
+
+/* Holding a song lifts it to move it inside its section: the row floats under the finger, a line shows where it lands */
+.items {
+    position: relative;
+}
+
+/* A long press on a song must not select its words or open the phone's own menu */
+.item__open {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+.item.is-lifted {
+    position: relative;
+    z-index: 2;
+    background: var(--surface-2);
+    border-radius: 0.6rem;
+    box-shadow: 0 0.6rem 1.4rem rgba(0, 0, 0, 0.55);
+    outline: 1px solid var(--accent-rule);
+}
+
+.items.is-dragging .item__open {
+    cursor: grabbing;
+}
+
+.drag-line {
+    position: absolute;
+    left: 1.4rem;
+    right: 0;
+    height: 0.2rem;
+    margin-top: -0.1rem;
+    background: var(--accent);
+    border-radius: 0.2rem;
+    pointer-events: none;
+    z-index: 3;
+}

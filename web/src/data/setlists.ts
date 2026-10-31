@@ -61,16 +61,44 @@ export function itemsOfPart(items: readonly SetlistItem[], part: string): Setlis
     return items.filter((item) => item.part === part);
 }
 
-/** Whether the item can go up or down among the items of its own part (the first cannot go up, the last down) */
-export function moveOptions(items: readonly SetlistItem[], itemId: string): { up: boolean; down: boolean } {
+/**
+ * Whether the item can go up or down among the items of its own part (the first cannot go up, the last down), and
+ * whether "al inicio" / "al final" say something more than that (with only two songs, up and down already do)
+ */
+export function moveOptions(items: readonly SetlistItem[], itemId: string): { up: boolean; down: boolean; toStart: boolean; toEnd: boolean } {
     const item = items.find((candidate) => candidate.id === itemId);
     if (item === undefined) {
-        return { up: false, down: false };
+        return { up: false, down: false, toStart: false, toEnd: false };
     }
     const siblings = itemsOfPart(items, item.part);
     const at = siblings.findIndex((candidate) => candidate.id === itemId);
+    const up = at > 0;
+    const down = at < siblings.length - 1;
 
-    return { up: at > 0, down: at < siblings.length - 1 };
+    return { up, down, toStart: up && siblings.length > 2, toEnd: down && siblings.length > 2 };
+}
+
+/**
+ * The items with one put at place `to` among those of its own section, counted without the item itself (0 is the
+ * first, the number of the others is the last). The others keep their order. An item that is gone, or alone in its
+ * section, changes nothing; a place out of range is brought into range.
+ */
+export function reordered(items: readonly SetlistItem[], itemId: string, to: number): SetlistItem[] {
+    const moved = items.find((candidate) => candidate.id === itemId);
+    if (moved === undefined) {
+        return [...items];
+    }
+    const others = items.filter((candidate) => candidate.id !== itemId);
+    const siblings = itemsOfPart(others, moved.part);
+    if (siblings.length === 0) {
+        return [...items];
+    }
+    const place = Math.min(Math.max(Math.trunc(to), 0), siblings.length);
+    const before = siblings[place];
+    // Before the sibling that is now at that place, or after the last one of the section
+    const at = before !== undefined ? others.indexOf(before) : others.indexOf(siblings[siblings.length - 1] as SetlistItem) + 1;
+
+    return [...others.slice(0, at), moved, ...others.slice(at)];
 }
 
 /** 1-based place of the item in the order of the list, which is how singing names a song; 0 if it is not there */
@@ -329,6 +357,11 @@ export class Setlists {
 
             return [...items.slice(0, at), item, ...items.slice(at)];
         });
+    }
+
+    /** Puts the item at place `to` among the items of its own section (see `reordered`): a drag, or "al inicio" / "al final" */
+    reorderItem(id: string, itemId: string, to: number): Promise<Setlist> {
+        return this.editItems(id, (items) => reordered(items, itemId, to));
     }
 
     /** Moves the item one place up (−1) or down (1) among the items of its own part */
