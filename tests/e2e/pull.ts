@@ -27,13 +27,16 @@ async function createSong(page: Page, title: string, body: string): Promise<void
  * A finger on the screen: touches the middle of the top of `#view`, moves `dy` px down in steps
  * and, if `letGo`, lifts. Synthetic touch events: the page listens to them like to a real finger.
  */
-async function drag(page: Page, dy: number, letGo = true): Promise<void> {
-    await page.evaluate(async ({ dy, letGo }) => {
+async function drag(page: Page, dy: number, letGo = true, from = 40): Promise<void> {
+    await page.evaluate(async ({ dy, letGo, from }) => {
         const view = document.querySelector('#view') as HTMLElement;
         const rect = view.getBoundingClientRect();
-        const target = (document.querySelector('#view .page, #view .perform') ?? view) as HTMLElement;
         const x = rect.left + rect.width / 2;
-        const y0 = rect.top + 40;
+        const y0 = rect.top + from;
+        // What is under the finger, as a real touch targets it
+        const under = document.elementFromPoint(x, y0) as HTMLElement | null;
+        // (a field keeps its own touches, so a test pulling over one would test nothing)
+        const target = (under === null || under.closest('input, textarea, select') !== null ? (view.querySelector('.page, .perform') ?? view) : under) as HTMLElement;
         const touch = (y: number): Touch => new Touch({ identifier: 7, target, clientX: x, clientY: y });
         const fire = (type: string, y: number, ending = false): void => {
             const t = touch(y);
@@ -49,7 +52,7 @@ async function drag(page: Page, dy: number, letGo = true): Promise<void> {
         if (letGo) {
             fire('touchend', y0 + dy, true);
         }
-    }, { dy, letGo });
+    }, { dy, letGo, from });
 }
 
 const strip = (page: Page) => page.locator('.pull');
@@ -130,6 +133,34 @@ try {
     await strip(page).waitFor({ state: 'hidden', timeout: 5000 });
     await phone.setOffline(false);
     await page.evaluate(() => window.dispatchEvent(new Event('online')));
+
+    // ----- only from the top of the screen, and not on something that is scrolled inside it -----
+    const lines = Array.from({ length: 80 }, (_, i) => `[C]Línea ${i + 1} que [G]se canta`).join('\n');
+    await createSong(page, 'Canto de scroll', lines);
+    await page.waitForTimeout(400);
+    await page.evaluate(() => {
+        const stage = document.querySelector('#stage') as HTMLElement;
+        stage.scrollTop = 400;
+    });
+    assert.ok(await page.evaluate(() => (document.querySelector('#stage') as HTMLElement).scrollTop) > 0, 'the song scrolls inside its stage');
+    // (from the lyrics, whatever the tools above them take)
+    const lyricsAt = await page.evaluate(() => (document.querySelector('#stage') as HTMLElement).getBoundingClientRect().top - (document.querySelector('#view') as HTMLElement).getBoundingClientRect().top + 20);
+    await drag(page, 260, true, lyricsAt);
+    await page.waitForTimeout(500);
+    assert.equal(await strip(page).isVisible(), false, 'pulled down while the song is scrolled');
+    await page.evaluate(() => { (document.querySelector('#stage') as HTMLElement).scrollTop = 0; });
+    await drag(page, 260, true, 600);
+    await page.waitForTimeout(500);
+    assert.equal(await strip(page).isVisible(), false, 'pulled from the lower part of the screen');
+    assert.equal(await page.getByText('Sincronizando…', { exact: true }).count(), 0);
+    pass('a drag on a song that is scrolled inside, or from the lower part of the screen, scrolls: it does not sync');
+    await drag(page, 70, false, Math.min(lyricsAt, 150));
+    await strip(page).getByText('Jala para sincronizar').waitFor();
+    await page.evaluate(() => {
+        (document.querySelector('#view') as HTMLElement).dispatchEvent(new TouchEvent('touchcancel', { bubbles: true, changedTouches: [] }));
+    });
+    await strip(page).waitFor({ state: 'hidden' });
+    pass('from the top of the song, at its first line, the pull still starts');
 
     // ----- not while singing -----
     await openSection(page, 'Listados');
