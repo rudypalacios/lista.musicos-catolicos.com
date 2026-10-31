@@ -41,7 +41,8 @@ final class SetlistChangeTest extends TestCase
     {
         return $override + [
             'id' => self::ID, 'title' => 'Misa del domingo', 'eventDate' => '2026-11-01', 'notes' => '',
-            'items' => [$this->item()], 'updatedAt' => self::NOW - 1000, 'deleted' => false,
+            'items' => [$this->item()], 'parts' => [['id' => 'entrada', 'name' => 'Canto de entrada']],
+            'updatedAt' => self::NOW - 1000, 'deleted' => false,
         ];
     }
 
@@ -125,6 +126,21 @@ final class SetlistChangeTest extends TestCase
             'date as a number' => [['eventDate' => 20261101], 'fecha'],
             'date in another format' => [['eventDate' => '01/11/2026'], 'fecha'],
             'date that does not exist' => [['eventDate' => '2026-02-30'], 'fecha'],
+            'no parts' => [['parts' => null], 'sección'],
+            'empty parts' => [['parts' => []], 'sección'],
+            'parts as an object' => [['parts' => ['a' => ['id' => 'a', 'name' => 'A']]], 'sección'],
+            'a part that is not an object' => [['parts' => ['x']], 'no es válida'],
+            'a part without id' => [['parts' => [['name' => 'A']]], 'identificador'],
+            'a part with an odd id' => [['parts' => [['id' => 'Entrada!', 'name' => 'A']]], 'identificador'],
+            'a part without a name' => [['parts' => [['id' => 'a', 'name' => '  ']]], 'nombre'],
+            'a part with a long name' => [['parts' => [['id' => 'a', 'name' => str_repeat('a', 61)]]], 'largo'],
+            'a part with a long note' => [
+                ['parts' => [['id' => 'a', 'name' => 'A', 'note' => str_repeat('a', 301)]]], 'largo',
+            ],
+            'a part off as text' => [['parts' => [['id' => 'a', 'name' => 'A', 'off' => 'yes']]], 'marca'],
+            'two parts with one id' => [
+                ['parts' => [['id' => 'a', 'name' => 'A'], ['id' => 'a', 'name' => 'B']]], 'mismo identificador',
+            ],
             'items not a list' => [['items' => 'x'], 'cantos'],
             'items as an object' => [['items' => ['a' => []]], 'cantos'],
             'no items key' => [['items' => null], 'cantos'],
@@ -242,6 +258,45 @@ final class SetlistChangeTest extends TestCase
         $this->expectException(InvalidSetlist::class);
 
         SetlistChange::fromArray($this->data(['id' => 'x', 'deleted' => true]), self::NOW);
+    }
+
+    public function testThePartsAreReadWithTheirMarksAndNothingElse(): void
+    {
+        $change = SetlistChange::fromArray(
+            $this->data(['parts' => [
+                ['id' => 'entrada', 'name' => ' Canto de entrada ', 'evil' => '<script>'],
+                ['id' => 'p-k3j9x2ab', 'name' => 'Rosario', 'off' => true, 'optional' => true, 'note' => 'Una nota'],
+                ['id' => 'salida', 'name' => 'Salida', 'off' => false, 'optional' => false, 'note' => ''],
+            ]]),
+            self::NOW
+        );
+
+        $this->assertSame([
+            ['id' => 'entrada', 'name' => 'Canto de entrada'],
+            ['id' => 'p-k3j9x2ab', 'name' => 'Rosario', 'off' => true, 'optional' => true, 'note' => 'Una nota'],
+            ['id' => 'salida', 'name' => 'Salida'],
+        ], $change->parts);
+        $this->assertStringContainsString('Canto de entrada', $change->partsJson());
+    }
+
+    public function testThirtyPartsAreAllowedAndThirtyOneAreNot(): void
+    {
+        $parts = static fn (int $n): array => array_map(
+            static fn (int $i): array => ['id' => 'p-' . $i, 'name' => 'Sección ' . $i],
+            range(1, $n)
+        );
+
+        $this->assertCount(30, SetlistChange::fromArray($this->data(['parts' => $parts(30)]), self::NOW)->parts);
+
+        $this->expectException(InvalidSetlist::class);
+        SetlistChange::fromArray($this->data(['parts' => $parts(31)]), self::NOW);
+    }
+
+    public function testADeletionNeedsNoParts(): void
+    {
+        $change = SetlistChange::fromArray($this->data(['deleted' => true, 'parts' => null]), self::NOW);
+
+        $this->assertSame([], $change->parts);
     }
 
     public function testItemsAreStoredAsReadableJson(): void

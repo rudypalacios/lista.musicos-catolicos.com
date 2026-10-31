@@ -18,6 +18,7 @@ export function setlist(id: string, at: number, extra: Partial<Setlist> = {}): S
         title: `Listado ${id}`,
         eventDate: '2026-11-01',
         notes: '',
+        parts: [{ id: 'entrada', name: 'Canto de entrada' }],
         starred: false,
         items: [{ id: `item-${id}`, part: 'entrada', songId: 'a-song', transpose: 2, note: 'Dos veces' }],
         updatedAt: at,

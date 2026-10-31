@@ -15,13 +15,31 @@ export interface Song {
 }
 
 /**
- * One song placed in one part of the Mass, inside a setlist (src/Sync/SetlistChange.php).
+ * A section of a list (what the person sees as "sección"; the code says "part"): the band songs are placed
+ * under. The list carries its own, in order, copied from a template when it is made, so changing a template never
+ * changes a list that exists (src/Sync/SetlistChange.php).
+ */
+export interface PartDef {
+    /** Never changes, so renaming a section leaves its songs where they are. The Mass's keep their ids (`mass.ts`) */
+    readonly id: string;
+    /** What the app shows */
+    readonly name: string;
+    /** Switched off: hidden from the list but kept (it comes back where it was). Only a section with no songs can be off */
+    readonly off?: true;
+    /** The slot can be left empty without a word (a badge says so) */
+    readonly optional?: true;
+    /** A tooltip explaining the section, when the person might wonder why it is there */
+    readonly note?: string;
+}
+
+/**
+ * One song placed in one section of a setlist (src/Sync/SetlistChange.php).
  * `transpose` is for this list only: the song itself is never changed by it.
  */
 export interface SetlistItem {
     /** Its own id (made on the device), so the same song can be in a list twice */
     readonly id: string;
-    /** The id of a part in `MASS_PARTS` (mass.ts) */
+    /** The id of one of the list's parts (`Setlist.parts`) */
     readonly part: string;
     readonly songId: string;
     /** Semitones, −11…11 */
@@ -40,6 +58,8 @@ export interface Setlist {
     /** The day of the Mass, `YYYY-MM-DD`, or null */
     readonly eventDate: string | null;
     readonly notes: string;
+    /** Its sections, in order. Never empty (the server refuses a list with none) */
+    readonly parts: readonly PartDef[];
     /** A favourite: the lists screen shows the starred ones first. Synced with the rest of the list */
     readonly starred: boolean;
     /** In the order they were added; the order within a part is the order here */
@@ -100,4 +120,9 @@ export const LIMITS = {
     itemsJson: 60000,
     /** Semitones up or down */
     transpose: 11,
+    /** Sections in one setlist, and the characters of a section's name and note, and bytes of the sections as JSON */
+    parts: 30,
+    partName: 60,
+    partNote: 300,
+    partsJson: 8000,
 } as const;

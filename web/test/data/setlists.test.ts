@@ -3,10 +3,11 @@ import { beforeEach, describe, it } from 'node:test';
 import { ValidationError } from '../../src/data/library.ts';
 import { MemoryStore } from '../../src/data/memory-store.ts';
 import {
-    copyTitle, defaultTitle, inMassOrder, itemsOfPart, moveOptions, partIndex, positionInMass, recentFirst, Setlists, splitStarred,
+    copyTitle, defaultTitle, inListOrder, itemsOfPart, moveOptions, partIndex, partName, partsOf, positionInList, recentFirst, Setlists,
+    splitStarred, strayItems, visibleParts,
 } from '../../src/data/setlists.ts';
-import { LIMITS, type Setlist, type SetlistItem } from '../../src/data/types.ts';
-import { MASS_PARTS } from '../../src/mass.ts';
+import { LIMITS, type PartDef, type Setlist, type SetlistItem } from '../../src/data/types.ts';
+import { MASS_PARTS, massSections } from '../../src/mass.ts';
 import { setlist, song } from './store.contract.ts';
 
 const NOV_1 = new Date(2026, 10, 1, 9, 0).getTime();
@@ -36,7 +37,7 @@ describe('Setlists', () => {
             const list = await lists.create();
 
             assert.deepEqual(list, {
-                id: 'id-0', title: 'Misa del 1 de noviembre', eventDate: '2026-11-01', notes: '', starred: false, items: [],
+                id: 'id-0', title: 'Misa del 1 de noviembre', eventDate: '2026-11-01', notes: '', parts: massSections(), starred: false, items: [],
                 updatedAt: NOV_1, deletedAt: null,
             });
             assert.deepEqual(await store.pending('setlists'), [list]);
@@ -382,6 +383,111 @@ describe('Setlists', () => {
         });
     });
 
+    describe('sections', () => {
+        const own: PartDef[] = [{ id: 'p-uno', name: 'Primer misterio' }, { id: 'p-dos', name: 'Segundo misterio', optional: true }];
+
+        it('gives a new list the sections of the Mass, a copy of its own', async () => {
+            const a = await lists.create();
+            const b = await lists.create();
+
+            assert.deepEqual(a.parts, massSections());
+            assert.notEqual(a.parts, b.parts, 'not shared between lists');
+        });
+
+        it('makes a list with the sections it is given, trimmed', async () => {
+            const list = await lists.create({}, [{ id: 'p-uno', name: '  Cantos  ' }]);
+
+            assert.deepEqual(list.parts, [{ id: 'p-uno', name: 'Cantos' }]);
+        });
+
+        it('refuses to make a list with no sections, with an empty name, or with the same id twice', async () => {
+            await assert.rejects(lists.create({}, []), /al menos una sección/);
+            await assert.rejects(lists.create({}, [{ id: 'a', name: ' ' }]), /necesita un nombre/);
+            await assert.rejects(lists.create({}, [{ id: 'a', name: 'A' }, { id: 'a', name: 'B' }]), /mismo identificador/);
+            assert.equal((await lists.list()).length, 0, 'nothing was saved');
+        });
+
+        it('keeps the sections in a copy of the list', async () => {
+            const source = await lists.create({}, own);
+            await lists.addItem(source.id, 'p-dos', 's1');
+
+            const copy = await lists.duplicate(source.id);
+
+            assert.deepEqual(copy.parts, own);
+            assert.deepEqual(copy.items.map((item) => item.part), ['p-dos']);
+        });
+
+        it('adds songs only to a section the list shows', async () => {
+            const list = await lists.create({}, own);
+            await lists.setPartOff(list.id, 'p-dos', true);
+
+            await lists.addItem(list.id, 'p-uno', 's1');
+            await assert.rejects(lists.addItem(list.id, 'p-dos', 's1'), /sección no existe/, 'switched off');
+            await assert.rejects(lists.addItem(list.id, 'entrada', 's1'), /sección no existe/, 'not in this list');
+        });
+
+        it('switches a section off and on again where it was, and queues the change', async () => {
+            const list = await lists.create();
+            const before = writes;
+
+            const off = await lists.setPartOff(list.id, 'gloria', true);
+            assert.equal(off.parts.find((part) => part.id === 'gloria')?.off, true);
+            assert.deepEqual(visibleParts(off).map((part) => part.id).includes('gloria'), false);
+
+            const on = await lists.setPartOff(list.id, 'gloria', false);
+            assert.deepEqual(on.parts, massSections(), 'the same sections in the same order');
+            assert.equal(writes, before + 2);
+        });
+
+        it('keeps what a section says about itself when it is switched off', async () => {
+            const list = await lists.create();
+
+            const off = await lists.setPartOff(list.id, 'memorial', true);
+
+            const memorial = off.parts.find((part) => part.id === 'memorial');
+            assert.equal(memorial?.optional, true);
+            assert.match(memorial?.note ?? '', /consagración/);
+        });
+
+        it('does not switch off a section that holds songs, and says which', async () => {
+            const list = await lists.create();
+            await lists.addItem(list.id, 'entrada', 's1');
+
+            await assert.rejects(lists.setPartOff(list.id, 'entrada', true), /«Canto de entrada» tiene cantos/);
+            assert.equal((await lists.get(list.id))?.parts.find((part) => part.id === 'entrada')?.off, undefined);
+        });
+
+        it('does not switch off the last section that is on', async () => {
+            const list = await lists.create({}, own);
+            await lists.setPartOff(list.id, 'p-dos', true);
+
+            await assert.rejects(lists.setPartOff(list.id, 'p-uno', true), /al menos una sección encendida/);
+        });
+
+        it('refuses to switch off a section the list does not have as if it were nothing', async () => {
+            const list = await lists.create({}, own);
+
+            const same = await lists.setPartOff(list.id, 'inventada', true);
+
+            assert.deepEqual(same.parts, own);
+        });
+
+        it('replaces the sections, limits them and refuses a list over the limit of bytes', async () => {
+            const list = await lists.create({}, own);
+
+            await assert.rejects(lists.setParts(list.id, Array.from({ length: LIMITS.parts + 1 }, (_, i) => ({ id: `p-${i}`, name: 'S' }))), /hasta 30 secciones/);
+            await assert.rejects(lists.setParts(list.id, [{ id: 'a', name: 'x'.repeat(LIMITS.partName + 1) }]), /demasiado largo/);
+            await assert.rejects(
+                lists.setParts(list.id, Array.from({ length: 30 }, (_, i) => ({ id: `p-${i}`, name: 'S', note: 'n'.repeat(300) }))),
+                /demasiado grandes/,
+            );
+            assert.deepEqual((await lists.get(list.id))?.parts, own, 'the list is as it was');
+
+            const next = await lists.setParts(list.id, [{ id: 'p-dos', name: 'Dos' }, { id: 'p-uno', name: 'Uno' }]);
+            assert.deepEqual(next.parts.map((part) => part.id), ['p-dos', 'p-uno']);
+        });
+    });
+
     describe('adding songs', () => {
         it('starts a song in the key its owner sings it in, and keeps it when "mi tono" changes later', async () => {
             await store.save('songs', song('s3', 1, { myShift: 2 }));
@@ -411,7 +517,7 @@ describe('Setlists', () => {
             const list = await lists.create();
             await store.save('songs', song('dead', 5, { deletedAt: 5 }));
 
-            await assert.rejects(lists.addItem(list.id, 'inventada', 's1'), /parte de la misa/);
+            await assert.rejects(lists.addItem(list.id, 'inventada', 's1'), /sección no existe/);
             await assert.rejects(lists.addItem(list.id, 'entrada', 'nope'), /ya no existe/);
             await assert.rejects(lists.addItem(list.id, 'entrada', 'dead'), /ya no existe/);
 
@@ -557,33 +663,52 @@ describe('reading a list', () => {
         assert.deepEqual(moveOptions(items, 'zzz'), { up: false, down: false }, 'an item that is gone has none');
     });
 
-    it('numbers a song by its place in the order of the Mass, which is how singing names it', () => {
+    const list = (parts: PartDef[], items: SetlistItem[]): Pick<Setlist, 'parts' | 'items'> => ({ parts, items });
+    const mass = massSections();
+
+    it('numbers a song by its place in the order of the list, which is how singing names it', () => {
         const items = [item('1', 'salida'), item('2', 'comunion'), item('3', 'entrada')];
 
-        assert.equal(positionInMass(items, '3'), 1);
-        assert.equal(positionInMass(items, '2'), 2);
-        assert.equal(positionInMass(items, '1'), 3);
-        assert.equal(positionInMass(items, 'zzz'), 0);
+        assert.equal(positionInList(list(mass, items), '3'), 1);
+        assert.equal(positionInList(list(mass, items), '2'), 2);
+        assert.equal(positionInList(list(mass, items), '1'), 3);
+        assert.equal(positionInList(list(mass, items), 'zzz'), 0);
     });
 
-    it('puts the items in the order of the Missal, and keeps the order inside a part', () => {
+    it('puts the items in the order of the sections, and keeps the order inside a section', () => {
         const items = [item('1', 'salida'), item('2', 'comunion'), item('3', 'entrada'), item('4', 'comunion'), item('5', 'gloria')];
 
-        assert.deepEqual(inMassOrder(items).map((i) => i.id), ['3', '5', '2', '4', '1']);
+        assert.deepEqual(inListOrder(list(mass, items)).map((i) => i.id), ['3', '5', '2', '4', '1']);
     });
 
-    it('sends a part this version does not know to the end instead of dropping it', () => {
-        const items = [item('1', 'futura'), item('2', 'entrada')];
+    it('follows the order of the list\'s own sections, not the Mass\'s', () => {
+        const parts: PartDef[] = [{ id: 'p-b', name: 'Segundo' }, { id: 'p-a', name: 'Primero' }];
+        const items = [item('1', 'p-a'), item('2', 'p-b'), item('3', 'p-a')];
 
-        assert.deepEqual(inMassOrder(items).map((i) => i.id), ['2', '1']);
-        assert.equal(partIndex('futura'), MASS_PARTS.length);
-        assert.equal(partIndex('entrada'), 0);
+        assert.deepEqual(inListOrder(list(parts, items)).map((i) => i.id), ['2', '1', '3']);
+    });
+
+    it('sends a section the list does not show to the end instead of dropping it, and says which items they are', () => {
+        const items = [item('1', 'futura'), item('2', 'entrada'), item('3', 'gloria')];
+        const parts = mass.map((part) => (part.id === 'gloria' ? { ...part, off: true as const } : part));
+
+        assert.deepEqual(inListOrder(list(parts, items)).map((i) => i.id), ['2', '1', '3']);
+        assert.deepEqual(strayItems(list(parts, items)).map((i) => i.id), ['1', '3'], 'an unknown and a switched-off section');
+        assert.equal(partIndex(visibleParts({ parts }), 'futura'), visibleParts({ parts }).length);
+        assert.equal(partIndex(mass, 'entrada'), 0);
+    });
+
+    it('reads a list with no sections as the Mass instead of an empty screen', () => {
+        assert.equal(partsOf({ parts: [] }).length, mass.length);
+        assert.equal(partsOf({} as Pick<Setlist, 'parts'>).length, mass.length);
+        assert.equal(partName({ parts: [] }, 'entrada'), 'Canto de entrada');
+        assert.equal(partName({ parts: mass }, 'inventada'), undefined);
     });
 
     it('does not change the list it is given', () => {
         const items = [item('1', 'salida'), item('2', 'entrada')];
 
-        inMassOrder(items);
+        inListOrder(list(mass, items));
 
         assert.deepEqual(items.map((i) => i.id), ['1', '2']);
     });

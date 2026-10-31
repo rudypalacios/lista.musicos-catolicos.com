@@ -1,8 +1,8 @@
 import type { App } from '../app.ts';
 import { parse, songKey } from '../chordpro/parser.ts';
 import { transpose } from '../chordpro/chord.ts';
-import { MASS_PARTS, type MassPart } from '../mass.ts';
-import type { Setlist, Song } from '../data/types.ts';
+import { partName } from '../data/setlists.ts';
+import type { PartDef, Setlist, Song } from '../data/types.ts';
 import { h, link, setSheet, snippetBlock } from '../dom.ts';
 import { sheetHtml } from '../chordpro/sheet.ts';
 import { icon } from '../icons.ts';
@@ -17,13 +17,13 @@ import type { Navigate, View } from './types.ts';
 const WARNING_TIME = 5000;
 
 /**
- * Picking a song of the library for one part of the Mass. Choosing one adds it at the end of
- * that part and goes back to the list, where it can be moved or put in another key.
+ * Picking a song of the library for one section of a list. Choosing one adds it at the end of
+ * that section and goes back to the list, where it can be moved or put in another key.
  *
  * Each row shows the first lines of the song (the lines where the search matched, when it was found
  * through its lyrics) and an eye that opens the whole song to read before adding it.
  */
-export function addView(app: App, navigate: Navigate, setlist: Setlist, part: MassPart): View {
+export function addView(app: App, navigate: Navigate, setlist: Setlist, part: PartDef): View {
     const search = h('input', {
         type: 'search', id: 'search', placeholder: 'Buscar por título o autor', 'aria-label': 'Buscar cantos',
         autocomplete: 'off', enterkeyhint: 'search',
@@ -37,7 +37,7 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Ma
     /** Where each song of the list already is, by song id: the part names */
     const placed = new Map<string, Set<string>>();
     for (const item of setlist.items) {
-        const name = MASS_PARTS.find((candidate) => candidate.id === item.part)?.name ?? 'otra parte';
+        const name = partName(setlist, item.part) ?? 'otra sección';
         placed.set(item.songId, (placed.get(item.songId) ?? new Set<string>()).add(name));
     }
     const element = h(

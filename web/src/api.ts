@@ -75,13 +75,20 @@ const pickSong = ({ id, title, author, body, myShift, updatedAt, deletedAt }: So
     id, title, author, body, myShift, updatedAt, deletedAt,
 });
 
-const pickSetlist = ({ id, title, eventDate, notes, starred, items, updatedAt, deletedAt }: Setlist): Setlist => ({
+const pickSetlist = ({ id, title, eventDate, notes, starred, items, parts, updatedAt, deletedAt }: Setlist): Setlist => ({
     id,
     title,
     eventDate,
     notes,
     starred,
     items: items.map(({ id: itemId, part, songId, transpose, note }) => ({ id: itemId, part, songId, transpose, note })),
+    parts: parts.map(({ id: partId, name, off, optional, note }) => ({
+        id: partId,
+        name,
+        ...(off === true ? { off } : {}),
+        ...(optional === true ? { optional } : {}),
+        ...(note !== undefined ? { note } : {}),
+    })),
     updatedAt,
     deletedAt,
 });

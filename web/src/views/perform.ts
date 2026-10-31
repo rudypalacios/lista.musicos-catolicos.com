@@ -1,10 +1,9 @@
 import type { App } from '../app.ts';
-import { inMassOrder } from '../data/setlists.ts';
+import { inListOrder, partName } from '../data/setlists.ts';
 import type { Setlist, SetlistItem, Song } from '../data/types.ts';
 import { h, link } from '../dom.ts';
 import { icon } from '../icons.ts';
 import { nextFold, type FoldState } from '../fold.ts';
-import { MASS_PARTS } from '../mass.ts';
 import { readKeepAwake } from '../prefs.ts';
 import { todayKeys } from '../today-keys.ts';
 import { showToast } from '../toast.ts';
@@ -28,9 +27,9 @@ const EXIT_DISTANCE = 0.35;
  */
 let slideFrom: 'next' | 'previous' | null = null;
 
-/** The part of the Mass an item belongs to, by name */
-function partName(item: SetlistItem): string {
-    return MASS_PARTS.find((part) => part.id === item.part)?.name ?? 'Otra parte';
+/** The section of the list an item belongs to, by name */
+function sectionName(setlist: Setlist, item: SetlistItem): string {
+    return partName(setlist, item.part) ?? 'Otra sección';
 }
 
 /**
@@ -47,7 +46,7 @@ function partName(item: SetlistItem): string {
  * @param n 1-based position in the order of the Mass; out of range is brought into range
  */
 export async function performView(app: App, navigate: Navigate, setlist: Setlist, n: number): Promise<View> {
-    const order = inMassOrder(setlist.items);
+    const order = inListOrder(setlist);
     if (order.length === 0) {
         const back = link(paths.setlist(setlist.id), '', 'button back');
         back.replaceChildren(icon('arrow-left', 18), 'Listado');
@@ -77,7 +76,7 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     const back = link(paths.setlist(setlist.id), '', 'perform__back');
     back.append(icon('arrow-left', 22));
     back.setAttribute('aria-label', 'Volver al listado');
-    const heading = h('span', { class: 'perform__title' }, h('small', { class: 'perform__part' }, partName(item)), h('strong', { class: 'perform__song' }, title));
+    const heading = h('span', { class: 'perform__title' }, h('small', { class: 'perform__part' }, sectionName(setlist, item)), h('strong', { class: 'perform__song' }, title));
     const jumpButton = h('button', { type: 'button', class: 'perform__jump', 'aria-label': `Ir a otro canto. Canto ${position} de ${order.length}` },
         h('span', { class: 'perform__count' }, countText), icon('chevron-down', 16));
     const moreButton = h('button', { type: 'button', class: 'perform__more', 'aria-label': 'Más herramientas' }, icon('more', 22));
@@ -217,7 +216,7 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
         songList.replaceChildren(...order.map((entry, index) => {
             const choice = h('button', { type: 'button', class: 'perform__song-choice' },
                 h('span', { class: 'perform__song-number' }, String(index + 1)),
-                h('span', {}, h('small', {}, partName(entry)), known.get(entry.songId) ?? 'Canto eliminado'));
+                h('span', {}, h('small', {}, sectionName(setlist, entry)), known.get(entry.songId) ?? 'Canto eliminado'));
             if (index + 1 === position) {
                 choice.setAttribute('aria-current', 'true');
                 current = choice;

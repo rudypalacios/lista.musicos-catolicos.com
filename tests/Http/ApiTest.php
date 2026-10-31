@@ -99,6 +99,10 @@ final class ApiTest extends TestCase
                 'id' => 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee', 'part' => 'comunion', 'songId' => self::SONG_ID,
                 'transpose' => -2, 'note' => 'Con flauta 🎶',
             ]],
+            'parts' => [
+                ['id' => 'comunion', 'name' => 'Canto de comunión', 'optional' => true],
+                ['id' => 'salida', 'name' => 'Salida', 'off' => true],
+            ],
             'updatedAt' => 1_700_000_000_000, 'deleted' => false,
         ];
     }
@@ -127,8 +131,22 @@ final class ApiTest extends TestCase
         $this->assertSame('Tarde', $list['notes']);
         $this->assertSame(-2, $list['items'][0]['transpose']);
         $this->assertSame('Con flauta 🎶', $list['items'][0]['note']);
+        $this->assertSame([
+            ['id' => 'comunion', 'name' => 'Canto de comunión', 'optional' => true],
+            ['id' => 'salida', 'name' => 'Salida', 'off' => true],
+        ], $list['parts']);
         $this->assertNull($list['deletedAt']);
         $this->assertSame(1, $body['cursor']);
+    }
+
+    public function testASetlistWithNoSectionsIsRefused(): void
+    {
+        $cookies = [SessionCookie::NAME => $this->signIn()];
+
+        $push = $this->call('POST', '/api/sync', ['setlists' => [$this->setlist(['parts' => null])]], $cookies);
+
+        $this->assertSame(400, $push->getStatusCode());
+        $this->assertSame([], $this->body($this->call('GET', '/api/sync?since=0', null, $cookies))['setlists']);
     }
 
     public function testTheStarOfASetlistTravelsBothWays(): void
@@ -183,6 +201,7 @@ final class ApiTest extends TestCase
 
         $this->assertSame(1_700_000_000_500, $list['deletedAt']);
         $this->assertSame([], $list['items']);
+        $this->assertSame([], $list['parts']);
     }
 
     public function testOneInvalidSetlistStoresNoneOfTheRequest(): void

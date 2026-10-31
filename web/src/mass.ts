@@ -1,10 +1,14 @@
+import type { PartDef } from './data/types.ts';
+
 /**
  * The parts of the Mass that are sung, in the order of the Roman Missal (Misal Romano). The
  * names are the standard ones; `aliases` are the other names people write on their sheets
  * ("Ofrendas" for the Ofertorio, "Piedad" or "Kyrie" for Señor, ten piedad), used to
  * recognise a part when importing. Compared without accents or case.
  *
- * The Mass template of a setlist (next phase) is built from this list.
+ * A setlist carries its own sections (`Setlist.parts`), so the Mass is only what a new list starts from today
+ * (`massSections`) and what the importer reads names against. These ids are stored inside the songs of the lists
+ * that exist: never rename or remove one.
  */
 export interface MassPart {
     id: string;
@@ -71,6 +75,16 @@ export const MASS_PARTS: readonly MassPart[] = [
         aliases: ['canto de salida', 'canto final', 'despedida', 'salida', 'final'],
     },
 ];
+
+/** The Mass as the sections a new list starts with: a copy for each list, never shared between them */
+export function massSections(): PartDef[] {
+    return MASS_PARTS.map((part) => ({
+        id: part.id,
+        name: part.name,
+        ...(part.optional === true ? { optional: true as const } : {}),
+        ...(part.note !== undefined ? { note: part.note } : {}),
+    }));
+}
 
 /** Lower case, no accents, single spaces: how names are compared */
 export function plain(text: string): string {

@@ -96,6 +96,9 @@ async function seed(page: Page, samples: Sample[]): Promise<{ ids: string[]; set
         }));
         const setlist = {
             id: crypto.randomUUID(), title: 'Misa de prueba', eventDate: null, notes: '', updatedAt: now, deleted: false,
+            parts: [
+                { id: 'entrada', name: 'Canto de entrada' }, { id: 'ofertorio', name: 'Ofertorio' }, { id: 'comunion', name: 'Canto de comunión' },
+            ],
             items: [
                 { part: 'ofertorio', index: 2, transpose: 2 },
                 { part: 'entrada', index: 0, transpose: 0 },

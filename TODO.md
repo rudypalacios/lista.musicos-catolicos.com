@@ -7,8 +7,8 @@ remember it.
 
 Phases 0 to 5 are written and merged (songs, setlists, print, the quiet usage fixes and Ajustes), and the
 interface is settled: the bar and sync dot, the menu, the lists screen, the inside of a list and singing are
-**locked** (`DESIGN-LOCK.md`: not to be changed unless the owner asks in that session). Phases 6 (templates and
-tags) and 7 (ChordPro) are not started. What comes next is a review of the flows of use, in its own session.
+**locked** (`DESIGN-LOCK.md`: not to be changed unless the owner asks in that session). Phase 7 (ChordPro) is done; phase 6
+(sections, templates and tags) is under way, one PR at a time (see its item below).
 
 Open elsewhere (owner to merge): `musicos-catolicos` [#42](https://github.com/rudypalacios/musicos-catolicos/pull/42)
 and `mc.musicos-catolicos` [#43](https://github.com/rudypalacios/mc.musicos-catolicos/pull/43): PHP 8.3 only, and the
@@ -45,8 +45,10 @@ something the owner has could break without it:
 - `myShift` / `starred` optional on the server (`SongChange`, `SetlistChange`, the `COALESCE` in both repositories):
   a record queued or saved on a device before those fields is pushed without them, and must keep what is stored.
 - `songs` / `setlists` each optional in `PushAction` (at least one): an app from before the lists pushes songs only.
-- The upgrade of the on-device database from version 1 (`data/idb-store.ts`, cursor reset): a device that has not
-  been opened since the lists existed would otherwise never pull the lists the server already holds.
+- The upgrade of the on-device database (`data/idb-store.ts`, versions 1 → 3: cursor reset). Version 3 also drops the
+  lists of the device (the sections, phase 6 PR 1): remove the whole upgrade once every device has opened the new version.
+- `partsOf` (`data/setlists.ts`) reads a list with no sections as the Mass instead of an empty screen: a guard with a defined
+  default; the server never stores such a list any more (migration `0008`).
 
 Removed (nothing the owner has needs them): `withStar` (a list with no star reads as falsy anyway), `myShift ?? 0`
 and `page.setlists ?? []` in `api.ts` (the server always sends both). When the owner confirms every device was
@@ -196,10 +198,8 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       sheet; its own sheet has two steps, the list (starred first, "Nuevo listado" at the end) and the part of the Mass (counts, "opcional", "Ya está aquí");
       touching a part adds the song at its end (`Setlists.addItem(…, transpose)`), closes the sheet and says where. The song goes in the **key on screen** when it is
       not "mi tono" (the sheet says "Entra en Re"). Depends on #50 (the song page's sheet). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 36.
-      **Revisit with the templates (phase 6, or no templates at all):** this flow assumes the parts of the Mass (`MASS_PARTS` in the second step, `partNote`,
-      `Setlists.addItem` validating the part, "Nuevo listado" creating a Mass list). When lists can have their own parts, or none, the second step must
-      list *that list's* parts (and skip the step for a list with no parts), "Nuevo listado" must ask which template, and the picker of a part, the
-      part counts and `tests/e2e/songs.ts` ("Agregar a un listado") must be walked again.
+      **Phase 6 PR 1 did the sections part of this:** the second step lists *that list's* sections and `addItem` validates against them. Still
+      to do with the templates (PR 3): "Nuevo listado" in this sheet must ask which template.
 - [x] **New song / edit song on a wide screen** (from 900px, `views/edit.ts`, `styles.css`): "Vista previa" is titled outside its box like "Letra con
       acordes" and the two boxes are level; Guardar / Cancelar keep their size at the right, level with "Eliminar" (the same button, moved into the foot
       while the window is wide; a new song has none). The phone is unchanged. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 31.
@@ -302,11 +302,24 @@ Next, in this order (design agreed with the owner):
       anything above it is scrolled (`scrolledWithin`): a song's stage scrolls inside `#view`, whose own `scrollTop` stayed 0, so dragging down at the
       bottom of a long song began a sync. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 10.
 - [ ] **Owner's check on the Android** for phases 4 and 5 (`DEPLOY.md`, "Fases 4 y 5", item 9 for the lists screen).
-- [ ] Phase 6, templates and tags (**when this lands, go back to "Add a song to a list from its page" above and make sure it follows the templates**; a rosary or a prayer-meeting list must not get the 15 parts of the Mass; a
-      section may hold a dozen songs, which is when dragging to reorder pays off) (schema change, migration): turn parts on and off per list, add own
-      parts, a template manager (the Mass is the default); tags on songs, one per part by default; the
-      picker of a part filters by its tag, with "Mostrar todos" always at hand and no filter when no
-      song carries the tag; the PDF importer could tag by part.
+- [ ] **Phase 6, sections, templates and tags** (the owner approved the plan and mockups on 2026-10-31; the person reads "sección",
+      the code says "part"). A list carries its own sections (`Setlist.parts`, the Mass is the template a new list starts from);
+      templates are a synced collection; tags are on songs. The owner's decisions: the Mass is one template among others; "＋ Nuevo"
+      asks which template (the last used first; with one template it creates at once); "Administrar plantillas" is the last action of
+      that sheet (a screen that hangs from Listados, not in Ajustes); tags go **below the lyrics**, optional; no compatibility with old
+      versions (`CLAUDE.md`). Six PRs, in order:
+      1. [x] **Sections per list** (migration `0008`, `views/sections.ts`; the owner unlocked "Inside a list"): every list stores its sections,
+         the Mass's by default; "⋯" → "Secciones del listado" switches each on and off (a section with songs, or the last one on, stays on);
+         "Otras partes" became "Otras secciones" and the labels say "sección". The migration removes the lists that exist (the owner chose to
+         start them again) and the devices drop theirs when they open the new version (IndexedDB 3): nothing to run by hand. "Agregar a un
+         listado" (second step), the picker, singing and print follow the list's sections. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 38.
+      2. [ ] Own sections (add, rename, order, remove; the same screen, no migration).
+      3. [ ] Templates and "Administrar plantillas" (a third synced collection: migrations `0009` and `0010` for MySQL; unlocks "＋ Nuevo" of the lists screen).
+      4. [ ] Tags and the filter of the picker ("Mostrar todos"; the notice to tag when adding from it; optional "Etiquetar con lo que ya usas", not decided).
+      5. [ ] Tag when importing (the importer already knows the part of each song).
+      6. [ ] Drag to reorder (long press, the arrows stay, "Al inicio / Al final").
+      Not done on purpose: ready-made templates, updating lists when a template changes, lists with no sections, dragging between sections.
+      **Revisit with the templates (PR 3):** "Nuevo listado" in "Agregar a un listado" creates a Mass list (it must ask which template).
 - [x] Phase 7, ChordPro (the owner's mockup, done first in `musicos-catolicos` [#43](https://github.com/rudypalacios/musicos-catolicos/pull/43),
       the reference, then ported here with new golden fixtures): **a note at the end of a line of lyrics**
       (`{ci: bis}` / `{comment_italic: …}` after the words) is drawn beside the words, in italics (`line__note`; the last segment

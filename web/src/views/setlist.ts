@@ -1,11 +1,10 @@
 import type { App } from '../app.ts';
 import { transpose } from '../chordpro/chord.ts';
 import { parse, songKey } from '../chordpro/parser.ts';
-import { LIMITS, type Setlist, type SetlistItem, type Song } from '../data/types.ts';
-import { inMassOrder, itemsOfPart, moveOptions, partIndex, positionInMass } from '../data/setlists.ts';
+import { LIMITS, type PartDef, type Setlist, type SetlistItem, type Song } from '../data/types.ts';
+import { inListOrder, itemsOfPart, moveOptions, partName, positionInList, strayItems, visibleParts } from '../data/setlists.ts';
 import { h } from '../dom.ts';
 import { icon, type IconName } from '../icons.ts';
-import { MASS_PARTS, type MassPart } from '../mass.ts';
 import { planSheet } from '../print/plan.ts';
 import type { PrintVersion } from '../print/layout.ts';
 import { printPlans } from '../print/print.ts';
@@ -17,11 +16,11 @@ import { deleteListAfterAsking } from './delete-list.ts';
 import { createSheet, sheetAction } from './sheet.ts';
 import type { Navigate, View } from './types.ts';
 
-/** A part with this many songs or more also has its "agregar" at the end: the one in the head would be far away */
+/** A section with this many songs or more also has its "agregar" at the end: the one in the head would be far away */
 const ADD_AT_END_FROM = 4;
 
 /**
- * One setlist: its title, and the template of the Mass with a slot for every part. A part
+ * One setlist: its title, and its sections, each a slot. A section
  * with no song is one quiet line; a part with songs is a heading and one row per song. A row only
  * shows the song (touching it sings it from there; the key is read-only here: it is changed while singing, so
  * it is saved to the list and not to the song); "⋯" opens a sheet with what is done now and then to one song
@@ -97,9 +96,9 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
     const print = (version: PrintVersion): void => {
         // Straight from the tap (a browser may refuse to print from anything later), then the sheet goes
         printPlans(
-            inMassOrder(setlist.items).flatMap((item) => {
+            inListOrder(setlist).flatMap((item) => {
                 const song = songs.get(item.songId);
-                const part = MASS_PARTS.find((candidate) => candidate.id === item.part)?.name;
+                const part = partName(setlist, item.part);
 
                 return song === undefined ? [] : [planSheet(song, { version, shift: item.transpose, notation: readNotation(), ...(part !== undefined ? { part } : {}) })];
             }),
@@ -111,6 +110,8 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
         listSheet.body.replaceChildren(
             h('h4', { class: 'sheet__title' }, setlist.title),
             h('p', { class: 'sheet__sub' }, rows === 1 ? '1 canto' : `${rows} cantos`),
+            // First: what the list is made of; then what is done with it
+            action('sections', 'Secciones del listado', () => listSheet.close(() => navigate(paths.sections(setlist.id))), { hint: 'Qué secciones lleva este listado' }),
             ...(rows > 0 ? [action('printer', 'Imprimir con acordes', () => print('chords')), action('printer', 'Imprimir solo la letra', () => print('lyrics'))] : []),
             // Last and set apart, so it is not touched by mistake next to printing
             sheetAction('trash', 'Eliminar listado', () => {
@@ -137,21 +138,21 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
         }
         const song = songs.get(item.songId);
         const name = song?.title ?? 'Canto eliminado';
-        const partName = MASS_PARTS.find((candidate) => candidate.id === item.part)?.name ?? 'Otra parte';
+        const section = partName(setlist, item.part) ?? 'Otra sección';
         const can = moveOptions(setlist.items, item.id);
         const step = (direction: -1 | 1): void => {
             void app.setlists.moveItem(setlist.id, item.id, direction).catch((failure: unknown) => fail(failure, 'No se pudo mover el canto.'));
         };
         songSheet.body.replaceChildren(
             h('h4', { class: 'sheet__title' }, name),
-            h('p', { class: 'sheet__sub' }, partName),
+            h('p', { class: 'sheet__sub' }, section),
             ...(song === undefined ? [] : [action('play', 'Cantar desde aquí', () => {
-                const at = positionInMass(setlist.items, item.id);
+                const at = positionInList(setlist, item.id);
                 songSheet.close(() => navigate(paths.perform(setlist.id, at)));
             }, { hint: 'Ahí se cambia el tono' })]),
             // Only the moves that can happen: a part with one song has none
-            ...(can.up ? [action('arrow-up', 'Subir en esta parte', () => step(-1), { key: 'up' })] : []),
-            ...(can.down ? [action('arrow-down', 'Bajar en esta parte', () => step(1), { key: 'down' })] : []),
+            ...(can.up ? [action('arrow-up', 'Subir en esta sección', () => step(-1), { key: 'up' })] : []),
+            ...(can.down ? [action('arrow-down', 'Bajar en esta sección', () => step(1), { key: 'down' })] : []),
             action('x', 'Quitar del listado', () => {
                 const index = setlist.items.findIndex((candidate) => candidate.id === item.id);
                 songSheet.close(() => {
@@ -187,9 +188,9 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
     // --- the slots ---
     const draw = (): void => {
         const focused = document.activeElement?.getAttribute('data-focus') ?? null;
-        const rows = inMassOrder(setlist.items);
-        const known = MASS_PARTS.map((part) => slot(part));
-        const strays = rows.filter((item) => partIndex(item.part) === MASS_PARTS.length);
+        const rows = inListOrder(setlist);
+        const known = visibleParts(setlist).map((part) => slot(part));
+        const strays = strayItems(setlist);
         slots.replaceChildren(...known, ...(strays.length > 0 ? [strangers(strays)] : []));
         count.textContent = rows.length === 1 ? '1 canto' : `${rows.length} cantos`;
         // The "⋯" is always there (deleting the list is in it); only the printing needs songs
@@ -202,7 +203,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
         }
     };
 
-    const slot = (part: MassPart): HTMLElement => {
+    const slot = (part: PartDef): HTMLElement => {
         const items = itemsOfPart(setlist.items, part.id);
         const empty = items.length === 0;
         const head = h('div', { class: 'slot__head' }, h('h3', {}, part.name));
@@ -243,12 +244,12 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
         return section;
     };
 
-    /** Items whose part this version of the app does not know: shown, so they can be removed */
+    /** Items whose section the list does not show (switched off or removed on another device): shown, so they can be moved or removed */
     const strangers = (items: SetlistItem[]): HTMLElement =>
         h(
             'section',
             { class: 'slot' },
-            h('div', { class: 'slot__head' }, h('h3', {}, 'Otras partes')),
+            h('div', { class: 'slot__head' }, h('h3', {}, 'Otras secciones')),
             h('ul', { class: 'items' }, ...items.map(row)),
         );
 
@@ -273,7 +274,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
                 lines.push(h('span', { class: 'item__sub' }, ...sub));
             }
             // The same song in another part is allowed (a hymn can open and close), but worth a word
-            const elsewhere = otherParts(item, setlist.items);
+            const elsewhere = otherParts(item, setlist);
             if (elsewhere.length > 0) {
                 lines.push(h('span', { class: 'item__also', role: 'note' }, `También está en: ${elsewhere.join(', ')}`));
             }
@@ -283,7 +284,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             li.append(h('div', { class: 'item__open' }, ...lines));
         } else {
             const open = h('button', { type: 'button', class: 'item__open', 'data-focus': `open:${item.id}` }, ...lines);
-            open.addEventListener('click', () => navigate(paths.perform(setlist.id, positionInMass(setlist.items, item.id))));
+            open.addEventListener('click', () => navigate(paths.perform(setlist.id, positionInList(setlist, item.id))));
             li.append(open);
         }
         const options = h('button', {
@@ -392,12 +393,12 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
     };
 }
 
-/** The names of the other parts of the Mass where the item's song is also placed */
-function otherParts(item: SetlistItem, items: readonly SetlistItem[]): string[] {
+/** The names of the other sections of the list where the item's song is also placed */
+function otherParts(item: SetlistItem, list: Pick<Setlist, 'parts' | 'items'>): string[] {
     const names = new Set<string>();
-    for (const other of items) {
+    for (const other of list.items) {
         if (other.id !== item.id && other.songId === item.songId) {
-            names.add(MASS_PARTS.find((part) => part.id === other.part)?.name ?? 'otra parte');
+            names.add(partName(list, other.part) ?? 'otra sección');
         }
     }
 
