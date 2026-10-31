@@ -313,7 +313,11 @@ Next, in this order (design agreed with the owner):
          "Otras partes" became "Otras secciones" and the labels say "sección". The migration removes the lists that exist (the owner chose to
          start them again) and the devices drop theirs when they open the new version (IndexedDB 3): nothing to run by hand. "Agregar a un
          listado" (second step), the picker, singing and print follow the list's sections. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 38.
-      2. [ ] Own sections (add, rename, order, remove; the same screen, no migration).
+      2. [x] **Own sections** (`views/sections.ts`, `Setlists.addPart` / `renamePart` / `movePart` / `removePart`; no migration, no locked row): on the
+         sections screen each row has its switch, its name (touch it to rename it; the songs stay, they hold the id), the arrows and "✕"; at the end a field
+         to add a section of the person's own (an id made on the device, `p-…`) and, as chips, the Mass's sections the list does not have ("O una de la Misa").
+         A section with songs cannot be deleted or switched off; the last one cannot either; at most 30. The switch stays in the row (the approved mockup of
+         this PR drew a rosary with none). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 39.
       3. [ ] Templates and "Administrar plantillas" (a third synced collection: migrations `0009` and `0010` for MySQL; unlocks "＋ Nuevo" of the lists screen).
       4. [ ] Tags and the filter of the picker ("Mostrar todos"; the notice to tag when adding from it; optional "Etiquetar con lo que ya usas", not decided).
       5. [ ] Tag when importing (the importer already knows the part of each song).

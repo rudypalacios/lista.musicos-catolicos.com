@@ -472,6 +472,60 @@ describe('Setlists', () => {
             assert.deepEqual(same.parts, own);
         });
 
+        it('adds a section of the person\'s own at the end, with an id made on the device, and one of the Mass with its own id', async () => {
+            const list = await lists.create({}, own);
+
+            const withOwn = await lists.addPart(list.id, '  Tercer misterio ');
+            const added = withOwn.parts.at(-1);
+            assert.equal(added?.name, 'Tercer misterio');
+            assert.match(added?.id ?? '', /^p-[a-z0-9]{1,8}$/, 'the id is not made of the name');
+
+            const withMass = await lists.addPart(list.id, 'Canto de salida', massSections().find((part) => part.id === 'salida'));
+            assert.deepEqual(withMass.parts.at(-1), { id: 'salida', name: 'Canto de salida' });
+            await assert.rejects(lists.addPart(list.id, 'Salida', massSections().find((part) => part.id === 'salida')), /mismo identificador/);
+            await assert.rejects(lists.addPart(list.id, '   '), /necesita un nombre/);
+        });
+
+        it('stops at the limit of sections', async () => {
+            const list = await lists.create({}, Array.from({ length: LIMITS.parts }, (_, i) => ({ id: `p-${i}`, name: `S${i}` })));
+
+            await assert.rejects(lists.addPart(list.id, 'Una más'), /hasta 30 secciones/);
+        });
+
+        it('renames a section and its songs stay in it', async () => {
+            const list = await lists.create({}, own);
+            await lists.addItem(list.id, 'p-uno', 's1');
+
+            const renamed = await lists.renamePart(list.id, 'p-uno', ' Misterio primero ');
+
+            assert.equal(renamed.parts[0]?.name, 'Misterio primero');
+            assert.equal(renamed.parts[0]?.id, 'p-uno');
+            assert.deepEqual(renamed.items.map((item) => item.part), ['p-uno']);
+            await assert.rejects(lists.renamePart(list.id, 'p-uno', ''), /necesita un nombre/);
+        });
+
+        it('moves a section up and down, and one at an end stays where it is', async () => {
+            const list = await lists.create({}, [...own, { id: 'p-tres', name: 'Tercero' }]);
+            const order = async (direction: -1 | 1, part: string): Promise<string[]> =>
+                (await lists.movePart(list.id, part, direction)).parts.map((candidate) => candidate.id);
+
+            assert.deepEqual(await order(-1, 'p-tres'), ['p-uno', 'p-tres', 'p-dos']);
+            assert.deepEqual(await order(1, 'p-uno'), ['p-tres', 'p-uno', 'p-dos']);
+            assert.deepEqual(await order(-1, 'p-tres'), ['p-tres', 'p-uno', 'p-dos'], 'the first cannot go up');
+            assert.deepEqual(await order(1, 'p-dos'), ['p-tres', 'p-uno', 'p-dos'], 'the last cannot go down');
+        });
+
+        it('deletes an empty section, but not one that holds songs or the last one', async () => {
+            const list = await lists.create({}, own);
+            await lists.addItem(list.id, 'p-uno', 's1');
+
+            await assert.rejects(lists.removePart(list.id, 'p-uno'), /«Primer misterio» tiene cantos/);
+            const next = await lists.removePart(list.id, 'p-dos');
+            assert.deepEqual(next.parts.map((part) => part.id), ['p-uno']);
+            const alone = await lists.create({}, [{ id: 'solo', name: 'Solo' }]);
+            await assert.rejects(lists.removePart(alone.id, 'solo'), /al menos una sección/);
+        });
+
         it('replaces the sections, limits them and refuses a list over the limit of bytes', async () => {
             const list = await lists.create({}, own);
 

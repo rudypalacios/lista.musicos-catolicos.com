@@ -276,6 +276,54 @@ export class Setlists {
         return this.edit(id, (list) => ({ parts: cleanParts(parts, list.items) }));
     }
 
+    /**
+     * Adds a section at the end of the list. With `section` (one of the Mass's, offered when it is missing) it keeps
+     * its id; with only a name it is the person's own and gets an id made on the device, so renaming it later never
+     * orphans its songs. @throws ValidationError (as a rejected promise)
+     */
+    addPart(id: string, name: string, section?: PartDef): Promise<Setlist> {
+        return this.edit(id, (list) => {
+            const parts = partsOf(list);
+            const added: PartDef = section ?? { id: `p-${this.newId().replace(/-/g, '').slice(0, 8)}`, name };
+
+            return { parts: cleanParts([...parts, added], list.items) };
+        });
+    }
+
+    /** Renames a section; its songs stay where they are (they hold its id, not its name) */
+    renamePart(id: string, part: string, name: string): Promise<Setlist> {
+        return this.edit(id, (list) => ({
+            parts: cleanParts(partsOf(list).map((candidate) => (candidate.id === part ? { ...candidate, name } : candidate)), list.items),
+        }));
+    }
+
+    /** Moves a section one place up (−1) or down (1) among all the list's sections, the switched-off ones too */
+    movePart(id: string, part: string, direction: -1 | 1): Promise<Setlist> {
+        return this.edit(id, (list) => {
+            const parts = [...partsOf(list)];
+            const at = parts.findIndex((candidate) => candidate.id === part);
+            const to = at + direction;
+            if (at === -1 || to < 0 || to >= parts.length) {
+                return {};
+            }
+            [parts[at], parts[to]] = [parts[to] as PartDef, parts[at] as PartDef];
+
+            return { parts: cleanParts(parts, list.items) };
+        });
+    }
+
+    /** Deletes a section. One that holds songs cannot go: they would be left with no place (the person moves or removes them first) */
+    removePart(id: string, part: string): Promise<Setlist> {
+        return this.edit(id, (list) => {
+            const gone = partsOf(list).find((candidate) => candidate.id === part);
+            if (gone !== undefined && list.items.some((item) => item.part === part)) {
+                throw new ValidationError(`«${gone.name}» tiene cantos: quítalos antes de borrarla.`);
+            }
+
+            return { parts: cleanParts(partsOf(list).filter((candidate) => candidate.id !== part), list.items) };
+        });
+    }
+
     /** Switches one section off or on, where it is */
     setPartOff(id: string, part: string, off: boolean): Promise<Setlist> {
         return this.edit(id, (list) => ({
