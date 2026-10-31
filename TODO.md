@@ -168,7 +168,7 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       with the same title and text as one held starts unmarked ("Ya la tienes"). Measured on the owner's four PDFs (not in the repo): 12 songs went from 5673px
       to 2040px. The PDF reader message says a connection is needed every time (it is not cached). **Left out on purpose (the owner):** creating a list from
       an import (revisit with the templates, phase 6, since not every list is a Mass) and reading titles and authors by their layout in the PDF headers.
-      **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 29.
+      **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 28.
 - [ ] Adding several songs to one part takes a round trip per song (the picker returns to the list).
       If that is slow in practice, let the picker stay open and show what has been added.
 - [ ] **Paused (owner, after the UI session).** Duplicate a list ("copiar listado") to start next Sunday's from this
