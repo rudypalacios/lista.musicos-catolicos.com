@@ -177,7 +177,7 @@ try {
     await page.getByRole('button', { name: /Volver al tono mío/ }).click();
     await page.getByRole('button', { name: 'Subir un semitono' }).click();
     await page.getByRole('button', { name: 'Subir un semitono' }).click();
-    await page.getByRole('button', { name: 'Guardar como mi tono' }).click();
+    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
     await page.locator('.toast', { hasText: 'Tono guardado como tu tono' }).waitFor();
     assert.ok(!page.url().includes('t='), 'the key of the person is the default: nothing in the address');
     assert.deepEqual(await chordNames(page), ['Re', 'La']);
@@ -188,12 +188,23 @@ try {
     await page.getByRole('button', { name: 'Bajar un semitono' }).click();
     await page.getByRole('button', { name: 'Bajar un semitono' }).click();
     assert.match(page.url(), /\?t=0$/, 'another key than the person\'s is in the address');
-    await page.getByRole('button', { name: 'Guardar como mi tono' }).click();
+    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
     await page.locator('.toast', { hasText: 'Tono guardado como tu tono' }).waitFor();
     assert.deepEqual(await chordNames(page), ['Do', 'Sol']);
     await synced(page);
     assert.equal((await serverSongs(page))[0]?.myShift, 0);
     pass('"Guardar como mi tono": the song opens in it, it is not in the address, and it syncs');
+
+    // The arrow beside "Guardar", like singing's: mark "Solo por ahora" (writes nothing) or "Como mi tono"
+    await page.getByRole('button', { name: 'Subir un semitono' }).click();
+    await page.getByRole('button', { name: 'Otros sitios donde guardar' }).click();
+    assert.deepEqual(await page.locator('.tone-control__option').allTextContents(), ['Solo por ahora', 'Como mi tono']);
+    await page.locator('.tone-control__option', { hasText: 'Solo por ahora' }).click();
+    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+    await page.locator('.toast', { hasText: 'Queda solo por ahora' }).waitFor();
+    assert.equal((await serverSongs(page))[0]?.myShift, 0, 'nothing was written');
+    await page.getByRole('button', { name: 'Bajar un semitono' }).click();
+    pass('the arrow of "Guardar" offers "Solo por ahora" and "Como mi tono"; "Solo por ahora" writes nothing');
 
     // The notation is behind the song page's "⋯", with the other ways the lyrics are drawn
     await openSongMenu(page);

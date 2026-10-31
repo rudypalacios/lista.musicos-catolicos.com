@@ -68,7 +68,8 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
         saved: () => mine,
         savedName: 'Mío',
         hint: 'Solo por ahora',
-        primaryLabel: 'Guardar como mi tono',
+        primaryLabel: 'Guardar',
+        keptMessage: 'Queda solo por ahora',
         destinations: [{
             label: 'Como mi tono',
             save: async (t) => {

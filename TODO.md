@@ -186,7 +186,7 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       a PDF needs a connection and pasting does not. Pasting stays (offline, text from Word or the web, fixing by hand); only the "Convertir" button is now
       secondary. Nothing about privacy changes (the PDF is still read on the device). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 34.
 - [x] **The song page: one row of tools, the rest behind "⋯"** (`views/view.ts`, `reader.ts`, `tone-control.ts`; the owner approved the mockup): the key
-      (− Do +), A− / A+ and "⋯" are one row above the lyrics (a second line shows only while the key is changed, with "Guardar como mi tono");
+      (− Do +), A− / A+ and "⋯" are one row above the lyrics (a second line shows only while the key is changed, with the same "Guardar ▾" as singing: "Solo por ahora" / "Como mi tono");
       the "Tono Do" pill is gone from the head (`keyPill: false`; singing keeps it); the sheet of "⋯" has **Letra** (notation, fit, columns: `reader.display`)
       and **Este canto** (print with chords / lyrics only, "Editar letra y acordes", and last, red and set apart, "Eliminar canto", which asks first
       and goes back to Cantos). The loose "Imprimir" (`print-menu.ts`) and "Editar" buttons, `.viewer__bar` and the old overrides of the tone control
