@@ -279,7 +279,7 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    efecto. Se sigue llamando «⋯» en estas notas solo por costumbre.
 
 21. **La estrella amarilla en *Listados*.** Un listado destacado muestra, después de sus datos, una **estrellita amarilla** del tamaño de la
-   letra: «10 cantos · mar 1 sep ★». Los que no están destacados no la llevan. Se quita o se pone desde el `⋮` de la fila → «Quitar de
+   letra: «10 cantos ★». Los que no están destacados no la llevan. Se quita o se pone desde el `⋮` de la fila → «Quitar de
    destacados» / «Destacar».
 
 22. **Todos los iconos dibujados.** Ya no queda ninguno escrito como letra (se veían distinto según el aparato): las flechas de «volver»
@@ -291,14 +291,14 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
 23. **Eliminar un listado, desde *Listados*.** El `⋮` de cada fila tiene ahora, al final, en rojo y separado: **Eliminar listado**. Al
    tocarlo sale un cuadro de la app: «¿Eliminar «…»? Se borra el listado de todos tus dispositivos. Los cantos no se borran. No se
    puede deshacer.» con **Cancelar** (a la izquierda, ya seleccionado) y **Eliminar** (rojo). Cancelar, tocar fuera o el botón de
-   atrás de Android lo cierran sin borrar. Al eliminar sale «Listado eliminado». Dentro de un listado, su `⋮` ya **no** tiene
-   *Eliminar listado*, solo imprimir. El cuadro se ve igual en todos los aparatos (ya no es el aviso del navegador). Si el listado se
+   atrás de Android lo cierran sin borrar. Al eliminar sale «Listado eliminado». **Dentro de un listado** su `⋮` también tiene
+   *Eliminar listado* (ver el punto 29). El cuadro se ve igual en todos los aparatos (ya no es el aviso del navegador). Si el listado se
    borró en otro aparato, desaparece del tuyo al sincronizar.
 
-24. **La fecha es opcional, y se puede quitar.** Un listado puede no tener fecha (por ejemplo, una misa que sirve para octubre y noviembre).
-   Si tiene, junto a la fecha aparece una **✕** («Quitar la fecha», de 44 px): tócala y el listado queda sin fecha («＋ Fecha» para
-   ponerla otra vez). Pruébalo en el **iPad**, donde el selector de fecha no siempre trae «Borrar». Un listado sin fecha en *Listados* solo dice
-   sus cantos. **Duplicar listado** ya no pone la fecha de hoy: la copia sale sin fecha. «＋ Nuevo» sigue creando para hoy.
+24. **La fecha ya no se ve ni se edita dentro de un listado** (sustituye a lo que decía este punto: se quitó por decisión del dueño, porque no
+   se usa por ahora). El listado la sigue guardando (los que ya tenían fecha la conservan), pero **no se muestra en ninguna parte**: ni dentro del
+   listado (sin chip ni «✕») ni en *Listados*, donde la fila dice solo «10 cantos». **Duplicar listado** da una copia sin fecha. «＋ Nuevo» sigue
+   creando el listado con el título «Misa del …» y la fecha de hoy guardada.
 
 25. **Nuevo canto e Importar, pulidos (PR A de la revisión de «Nuevo canto»).** (a) Guardar un canto **sin título** ya no deja el mensaje
    abajo, junto a los botones: el campo *Título* se marca en rojo, recibe el foco y el mensaje aparece justo debajo; desaparece al escribir.
@@ -342,11 +342,22 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    leer un PDF» (el lector no se guarda en el dispositivo). **Prueba en el Android:** importa uno de tus PDF, toca «Usar» en un canto sin título,
    abre una fila, quita la marca de uno y guarda. En el iPad, al final.
 
-29. **Los dos diálogos que quedaban son los de la app.** **Eliminar un canto** (en «Editar canto») y **Salir** con cantos escritos que no se pudieron
-   enviar ya no usan la ventanita del navegador (que se veía distinta en cada aparato): salen con el diálogo propio, igual al de «Eliminar listado»
-   (el foco empieza en «Cancelar»; Escape, tocar afuera y el botón de atrás también cancelan). Al eliminar un canto que está en listados, el diálogo los
-   nombra y dice que ahí aparecerá como «Canto eliminado». **Prueba en el Android:** elimina un canto de prueba y, sin conexión, escribe uno y toca
-   «Salir» (pide confirmación; «Cancelar» lo conserva todo).
+29. **Dentro de un listado: el `⋮` en la esquina, y *Eliminar listado* desde ahí.** El nombre del listado lleva a su derecha el `⋮`, que
+   **siempre está** (también en un listado sin cantos; antes desaparecía). Debajo hay una sola fila: «N cantos» y, a la derecha, **Cantar** (más
+   pequeño que antes). **La fecha ya no aparece dentro del listado** (ver el punto 24). La hoja del `⋮` tiene *Imprimir con acordes* e *Imprimir solo la letra* (solo si hay cantos) y, al final, en rojo y
+   separado, **Eliminar listado**, con el mismo cuadro que en *Listados*. Al eliminar vuelves a *Listados* y sale «Listado eliminado».
+   Prueba un listado vacío (solo «Eliminar listado») y uno con cantos, en el teléfono y en la compu.
+
+30. **Cantos, como Listados.** (a) Arriba, en la compu: el buscador, **Importar** y **Nuevo canto** en una fila (en el teléfono el buscador va
+   solo y los dos botones debajo, del mismo ancho), y «N cantos» debajo (con una búsqueda, «2 cantos de 40»). (b) Los cantos son filas planas
+   en **una sola columna**, como las de *Listados*: el título y, debajo, «Autor · **Do**» (el tono en negrita, como dentro de un listado), y un `⋮` al final;
+   tocar el canto lo abre, como antes. (c) El `⋮` abre una hoja con **Editar letra y acordes** y, aparte y en rojo, **Eliminar canto**. (d) Eliminar un canto (también
+   el botón *Eliminar* de la pantalla de editar) pregunta con el cuadro de la app, no con el aviso del navegador, y nombra los listados donde
+   está el canto («ahí aparecerá como «Canto eliminado»»); al confirmar sale «Canto eliminado». Prueba en el teléfono y en la compu.
+
+32. **«Salir» con cantos sin enviar pregunta con el cuadro de la app.** Ya no usa la ventanita del navegador (que se veía distinta en cada aparato):
+   sale el mismo cuadro que al eliminar un listado o un canto (el foco empieza en «Cancelar»; Escape, tocar afuera y el botón de atrás también
+   cancelan). **Prueba en el Android:** sin conexión, escribe un canto y toca «Salir» (pide confirmación; «Cancelar» lo conserva todo).
 
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).

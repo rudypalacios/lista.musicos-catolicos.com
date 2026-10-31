@@ -183,7 +183,7 @@ function routeView(data: App, route: Route, navigate: Navigate): Promise<View> {
         case 'settings':
             return Promise.resolve(settingsView(accountOf(data)));
         case 'list':
-            return Promise.resolve(listView(data));
+            return Promise.resolve(listView(data, navigate));
         case 'new':
             return Promise.resolve(editView(data, navigate, undefined, route));
         case 'import':

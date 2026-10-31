@@ -295,7 +295,7 @@ try {
     const second = await tablet.newPage();
     await signIn(second, BASE);
     await second.getByRole('link', { name: 'Escrito sin conexión' }).waitFor();
-    assert.equal(await second.locator('.song-item').count(), 5);
+    assert.equal(await second.locator('.song-list .lrow').count(), 5);
     pass('a second device signs in and receives every song');
 
     await second.getByRole('link', { name: 'Escrito sin conexión' }).click();
@@ -316,11 +316,23 @@ try {
     // ----- deleting -----
     await second.getByRole('link', { name: 'Editar' }).waitFor({ state: 'hidden' }).catch(() => undefined);
     await second.goto(BASE + '/');
-    await second.getByRole('link', { name: 'Editado en la otra tablet' }).click();
-    await second.getByRole('link', { name: 'Editar' }).click();
-    await second.getByRole('button', { name: 'Eliminar' }).click();
-    await second.getByRole('alertdialog').getByRole('button', { name: 'Eliminar', exact: true }).click();
-    await second.getByRole('heading', { name: 'Cantos' }).waitFor();
+    // From the "⋯" of its row on Cantos, behind a question (Cancel keeps it)
+    await second.getByRole('button', { name: 'Más opciones: Editado en la otra tablet' }).click();
+    assert.deepEqual(
+        await second.locator('.sheet-layer.is-open .sheet-action').allTextContents(),
+        ['Editar letra y acordes', 'Eliminar canto'],
+        'the sheet of a song: edit it, and last, delete it',
+    );
+    await second.getByRole('button', { name: 'Eliminar canto' }).click();
+    const asked = second.getByRole('alertdialog');
+    await asked.getByText('No se puede deshacer').waitFor();
+    await asked.getByRole('button', { name: 'Cancelar' }).click();
+    await asked.waitFor({ state: 'hidden' });
+    await second.getByRole('link', { name: 'Editado en la otra tablet' }).waitFor();
+    await second.getByRole('button', { name: 'Más opciones: Editado en la otra tablet' }).click();
+    await second.getByRole('button', { name: 'Eliminar canto' }).click();
+    await asked.getByRole('button', { name: 'Eliminar', exact: true }).click();
+    await second.locator('.toast', { hasText: 'Canto eliminado' }).waitFor();
     await synced(second);
     assert.ok(!(await second.getByRole('link', { name: 'Editado en la otra tablet' }).isVisible()));
     const gone = (await serverSongs(second)).find((song) => song.title === 'Editado en la otra tablet');
