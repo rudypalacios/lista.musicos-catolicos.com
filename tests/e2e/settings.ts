@@ -170,7 +170,7 @@ try {
     for (const [part, song] of [['Canto de entrada', 'Camino largo'], ['Canto de salida', 'Puerta corta']] as const) {
         await page.getByRole('link', { name: `Agregar canto a ${part}` }).click();
         await page.getByLabel('Buscar cantos').fill(song);
-        await page.locator('button.song-item', { hasText: song }).click();
+        await page.locator('button.lrow__pick', { hasText: song }).click();
         await page.getByRole('link', { name: 'Volver a Listados' }).waitFor();
     }
     await synced(page);

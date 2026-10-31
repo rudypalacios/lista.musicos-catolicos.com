@@ -364,6 +364,11 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    sale el mismo cuadro que al eliminar un listado o un canto (el foco empieza en «Cancelar»; Escape, tocar afuera y el botón de atrás también
    cancelan). **Prueba en el Android:** sin conexión, escribe un canto y toca «Salir» (pide confirmación; «Cancelar» lo conserva todo).
 
+33. **Los cantos se ven igual en todas partes.** Al agregar un canto a una parte («Agregar a Ofertorio»), la lista de cantos ya no son tarjetas con el tono
+   en una etiqueta: es la misma fila de *Cantos* (el título en negrita y debajo «Autor · **Do**»), con el ojo azul al final para leer el canto antes de
+   agregarlo. Las primeras líneas de la letra siguen debajo para distinguir cantos con el mismo título. **Prueba:** abre «Agregar» en una parte y compárala
+   con *Cantos*; un canto que ya está en esa parte dice «Ya está aquí».
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.

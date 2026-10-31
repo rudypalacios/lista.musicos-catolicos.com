@@ -173,6 +173,10 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
 - [x] **New song / edit song on a wide screen** (from 900px, `views/edit.ts`, `styles.css`): "Vista previa" is titled outside its box like "Letra con
       acordes" and the two boxes are level; Guardar / Cancelar keep their size at the right, level with "Eliminar" (the same button, moved into the foot
       while the window is wide; a new song has none). The phone is unchanged. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 31.
+- [x] **The picker of a part lists songs like Cantos** (`views/add.ts`, `styles.css`): flat rows, the title, "Autor · Do" under it (the key a little brighter),
+      the eye at the end (blue, it reads the song); the first lines of the lyrics still show under it to tell songs apart, and "Ya está aquí" goes in the
+      detail line. The cards and chips it had are gone. **Rule (the owner):** a song looks the same wherever it is listed. **Owner's check:** `DEPLOY.md`
+      "Fases 4 y 5", item 33.
 - [ ] Adding several songs to one part takes a round trip per song (the picker returns to the list).
       If that is slow in practice, let the picker stay open and show what has been added.
 - [ ] **Paused (owner, after the UI session).** Duplicate a list ("copiar listado") to start next Sunday's from this
