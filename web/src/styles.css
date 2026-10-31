@@ -400,7 +400,8 @@ textarea.mono {
 }
 
 /* "Escribir | Ver": two halves of 44px that sit just above the lyrics */
-.pane-switch {
+.pane-switch,
+.import-tabs {
     display: flex;
     gap: 0.2rem;
     margin: 0.5rem 0 0.25rem;
@@ -410,7 +411,8 @@ textarea.mono {
     border-radius: 0.7rem;
 }
 
-.pane-switch button {
+.pane-switch button,
+.import-tabs button {
     flex: 1;
     min-height: 2.75rem;
     color: var(--muted);
@@ -420,7 +422,8 @@ textarea.mono {
     font-weight: 600;
 }
 
-.pane-switch button[aria-selected='true'] {
+.pane-switch button[aria-selected='true'],
+.import-tabs button[aria-selected='true'] {
     color: var(--accent);
     background: var(--accent-soft);
 }
@@ -964,15 +967,184 @@ input[type='search'] {
     opacity: 0.4;
 }
 
-/* The button that picks a PDF: the label is drawn, the real input is only there to open the picker */
-.file-pick {
-    position: relative;
-    margin: 0.25rem 0;
+/* The card that picks a PDF: all of it is touched, the real input is only there to open the picker */
+.pick {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    min-height: 4.5rem;
+    margin: 0.25rem 0 0.5rem;
+    padding: 0.9rem 1rem;
+    background: var(--surface);
+    border: 1.5px dashed var(--border);
+    border-radius: 0.9rem;
+    cursor: pointer;
 }
 
-.file-pick:focus-within {
+.pick:hover,
+.pick.is-over {
+    border-color: var(--accent);
+}
+
+.pick.is-focus {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
+}
+
+.pick__badge,
+.file-card__badge {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 0.7rem;
+}
+
+.pick__text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.pick__text small,
+.file-card__name small {
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.35;
+}
+
+/* "o suéltalo aquí" only where a file can be dropped */
+.pick__drop {
+    display: none;
+}
+
+@media (min-width: 900px) {
+    .pick__drop {
+        display: inline;
+    }
+}
+
+/* The file once chosen: its name and a bar that fills page by page */
+.file-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin: 0.25rem 0 0.75rem;
+    padding: 0.75rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0.9rem;
+}
+
+.file-card__top {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.file-card__name {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.file-card__name b {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-card.is-done .file-card__badge {
+    color: var(--ok);
+    background: rgba(122, 212, 154, 0.15);
+}
+
+.file-card__track {
+    height: 0.5rem;
+    overflow: hidden;
+    background: var(--border);
+    border-radius: 999px;
+}
+
+.file-card__track > i {
+    display: block;
+    width: 0;
+    height: 100%;
+    background: var(--accent);
+    border-radius: 999px;
+    transition: width 0.25s ease;
+}
+
+.file-card__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.file-card__say {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+.link-button {
+    min-height: 2.75rem;
+    padding: 0 0.5rem;
+    color: var(--accent);
+    background: none;
+    border: 0;
+    font: inherit;
+}
+
+.import-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.import-inputs > .or {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.25rem 0;
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+.import-inputs > .or::before,
+.import-inputs > .or::after {
+    flex: 1;
+    height: 1px;
+    content: '';
+    background: var(--border);
+}
+
+.import-inputs textarea {
+    min-height: 6rem;
+}
+
+/* Letra con acordes | Vista previa inside an open song: one box, the tab says which */
+.import-tabs {
+    margin: 0.6rem 0 0.4rem;
+}
+
+.import-pane > textarea {
+    width: 100%;
+    min-height: 12rem;
+    max-height: 18rem;
+}
+
+.import-pane > .preview {
+    max-height: 18rem;
+    margin-top: 0;
+    overflow: auto;
 }
 
 .help {

@@ -51,6 +51,47 @@ export function alreadyHave(song: { title: string; body: string }, saved: readon
     return title !== '' && saved.some((other) => other.title.trim().toLowerCase() === title && other.body.trim() === body);
 }
 
+/**
+ * Which songs of one import repeat an earlier one of the same import (the same title and the same text). The first
+ * of them is not a repeat: only the ones after it are, so one copy is still saved. Unlike `alreadyHave`, a song
+ * with no title counts (two identical untitled songs are the same song).
+ */
+export function repeatedInBatch(songs: readonly { title: string; body: string }[]): boolean[] {
+    const seen = new Set<string>();
+
+    return songs.map((song) => {
+        const key = `${song.title.trim().toLowerCase()}\u0000${song.body.trim()}`;
+        const repeated = seen.has(key);
+        seen.add(key);
+
+        return repeated;
+    });
+}
+
+/** "4 páginas" */
+export function pagesLabel(pages: number): string {
+    return `${pages} ${pages === 1 ? 'página' : 'páginas'}`;
+}
+
+/** "182 KB", "1,4 MB": a file's size for a person (decimal comma, as the rest of the app speaks Spanish) */
+export function bytesLabel(bytes: number): string {
+    if (bytes < 1024 * 1024) {
+        return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+    }
+
+    return `${(bytes / (1024 * 1024)).toFixed(1).replace('.', ',')} MB`;
+}
+
+/** What the reading says: "Abriendo el PDF…" until the pages are counted, then "Leyendo página 2 de 4…" */
+export function readingLabel(read: number, total: number): string {
+    return total === 0 ? 'Abriendo el PDF…' : `Leyendo página ${Math.min(read + 1, total)} de ${total}…`;
+}
+
+/** How full the bar is, 0 to 100 (an unknown total is empty) */
+export function readingPercent(read: number, total: number): number {
+    return total <= 0 ? 0 : Math.round((Math.min(read, total) / total) * 100);
+}
+
 /** One row of the review, as far as saving goes */
 export interface RowState {
     included: boolean;

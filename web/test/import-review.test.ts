@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { alreadyHave, footOf, sizeLabel, suggestedTitle } from '../src/import-review.ts';
+import { alreadyHave, bytesLabel, footOf, pagesLabel, readingLabel, readingPercent, repeatedInBatch, sizeLabel, suggestedTitle } from '../src/import-review.ts';
 import { attentionOf } from '../src/importer.ts';
 
 describe('sizeLabel', () => {
@@ -87,5 +87,44 @@ describe('attentionOf', () => {
             ]),
             ['Dos columnas', 'Sin acordes', 'Acordes sin letra', 'Cejilla'],
         );
+    });
+});
+
+describe('repeatedInBatch', () => {
+    it('marks the copies after the first, not the first', () => {
+        const a = { title: 'Gloria', body: '[C]Gloria' };
+        const b = { title: 'Santo', body: '[G]Santo' };
+        assert.deepEqual(repeatedInBatch([a, b, { ...a }, { title: ' gloria ', body: '[C]Gloria\n' }]), [false, false, true, true]);
+    });
+
+    it('needs the same text: a repeated title alone is allowed', () => {
+        assert.deepEqual(repeatedInBatch([{ title: 'Gloria', body: 'a' }, { title: 'Gloria', body: 'b' }]), [false, false]);
+    });
+
+    it('counts two identical songs with no title', () => {
+        assert.deepEqual(repeatedInBatch([{ title: '', body: 'same' }, { title: '', body: 'same' }]), [false, true]);
+    });
+});
+
+describe('what the reading of a file says', () => {
+    it('counts pages and sizes in Spanish', () => {
+        assert.equal(pagesLabel(1), '1 página');
+        assert.equal(pagesLabel(4), '4 páginas');
+        assert.equal(bytesLabel(0), '1 KB');
+        assert.equal(bytesLabel(186_368), '182 KB');
+        assert.equal(bytesLabel(1_468_006), '1,4 MB');
+    });
+
+    it('names the page being read, and the opening before pages are counted', () => {
+        assert.equal(readingLabel(0, 0), 'Abriendo el PDF…');
+        assert.equal(readingLabel(0, 4), 'Leyendo página 1 de 4…');
+        assert.equal(readingLabel(1, 4), 'Leyendo página 2 de 4…');
+        assert.equal(readingLabel(4, 4), 'Leyendo página 4 de 4…');
+    });
+
+    it('fills the bar by pages read, never past full', () => {
+        assert.equal(readingPercent(0, 0), 0);
+        assert.equal(readingPercent(1, 4), 25);
+        assert.equal(readingPercent(9, 4), 100);
     });
 });

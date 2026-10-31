@@ -170,6 +170,13 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       to 2040px. The PDF reader message says a connection is needed every time (it is not cached). **Left out on purpose (the owner):** creating a list from
       an import (revisit with the templates, phase 6, since not every list is a Mass) and reading titles and authors by their layout in the PDF headers.
       **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 28.
+- [x] **Import, the file and the tabs** (`views/import.ts`, `import-review.ts`, `pdf/read.ts` `onProgress`; the owner approved the mockup): "Elegir PDF" is a card
+      with the `upload` icon (drop a file on it from 900px), the chosen file shows its name, pages, size and a bar that fills page by page
+      ("Leyendo página 2 de 4…", then "Listo" and "Cambiar PDF"; new icon `file`), the PDF's text is no longer poured into the paste box, each open row has
+      **Letra con acordes | Vista previa** opening on the preview, and a song repeated inside one import ("Repetido", `repeatedInBatch`) starts unmarked.
+      **Decided with the owner:** the PDF reader (about 1.7 MB: chunk 0.49 + worker 1.24) is **not** kept for offline use; the message says reading
+      a PDF needs a connection and pasting does not. Pasting stays (offline, text from Word or the web, fixing by hand); only the "Convertir" button is now
+      secondary. Nothing about privacy changes (the PDF is still read on the device). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 34.
 - [x] **New song / edit song on a wide screen** (from 900px, `views/edit.ts`, `styles.css`): "Vista previa" is titled outside its box like "Letra con
       acordes" and the two boxes are level; Guardar / Cancelar keep their size at the right, level with "Eliminar" (the same button, moved into the foot
       while the window is wide; a new song has none). The phone is unchanged. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 31.
