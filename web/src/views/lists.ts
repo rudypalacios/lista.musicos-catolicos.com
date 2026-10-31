@@ -1,7 +1,6 @@
 import type { App } from '../app.ts';
 import type { Setlist } from '../data/types.ts';
 import { splitStarred } from '../data/setlists.ts';
-import { shortDay } from '../dates.ts';
 import { h } from '../dom.ts';
 import { icon, type IconName } from '../icons.ts';
 import { paths } from '../router.ts';
@@ -114,7 +113,8 @@ export function listsView(app: App, navigate: Navigate): View {
 
     const row = (list: Setlist): HTMLElement => {
         const count = list.items.length;
-        const detail = [count === 1 ? '1 canto' : `${count} cantos`, ...(list.eventDate === null ? [] : [shortDay(list.eventDate)])];
+        // The day of a list is kept in the data but not shown (the owner does not use it for now)
+        const detail = [count === 1 ? '1 canto' : `${count} cantos`];
 
         return h(
             'li',

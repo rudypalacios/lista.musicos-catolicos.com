@@ -279,7 +279,7 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    efecto. Se sigue llamando «⋯» en estas notas solo por costumbre.
 
 21. **La estrella amarilla en *Listados*.** Un listado destacado muestra, después de sus datos, una **estrellita amarilla** del tamaño de la
-   letra: «10 cantos · mar 1 sep ★». Los que no están destacados no la llevan. Se quita o se pone desde el `⋮` de la fila → «Quitar de
+   letra: «10 cantos ★». Los que no están destacados no la llevan. Se quita o se pone desde el `⋮` de la fila → «Quitar de
    destacados» / «Destacar».
 
 22. **Todos los iconos dibujados.** Ya no queda ninguno escrito como letra (se veían distinto según el aparato): las flechas de «volver»
@@ -296,8 +296,8 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    borró en otro aparato, desaparece del tuyo al sincronizar.
 
 24. **La fecha ya no se ve ni se edita dentro de un listado** (sustituye a lo que decía este punto: se quitó por decisión del dueño, porque no
-   se usa por ahora). El listado la sigue guardando (los que ya tenían fecha la conservan y *Listados* la muestra en el detalle de la fila, como
-   «10 cantos · mar 1 sep»), pero dentro del listado no hay chip de fecha ni «✕». **Duplicar listado** da una copia sin fecha. «＋ Nuevo» sigue
+   se usa por ahora). El listado la sigue guardando (los que ya tenían fecha la conservan), pero **no se muestra en ninguna parte**: ni dentro del
+   listado (sin chip ni «✕») ni en *Listados*, donde la fila dice solo «10 cantos». **Duplicar listado** da una copia sin fecha. «＋ Nuevo» sigue
    creando el listado con el título «Misa del …» y la fecha de hoy guardada.
 
 25. **Nuevo canto e Importar, pulidos (PR A de la revisión de «Nuevo canto»).** (a) Guardar un canto **sin título** ya no deja el mensaje

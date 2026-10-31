@@ -628,7 +628,7 @@ try {
     await page.getByRole('button', { name: 'Más opciones: Rosario en familia' }).waitFor();
     assert.equal(await page.getByRole('heading', { name: 'Recientes' }).count(), 0, 'no headings while nothing is starred');
     assert.equal(await page.locator('.lrow__title').first().textContent(), 'Rosario en familia', 'the list edited last comes first');
-    assert.match((await page.locator('.lrow__detail').first().textContent()) ?? '', /^0 cantos/);
+    assert.equal(await page.locator('.lrow__detail').first().textContent(), '0 cantos', 'a list shows its songs and no day');
     pass('with no stars the lists are one flat list, the most recently edited first, with no text explaining the star');
     assert.equal(await page.locator('button.star').count(), 0, 'there is no star on the rows: each has a "⋯"');
 

@@ -119,7 +119,7 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 19.
 - [x] "More options" is one drawn icon, three dots one above the other, on every screen (owner's choice; Cantar's bar no longer
       types a character). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 20.
-- [x] A starred list shows a small yellow star (drawn, `--star`) after its details on the lists screen ("10 cantos · mar 1 sep ★"),
+- [x] A starred list shows a small yellow star (drawn, `--star`) after its details on the lists screen ("10 cantos ★"),
       so the yellow is seen without opening the sheet. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 21.
 - [x] Every icon is drawn (SVG, `icons.ts`), none typed: the back arrows, the "＋" of "Nuevo" and "Fecha", the − and + of the key
       and of A− / A+, the arrow of "Do → C", the check of "App actualizada", the ✕ of the install bar, the chevron of the
@@ -142,7 +142,7 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
 - [x] **Delete a list from inside it too** (the owner unlocked the "Inside a list" row for this, `DESIGN-LOCK.md` updated): the list's "⋯"
       is always shown (it used to hide with no songs) and sits in the corner beside the name; under it one row with the count
       and a smaller "Cantar" at the right. **The day is no longer shown or edited inside a list** (the owner: not needed for now); it is
-      still stored (and shown in the lists screen's row), so it can come back; the chip and its "✕" are gone. Its sheet prints only while there are songs and ends with "Eliminar listado" (red, set apart),
+      still stored, so it can come back, and **the lists screen's row no longer shows it either**; the chip and its "✕" are gone. Its sheet prints only while there are songs and ends with "Eliminar listado" (red, set apart),
       which asks with the same dialog as the lists screen (`views/delete-list.ts`, shared) and goes back to Listados.
       **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 29.
 - [x] **Cantos like Listados** (the owner's mockup; `views/list.ts`): search, Importar and Nuevo canto in one row (the search alone on a phone),
