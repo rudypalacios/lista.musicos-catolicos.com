@@ -515,6 +515,46 @@ try {
     assert.ok(foot !== null && foot.y + foot.height <= 1180, 'the foot is inside the screen');
     pass('Guardar and Cancelar stay in view with a long song');
 
+    // From 900px the preview is titled outside its box, the two boxes are level, and Guardar / Cancelar keep their size
+    // and sit at the right, in the row of "Eliminar" (a new song has none)
+    await page.setViewportSize({ width: 1180, height: 820 });
+    await page.goto(BASE + '/cantos/nuevo');
+    await page.getByRole('heading', { name: 'Nuevo canto' }).waitFor();
+    await page.getByLabel('Letra con acordes').fill('[C]Uno [G]dos');
+    const tops = await page.evaluate(() => [
+        (document.getElementById('body') as HTMLElement).getBoundingClientRect().top,
+        (document.querySelector('.page--edit .preview .song-sheet') as HTMLElement).getBoundingClientRect().top,
+    ]);
+    assert.ok(Math.abs((tops[0] ?? 0) - (tops[1] ?? 99)) <= 1, `the two boxes are level (${tops.join(' / ')})`);
+    const title = await page.evaluate(() => {
+        const heading = document.querySelector('.page--edit .preview > h3') as HTMLElement;
+        const box = document.querySelector('.page--edit .preview .song-sheet') as HTMLElement;
+
+        return heading.getBoundingClientRect().bottom <= box.getBoundingClientRect().top;
+    });
+    assert.equal(title, true, 'the title of the preview is outside its box');
+    const save = await page.getByRole('button', { name: 'Guardar' }).boundingBox();
+    assert.ok(save !== null && save.width < 200, 'Guardar keeps its size');
+    assert.equal(await page.locator('.edit-foot').getByRole('button', { name: 'Eliminar' }).count(), 0);
+    await page.goto(BASE + '/');
+    await page.getByRole('link', { name: 'Lo guardé' }).click();
+    await page.getByRole('link', { name: 'Editar' }).click();
+    await page.getByRole('heading', { name: 'Editar canto' }).waitFor();
+    const row = await page.evaluate(() => {
+        const foot = document.querySelector('.edit-foot') as HTMLElement;
+        const remove = foot.querySelector('.edit-remove') as HTMLElement | null;
+        const saveButton = Array.from(foot.querySelectorAll('button')).find((b) => b.textContent === 'Guardar') as HTMLElement;
+
+        return remove === null ? null : [remove.getBoundingClientRect().top, saveButton.getBoundingClientRect().top, remove.getBoundingClientRect().left, saveButton.getBoundingClientRect().left];
+    });
+    assert.ok(row !== null, 'Eliminar is in the foot');
+    assert.ok(Math.abs((row?.[0] ?? 0) - (row?.[1] ?? 99)) <= 1 && (row?.[2] ?? 99) < (row?.[3] ?? 0), 'Eliminar is level with Guardar, at the left');
+    await page.setViewportSize({ width: 820, height: 1180 });
+    await page.waitForFunction(() => document.querySelector('.edit-foot .edit-remove') === null);
+    await page.locator('.edit-pane--write').getByRole('button', { name: 'Eliminar' }).waitFor();
+    pass('on a wide screen the preview is titled outside its box, the boxes are level and the buttons sit at the right with Eliminar');
+    await openSection(page, 'Cantos');
+
     // ----- signing out -----
     await synced(page);
     await ipad.setOffline(true);
