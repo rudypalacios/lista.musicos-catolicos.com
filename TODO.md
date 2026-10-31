@@ -72,6 +72,9 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
 ## Small things to do when convenient
 
 - [ ] Tune the fit limits (`DEFAULT_LIMITS`, `COMFORTABLE_SIZE`, `TWO_COLUMNS_GAIN` in `web/src/fit.ts`) after seeing it on the devices.
+- [x] **The colour circles of Ajustes show their colours** (`views/settings.ts`): they were painted with a `style` attribute, which the page's policy refuses in
+      production, so they were empty. Now through the CSSOM; `tests/e2e/settings.ts` runs under the production policy and checks the colours and that no rule is broken.
+      **Owner's check:** Ajustes → *Color de la letra*: each option has its coloured circle.
 - [x] Keep the screen awake while a song is open or a list is being sung (Screen Wake Lock, `web/src/wakelock.ts`;
       on by default, an Ajustes choice turns it off). **Owner's check:** Android and iPad (Safari 16.4+; a
       home-screen app only from iOS 18.4), see `DEPLOY.md`.

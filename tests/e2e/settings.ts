@@ -6,7 +6,7 @@
  *     npm run build && node tests/e2e/settings.ts
  */
 import assert from 'node:assert/strict';
-import { chromium, openSection, openSongMenu, reporter, signIn, startServer, synced } from './lib.ts';
+import { chromium, enforcePolicy, openSection, openSongMenu, reporter, signIn, startServer, synced } from './lib.ts';
 import type { Page } from 'playwright';
 
 const server = await startServer(18094);
@@ -77,6 +77,8 @@ try {
     const page = await context.newPage();
     const problems: string[] = [];
     page.on('pageerror', (error) => problems.push(error.message));
+    // Under the production policy, which refuses inline styles (it once left the colour circles empty)
+    const violations = await enforcePolicy(context, page);
     await signIn(page, server.base);
     await createSong(page, 'Puerta corta', SHORT);
     await createSong(page, 'Camino largo', LONG);
@@ -95,6 +97,10 @@ try {
     await setting(page, 'Do, Re, Mi');
 
     // ----- lyric colour -----
+    const swatches = await page.evaluate(() => Array.from(document.querySelectorAll('.swatch')).map((node) => getComputedStyle(node).backgroundColor));
+    assert.equal(swatches.length, 5);
+    assert.deepEqual(swatches.slice(1), ['rgb(255, 255, 255)', 'rgb(255, 212, 121)', 'rgb(180, 234, 176)', 'rgb(169, 214, 255)'], 'every colour circle shows its colour');
+    pass('the colour circles show their colours under the production policy');
     await page.getByLabel('Ámbar').check();
     assert.equal(await page.evaluate(() => document.documentElement.style.getPropertyValue('--lyric-color')), '#ffd479');
     await openSong(page, 'Puerta corta');
@@ -280,6 +286,7 @@ try {
     await page.getByRole('button', { name: 'Más opciones: Camino largo' }).waitFor();
     pass('the tools sheet has no note field and the list shows no note');
 
+    assert.deepEqual(violations, [], 'the settings screens break no rule of the Content-Security-Policy');
     assert.deepEqual(problems, [], 'no uncaught errors in the page');
     pass('no uncaught errors in the page');
     console.log(`\n${count()} checks passed`);

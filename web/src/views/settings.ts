@@ -38,7 +38,11 @@ export function settingsView(account: Account): View {
             });
             const label = h('label', { class: 'choice__option' }, input);
             if (option.swatch !== undefined) {
-                label.append(h('span', { class: 'swatch', style: `background:${option.swatch ?? 'var(--text)'}`, 'aria-hidden': 'true' }));
+                // Through the CSSOM, not a `style` attribute: the page's policy (public/.htaccess) refuses inline styles,
+                // which left the circles empty in production
+                const swatch = h('span', { class: 'swatch', 'aria-hidden': 'true' });
+                swatch.style.background = option.swatch ?? 'var(--text)';
+                label.append(swatch);
             }
             label.append(option.label);
             set.append(label);
