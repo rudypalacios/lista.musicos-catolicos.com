@@ -12,8 +12,8 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * GET /api/sync?since=N → 200 {songs: [...], setlists: [...], cursor, hasMore}: the songs and
- * setlists that changed after change number N (0 for everything), deleted ones included
+ * GET /api/sync?since=N → 200 {songs: [...], setlists: [...], templates: [...], cursor, hasMore}: the songs,
+ * setlists and templates that changed after change number N (0 for everything), deleted ones included
  * (`deletedAt`), oldest first. A client keeps asking with the returned `cursor` while
  * `hasMore` is true.
  */

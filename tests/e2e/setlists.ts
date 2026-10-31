@@ -7,7 +7,7 @@
  *     npm run build && node tests/e2e/setlists.ts
  */
 import assert from 'node:assert/strict';
-import { chromium, editFromSongPage, openSection, enforcePolicy, reporter, signIn, startServer, synced } from './lib.ts';
+import { newList, chromium, editFromSongPage, openSection, enforcePolicy, reporter, signIn, startServer, synced } from './lib.ts';
 import type { Page } from 'playwright';
 
 const server = await startServer(18086);
@@ -47,6 +47,11 @@ async function deleteOpenList(page: Page): Promise<void> {
     await page.getByRole('button', { name: 'Eliminar listado' }).click();
     await page.getByRole('alertdialog').getByRole('button', { name: 'Eliminar', exact: true }).click();
     await page.locator('.toast', { hasText: 'Listado eliminado' }).waitFor();
+}
+
+/** The names of the sections the list screen shows, in order */
+function sectionsShown(page: Page): Promise<string[]> {
+    return page.locator('section.slot h3').allTextContents();
 }
 
 function slot(page: Page, part: string) {
@@ -151,7 +156,7 @@ try {
     assert.equal(await page.getByRole('link', { name: 'Listados', exact: true }).getAttribute('aria-current'), 'page');
     pass('the Listados tab starts empty and is marked as the section on screen');
 
-    await page.getByRole('button', { name: 'Nuevo listado' }).click();
+    await newList(page);
     await page.locator('section.slot').first().waitFor();
     assert.equal(await page.getByLabel('Fecha de la misa').count(), 0, 'the list screen shows no day and has no field for it');
     assert.match(await page.getByLabel('Título').inputValue(), /^Misa del \d{1,2} de [a-záéíóú]+$/);
@@ -332,7 +337,7 @@ try {
     await page.getByRole('switch', { name: 'Misterios gozosos' }).waitFor();
     assert.equal(await page.getByLabel('Nombre de la sección nueva').inputValue(), '', 'the field is ready for the next one');
     await page.getByRole('button', { name: 'Cambiar el nombre: Misterios gozosos' }).click();
-    const renameField = page.getByLabel(/Nombre de la sección: Misterios gozosos/);
+    const renameField = page.getByLabel('Nombre de la sección: Misterios gozosos');
     await renameField.fill('Misterios luminosos');
     await renameField.press('Enter');
     await page.getByRole('switch', { name: 'Misterios luminosos' }).waitFor();
@@ -700,7 +705,7 @@ try {
     pass('an edit of the list made on one device shows up on the other');
 
     // ----- stars: the starred lists first, searching, and the star on the other device -----
-    await page.getByRole('button', { name: 'Nuevo listado' }).click();
+    await newList(page);
     await page.locator('section.slot').first().waitFor();
     await page.getByLabel('Título').fill('Rosario en familia');
     await page.getByLabel('Título').blur();
@@ -776,7 +781,7 @@ try {
     await synced(page);
 
     // ----- the way to add a song is in the head of the part -----
-    await page.getByRole('button', { name: 'Nuevo listado' }).click();
+    await newList(page);
     await page.locator('section.slot').first().waitFor();
     const empty = slot(page, 'Señor, ten piedad');
     assert.equal((await empty.locator('.slot__head a.add').innerText()).trim(), 'Agregar', 'a part with no song has "Agregar", in its head');
@@ -875,8 +880,78 @@ try {
     });
     pass('deleting a list removes it here and on the other device');
 
-    // ----- an empty list: the "⋯" is there, with nothing to print, and the list can be deleted from inside -----
+    // ----- templates: "＋ Nuevo" asks which; the Misa is one among others; they are saved from a list and managed on a screen -----
+    await newList(page);
+    await page.locator('section.slot').first().waitFor();
+    await page.getByRole('button', { name: 'Más opciones del listado' }).click();
+    await page.getByRole('button', { name: 'Secciones del listado' }).click();
+    await page.getByLabel('Nombre de la sección nueva').fill('Misterios');
+    await page.getByRole('button', { name: 'Agregar', exact: true }).click();
+    await page.getByRole('switch', { name: 'Misterios' }).waitFor();
+    await page.getByLabel('Nombre de la plantilla').fill('Mi plantilla');
+    await page.getByRole('button', { name: 'Guardar como plantilla' }).click();
+    await page.locator('.toast', { hasText: 'Plantilla «Mi plantilla» guardada' }).waitFor();
+    await page.locator('.bar__back').click();
+    await deleteOpenList(page);
+
     await page.getByRole('button', { name: 'Nuevo listado' }).click();
+    await page.getByText('Selecciona una plantilla').waitFor();
+    await page.locator('.sheet-layer.is-open .sheet-action').nth(3).waitFor();
+    const offered = (await page.locator('.sheet-layer.is-open .sheet-action').allTextContents()).map((text) => text.replace(/\d+ secciones?.*$/, '').trim());
+    assert.deepEqual(offered.slice(0, 2), ['Misa', 'Mi plantilla'], 'the Misa is a template like the others (the last used first)');
+    assert.deepEqual(offered.slice(2).map((text) => text.replace(/Una sola sección.*$/, '').trim()), ['En blanco', 'Administrar plantillas']);
+    await noTypedIcons(page, 'the template sheet');
+    await page.locator('.sheet-layer.is-open .sheet-action', { hasText: 'En blanco' }).click();
+    await page.locator('section.slot').first().waitFor();
+    assert.deepEqual(await sectionsShown(page), ['Cantos'], 'a blank list has one section');
+    assert.match(await page.getByLabel('Título').inputValue(), /^Listado del \d{1,2} de [a-záéíóú]+$/);
+    await deleteOpenList(page);
+
+    await newList(page, 'Mi plantilla');
+    await page.locator('section.slot').first().waitFor();
+    assert.equal((await sectionsShown(page)).length, 16, 'a list starts with a copy of the sections of its template');
+    assert.match(await page.getByLabel('Título').inputValue(), /^Mi plantilla del \d{1,2} de [a-záéíóú]+$/);
+    await deleteOpenList(page);
+    await page.getByRole('button', { name: 'Nuevo listado' }).click();
+    await page.locator('.sheet-layer.is-open .sheet-action').nth(3).waitFor();
+    assert.match((await page.locator('.sheet-layer.is-open .sheet-action').first().innerText()), /^Mi plantilla/, 'the one used last is the first');
+    pass('"＋ Nuevo" asks which template: the Misa, the person\'s own, blank; the list starts with a copy of its sections and a title from the template');
+
+    await page.getByRole('button', { name: 'Administrar plantillas' }).click();
+    await page.getByRole('heading', { name: 'Plantillas' }).waitFor();
+    assert.match(await page.locator('.bar').innerText(), /Listados/, 'the screen of the templates hangs from the lists');
+    assert.deepEqual((await page.locator('.lrow__title').allTextContents()).sort(), ['Mi plantilla', 'Misa']);
+    await page.locator('.lrow__link', { hasText: 'Mi plantilla' }).click();
+    await page.getByLabel('Nombre de la plantilla').fill('Rosario');
+    await page.getByLabel('Nombre de la plantilla').press('Enter');
+    await page.getByLabel('Nombre de la sección nueva').fill('Final');
+    await page.getByRole('button', { name: 'Agregar', exact: true }).click();
+    await page.getByRole('button', { name: 'Cambiar el nombre: Final' }).waitFor();
+    assert.equal(await page.getByRole('switch').count(), 0, 'a template has no switches');
+    await page.getByRole('button', { name: 'Borrar: Final' }).click();
+    await page.getByRole('button', { name: 'Cambiar el nombre: Final' }).waitFor({ state: 'detached' });
+    await page.locator('.bar__back').click();
+    await page.locator('.lrow__link', { hasText: 'Rosario' }).waitFor();
+    await page.getByRole('button', { name: 'Más opciones: Rosario' }).click();
+    await page.getByRole('button', { name: 'Duplicar plantilla' }).click();
+    await page.getByLabel('Nombre de la plantilla').waitFor();
+    assert.equal(await page.getByLabel('Nombre de la plantilla').inputValue(), 'Copia de Rosario');
+    await page.locator('.bar__back').click();
+    for (const name of ['Copia de Rosario', 'Rosario']) {
+        await page.getByRole('button', { name: `Más opciones: ${name}` }).click();
+        await page.getByRole('button', { name: 'Eliminar plantilla' }).click();
+        const question = page.getByRole('alertdialog');
+        await question.getByText(`«${name}»`).waitFor();
+        await question.getByRole('button', { name: 'Eliminar', exact: true }).click();
+        await page.locator('.toast', { hasText: 'Plantilla eliminada' }).waitFor();
+        await page.locator('.lrow__title', { hasText: name }).waitFor({ state: 'detached' });
+    }
+    assert.deepEqual(await page.locator('.lrow__title').allTextContents(), ['Misa']);
+    await openSection(page, 'Listados');
+    pass('the templates screen: open one, rename it, add and delete a section, duplicate it, delete it after a question; no switches there');
+
+    // ----- an empty list: the "⋯" is there, with nothing to print, and the list can be deleted from inside -----
+    await newList(page);
     await page.locator('section.slot').first().waitFor();
     await page.getByRole('button', { name: 'Más opciones del listado' }).click();
     assert.deepEqual(await page.locator('.sheet-layer.is-open .sheet-action').allTextContents(), ['Secciones del listadoQué secciones lleva este listado', 'Eliminar listado'], 'an empty list has nothing to print');
@@ -888,7 +963,7 @@ try {
 
     // ----- a phone -----
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.getByRole('button', { name: 'Nuevo listado' }).click();
+    await newList(page);
     await page.locator('section.slot').first().waitFor();
     await addToSlot(page, 'Canto de salida', 'puerta');
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);

@@ -4,9 +4,10 @@ import { IdbStore } from './data/idb-store.ts';
 import { Library, type SongDraft } from './data/library.ts';
 import { MemoryStore } from './data/memory-store.ts';
 import { Setlists } from './data/setlists.ts';
+import { Templates } from './data/templates.ts';
 import type { LocalStore } from './data/store.ts';
 import { SyncEngine, SyncStopped } from './data/sync.ts';
-import type { Song } from './data/types.ts';
+import { COLLECTIONS, type Song } from './data/types.ts';
 import { newSongDraft } from './song-draft.ts';
 
 export type SyncState = 'idle' | 'syncing' | 'offline' | 'signed-out' | 'error';
@@ -31,6 +32,8 @@ export class App {
     private readonly library: Library;
     /** The person's setlists: every change made through it is saved here and synced */
     readonly setlists: Setlists;
+    /** The sections a new list starts with ("Misa", "Rosario"…), synced like the rest */
+    readonly templates: Templates;
     private readonly engine: SyncEngine;
     private readonly durable: boolean;
     private running: Promise<void> | null = null;
@@ -47,6 +50,7 @@ export class App {
         this.durable = durable;
         this.library = new Library(store);
         this.setlists = new Setlists(store, () => void this.afterWrite(undefined));
+        this.templates = new Templates(store, () => void this.afterWrite(undefined));
         this.engine = new SyncEngine(store, remote, errorKinds);
     }
 
@@ -188,6 +192,8 @@ export class App {
             const result = await this.engine.sync();
             this.rejected = new Set(result.rejected);
             this.state = 'idle';
+            // After hearing from the server: only now is a missing Misa really missing (see `ensureMisa`)
+            await this.templates.ensureMisa();
             if (result.pulled > 0) {
                 this.emitData();
             }
@@ -249,9 +255,9 @@ export class App {
     }
 
     private async countPending(): Promise<number> {
-        const [songs, lists] = await Promise.all([this.store.pending('songs'), this.store.pending('setlists')]);
+        const queues = await Promise.all(COLLECTIONS.map((collection) => this.store.pending(collection)));
 
-        return songs.length + lists.length;
+        return queues.reduce((total, queue) => total + queue.length, 0);
     }
 
     private emitStatus(): void {

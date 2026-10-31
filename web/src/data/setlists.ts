@@ -1,5 +1,6 @@
 import { isValidDate, shortDate, today } from '../dates.ts';
 import { massSections } from '../mass.ts';
+import { addedTo, cleanParts, movedIn, renamedIn, switchedIn, withoutPart } from './parts.ts';
 import { ValidationError } from './library.ts';
 import type { LocalStore } from './store.ts';
 import { nearestShift } from '../keys.ts';
@@ -77,9 +78,9 @@ export function positionInList(list: Pick<Setlist, 'parts' | 'items'>, itemId: s
     return inListOrder(list).findIndex((item) => item.id === itemId) + 1;
 }
 
-/** The title a new list gets: the person renames it if they like */
-export function defaultTitle(eventDate: string): string {
-    return `Misa del ${shortDate(eventDate)}`;
+/** The title a new list gets, from the name of the template it starts with ("Misa del 1 de noviembre"): the person renames it if they like */
+export function defaultTitle(eventDate: string, templateName = 'Misa'): string {
+    return `${templateName} del ${shortDate(eventDate)}`;
 }
 
 const COPY_PREFIX = 'Copia de ';
@@ -276,40 +277,19 @@ export class Setlists {
         return this.edit(id, (list) => ({ parts: cleanParts(parts, list.items) }));
     }
 
-    /**
-     * Adds a section at the end of the list. With `section` (one of the Mass's, offered when it is missing) it keeps
-     * its id; with only a name it is the person's own and gets an id made on the device, so renaming it later never
-     * orphans its songs. @throws ValidationError (as a rejected promise)
-     */
+    /** Adds a section at the end of the list (see `addedTo`: the person's own, or one of the Mass's) */
     addPart(id: string, name: string, section?: PartDef): Promise<Setlist> {
-        return this.edit(id, (list) => {
-            const parts = partsOf(list);
-            const added: PartDef = section ?? { id: `p-${this.newId().replace(/-/g, '').slice(0, 8)}`, name };
-
-            return { parts: cleanParts([...parts, added], list.items) };
-        });
+        return this.edit(id, (list) => ({ parts: cleanParts(addedTo(partsOf(list), name, () => this.newId(), section), list.items) }));
     }
 
     /** Renames a section; its songs stay where they are (they hold its id, not its name) */
     renamePart(id: string, part: string, name: string): Promise<Setlist> {
-        return this.edit(id, (list) => ({
-            parts: cleanParts(partsOf(list).map((candidate) => (candidate.id === part ? { ...candidate, name } : candidate)), list.items),
-        }));
+        return this.edit(id, (list) => ({ parts: cleanParts(renamedIn(partsOf(list), part, name), list.items) }));
     }
 
     /** Moves a section one place up (−1) or down (1) among all the list's sections, the switched-off ones too */
     movePart(id: string, part: string, direction: -1 | 1): Promise<Setlist> {
-        return this.edit(id, (list) => {
-            const parts = [...partsOf(list)];
-            const at = parts.findIndex((candidate) => candidate.id === part);
-            const to = at + direction;
-            if (at === -1 || to < 0 || to >= parts.length) {
-                return {};
-            }
-            [parts[at], parts[to]] = [parts[to] as PartDef, parts[at] as PartDef];
-
-            return { parts: cleanParts(parts, list.items) };
-        });
+        return this.edit(id, (list) => ({ parts: cleanParts(movedIn(partsOf(list), part, direction), list.items) }));
     }
 
     /** Deletes a section. One that holds songs cannot go: they would be left with no place (the person moves or removes them first) */
@@ -320,25 +300,13 @@ export class Setlists {
                 throw new ValidationError(`«${gone.name}» tiene cantos: quítalos antes de borrarla.`);
             }
 
-            return { parts: cleanParts(partsOf(list).filter((candidate) => candidate.id !== part), list.items) };
+            return { parts: cleanParts(withoutPart(partsOf(list), part), list.items) };
         });
     }
 
     /** Switches one section off or on, where it is */
     setPartOff(id: string, part: string, off: boolean): Promise<Setlist> {
-        return this.edit(id, (list) => ({
-            parts: cleanParts(
-                partsOf(list).map((candidate) => {
-                    if (candidate.id !== part) {
-                        return candidate;
-                    }
-                    const { off: _off, ...rest } = candidate;
-
-                    return off ? { ...rest, off: true as const } : rest;
-                }),
-                list.items,
-            ),
-        }));
+        return this.edit(id, (list) => ({ parts: cleanParts(switchedIn(partsOf(list), part, off), list.items) }));
     }
 
     removeItem(id: string, itemId: string): Promise<Setlist> {
@@ -474,53 +442,6 @@ function cleanDraft(draft: SetlistDraft): SetlistDraft {
     }
 
     return { title, eventDate: draft.eventDate, notes };
-}
-
-/**
- * The sections as they are kept: names trimmed, no empty name or repeated id, at least one that is shown, and none
- * switched off while it holds songs. Says what is wrong in the person's words (it is shown as it is).
- */
-function cleanParts(parts: readonly PartDef[], items: readonly SetlistItem[]): PartDef[] {
-    if (parts.length === 0) {
-        throw new ValidationError('El listado necesita al menos una sección.');
-    }
-    if (parts.length > LIMITS.parts) {
-        throw new ValidationError(`Un listado admite hasta ${LIMITS.parts} secciones.`);
-    }
-    const seen = new Set<string>();
-    const clean = parts.map((part): PartDef => {
-        const name = part.name.trim();
-        if (name === '') {
-            throw new ValidationError('Una sección necesita un nombre.');
-        }
-        if (Array.from(name).length > LIMITS.partName) {
-            throw new ValidationError(`El nombre de la sección es demasiado largo (máximo ${LIMITS.partName} caracteres).`);
-        }
-        if (seen.has(part.id)) {
-            throw new ValidationError('Dos secciones tienen el mismo identificador.');
-        }
-        seen.add(part.id);
-
-        return {
-            id: part.id,
-            name,
-            ...(part.off === true ? { off: true as const } : {}),
-            ...(part.optional === true ? { optional: true as const } : {}),
-            ...(part.note !== undefined && part.note !== '' ? { note: part.note.slice(0, LIMITS.partNote) } : {}),
-        };
-    });
-    if (clean.every((part) => part.off === true)) {
-        throw new ValidationError('El listado necesita al menos una sección encendida.');
-    }
-    for (const item of items) {
-        const part = clean.find((candidate) => candidate.id === item.part);
-        // A song whose section is unknown already shows apart: not a reason to refuse the change
-        if (part?.off === true) {
-            throw new ValidationError(`«${part.name}» tiene cantos: quítalos antes de apagarla.`);
-        }
-    }
-
-    return clean;
 }
 
 /** The server takes at most this many bytes of items and of sections; better to say so here than to have it refuse the list later */

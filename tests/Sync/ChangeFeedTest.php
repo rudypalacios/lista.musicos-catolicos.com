@@ -9,6 +9,8 @@ use App\Sync\SetlistChange;
 use App\Sync\SetlistRepository;
 use App\Sync\SongChange;
 use App\Sync\SongRepository;
+use App\Sync\TemplateChange;
+use App\Sync\TemplateRepository;
 use PHPUnit\Framework\TestCase;
 use Tests\Support\TestDatabase;
 
@@ -18,6 +20,7 @@ final class ChangeFeedTest extends TestCase
 
     private SongRepository $songs;
     private SetlistRepository $setlists;
+    private TemplateRepository $templates;
     private ChangeFeed $feed;
 
     protected function setUp(): void
@@ -25,7 +28,8 @@ final class ChangeFeedTest extends TestCase
         $pdo = TestDatabase::migrated();
         $this->songs = new SongRepository($pdo);
         $this->setlists = new SetlistRepository($pdo);
-        $this->feed = new ChangeFeed($this->songs, $this->setlists);
+        $this->templates = new TemplateRepository($pdo);
+        $this->feed = new ChangeFeed($this->songs, $this->setlists, $this->templates);
     }
 
     private function id(string $kind, int $n): string
@@ -50,6 +54,7 @@ final class ChangeFeedTest extends TestCase
 
         $this->assertSame([], $page['songs']);
         $this->assertSame([], $page['setlists']);
+        $this->assertSame([], $page['templates']);
         $this->assertSame(0, $page['cursor']);
         $this->assertFalse($page['hasMore']);
     }
@@ -66,6 +71,22 @@ final class ChangeFeedTest extends TestCase
         $this->assertSame(['Misa 1'], array_column($page['setlists'], 'title'));
         $this->assertSame(3, $page['cursor']);
         $this->assertFalse($page['hasMore']);
+    }
+
+    public function testTemplatesShareTheSameCursor(): void
+    {
+        $this->song(1);
+        $this->templates->apply(
+            self::ME,
+            new TemplateChange($this->id('c', 1), 'Rosario', [['id' => 'p-uno', 'name' => 'Misterios']], 2000, false)
+        );
+        $this->setlist(1);
+
+        $page = $this->feed->page(self::ME, 0, 10);
+
+        $this->assertSame(['Rosario'], array_column($page['templates'], 'name'));
+        $this->assertSame(3, $page['cursor']);
+        $this->assertSame([], $this->feed->page(self::ME, 3, 10)['templates']);
     }
 
     public function testAPageIsCutByChangeNumberWhicheverTableHoldsTheChanges(): void

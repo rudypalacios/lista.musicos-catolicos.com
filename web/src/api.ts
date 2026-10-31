@@ -1,6 +1,6 @@
 /** Thin client for the JSON API (src/Http). Every failure is an ApiError the UI can tell apart. */
 import type { ErrorKinds } from './data/sync.ts';
-import type { Collection, Pulled, Pushed, Records, Remote, Setlist, Song, Stamped } from './data/types.ts';
+import type { Collection, Pulled, Pushed, Records, Remote, Setlist, Song, Stamped, Template } from './data/types.ts';
 
 export class ApiError extends Error {
     /** HTTP status, or 0 when the request never reached the server (offline) */
@@ -67,6 +67,7 @@ export interface Me {
 interface PulledPage {
     songs: (Song & { seq?: number })[];
     setlists: (Setlist & { seq?: number })[];
+    templates: (Template & { seq?: number })[];
     cursor: number;
     hasMore: boolean;
 }
@@ -93,6 +94,20 @@ const pickSetlist = ({ id, title, eventDate, notes, starred, items, parts, updat
     deletedAt,
 });
 
+const pickTemplate = ({ id, name, parts, updatedAt, deletedAt }: Template): Template => ({
+    id,
+    name,
+    parts: parts.map(({ id: partId, name: partName, off, optional, note }) => ({
+        id: partId,
+        name: partName,
+        ...(off === true ? { off } : {}),
+        ...(optional === true ? { optional } : {}),
+        ...(note !== undefined ? { note } : {}),
+    })),
+    updatedAt,
+    deletedAt,
+});
+
 /** A record as the server takes it: `deletedAt` becomes the `deleted` flag */
 function toWire(record: Stamped): object {
     const { deletedAt, ...rest } = record;
@@ -109,6 +124,7 @@ export const api = {
             ...page,
             songs: page.songs.map(pickSong),
             setlists: page.setlists.map(pickSetlist),
+            templates: page.templates.map(pickTemplate),
         })),
     push: <C extends Collection>(collection: C, records: readonly Records[C][]): Promise<Pushed> =>
         request<Pushed>('POST', '/api/sync', { [collection]: records.map(toWire) }),

@@ -16,6 +16,8 @@ export type Route =
     | { name: 'edit'; id: string; back?: string }
     | { name: 'lists' }
     | { name: 'setlist'; id: string }
+    | { name: 'templates' }
+    | { name: 'template'; id: string }
     | { name: 'sections'; id: string }
     | { name: 'add'; id: string; part: string }
     | { name: 'perform'; id: string; n: number }
@@ -54,6 +56,13 @@ export function matchRoute(path: string, search = ''): Route {
 
     if (clean === '/listados') {
         return { name: 'lists' };
+    }
+    if (clean === '/plantillas') {
+        return { name: 'templates' };
+    }
+    const template = new RegExp(`^/plantillas/${ID}$`).exec(clean);
+    if (template?.[1] !== undefined) {
+        return { name: 'template', id: template[1] };
     }
     const setlist = new RegExp(`^/listados/${ID}$`).exec(clean);
     if (setlist?.[1] !== undefined) {
@@ -122,6 +131,9 @@ export const paths = {
     edit: (id: string, back?: string): string => (back === undefined ? `/cantos/${id}/editar` : `/cantos/${id}/editar?volver=${encodeURIComponent(back)}`),
     lists: (): string => '/listados',
     setlist: (id: string): string => `/listados/${id}`,
+    /** The templates: the sections a new list starts with */
+    templates: (): string => '/plantillas',
+    template: (id: string): string => `/plantillas/${id}`,
     /** Which sections the list has: turn them on and off */
     sections: (id: string): string => `/listados/${id}/secciones`,
     addToSetlist: (id: string, part: string): string => `/listados/${id}/agregar/${part}`,
@@ -135,6 +147,8 @@ export const paths = {
 export function sectionOf(route: Route): 'songs' | 'lists' | 'settings' {
     switch (route.name) {
         case 'lists':
+        case 'templates':
+        case 'template':
         case 'setlist':
         case 'sections':
         case 'add':
@@ -188,6 +202,10 @@ export function parentOf(route: Route): { path: string; label: string } | null {
             return { path: paths.setlist(route.id), label: 'Volver al listado' };
         case 'sections':
             return { path: paths.setlist(route.id), label: 'Listado' };
+        case 'templates':
+            return { path: paths.lists(), label: 'Listados' };
+        case 'template':
+            return { path: paths.templates(), label: 'Plantillas' };
         case 'install':
             return { path: paths.settings(), label: 'Ajustes' };
         default:

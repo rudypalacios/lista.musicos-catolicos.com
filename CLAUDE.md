@@ -34,8 +34,10 @@ This app must behave the same:
   Latin uppercase (`SOL`, `MIm`) is normalised only by the importer, never by the parser. A chord typed
   with a lowercase letter (`[c]`, `[am]`) is capitalised by the editor when it previews and saves
   (`web/src/chordpro/capitalise.ts`), also not by the parser.
-- A list carries its own sections (`Setlist.parts`; the code says "part", the person reads "sección"); the Mass is the
-  template a new list starts from today (`massSections` in `mass.ts`, whose ids are inside the owner's lists: never rename them).
+- A list carries its own sections (`Setlist.parts`; the code says "part", the person reads "sección"); the Mass is a
+  template like any other (made by the app the first time, with a fixed id: `MISA_ID` in `data/templates.ts`; its sections are
+  `massSections` in `mass.ts`, whose ids are inside the owner's lists: never rename them). A list copies the sections of a
+  template when it is made and a template never changes a list that exists.
   Mass parts use the standard names of the Roman Missal (Ofertorio, Señor, ten piedad,
   Cordero de Dios…), not local ones.
 

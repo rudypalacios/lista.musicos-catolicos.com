@@ -115,6 +115,7 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
             return { shift: label === null ? mine : shown, label };
         },
         onBack: () => sheet.open(),
+        onManage: () => addToList.close(() => navigate(paths.templates())),
     });
     sheet.body.replaceChildren(
         h('h4', { class: 'sheet__title' }, song.title),

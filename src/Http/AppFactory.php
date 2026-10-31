@@ -17,6 +17,7 @@ use App\Http\Middleware\JsonOnly;
 use App\Http\Middleware\RequireUser;
 use App\Sync\ChangeFeed;
 use App\Sync\SetlistRepository;
+use App\Sync\TemplateRepository;
 use App\Sync\SongRepository;
 use PDO;
 use Psr\Container\ContainerInterface;
@@ -43,7 +44,8 @@ final class AppFactory
         $migrator = new Migrator($pdo, $migrationsDir);
         $songs = new SongRepository($pdo);
         $setlists = new SetlistRepository($pdo);
-        $feed = new ChangeFeed($songs, $setlists);
+        $templates = new TemplateRepository($pdo);
+        $feed = new ChangeFeed($songs, $setlists, $templates);
 
         $app = SlimFactory::create();
         $app->addBodyParsingMiddleware();
@@ -54,6 +56,7 @@ final class AppFactory
             $migrator,
             $songs,
             $setlists,
+            $templates,
             $feed
         ): void {
             $api->get('/health', new HealthAction($migrator));
@@ -61,7 +64,7 @@ final class AppFactory
             $api->post('/logout', new LogoutAction($authenticator));
             $api->get('/me', new MeAction())->add(new RequireUser($authenticator));
             $api->get('/sync', new PullAction($feed))->add(new RequireUser($authenticator));
-            $api->post('/sync', new PushAction($songs, $setlists))->add(new RequireUser($authenticator));
+            $api->post('/sync', new PushAction($songs, $setlists, $templates))->add(new RequireUser($authenticator));
         })->add(new JsonOnly());
 
         // Errors answer in JSON; the details only outside production

@@ -6,7 +6,7 @@
  *     npm run build && node tests/e2e/settings.ts
  */
 import assert from 'node:assert/strict';
-import { chromium, enforcePolicy, openSection, openSongMenu, reporter, signIn, startServer, synced } from './lib.ts';
+import { newList, chromium, enforcePolicy, openSection, openSongMenu, reporter, signIn, startServer, synced } from './lib.ts';
 import type { Page } from 'playwright';
 
 const server = await startServer(18094);
@@ -187,7 +187,7 @@ try {
 
     // ----- the list to sing -----
     await openSection(page, 'Listados');
-    await page.getByRole('button', { name: 'Nuevo listado' }).click();
+    await newList(page);
     await page.locator('section.slot').first().waitFor();
     for (const [part, song] of [['Canto de entrada', 'Camino largo'], ['Canto de salida', 'Puerta corta']] as const) {
         await page.getByRole('link', { name: `Agregar canto a ${part}` }).click();

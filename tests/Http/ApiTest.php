@@ -139,6 +139,52 @@ final class ApiTest extends TestCase
         $this->assertSame(1, $body['cursor']);
     }
 
+    private const TEMPLATE_ID = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
+
+    /**
+     * @param array<string, mixed> $override
+     *
+     * @return array<string, mixed>
+     */
+    private function template(array $override = []): array
+    {
+        return $override + [
+            'id' => self::TEMPLATE_ID, 'name' => 'Rosario', 'updatedAt' => 1_700_000_000_000, 'deleted' => false,
+            'parts' => [
+                ['id' => 'p-uno', 'name' => 'Primer misterio'],
+                ['id' => 'p-dos', 'name' => 'Segundo misterio'],
+            ],
+        ];
+    }
+
+    public function testATemplatePushedCanBePulledBackAndSharesTheCursor(): void
+    {
+        $cookies = [SessionCookie::NAME => $this->signIn()];
+
+        $both = ['templates' => [$this->template()], 'songs' => [$this->song()]];
+        $push = $this->call('POST', '/api/sync', $both, $cookies);
+        $body = $this->body($this->call('GET', '/api/sync?since=0', null, $cookies));
+
+        $this->assertSame(200, $push->getStatusCode());
+        $this->assertContains(self::TEMPLATE_ID, $this->body($push)['applied']);
+        $this->assertCount(1, $body['templates']);
+        $this->assertSame('Rosario', $body['templates'][0]['name']);
+        $this->assertSame(['p-uno', 'p-dos'], array_column($body['templates'][0]['parts'], 'id'));
+        $this->assertSame(2, $body['cursor'], 'one counter for songs and templates');
+    }
+
+    public function testATemplateWithNoSectionsOrNoNameIsRefusedAndStoresNothing(): void
+    {
+        $cookies = [SessionCookie::NAME => $this->signIn()];
+
+        foreach ([['parts' => []], ['name' => ' ']] as $broken) {
+            $push = $this->call('POST', '/api/sync', ['templates' => [$this->template($broken)]], $cookies);
+            $this->assertSame(400, $push->getStatusCode());
+            $this->assertSame('invalid_template', $this->body($push)['error']);
+        }
+        $this->assertSame([], $this->body($this->call('GET', '/api/sync?since=0', null, $cookies))['templates']);
+    }
+
     public function testASetlistWithNoSectionsIsRefused(): void
     {
         $cookies = [SessionCookie::NAME => $this->signIn()];

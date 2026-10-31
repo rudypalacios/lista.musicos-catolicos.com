@@ -13,7 +13,7 @@ describe('IdbStore persistence', () => {
         const first = await IdbStore.open(factory, 'persist');
         await first.save('songs', song('a', 10));
         await first.save('setlists', setlist('l', 11));
-        await first.mergeRemote({ songs: [], setlists: [] }, 3);
+        await first.mergeRemote({ songs: [], setlists: [], templates: [] }, 3);
         await first.setOwner('a@b.co');
         first.close();
 
@@ -103,7 +103,7 @@ describe('IdbStore upgrade from version 1', () => {
     it('does not reset the cursor, or drop the lists, when the database is already the current version', async () => {
         const factory = new IDBFactory();
         const first = await IdbStore.open(factory, 'v2');
-        await first.mergeRemote({ songs: [], setlists: [] }, 12);
+        await first.mergeRemote({ songs: [], setlists: [], templates: [] }, 12);
         first.close();
 
         const second = await IdbStore.open(factory, 'v2');

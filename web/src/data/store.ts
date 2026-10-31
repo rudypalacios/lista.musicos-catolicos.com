@@ -1,9 +1,9 @@
 import type { Collection, Pulled, Records } from './types.ts';
 
 /**
- * What the app keeps on the device: the songs and the setlists, the ones not yet sent to the
+ * What the app keeps on the device: the songs, the setlists and the templates, the ones not yet sent to the
  * server (`pending`, one entry per record, always the latest version), and where the last pull
- * stopped. Songs and setlists are two collections with the same rules.
+ * stopped. They are collections with the same rules.
  *
  * Two implementations obey the same contract (test/data/store.contract.ts): IndexedDB in the
  * browser, and a Map for tests and for browsers without IndexedDB.
@@ -29,7 +29,7 @@ export interface LocalStore {
      * Applies what a pull returned and moves the cursor, as one step (see shouldTakeRemote).
      * A pull that stops half way must not leave the cursor ahead of the records.
      */
-    mergeRemote(page: Pick<Pulled, 'songs' | 'setlists'>, cursor: number): Promise<void>;
+    mergeRemote(page: Pick<Pulled, Collection>, cursor: number): Promise<void>;
 
     /** The change number the last pull reached, 0 before the first */
     cursor(): Promise<number>;

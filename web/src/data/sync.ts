@@ -2,7 +2,7 @@ import type { LocalStore } from './store.ts';
 import { COLLECTIONS, LIMITS, type Collection, type Records, type Remote } from './types.ts';
 
 export interface SyncResult {
-    /** Records (songs and setlists) the server stored */
+    /** Records (songs, setlists and templates) the server stored */
     pushed: number;
     /** Records that came from the server */
     pulled: number;
@@ -33,7 +33,7 @@ export interface ErrorKinds {
 /**
  * Sends what was written on this device and brings what was written elsewhere:
  *
- * 1. push what waits in the queues (songs, then setlists), in batches. A batch the server
+ * 1. push what waits in the queues (songs, setlists, templates), in batches. A batch the server
  *    refuses is retried record by record, so one bad record cannot keep the others from ever
  *    arriving.
  * 2. pull from the cursor, page by page, merging each page and moving the cursor with it.
@@ -119,7 +119,7 @@ export class SyncEngine {
         for (;;) {
             const page = await this.remote.pull(cursor);
             await this.store.mergeRemote(page, page.cursor);
-            result.pulled += page.songs.length + page.setlists.length;
+            result.pulled += page.songs.length + page.setlists.length + page.templates.length;
             if (!page.hasMore || page.cursor <= cursor) {
                 return;
             }

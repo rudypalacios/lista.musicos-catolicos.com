@@ -198,8 +198,8 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       sheet; its own sheet has two steps, the list (starred first, "Nuevo listado" at the end) and the part of the Mass (counts, "opcional", "Ya está aquí");
       touching a part adds the song at its end (`Setlists.addItem(…, transpose)`), closes the sheet and says where. The song goes in the **key on screen** when it is
       not "mi tono" (the sheet says "Entra en Re"). Depends on #50 (the song page's sheet). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 36.
-      **Phase 6 PR 1 did the sections part of this:** the second step lists *that list's* sections and `addItem` validates against them. Still
-      to do with the templates (PR 3): "Nuevo listado" in this sheet must ask which template.
+      **Phase 6 did all of this:** the second step lists *that list's* sections, `addItem` validates against them (PR 1) and "Nuevo listado" in this sheet
+      asks which template (PR 3).
 - [x] **New song / edit song on a wide screen** (from 900px, `views/edit.ts`, `styles.css`): "Vista previa" is titled outside its box like "Letra con
       acordes" and the two boxes are level; Guardar / Cancelar keep their size at the right, level with "Eliminar" (the same button, moved into the foot
       while the window is wide; a new song has none). The phone is unchanged. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 31.
@@ -318,7 +318,13 @@ Next, in this order (design agreed with the owner):
          to add a section of the person's own (an id made on the device, `p-…`) and, as chips, the Mass's sections the list does not have ("O una de la Misa").
          A section with songs cannot be deleted or switched off; the last one cannot either; at most 30. The switch stays in the row (the approved mockup of
          this PR drew a rosary with none). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 39.
-      3. [ ] Templates and "Administrar plantillas" (a third synced collection: migrations `0009` and `0010` for MySQL; unlocks "＋ Nuevo" of the lists screen).
+      3. [x] **Templates** (a third synced collection: `templates` table, migrations `0009` and `0010` for MySQL; `data/templates.ts`, `views/templates.ts`,
+         `views/template.ts`; the owner unlocked "＋ Nuevo" of the lists screen and `DESIGN-LOCK.md` says so): the Misa is a template like any other (made by the
+         app after a sync, fixed id, editable and deletable); "＋ Nuevo" opens "Selecciona una plantilla" (the last one used first, kept on the device; "En blanco";
+         "Administrar plantillas" last); a list starts with a copy of the sections and a title from the template ("Rosario del 1 de noviembre"); templates are saved
+         from a list ("Guardar como plantilla" on the sections screen) and managed on `/plantillas` (open, rename, sections with the same editor as a list's, duplicate,
+         delete after a question). Up to 20. The sheet is shown **always**, even with one template (so "Administrar plantillas" is always reachable); the plan said
+         "with one template it creates at once": say if the owner prefers that. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 40.
       4. [ ] Tags and the filter of the picker ("Mostrar todos"; the notice to tag when adding from it; optional "Etiquetar con lo que ya usas", not decided).
       5. [ ] Tag when importing (the importer already knows the part of each song).
       6. [ ] Drag to reorder (long press, the arrows stay, "Al inicio / Al final").

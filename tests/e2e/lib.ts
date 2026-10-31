@@ -93,6 +93,15 @@ export async function openSection(page: Page, name: 'Cantos' | 'Listados' | 'Aju
     await entry.click();
 }
 
+/**
+ * "＋ Nuevo" on the lists screen asks which template (the sections the list starts with): this makes a list from the
+ * one named, the Misa by default, and waits until it is open.
+ */
+export async function newList(page: Page, template = 'Misa'): Promise<void> {
+    await page.getByRole('button', { name: 'Nuevo listado' }).click();
+    await page.locator('.sheet-layer.is-open .sheet-action', { hasText: template }).first().click();
+}
+
 /** The song page's "⋯": opens the sheet with how the lyrics are drawn, printing, editing and deleting */
 export async function openSongMenu(page: Page): Promise<void> {
     await page.getByRole('button', { name: 'Más opciones', exact: true }).click();

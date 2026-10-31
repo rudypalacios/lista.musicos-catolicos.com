@@ -68,15 +68,29 @@ export interface Setlist {
     readonly deletedAt: number | null;
 }
 
+/**
+ * The sections a new list starts with, under a name ("Misa", "Rosario"). A list takes a copy when it is made, so
+ * changing or deleting a template never touches a list that exists (src/Sync/TemplateChange.php).
+ */
+export interface Template {
+    readonly id: string;
+    readonly name: string;
+    /** In order; never empty (the server refuses a template with none) */
+    readonly parts: readonly PartDef[];
+    readonly updatedAt: number;
+    readonly deletedAt: number | null;
+}
+
 /** The kinds of record the app keeps and syncs, by the name they have in the API and the store */
 export interface Records {
     songs: Song;
     setlists: Setlist;
+    templates: Template;
 }
 
 export type Collection = keyof Records;
 
-export const COLLECTIONS: readonly Collection[] = ['songs', 'setlists'];
+export const COLLECTIONS: readonly Collection[] = ['songs', 'setlists', 'templates'];
 
 /** What every record has for syncing */
 export interface Stamped {
@@ -89,6 +103,7 @@ export interface Stamped {
 export interface Pulled {
     songs: Song[];
     setlists: Setlist[];
+    templates: Template[];
     cursor: number;
     hasMore: boolean;
 }
@@ -125,4 +140,7 @@ export const LIMITS = {
     partName: 60,
     partNote: 300,
     partsJson: 8000,
+    /** Templates a person keeps, and the characters of a template's name */
+    templates: 20,
+    templateName: 60,
 } as const;

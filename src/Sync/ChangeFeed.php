@@ -7,8 +7,8 @@ namespace App\Sync;
 /**
  * What changed for a user after a change number, across every kind of record, in pages.
  *
- * Songs and setlists share one counter, so their numbers never repeat for a user and one
- * cursor serves both. A page is the first `$size` changes by number: each table is asked for
+ * Songs, setlists and templates share one counter, so their numbers never repeat for a user and one
+ * cursor serves all. A page is the first `$size` changes by number: each table is asked for
  * `$size + 1` rows (enough to fill the page whichever table holds them, and to know whether
  * more are left), the rows are merged by number and cut.
  */
@@ -17,6 +17,7 @@ final class ChangeFeed
     public function __construct(
         private readonly SongRepository $songs,
         private readonly SetlistRepository $setlists,
+        private readonly TemplateRepository $templates,
     ) {
     }
 
@@ -24,6 +25,7 @@ final class ChangeFeed
      * @return array{
      *     songs: list<array<string, mixed>>,
      *     setlists: list<array<string, mixed>>,
+     *     templates: list<array<string, mixed>>,
      *     cursor: int,
      *     hasMore: bool
      * }
@@ -37,12 +39,15 @@ final class ChangeFeed
         foreach ($this->setlists->changedSince($userId, $since, $size + 1) as $setlist) {
             $changes[$setlist['seq']] = ['setlists', $setlist];
         }
+        foreach ($this->templates->changedSince($userId, $since, $size + 1) as $template) {
+            $changes[$template['seq']] = ['templates', $template];
+        }
         ksort($changes);
 
         $hasMore = count($changes) > $size;
         $page = array_slice($changes, 0, $size, true);
 
-        $result = ['songs' => [], 'setlists' => [], 'cursor' => $since, 'hasMore' => $hasMore];
+        $result = ['songs' => [], 'setlists' => [], 'templates' => [], 'cursor' => $since, 'hasMore' => $hasMore];
         foreach ($page as $seq => [$kind, $record]) {
             $result[$kind][] = $record;
             $result['cursor'] = $seq;

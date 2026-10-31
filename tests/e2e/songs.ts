@@ -212,6 +212,8 @@ try {
     await openSongMenu(page);
     await page.getByRole('button', { name: 'Agregar a un listado' }).click();
     await addSheet.getByRole('button', { name: 'Nuevo listado' }).click();
+    await addSheet.getByText('Selecciona una plantilla').waitFor();
+    await addSheet.getByRole('button', { name: /^Misa/ }).click();
     await addSheet.getByText('¿En qué sección?').waitFor();
     await addSheet.getByText('Entra en Do# (el tono que ves)').waitFor();
     await addSheet.getByRole('button', { name: /^Ofertorio/ }).click();

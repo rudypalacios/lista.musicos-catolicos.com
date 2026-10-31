@@ -431,6 +431,18 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    que no sirven, agrega «Primer misterio», «Segundo misterio»…, cámbiales el nombre, ordénalas, y desde el listado agrega cantos a cada una; cántalo y mira
    que *Cantar* diga el nombre de la sección; imprímelo; en el otro aparato mira que llegue igual. Sin cambios en los datos ni migración.
 
+40. **Plantillas (fase 6, PR 3).** **«＋ Nuevo» en *Listados* ahora pregunta con qué plantilla** (hoja «Selecciona una plantilla»): tus plantillas (la última que
+   usaste primero), **En blanco** (una sola sección, «Cantos») y, al final, **Administrar plantillas**. Al elegir, se crea el listado con **una copia de las secciones**
+   y el título sale de la plantilla («Misa del 1 de noviembre», «Rosario del 1 de noviembre»). **La Misa es una plantilla más:** la app la crea sola la primera vez
+   que sincroniza (con las 15 partes) y se puede cambiar de nombre, editar o borrar como las demás (si la borras no vuelve). La migración `0009` crea la tabla
+   (y `0010` la pasa a `utf8mb4`); no hay nada que ejecutar. **Guardar una plantilla:** en un listado, `⋯` → *Secciones del listado*, abajo *Guardar como plantilla*
+   (con el nombre que quieras; guarda las secciones que el listado muestra). **Administrar plantillas** abre una pantalla (con la flecha de vuelta a *Listados*):
+   tocas una plantilla para cambiarle el nombre y las secciones (agregar, renombrar, ordenar, borrar: sin interruptores), `⋯` la duplica («Copia de …») o la elimina
+   (pregunta antes). Cambiar o borrar una plantilla **no cambia los listados que ya hiciste con ella**. Máximo 20 plantillas. En «Agregar a un listado» desde un canto,
+   «Nuevo listado» también pregunta la plantilla. **Prueba (teléfono y compu):** haz un listado de Misa, agrégale una sección tuya y guárdalo como plantilla; crea un
+   listado nuevo con ella y mira que tenga esas secciones; cámbiale el nombre a la plantilla y mira que el listado ya hecho no cambie; mira que en el otro aparato
+   lleguen las plantillas; duplica y elimina una. Sin conexión también.
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.

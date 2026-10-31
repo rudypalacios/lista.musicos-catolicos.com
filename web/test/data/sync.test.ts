@@ -4,6 +4,7 @@ import { Library } from '../../src/data/library.ts';
 import { MemoryStore } from '../../src/data/memory-store.ts';
 import { Setlists } from '../../src/data/setlists.ts';
 import { SyncEngine, SyncStopped } from '../../src/data/sync.ts';
+import { Templates } from '../../src/data/templates.ts';
 import { FAKE_ERRORS, FakeServer } from './fake-server.ts';
 
 /** A device: its own store and library, talking to the shared server */
@@ -13,9 +14,10 @@ function device(server: FakeServer, clock: { now: number }) {
     const newId = (): string => `dev-${Math.random().toString(16).slice(2)}-${n++}`;
     const library = new Library(store, () => clock.now, newId);
     const setlists = new Setlists(store, () => undefined, () => clock.now, newId);
+    const templates = new Templates(store, () => undefined, () => clock.now, newId);
     const engine = new SyncEngine(store, server.remote(), FAKE_ERRORS);
 
-    return { store, library, setlists, engine };
+    return { store, library, setlists, templates, engine };
 }
 
 const draft = (title: string, body = '[G]Letra') => ({ title, author: '', body });
@@ -52,6 +54,37 @@ describe('SyncEngine', () => {
         assert.equal(result.pulled, 1);
         assert.deepEqual((await tablet.library.list()).map((s) => s.title), ['Del teléfono']);
         assert.deepEqual(await tablet.store.pending('songs'), [], 'what it received is not sent back');
+    });
+
+    it('sends a template, brings it to another device and carries its deletion', async () => {
+        const phone = device(server, clock);
+        const tablet = device(server, clock);
+        const made = await phone.templates.create('Rosario', [{ id: 'p-uno', name: 'Misterios' }]);
+
+        assert.equal((await phone.engine.sync()).pushed, 1);
+        assert.deepEqual(server.templates().map((template) => template.name), ['Rosario']);
+        assert.equal((await tablet.engine.sync()).pulled, 1);
+        assert.deepEqual((await tablet.templates.list()).map((template) => template.parts), [[{ id: 'p-uno', name: 'Misterios' }]]);
+        assert.deepEqual(await tablet.store.pending('templates'), [], 'what it received is not sent back');
+
+        clock.now += 10;
+        await phone.templates.remove(made.id);
+        await phone.engine.sync();
+        await tablet.engine.sync();
+        assert.deepEqual(await tablet.templates.list(), []);
+    });
+
+    it('does not make a second Misa on another device that already heard of the first', async () => {
+        const phone = device(server, clock);
+        const tablet = device(server, clock);
+        await phone.templates.ensureMisa();
+        await phone.engine.sync();
+
+        await tablet.engine.sync();
+        const again = await tablet.templates.ensureMisa();
+
+        assert.equal(again, false);
+        assert.equal((await tablet.templates.list()).length, 1);
     });
 
     it('keeps what was written offline until the network is back', async () => {
