@@ -332,7 +332,10 @@ Next, in this order (design agreed with the owner):
          «Entrada»" in the toast; a song written from the picker starts with the section's tag; the search reads the tags like the title. Tags are not drawn in the rows (a song looks the same
          wherever it is listed). **Left for the owner to decide:** the one-time button "Etiquetar con lo que ya usas" (mockup in the plan's page; not built). **Owner's check:** `DEPLOY.md`
          "Fases 4 y 5", item 41.
-      5. [ ] Tag when importing (the importer already knows the part of each song).
+      5. [x] **Tag when importing** (`views/import.ts`; no locked row, no migration): the part a header names ("ENTRADA: …") is the song's tag (the Mass's short one, "Entrada"), said in its row
+         ("Etiqueta: Entrada", or "Sin etiqueta" when the importer found no part) and saved with the song; the open row has the same tag field as the song editor (below the lyrics) to change
+         or take it off, with the tags in use offered. Not done on purpose: aliases for the person's own sections, and a list made from the import (see below). **Owner's check:** `DEPLOY.md`
+         "Fases 4 y 5", item 42.
       6. [ ] Drag to reorder (long press, the arrows stay, "Al inicio / Al final").
       Not done on purpose: ready-made templates, updating lists when a template changes, lists with no sections, dragging between sections.
       **Revisit with the templates (PR 3):** "Nuevo listado" in "Agregar a un listado" creates a Mass list (it must ask which template).

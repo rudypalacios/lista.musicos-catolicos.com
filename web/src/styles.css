@@ -859,6 +859,17 @@ input[type='search'] {
     background: var(--surface-2);
 }
 
+/* What the song will be tagged with (the part its header named): quiet, and quieter still when there is none */
+.pill:not(.pill--warn):not(.pill--have) {
+    color: var(--accent);
+    background: var(--accent-soft);
+}
+
+.pill--none:not(.pill--warn):not(.pill--have) {
+    color: var(--muted);
+    background: var(--surface-2);
+}
+
 /* No title: what is missing, then the suggestion under it, the two close together */
 .import-card__fix {
     display: flex;

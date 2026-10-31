@@ -5,6 +5,8 @@ import { icon } from '../icons.ts';
 
 export interface TagFieldOptions {
     initial: readonly string[];
+    /** The id of the text field, when more than one tag field is on the screen (the import review has one per song) */
+    id?: string;
     /** The tags the person can touch instead of typing (the ones in use): the field shows the ones it does not have */
     suggestions: () => readonly string[];
     /** Called when the tags change (a draft or a form can tell it is dirty) */
@@ -29,14 +31,14 @@ export function createTagField(options: TagFieldOptions): TagField {
     let tags: string[] = cleanTags(options.initial);
     const have = h('div', { class: 'tag-field__have' });
     const input = h('input', {
-        type: 'text', id: 'tags', class: 'tag-field__input', placeholder: 'Agregar etiqueta', 'aria-label': 'Agregar etiqueta',
+        type: 'text', id: options.id ?? 'tags', class: 'tag-field__input', placeholder: 'Agregar etiqueta', 'aria-label': 'Agregar etiqueta',
         maxlength: String(LIMITS.tag), autocomplete: 'off', enterkeyhint: 'done',
     });
     const offered = h('div', { class: 'tag-field__offered' });
     const full = h('p', { class: 'muted', hidden: true }, `Un canto admite hasta ${LIMITS.tags} etiquetas.`);
     const error = h('p', { class: 'error', role: 'alert' });
     const element = h('div', { class: 'tag-field' },
-        h('label', { for: 'tags' }, 'Etiquetas ', h('span', { class: 'muted' }, '(opcional)')),
+        h('label', { for: options.id ?? 'tags' }, 'Etiquetas ', h('span', { class: 'muted' }, '(opcional)')),
         have,
         h('div', { class: 'tag-field__add' }, icon('tag', 18), input),
         full,
