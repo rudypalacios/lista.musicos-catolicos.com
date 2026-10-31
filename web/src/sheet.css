@@ -102,19 +102,19 @@
     padding-right: 0.35em;
     font-size: 0.85em;
     font-weight: 700;
-    color: var(--accent);
+    color: var(--chord-color, var(--accent));
     white-space: nowrap;
 }
 
 /* The syllable the chord falls on */
 .song-sheet .syl {
     text-decoration: underline;
-    text-decoration-color: var(--accent);
+    text-decoration-color: var(--chord-color, var(--accent));
     text-decoration-thickness: 2px;
     text-underline-offset: 0.2em;
 }
 
-/* The colour of the lyrics is the person's setting (settings.ts); chords keep the accent */
+/* The colours of the lyrics and the chords are the person's setting (settings.ts); on paper both are fixed (print.css) */
 .song-sheet {
     color: var(--lyric-color, inherit);
 }

@@ -5,7 +5,7 @@ import { App, signOut } from './app.ts';
 import { h } from './dom.ts';
 import { MASS_PARTS } from './mass.ts';
 import { matchRoute, paths, type Route } from './router.ts';
-import { applyLyricColor } from './settings.ts';
+import { applyReadingColors } from './settings.ts';
 import { watchBottomChrome } from './bottom-chrome.ts';
 import { createPullToRefresh, pullAnswer } from './pull.ts';
 import { describeSync } from './sync-line.ts';
@@ -379,7 +379,7 @@ window.addEventListener('unhandledrejection', (event) => {
     }
 });
 
-applyLyricColor();
+applyReadingColors();
 // Chrome's install prompt comes once, soon after load: be listening before anything else is built
 watchInstallPrompt();
 // The browser drops the screen lock whenever the page is hidden: ask again when it is back

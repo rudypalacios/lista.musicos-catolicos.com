@@ -151,6 +151,23 @@ try {
     assert.doesNotMatch(text, /Cuánto/);
     pass('a song prints on one page with its header, musical data and the key on screen');
 
+    // ----- the colours chosen for the screen never reach the paper -----
+    await page.evaluate(() => {
+        document.documentElement.style.setProperty('--lyric-color', '#ffffff');
+        document.documentElement.style.setProperty('--chord-color', '#7fe8c8');
+    });
+    const emulate = (media: 'print' | null): Promise<void> => (page as unknown as { emulateMedia(options: { media: 'print' | null }): Promise<void> }).emulateMedia({ media });
+    await emulate('print');
+    const paper = await page.evaluate(() => Array.from(document.querySelectorAll('#print-root .song-sheet .ch')).map((node) => getComputedStyle(node).color));
+    await emulate(null);
+    await page.evaluate(() => {
+        document.documentElement.style.removeProperty('--lyric-color');
+        document.documentElement.style.removeProperty('--chord-color');
+    });
+    assert.ok(paper.length > 0, 'there are chords on the sheet');
+    assert.deepEqual([...new Set(paper)], ['rgb(192, 0, 0)'], 'chords print dark red whatever pair is chosen for the screen');
+    pass('the chord colour chosen in Ajustes never reaches the paper');
+
     await choosePrint(page, 'Solo letra');
     pages = await toPdf(page);
     const lyricsOnly = (pages[0] ?? []).join(' ');

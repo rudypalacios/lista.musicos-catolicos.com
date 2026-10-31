@@ -2100,11 +2100,66 @@ body {
     margin: 0;
 }
 
-.swatch {
-    width: 1.1rem;
-    height: 1.1rem;
+/* One pair of reading colours: a card with its sample (the colours are set on the sample by settings.ts) */
+.pair {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-top: 0.55rem;
+    padding: 0.7rem 0.8rem;
+    background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 50%;
+    border-radius: 0.8rem;
+    cursor: pointer;
+}
+
+.pair:has(input:checked) {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+}
+
+.pair input {
+    flex: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 0;
+}
+
+.pair__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 0;
+    flex: 1;
+}
+
+.pair__name {
+    font-weight: 600;
+}
+
+.pair__sample {
+    display: block;
+    padding: 0.4rem 0.7rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    line-height: 1.25;
+}
+
+.pair__chords {
+    display: flex;
+    gap: 1.1rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--chord-color);
+}
+
+.pair__lyrics {
+    display: block;
+    overflow: hidden;
+    color: var(--lyric-color);
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .settings__sample {
