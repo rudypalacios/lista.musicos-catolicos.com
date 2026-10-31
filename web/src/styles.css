@@ -3216,3 +3216,28 @@ button.srow__tool:disabled {
 .tag-filter small {
     color: var(--muted);
 }
+
+/* "N cantos de tus listados están en esta sección y no tienen su etiqueta": what the lists already say, and the touch that tags them */
+.tag-offer {
+    margin: 0.5rem 0;
+    padding: 0.75rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+}
+
+.tag-offer p {
+    margin: 0 0 0.6rem;
+}
+
+.tag-offer__songs {
+    margin: 0.5rem 0;
+    padding: 0;
+    list-style: none;
+}
+
+.tag-offer__songs li {
+    padding: 0.45rem 0.2rem;
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+}

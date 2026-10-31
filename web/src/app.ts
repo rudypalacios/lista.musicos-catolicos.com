@@ -125,6 +125,22 @@ export class App {
         return this.afterWrite(await this.library.setTags(id, tags));
     }
 
+    /** Adds a tag to the songs that lack it; returns the ones it changed */
+    async addTag(ids: readonly string[], tag: string): Promise<Song[]> {
+        const changed = await this.library.addTag(ids, tag);
+        await this.afterWrite(changed);
+
+        return changed;
+    }
+
+    /** Takes a tag off the songs that carry it (the undo of `addTag`) */
+    async removeTag(ids: readonly string[], tag: string): Promise<Song[]> {
+        const changed = await this.library.removeTag(ids, tag);
+        await this.afterWrite(changed);
+
+        return changed;
+    }
+
     async update(id: string, draft: SongDraft): Promise<Song> {
         return this.afterWrite(await this.library.update(id, draft));
     }

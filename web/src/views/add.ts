@@ -2,7 +2,7 @@ import type { App } from '../app.ts';
 import { parse, songKey } from '../chordpro/parser.ts';
 import { transpose } from '../chordpro/chord.ts';
 import { partName } from '../data/setlists.ts';
-import { hasTag, tagOf, withTag } from '../data/tags.ts';
+import { hasTag, tagOf, untaggedUses, withTag } from '../data/tags.ts';
 import { LIMITS, type PartDef, type Setlist, type Song } from '../data/types.ts';
 import { h, link, setSheet, snippetBlock } from '../dom.ts';
 import { sheetHtml } from '../chordpro/sheet.ts';
@@ -39,6 +39,9 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Pa
     const tag = tagOf(part);
     let filtering = true;
     const filter = h('div', { class: 'tag-filter', role: 'group', 'aria-label': 'Qué cantos mostrar', hidden: true });
+    /** What the lists already say: songs used in this section that lack its tag, with the one touch that tags them */
+    const offer = h('div', { class: 'tag-offer', hidden: true });
+    let usedIn: Setlist[] = [];
     /** The way out when the song is not in the library: write it here, with what was searched as its title */
     const create = h('div', { class: 'actions actions--center' });
     /** Where each song of the list already is, by song id: the part names */
@@ -54,6 +57,7 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Pa
         // The same search, and the same count under it, as on Cantos
         h('div', { class: 'songs__top' }, search),
         filter,
+        offer,
         error,
         count,
         list,
@@ -69,6 +73,7 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Pa
         const pool = filtered ? tagged : songs;
         const shown = filterSongs(pool, search.value);
         drawFilter(tagged.length);
+        drawOffer();
         list.replaceChildren(...shown.map((song) => row(song)));
         empty.hidden = shown.length > 0;
         count.hidden = songs.length === 0;
@@ -82,6 +87,73 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Pa
             empty.textContent = 'Ningún canto coincide con la búsqueda.';
         }
         drawCreate();
+    };
+
+    /** The songs the lists use in this section and that lack its tag, now */
+    const untagged = (): Song[] => untaggedUses(usedIn, songs, part.id, tag);
+
+    const drawOffer = (): void => {
+        const pending = untagged();
+        offer.hidden = pending.length === 0;
+        if (pending.length === 0) {
+            return;
+        }
+        const many = pending.length > 1;
+        const button = h('button', { type: 'button', class: 'button' }, icon('tag', 16), many ? `Etiquetarlos como «${tag}»` : `Etiquetarlo como «${tag}»`);
+        button.addEventListener('click', () => confirmTag.open());
+        offer.replaceChildren(
+            h('p', {}, h('b', {}, many ? `${pending.length} cantos` : '1 canto'), ` de tus listados ${many ? 'están' : 'está'} en `, h('b', {}, part.name),
+                ` y no ${many ? 'tienen' : 'tiene'} la etiqueta «${tag}».`),
+            button,
+        );
+    };
+
+    // --- before tagging: the songs, one by one, and what is added to them ---
+    const SHOWN = 5;
+    const confirmTag = createSheet(`Etiquetar como «${tag}»`, () => fillConfirm());
+    confirmTag.element.classList.add('sheet-layer--window');
+    element.append(confirmTag.element);
+    const fillConfirm = (): void => {
+        const pending = untagged();
+        if (pending.length === 0) {
+            confirmTag.close();
+
+            return;
+        }
+        const many = pending.length > 1;
+        const problem = h('p', { class: 'error', role: 'alert' });
+        const go = h('button', { type: 'button', class: 'button button--primary' }, many ? `Etiquetar ${pending.length} cantos` : 'Etiquetar 1 canto');
+        const cancel = h('button', { type: 'button', class: 'button' }, 'Cancelar');
+        cancel.addEventListener('click', () => confirmTag.close());
+        go.addEventListener('click', () => {
+            go.disabled = true;
+            const ids = pending.map((song) => song.id);
+            app.addTag(ids, tag).then((changed) => {
+                const done = changed.map((song) => song.id);
+                confirmTag.close();
+                void reload();
+                showUndoToast(
+                    changed.length === 1 ? `1 canto etiquetado como «${tag}»` : `${changed.length} cantos etiquetados como «${tag}»`,
+                    'Deshacer',
+                    () => void app.removeTag(done, tag).then(reload, () => showToast('No se pudo deshacer.', 4000, true)),
+                    WARNING_TIME,
+                );
+            }).catch((failure: unknown) => {
+                problem.textContent = failure instanceof Error ? failure.message : 'No se pudo etiquetar.';
+                go.disabled = false;
+            });
+        });
+        confirmTag.body.replaceChildren(
+            h('h4', { class: 'sheet__title' }, `Etiquetar como «${tag}»`),
+            h('p', { class: 'sheet__sub' }, many
+                ? `Estos ${pending.length} cantos están en «${part.name}» en tus listados. Se les agrega la etiqueta «${tag}».`
+                : `Este canto está en «${part.name}» en tus listados. Se le agrega la etiqueta «${tag}».`),
+            h('ul', { class: 'tag-offer__songs' }, ...pending.slice(0, SHOWN).map((song) => h('li', {}, song.title))),
+            ...(pending.length > SHOWN ? [h('p', { class: 'sheet__sub' }, `Y ${pending.length - SHOWN} más.`)] : []),
+            h('p', { class: 'sheet__sub' }, 'No cambia la letra, ni tus listados, ni las otras etiquetas que ya tengan.'),
+            problem,
+            h('div', { class: 'preview__foot' }, cancel, go),
+        );
     };
 
     /** The two ways to see the songs: the ones with the section's tag, or all of them (only once some song has the tag) */
@@ -206,11 +278,18 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Pa
         );
     };
 
-    search.addEventListener('input', draw);
-    void app.list().then((all) => {
+    /** The songs and the lists as they are now: at the start, and after tagging (or taking the tags off) */
+    const reload = async (): Promise<void> => {
+        const [all, lists] = await Promise.all([app.list(), app.setlists.list()]);
         songs = all;
+        usedIn = lists;
         draw();
-    });
+    };
+    search.addEventListener('input', draw);
+    void reload();
 
-    return { element, dispose: () => preview.release() };
+    return { element, dispose: () => {
+        preview.release();
+        confirmTag.release();
+    } };
 }
