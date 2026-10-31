@@ -84,10 +84,10 @@ async function measure(page: Page): Promise<Fit> {
     });
 }
 
-async function serverSongs(page: Page): Promise<{ id: string; title: string; myShift: number; deletedAt: number | null }[]> {
+async function serverSongs(page: Page): Promise<{ id: string; title: string; tags: string[]; myShift: number; deletedAt: number | null }[]> {
     return page.evaluate(async () => {
         const answer = (await (await fetch('/api/sync?since=0')).json()) as {
-            songs: { id: string; title: string; myShift: number; deletedAt: number | null }[];
+            songs: { id: string; title: string; tags: string[]; myShift: number; deletedAt: number | null }[];
         };
 
         return answer.songs;
@@ -425,6 +425,7 @@ try {
     assert.match(converted, /\[Em\]/);
     assert.match(converted, /\{c: Coro\}/);
     await page.getByText('Parte de la misa que dice el encabezado: Ofertorio.').waitFor();
+    await page.getByText('Etiqueta: Ofertorio').first().waitFor();
     // A chord corrected by hand in lowercase is previewed and saved as the capital, as in the editor
     await page.getByLabel('Letra con acordes (ChordPro)').fill(converted + '\n[am]Extra');
     await page.getByRole('tab', { name: 'Vista previa' }).click();
@@ -446,12 +447,27 @@ try {
     await page.getByRole('button', { name: 'Convertir' }).click();
     await page.getByRole('heading', { name: /Se encontraron 3 cantos/ }).waitFor();
     assert.equal(await page.locator('.import-card').count(), 3);
+    // The part the header named is the tag of the song, said in its row; taking it off is done in the open row
+    const found = page.locator('.import-card');
+    await found.nth(0).getByText('Etiqueta: Entrada').waitFor();
+    await found.nth(1).getByText('Etiqueta: Gloria').waitFor();
+    await found.nth(2).getByText('Etiqueta: Salida').waitFor();
+    await found.nth(2).locator('.import-card__arrow').click();
+    await found.nth(2).getByRole('button', { name: 'Quitar la etiqueta Salida' }).click();
+    await found.nth(2).getByText('Sin etiqueta').waitFor();
     await page.getByRole('button', { name: 'Guardar 3 cantos' }).click();
     await page.locator('.song-list').waitFor();
     for (const title of ['Canto de apertura', 'Gloria', 'Canto de despedida']) {
         await page.getByRole('link', { name: title }).waitFor();
     }
-    pass('importing: a whole Mass with a song per page becomes one song each');
+    const tagsOf = async (title: string): Promise<string[] | undefined> => (await serverSongs(page)).find((song) => song.title === title)?.tags;
+    for (let attempt = 0; attempt < 100 && (await tagsOf('Gloria')) === undefined; attempt++) {
+        await page.waitForTimeout(150);
+    }
+    assert.deepEqual(await tagsOf('Canto de apertura'), ['Entrada']);
+    assert.deepEqual(await tagsOf('Gloria'), ['Gloria']);
+    assert.deepEqual(await tagsOf('Canto de despedida'), [], 'a tag taken off in the row is not saved');
+    pass('importing: a whole Mass with a song per page becomes one song each, tagged with its part (the tag can be taken off)');
 
     // The same song twice in one import (a repeated page): the second is flagged and starts unmarked, one copy is saved
     const twice = ['ENTRADA: Aleluya del domingo\n\n  C        G\nAleluya, aleluya\n', 'ENTRADA: Aleluya del domingo\n\n  C        G\nAleluya, aleluya\n'].join('\f');
