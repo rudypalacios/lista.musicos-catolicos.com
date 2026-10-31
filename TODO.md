@@ -184,6 +184,14 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       and goes back to Cantos). The loose "Imprimir" (`print-menu.ts`) and "Editar" buttons, `.viewer__bar` and the old overrides of the tone control
       inside `.toolbar` are gone. **Next, its own PR:** "Agregar a un listado" in this sheet (pick a list and a part). Not touched: the "C → Do" of singing
       (locked; the owner may ask to change it). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 35.
+- [x] **Add a song to a list from its page** (`views/add-to-list.ts`, the owner approved the mockup): "Agregar a un listado" is the first action of the song
+      sheet; its own sheet has two steps, the list (starred first, "Nuevo listado" at the end) and the part of the Mass (counts, "opcional", "Ya está aquí");
+      touching a part adds the song at its end (`Setlists.addItem(…, transpose)`), closes the sheet and says where. The song goes in the **key on screen** when it is
+      not "mi tono" (the sheet says "Entra en Re"). Depends on #50 (the song page's sheet). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 36.
+      **Revisit with the templates (phase 6, or no templates at all):** this flow assumes the parts of the Mass (`MASS_PARTS` in the second step, `partNote`,
+      `Setlists.addItem` validating the part, "Nuevo listado" creating a Mass list). When lists can have their own parts, or none, the second step must
+      list *that list's* parts (and skip the step for a list with no parts), "Nuevo listado" must ask which template, and the picker of a part, the
+      part counts and `tests/e2e/songs.ts` ("Agregar a un listado") must be walked again.
 - [x] **New song / edit song on a wide screen** (from 900px, `views/edit.ts`, `styles.css`): "Vista previa" is titled outside its box like "Letra con
       acordes" and the two boxes are level; Guardar / Cancelar keep their size at the right, level with "Eliminar" (the same button, moved into the foot
       while the window is wide; a new song has none). The phone is unchanged. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 31.
@@ -286,7 +294,7 @@ Next, in this order (design agreed with the owner):
       anything above it is scrolled (`scrolledWithin`): a song's stage scrolls inside `#view`, whose own `scrollTop` stayed 0, so dragging down at the
       bottom of a long song began a sync. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 10.
 - [ ] **Owner's check on the Android** for phases 4 and 5 (`DEPLOY.md`, "Fases 4 y 5", item 9 for the lists screen).
-- [ ] Phase 6, templates and tags (a rosary or a prayer-meeting list must not get the 15 parts of the Mass; a
+- [ ] Phase 6, templates and tags (**when this lands, go back to "Add a song to a list from its page" above and make sure it follows the templates**; a rosary or a prayer-meeting list must not get the 15 parts of the Mass; a
       section may hold a dozen songs, which is when dragging to reorder pays off) (schema change, migration): turn parts on and off per list, add own
       parts, a template manager (the Mass is the default); tags on songs, one per part by default; the
       picker of a part filters by its tag, with "Mostrar todos" always at hand and no filter when no
