@@ -258,6 +258,23 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         foot,
     );
 
+    // From 900px "Eliminar" rides in the foot, level with Guardar and Cancelar (on a phone it stays under the
+    // lyrics, away from Guardar). It is the same button: only where it sits changes. A new song has none.
+    const removeButton = writePane.querySelector<HTMLElement>('.edit-remove');
+    const wide = window.matchMedia('(min-width: 900px)');
+    const placeRemove = (): void => {
+        if (removeButton === null) {
+            return;
+        }
+        if (wide.matches) {
+            foot.prepend(removeButton);
+        } else {
+            writePane.append(removeButton);
+        }
+    };
+    placeRemove();
+    wide.addEventListener('change', placeRemove);
+
     form.addEventListener('submit', (event) => {
         event.preventDefault();
         error.textContent = '';
@@ -328,6 +345,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         element,
         dispose: () => {
             keepNow();
+            wide.removeEventListener('change', placeRemove);
             window.removeEventListener('pagehide', keepNow);
             document.removeEventListener('visibilitychange', keepWhenHidden);
         },

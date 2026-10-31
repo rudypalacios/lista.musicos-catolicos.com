@@ -354,6 +354,11 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    tocar el canto lo abre, como antes. (c) El `⋮` abre una hoja con **Editar letra y acordes** y, aparte y en rojo, **Eliminar canto**. (d) Eliminar un canto (también
    el botón *Eliminar* de la pantalla de editar) pregunta con el cuadro de la app, no con el aviso del navegador, y nombra los listados donde
    está el canto («ahí aparecerá como «Canto eliminado»»); al confirmar sale «Canto eliminado». Prueba en el teléfono y en la compu.
+31. **Nuevo canto / Editar canto en la pantalla ancha (computadora o tablet en horizontal, desde 900 px).** «Vista previa» (con el tono) ya
+   no va dentro de su caja: es un título afuera, igual que «Letra con acordes», y las dos cajas quedan **a la misma altura**. **Guardar** y
+   **Cancelar** ya no se estiran: conservan su tamaño y van **a la derecha**, y en un canto que ya existe **«Eliminar»** va **en esa misma fila,
+   a la izquierda** (un canto nuevo no lo tiene). En el teléfono nada cambia: «Eliminar» sigue debajo de la letra, lejos de «Guardar». Si
+   cambias el tamaño de la ventana, «Eliminar» cambia de lugar solo. **Prueba:** en la computadora, un canto nuevo y uno existente.
 
 32. **«Salir» con cantos sin enviar pregunta con el cuadro de la app.** Ya no usa la ventanita del navegador (que se veía distinta en cada aparato):
    sale el mismo cuadro que al eliminar un listado o un canto (el foco empieza en «Cancelar»; Escape, tocar afuera y el botón de atrás también

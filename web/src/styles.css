@@ -579,6 +579,54 @@ textarea.mono {
     .edit-pane--write textarea {
         min-height: 24rem;
     }
+
+    /* The preview is titled like the lyrics are ("Letra con acordes"): the title outside, the two boxes level */
+    .page--edit .preview {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        column-gap: 0.6rem;
+        margin-top: 0;
+        padding: 0;
+        background: none;
+        border: 0;
+    }
+
+    .page--edit .preview > h3 {
+        margin: 0.75rem 0 0.5rem;
+        color: var(--muted);
+        font-size: 0.9rem;
+        letter-spacing: 0;
+        text-transform: none;
+    }
+
+    /* The key never makes the title row taller than the lyrics' label, so the two boxes stay level */
+    .page--edit .preview .chip {
+        margin: 0.75rem 0 0.5rem;
+        padding-block: 0;
+        line-height: 1.3;
+    }
+
+    .page--edit .preview .song-sheet {
+        flex: 1 0 100%;
+        padding: 0.75rem 1rem 1rem;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 0.6rem;
+    }
+
+    /* Guardar and Cancelar keep their size and sit at the right, in the row of "Eliminar" (at the left) */
+    .form--edit .edit-foot {
+        justify-content: flex-end;
+    }
+
+    .form--edit .edit-foot .button--primary {
+        flex: none;
+    }
+
+    .form--edit .edit-foot > .edit-remove {
+        margin: 0 auto 0 0;
+    }
 }
 
 details.help {
