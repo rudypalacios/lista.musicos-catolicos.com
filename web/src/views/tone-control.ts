@@ -24,12 +24,14 @@ export interface ToneControlOptions {
     hint: string;
     /** What the main button says when there is a change ("Guardar", "Guardar como mi tono") */
     primaryLabel: string;
-    /** The first is what the main button does at first; with more than one, an arrow opens the menu where another can be marked */
+    /** The first is what the main button does at first; the arrow beside it opens the menu where another can be marked (or "solo hoy", which writes nowhere) */
     destinations: readonly ToneDestination[];
     /** Where the room is short (the song page): the line under the control shows only while there is a change */
     compact?: boolean;
     /** The caller puts `step` (− key +) where it likes; `element` then holds only the rest (Guardar, the hint, the lines under it) */
     separateStep?: boolean;
+    /** What the toast says when "Guardar" is pressed with the hint (nothing written) marked; default "Queda solo para hoy" */
+    keptMessage?: string;
 }
 
 export interface ToneControl {
@@ -62,7 +64,7 @@ export function createToneControl(options: ToneControlOptions): ToneControl {
     const more = h('button', {
         type: 'button', class: 'tone-control__more', 'aria-label': 'Otros sitios donde guardar', 'aria-expanded': 'false',
     }, h('span', { class: 'tone-control__chevron', 'aria-hidden': 'true' }));
-    const split = h('div', { class: 'tone-control__split' }, save, ...(options.destinations.length > 1 ? [more] : []));
+    const split = h('div', { class: 'tone-control__split' }, save, more);
     const menu = h('div', { class: 'tone-control__menu', hidden: true });
     const references = h('p', { class: 'tone-control__refs' });
     const row = h('div', { class: 'tone-control__row' }, ...(options.separateStep === true ? [] : [step]), split, hint);
@@ -152,7 +154,7 @@ export function createToneControl(options: ToneControlOptions): ToneControl {
     save.addEventListener('click', () => {
         if (chosen === null) {
             // "Solo hoy" is marked: the key stays as it is and nothing is written
-            showToast('Queda solo para hoy', 3500, true);
+            showToast(options.keptMessage ?? 'Queda solo para hoy', 3500, true);
         } else {
             run(chosen, save);
         }

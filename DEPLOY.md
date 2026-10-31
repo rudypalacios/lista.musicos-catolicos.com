@@ -382,7 +382,7 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
 35. **La página del canto: una sola fila de herramientas y todo lo demás detrás del `⋯`.** Al abrir un canto desde *Cantos*, arriba hay **una fila**:
    el tono (− Do +), **A− A+** y el `⋯` al final; la letra empieza mucho más arriba que antes y, con «Ajustar», sale algo más grande. **La pastilla «Tono Do»
    se fue** (el tono ya está en el selector; Capo, Tempo y Compás siguen saliendo cuando el canto los trae). Al mover el tono aparece debajo,
-   como antes, **Guardar como mi tono** con «Solo por ahora». Los botones sueltos **Imprimir** y **Editar** y los de **Do → C**, **Ajustar** y
+   como en Cantar, **Guardar ▾** con «Solo por ahora»: la flecha elige entre *Solo por ahora* (no guarda nada y lo dice) y *Como mi tono* (lo que hace «Guardar» al principio). Los botones sueltos **Imprimir** y **Editar** y los de **Do → C**, **Ajustar** y
    **Columnas** (solo en pantalla ancha) pasaron a la hoja del `⋯`, que dice **Letra** (Do → C, Ajustar, Columnas) y **Este canto**: *Imprimir con
    acordes*, *Imprimir solo la letra*, *Editar letra y acordes* y, aparte y en rojo, *Eliminar canto* (pregunta primero, igual que en *Cantos*, y
    vuelve a la lista). **Prueba:** abre un canto en el teléfono y en la compu; mueve el tono y guárdalo; cambia el tamaño; abre el `⋯`
