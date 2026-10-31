@@ -367,6 +367,36 @@ try {
     }
     pass('importing: a whole Mass with a song per page becomes one song each');
 
+    // The review of an import: pasting converts at once, a song with no title blocks the save until it has one (its first
+    // line is offered), and a song already held starts unmarked
+    await page.goto(BASE + '/cantos/importar');
+    await page.getByRole('heading', { name: 'Importar cantos' }).waitFor();
+    await page.evaluate((text) => {
+        const area = document.getElementById('paste') as HTMLTextAreaElement;
+        area.value = text;
+        area.dispatchEvent(new ClipboardEvent('paste', { bubbles: true }));
+    }, 'C            G\nCaminamos con alegría, Señor,\n\f' + 'GLORIA\n\nDm\nGloria a Dios en el cielo\n');
+    await page.getByRole('heading', { name: 'Se encontraron 2 cantos' }).waitFor();
+    const rows = page.locator('.import-card');
+    assert.equal(await rows.count(), 2);
+    assert.equal(await rows.nth(1).getByRole('checkbox').isChecked(), false);
+    await rows.nth(1).getByText('Ya la tienes').waitFor();
+    assert.equal(await rows.nth(0).locator('.import-card__meta').count(), 0, 'a row with no title shows its field, not a name');
+    await rows.nth(0).getByText('Título requerido').waitFor();
+    await page.locator('.import-foot__msg', { hasText: 'Falta el título de 1 canto' }).waitFor();
+    const saveButton = page.getByRole('button', { name: 'Guardar canto' });
+    assert.equal(await saveButton.isDisabled(), true);
+    await rows.nth(0).getByRole('button', { name: 'Usar «Caminamos con alegría, Señor,»' }).click();
+    assert.equal(await rows.nth(0).getByLabel('Título').inputValue(), 'Caminamos con alegría, Señor,');
+    assert.equal(await saveButton.isDisabled(), false);
+    await rows.nth(0).getByRole('checkbox').uncheck();
+    await page.locator('.import-foot__msg', { hasText: 'Marca al menos un canto' }).waitFor();
+    assert.equal(await saveButton.isDisabled(), true);
+    await rows.nth(0).getByRole('checkbox').check();
+    await saveButton.click();
+    await page.getByRole('heading', { name: 'Caminamos con alegría, Señor,' }).waitFor();
+    pass('the review of an import: one row per song, a missing title blocks the save and offers the first line, a song already held starts unmarked');
+
     // A song with a title and no lyrics is allowed, but says so
     await page.goto(BASE + '/cantos/nuevo');
     await page.getByLabel('Título').fill('Solo el título');

@@ -152,6 +152,14 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       device, cleared by Guardar, Cancelar, Descartar and sign-out; not used when the song starts from a part's picker). **Owner's check:**
       `DEPLOY.md` "Fases 4 y 5", item 26. Not done on purpose: converting Latin chord names to English on save (the owner has not decided; the
       parser already reads both), "Agregar a un listado" after saving from Cantos.
+- [x] **Import review, in rows** (`views/import.ts`, `import-review.ts`, `attentionOf` in `importer.ts`; the owner approved the mockup): pasting converts at
+      once; one row per song (mark, title, "N acordes · M líneas"), flagged only with what needs a look (`attentionOf`: Sin acordes, Dos columnas,
+      Acordes sin letra, Cejilla; the report of chords written in the standard form is not one of them); a song with no title shows its field in the row with
+      "Título requerido" and a suggestion under it (the first line of the lyrics); Guardar at a fixed foot, blocked while a marked song has no title; a song
+      with the same title and text as one held starts unmarked ("Ya la tienes"). Measured on the owner's four PDFs (not in the repo): 12 songs went from 5673px
+      to 2040px. The PDF reader message says a connection is needed every time (it is not cached). **Left out on purpose (the owner):** creating a list from
+      an import (revisit with the templates, phase 6, since not every list is a Mass) and reading titles and authors by their layout in the PDF headers.
+      **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 28.
 - [ ] Adding several songs to one part takes a round trip per song (the picker returns to the list).
       If that is slow in practice, let the picker stay open and show what has been added.
 - [ ] **Paused (owner, after the UI session).** Duplicate a list ("copiar listado") to start next Sunday's from this

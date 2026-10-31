@@ -9,6 +9,7 @@ declare module 'playwright' {
         click(): Promise<void>;
         check(): Promise<void>;
         uncheck(): Promise<void>;
+        isChecked(): Promise<boolean>;
         fill(value: string): Promise<void>;
         blur(): Promise<void>;
         first(): Locator;

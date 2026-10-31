@@ -50,6 +50,32 @@ interface Row {
     text: string;
 }
 
+/** What the importer says about chords it wrote in the standard form: a report, not a problem (keep in step with its message) */
+const NORMALISED_REPORT = /^\d+ acordes? escritos? con otra notación/;
+
+/**
+ * What a person must look at in what the importer said, in a word each ("Sin acordes", "Dos columnas"…), each once.
+ * The report of chords written in the standard form is not among them: it is on almost every sheet and says nothing is wrong.
+ */
+export function attentionOf(warnings: readonly string[]): string[] {
+    const labels = warnings
+        .filter((warning) => !NORMALISED_REPORT.test(warning))
+        .map((warning) => {
+            if (warning.startsWith('No encontré acordes')) {
+                return 'Sin acordes';
+            }
+            if (warning.startsWith('La hoja tenía dos columnas')) {
+                return 'Dos columnas';
+            }
+            if (warning.startsWith('Acordes sin letra')) {
+                return 'Acordes sin letra';
+            }
+            return warning.startsWith('Entendí “(C') ? 'Cejilla' : 'Revisar';
+        });
+
+    return [...new Set(labels)];
+}
+
 export function importChordsOverLyrics(source: string): Imported {
     const warnings: string[] = [];
     const prepared = source.split(/\r\n|[\n\r\u2028\u2029]/).map(prepare);

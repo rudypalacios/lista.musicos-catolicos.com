@@ -33,7 +33,7 @@ export async function readPdf(file: File): Promise<string> {
     try {
         pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
     } catch {
-        throw new PdfError('No se pudo cargar el lector de PDF. Se necesita conexión la primera vez.');
+        throw new PdfError('No se pudo cargar el lector de PDF. Se necesita conexión para leer un PDF.');
     }
     pdfjs.GlobalWorkerOptions.workerSrc = __PDF_WORKER_URL__;
 

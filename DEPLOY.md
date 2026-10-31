@@ -331,6 +331,17 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    solo se dibuja distinto; un `{ci: …}` que ya tenías al final de una línea ahora sale como nota en vez de como texto con llaves.
    **Prueba en el Android:** un canto con `{ci: bis}` al final de una línea y `[(G)]`, cambiar el tono, e imprimir (vista previa). En el iPad, al final.
 
+28. **Importar cantos: la revisión, en filas (revisión de «Importar»).** Al elegir un PDF o pegar el texto (**pegar convierte solo**, ya no hay que tocar
+   «Convertir»; el botón sigue para texto escrito a mano), cada canto es **una fila**: marca, título y «17 acordes · 36 líneas». Un toque abre la
+   letra, la vista previa y el autor para corregir. Solo se marca con una palabra lo que pide atención: «Sin acordes», «Dos columnas», «Acordes sin
+   letra», «Cejilla» (el aviso de «acordes pasados a la forma estándar» ya no aparece en la fila; sigue dentro, al abrirla). Un canto **sin título**
+   muestra su campo en la propia fila con «Título requerido» y debajo **«Usar «primera línea»»**, que escribe esa línea como título con un toque.
+   **Guardar N cantos** queda **fijo al pie**, y se **bloquea** mientras un canto marcado no tenga título («Falta el título de N cantos»). Un canto
+   cuyo título y letra son **idénticos a uno que ya tienes** sale desmarcado con «Ya la tienes» (puedes marcarlo); un título repetido solo se permite.
+   Con tu PDF de Pascua (12 cantos) la revisión pasó de 5673 px a 2040 px de alto. El mensaje sin conexión ahora dice «Se necesita conexión para
+   leer un PDF» (el lector no se guarda en el dispositivo). **Prueba en el Android:** importa uno de tus PDF, toca «Usar» en un canto sin título,
+   abre una fila, quita la marca de uno y guarda. En el iPad, al final.
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.
