@@ -1,5 +1,5 @@
 import type { ErrorKinds } from '../../src/data/sync.ts';
-import type { Collection, Pulled, Pushed, Records, Remote, Setlist, Song } from '../../src/data/types.ts';
+import type { Collection, Pulled, Pushed, Records, Remote, Setlist, Song, Template } from '../../src/data/types.ts';
 
 /** What the fake remote throws; the engine recognises them through FAKE_ERRORS */
 export class FakeNetworkError extends Error {}
@@ -15,13 +15,14 @@ export const FAKE_ERRORS: ErrorKinds = {
 /**
  * The server of the sync API in a few lines, with the same rules as src/Sync/SongRepository.php
  * and SetlistRepository.php: the newest `updatedAt` wins, an equal or older one is ignored,
- * every applied change gets the next number (one counter for songs and setlists), a pull
+ * every applied change gets the next number (one counter for songs, setlists and templates), a pull
  * returns what changed after a number, oldest first, songs and setlists in one page.
  */
 export class FakeServer {
     private rows: { [C in Collection]: Map<string, { record: Records[C]; seq: number }> } = {
         songs: new Map(),
         setlists: new Map(),
+        templates: new Map(),
     };
     private counter = 0;
     online = true;
@@ -46,6 +47,10 @@ export class FakeServer {
 
     setlists(): Setlist[] {
         return [...this.rows.setlists.values()].map((row) => row.record);
+    }
+
+    templates(): Template[] {
+        return [...this.rows.templates.values()].map((row) => row.record);
     }
 
     private guard(): void {
@@ -89,6 +94,7 @@ export class FakeServer {
         const changed = [
             ...[...this.rows.songs.values()].map((row) => ({ kind: 'songs' as const, record: row.record, seq: row.seq })),
             ...[...this.rows.setlists.values()].map((row) => ({ kind: 'setlists' as const, record: row.record, seq: row.seq })),
+            ...[...this.rows.templates.values()].map((row) => ({ kind: 'templates' as const, record: row.record, seq: row.seq })),
         ]
             .filter((row) => row.seq > since)
             .sort((a, b) => a.seq - b.seq);
@@ -96,14 +102,17 @@ export class FakeServer {
         const pulled: Pulled = {
             songs: [],
             setlists: [],
+            templates: [],
             cursor: page.length > 0 ? (page[page.length - 1]?.seq ?? since) : since,
             hasMore: changed.length > this.pageSize,
         };
         for (const row of page) {
             if (row.kind === 'songs') {
                 pulled.songs.push(row.record);
-            } else {
+            } else if (row.kind === 'setlists') {
                 pulled.setlists.push(row.record);
+            } else {
+                pulled.templates.push(row.record);
             }
         }
 

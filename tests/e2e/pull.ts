@@ -7,7 +7,7 @@
  *     npm run build && node tests/e2e/pull.ts
  */
 import assert from 'node:assert/strict';
-import { chromium, openSection, reporter, signIn, startServer, synced } from './lib.ts';
+import { newList, chromium, openSection, reporter, signIn, startServer, synced } from './lib.ts';
 import type { Page } from 'playwright';
 
 const server = await startServer(18097);
@@ -164,7 +164,7 @@ try {
 
     // ----- not while singing -----
     await openSection(page, 'Listados');
-    await page.getByRole('button', { name: 'Nuevo listado' }).click();
+    await newList(page);
     await page.locator('section.slot').first().waitFor();
 
     // ----- the screen, pulled down, never paints over the menu -----

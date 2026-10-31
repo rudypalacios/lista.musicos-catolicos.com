@@ -39,7 +39,7 @@ export class MemoryStore implements LocalStore {
         return Promise.resolve();
     }
 
-    mergeRemote(page: Pick<Pulled, 'songs' | 'setlists'>, cursor: number): Promise<void> {
+    mergeRemote(page: Pick<Pulled, Collection>, cursor: number): Promise<void> {
         for (const collection of COLLECTIONS) {
             this.mergeInto(collection, page[collection]);
         }
@@ -93,5 +93,5 @@ export class MemoryStore implements LocalStore {
 type Tables = { [C in Collection]: Map<string, Records[C]> };
 
 function newTables(): Tables {
-    return { songs: new Map(), setlists: new Map() };
+    return { songs: new Map(), setlists: new Map(), templates: new Map() };
 }

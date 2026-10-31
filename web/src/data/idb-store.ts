@@ -8,12 +8,13 @@ import { COLLECTIONS, type Collection, type Pulled, type Records } from './types
  * 2. adds `setlists` and `pending-setlists`.
  * 3. lists carry their own sections (`Setlist.parts`): the lists of the device are dropped and the cursor is reset
  *    (see `open`).
+ * 4. adds `templates` and `pending-templates` (the sections a new list starts with).
  */
-const VERSION = 3;
+const VERSION = 4;
 
 /** The object store of each collection's records, and of its queue of unsent ones */
-const DATA: Readonly<Record<Collection, string>> = { songs: 'songs', setlists: 'setlists' };
-const QUEUE: Readonly<Record<Collection, string>> = { songs: 'pending', setlists: 'pending-setlists' };
+const DATA: Readonly<Record<Collection, string>> = { songs: 'songs', setlists: 'setlists', templates: 'templates' };
+const QUEUE: Readonly<Record<Collection, string>> = { songs: 'pending', setlists: 'pending-setlists', templates: 'pending-templates' };
 const META = 'meta';
 const CURSOR = 'cursor';
 const OWNER = 'owner';
@@ -31,7 +32,7 @@ function done<T>(request: IDBRequest<T>): Promise<T> {
     });
 }
 
-/** The songs and setlists of the device in IndexedDB: what is kept offline, and survives a new app version */
+/** The songs, setlists and templates of the device in IndexedDB: what is kept offline, and survives a new app version */
 export class IdbStore implements LocalStore {
     private readonly db: IDBDatabase;
 
@@ -145,7 +146,7 @@ export class IdbStore implements LocalStore {
         });
     }
 
-    mergeRemote(page: Pick<Pulled, 'songs' | 'setlists'>, cursor: number): Promise<void> {
+    mergeRemote(page: Pick<Pulled, Collection>, cursor: number): Promise<void> {
         const stores = [META, ...Object.values(DATA), ...Object.values(QUEUE)];
 
         return this.transaction(stores, 'readwrite', async (open) => {

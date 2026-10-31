@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { massSections } from '../src/mass.ts';
-import { lockedNote, missingFromMass } from '../src/views/sections.ts';
+import { lockedNote, missingFromMass } from '../src/views/section-editor.ts';
 
 describe('lockedNote', () => {
     it('says how many songs keep a section on, in the singular and the plural', () => {

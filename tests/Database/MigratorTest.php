@@ -56,7 +56,9 @@ final class MigratorTest extends TestCase
     {
         $pdo = TestDatabase::migrated();
 
-        $tables = ['users', 'sessions', 'login_attempts', 'songs', 'setlists', 'sync_state', 'schema_migrations'];
+        $tables = [
+            'users', 'sessions', 'login_attempts', 'songs', 'setlists', 'templates', 'sync_state', 'schema_migrations',
+        ];
         foreach ($tables as $table) {
             $this->assertTrue(TestDatabase::hasTable($pdo, $table), $table);
         }

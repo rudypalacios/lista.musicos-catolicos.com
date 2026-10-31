@@ -8,13 +8,14 @@ import { filterSetlists } from '../search.ts';
 import { showToast } from '../toast.ts';
 import { deleteListAfterAsking } from './delete-list.ts';
 import { createSheet, sheetAction } from './sheet.ts';
+import { createTemplateSheet } from './template-choices.ts';
 import type { Navigate, View } from './types.ts';
 
 /**
  * The setlists. The starred ones come first (by title, so they stay where the person left
  * them), then the rest, most recently edited first: a list may be for a rosary or a prayer
  * meeting and have no day, so the day orders nothing. Searching shows one list, starred first.
- * "＋ Nuevo" still creates a list at once, for today. The "⋯" of each row opens a sheet with what is done to
+ * "＋ Nuevo" opens a sheet to select a template (the sections the list starts with) and creates the list for today. The "⋯" of each row opens a sheet with what is done to
  * that list from here: star it (or take the star off), make a copy of it, delete it (after a question).
  */
 export function listsView(app: App, navigate: Navigate): View {
@@ -36,16 +37,13 @@ export function listsView(app: App, navigate: Navigate): View {
         empty,
     );
 
+    const templateSheet = createTemplateSheet(app, navigate, (failure: unknown) => {
+        error.textContent = failure instanceof Error ? failure.message : 'No se pudo crear el listado.';
+    });
+    element.append(templateSheet.element);
     create.addEventListener('click', () => {
-        create.disabled = true;
         error.textContent = '';
-        app.setlists
-            .create()
-            .then((created) => navigate(paths.setlist(created.id)))
-            .catch((failure: unknown) => {
-                error.textContent = failure instanceof Error ? failure.message : 'No se pudo crear el listado.';
-                create.disabled = false;
-            });
+        templateSheet.open();
     });
 
     // --- "⋯" of a row: what is done to that list from here ---

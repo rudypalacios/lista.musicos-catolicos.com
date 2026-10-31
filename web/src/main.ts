@@ -5,6 +5,8 @@ import { App, signOut } from './app.ts';
 import { h } from './dom.ts';
 import { visibleParts } from './data/setlists.ts';
 import { sectionsView } from './views/sections.ts';
+import { templateView } from './views/template.ts';
+import { templatesView } from './views/templates.ts';
 import { matchRoute, paths, type Route } from './router.ts';
 import { applyReadingColors } from './settings.ts';
 import { watchBottomChrome } from './bottom-chrome.ts';
@@ -183,6 +185,11 @@ function routeView(data: App, route: Route, navigate: Navigate): Promise<View> {
 
                 return part === undefined ? notice('Esta sección no existe en el listado.') : addView(data, navigate, setlist, part);
             });
+        case 'templates':
+            return Promise.resolve(templatesView(data, navigate));
+        case 'template':
+            return data.templates.get(route.id).then((template) =>
+                template === undefined ? notice('Esta plantilla no existe (o se eliminó).') : templateView(data, navigate, template));
         case 'install':
             return Promise.resolve(installView());
         case 'settings':

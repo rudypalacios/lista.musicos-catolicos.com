@@ -5,6 +5,8 @@ import { h } from '../dom.ts';
 import { icon } from '../icons.ts';
 import { showToast } from '../toast.ts';
 import { createSheet, sheetAction, type Sheet } from './sheet.ts';
+import { templateChoices } from './template-choices.ts';
+import { paths } from '../router.ts';
 
 /** The key the song goes in with: the one on screen, which is said only when it is not the person's own */
 export interface AddEntry {
@@ -21,6 +23,8 @@ export interface AddToListOptions {
     entry: () => AddEntry;
     /** The back arrow of the first step: where the person came from (the song's options) */
     onBack: () => void;
+    /** "Administrar plantillas": the sheet closes and the screen of the templates opens */
+    onManage: () => void;
 }
 
 /** What a section says at its right: that the song is already there, how many songs it holds, or that it is optional */
@@ -84,13 +88,25 @@ export function createAddToList(options: AddToListOptions): Sheet {
                 head('Agregar a un listado', song.title, () => sheet.close(options.onBack)),
                 error,
                 ...(starred.length === 0 ? group(null, others) : [...group('Destacados', starred), ...group('Recientes', others)]),
-                // Last, set apart: a list for today, and straight on to its part
+                // Last, set apart: a list for today (from a template the person selects), and straight on to its section
                 sheetAction('plus', 'Nuevo listado', () => {
                     error.hidden = true;
-                    app.setlists.create().then(showParts).catch((failure: unknown) => fail(failure, 'No se pudo crear el listado.'));
+                    showTemplates();
                 }, { apart: true }),
             );
         }).catch((failure: unknown) => fail(failure, 'No se pudieron leer los listados.'));
+    };
+
+    // --- a new list: which template (the sections it starts with) ---
+    const showTemplates = (): void => {
+        sheet.body.replaceChildren(head('Nuevo listado', 'Selecciona una plantilla', showLists), error, h('p', { class: 'lrow__detail' }, 'Un momento…'));
+        templateChoices(app, {
+            created: showParts,
+            manage: () => options.onManage(),
+            failed: (failure) => fail(failure, 'No se pudo crear el listado.'),
+        }, (then) => then())
+            .then((rows) => sheet.body.replaceChildren(head('Nuevo listado', 'Selecciona una plantilla', showLists), error, ...rows))
+            .catch((failure: unknown) => fail(failure, 'No se pudieron leer las plantillas.'));
     };
 
     // --- step 2: the part ---

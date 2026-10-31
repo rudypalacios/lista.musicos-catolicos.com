@@ -33,11 +33,6 @@ final class SetlistChange
     public const MAX_TRANSPOSE = 11;
     /** Bytes: the column is TEXT (64 KiB) in MySQL */
     public const MAX_ITEMS_JSON = 60000;
-    public const MAX_PARTS = 30;
-    public const MAX_PART_NAME = 60;
-    public const MAX_PART_NOTE = 300;
-    /** Bytes of the parts as stored: their own column, so they take nothing from the items' */
-    public const MAX_PARTS_JSON = 8000;
     /** See SongChange::MAX_FUTURE_MS */
     public const MAX_FUTURE_MS = SongChange::MAX_FUTURE_MS;
 
@@ -110,7 +105,7 @@ final class SetlistChange
     /** The parts as they are stored: JSON, with accents left as they are */
     public function partsJson(): string
     {
-        return self::encode($this->parts);
+        return Sections::json($this->parts);
     }
 
     /** @param list<array<string, mixed>> $items */
@@ -126,65 +121,11 @@ final class SetlistChange
      */
     private static function parts(mixed $value): array
     {
-        if (!is_array($value) || !array_is_list($value) || $value === []) {
-            throw new InvalidSetlist('El listado necesita al menos una sección.');
+        try {
+            return Sections::read($value);
+        } catch (InvalidSections $e) {
+            throw new InvalidSetlist($e->getMessage(), 0, $e);
         }
-        if (count($value) > self::MAX_PARTS) {
-            throw new InvalidSetlist('Un listado admite hasta ' . self::MAX_PARTS . ' secciones.');
-        }
-
-        $parts = [];
-        $seen = [];
-        foreach ($value as $raw) {
-            $part = self::part($raw);
-            if (isset($seen[$part['id']])) {
-                throw new InvalidSetlist('Un listado tiene dos secciones con el mismo identificador.');
-            }
-            $seen[$part['id']] = true;
-            $parts[] = $part;
-        }
-        if (strlen(self::encode($parts)) > self::MAX_PARTS_JSON) {
-            throw new InvalidSetlist('Las secciones del listado son demasiado grandes.');
-        }
-
-        return $parts;
-    }
-
-    /**
-     * @return array{id: string, name: string, off?: true, optional?: true, note?: string}
-     *
-     * @throws InvalidSetlist
-     */
-    private static function part(mixed $raw): array
-    {
-        if (!is_array($raw)) {
-            throw new InvalidSetlist('Una sección del listado no es válida.');
-        }
-        $id = $raw['id'] ?? null;
-        if (!is_string($id) || preg_match(self::PART, $id) !== 1) {
-            throw new InvalidSetlist('Una sección del listado no tiene un identificador válido.');
-        }
-        $name = self::text($raw, 'name', self::MAX_PART_NAME, 'El nombre de una sección');
-        if ($name === '') {
-            throw new InvalidSetlist('Una sección del listado necesita un nombre.');
-        }
-
-        $part = ['id' => $id, 'name' => $name];
-        foreach (['off', 'optional'] as $flag) {
-            $set = $raw[$flag] ?? null;
-            if ($set !== null && !is_bool($set)) {
-                throw new InvalidSetlist('Una sección del listado tiene una marca que no es válida.');
-            }
-            if ($set === true) {
-                $part[$flag] = true;
-            }
-        }
-        $note = self::text($raw, 'note', self::MAX_PART_NOTE, 'La nota de una sección');
-        if ($note !== '') {
-            $part['note'] = $note;
-        }
-
-        return $part;
     }
 
     private static function starred(mixed $value): ?bool
