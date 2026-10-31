@@ -295,10 +295,10 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    *Eliminar listado* (ver el punto 29). El cuadro se ve igual en todos los aparatos (ya no es el aviso del navegador). Si el listado se
    borró en otro aparato, desaparece del tuyo al sincronizar.
 
-24. **La fecha es opcional, y se puede quitar.** Un listado puede no tener fecha (por ejemplo, una misa que sirve para octubre y noviembre).
-   Si tiene, junto a la fecha aparece una **✕** («Quitar la fecha», de 44 px): tócala y el listado queda sin fecha («＋ Fecha» para
-   ponerla otra vez). Pruébalo en el **iPad**, donde el selector de fecha no siempre trae «Borrar». Un listado sin fecha en *Listados* solo dice
-   sus cantos. **Duplicar listado** ya no pone la fecha de hoy: la copia sale sin fecha. «＋ Nuevo» sigue creando para hoy.
+24. **La fecha ya no se ve ni se edita dentro de un listado** (sustituye a lo que decía este punto: se quitó por decisión del dueño, porque no
+   se usa por ahora). El listado la sigue guardando (los que ya tenían fecha la conservan y *Listados* la muestra en el detalle de la fila, como
+   «10 cantos · mar 1 sep»), pero dentro del listado no hay chip de fecha ni «✕». **Duplicar listado** da una copia sin fecha. «＋ Nuevo» sigue
+   creando el listado con el título «Misa del …» y la fecha de hoy guardada.
 
 25. **Nuevo canto e Importar, pulidos (PR A de la revisión de «Nuevo canto»).** (a) Guardar un canto **sin título** ya no deja el mensaje
    abajo, junto a los botones: el campo *Título* se marca en rojo, recibe el foco y el mensaje aparece justo debajo; desaparece al escribir.
@@ -343,16 +343,15 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    abre una fila, quita la marca de uno y guarda. En el iPad, al final.
 
 29. **Dentro de un listado: el `⋮` en la esquina, y *Eliminar listado* desde ahí.** El nombre del listado lleva a su derecha el `⋮`, que
-   **siempre está** (también en un listado sin cantos; antes desaparecía). Debajo hay una sola fila: la fecha (o «＋ Fecha», con su ✕ si ya
-   hay fecha), «N cantos» y, a la derecha, **Cantar** (más pequeño que antes). En un teléfono, si la fila no cabe, «Cantar» baja a su propia
-   línea, a la derecha. La hoja del `⋮` tiene *Imprimir con acordes* e *Imprimir solo la letra* (solo si hay cantos) y, al final, en rojo y
+   **siempre está** (también en un listado sin cantos; antes desaparecía). Debajo hay una sola fila: «N cantos» y, a la derecha, **Cantar** (más
+   pequeño que antes). **La fecha ya no aparece dentro del listado** (ver el punto 24). La hoja del `⋮` tiene *Imprimir con acordes* e *Imprimir solo la letra* (solo si hay cantos) y, al final, en rojo y
    separado, **Eliminar listado**, con el mismo cuadro que en *Listados*. Al eliminar vuelves a *Listados* y sale «Listado eliminado».
    Prueba un listado vacío (solo «Eliminar listado») y uno con cantos, en el teléfono y en la compu.
 
 30. **Cantos, como Listados.** (a) Arriba, en la compu: el buscador, **Importar** y **Nuevo canto** en una fila (en el teléfono el buscador va
    solo y los dos botones debajo, del mismo ancho), y «N cantos» debajo (con una búsqueda, «2 cantos de 40»). (b) Los cantos son filas planas
-   en **una sola columna**, como las de *Listados*: el título, el autor debajo, el tono a un lado y un `⋮` al final; tocar el canto lo abre,
-   como antes. (c) El `⋮` abre una hoja con **Editar letra y acordes** y, aparte y en rojo, **Eliminar canto**. (d) Eliminar un canto (también
+   en **una sola columna**, como las de *Listados*: el título y, debajo, «Autor · **Do**» (el tono en negrita, como dentro de un listado), y un `⋮` al final;
+   tocar el canto lo abre, como antes. (c) El `⋮` abre una hoja con **Editar letra y acordes** y, aparte y en rojo, **Eliminar canto**. (d) Eliminar un canto (también
    el botón *Eliminar* de la pantalla de editar) pregunta con el cuadro de la app, no con el aviso del navegador, y nombra los listados donde
    está el canto («ahí aparecerá como «Canto eliminado»»); al confirmar sale «Canto eliminado». Prueba en el teléfono y en la compu.
 

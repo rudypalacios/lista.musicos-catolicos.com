@@ -153,14 +153,9 @@ try {
 
     await page.getByRole('button', { name: 'Nuevo listado' }).click();
     await page.locator('section.slot').first().waitFor();
-    const today = await page.evaluate(() => {
-        const now = new Date();
-
-        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    });
-    assert.equal(await page.getByLabel('Fecha de la misa').inputValue(), today);
+    assert.equal(await page.getByLabel('Fecha de la misa').count(), 0, 'the list screen shows no day and has no field for it');
     assert.match(await page.getByLabel('Título').inputValue(), /^Misa del \d{1,2} de [a-záéíóú]+$/);
-    pass('"Nuevo listado" opens a list for today with a title made of the day');
+    pass('"Nuevo listado" opens a list with a title made of the day and no day on the screen');
 
     const names = await page.locator('section.slot h3').allTextContents();
     assert.deepEqual(names, [
@@ -310,17 +305,15 @@ try {
     await page.getByLabel('Título').fill(oldTitle);
 
     await page.getByLabel('Título').fill('Domingo de prueba');
-    await page.getByLabel('Fecha de la misa').fill('2026-11-01');
-    await page.getByLabel('Fecha de la misa').blur();
-    await page.getByText('dom 1 nov').waitFor();
-    const afterHeader = await serverWhen(page, (data) => data.setlists[0]?.eventDate === '2026-11-01');
+    await page.getByLabel('Título').blur();
+    const afterHeader = await serverWhen(page, (data) => data.setlists[0]?.title === 'Domingo de prueba');
     const stored = afterHeader.setlists[0];
     assert.equal(stored?.title, 'Domingo de prueba');
-    assert.equal(stored?.eventDate, '2026-11-01');
+    assert.match(stored?.eventDate ?? '', /^\d{4}-\d{2}-\d{2}$/, 'the day set when the list was made is kept, though it is not shown');
     assert.deepEqual(stored?.items.map((item) => [item.part, item.transpose, item.note]), [
         ['entrada', 2, ''], ['comunion', 0, ''], ['comunion', 0, ''],
     ]);
-    pass('title, day, order and keys reach the server (the day is a chip that shows "dom 1 nov")');
+    pass('title, order and keys reach the server, and the day the list was made for is kept');
 
     // The same song in two parts: allowed, with a quiet notice on both (and in the picker beforehand)
     await page.getByRole('link', { name: 'Agregar canto a Canto de salida' }).click();
@@ -631,13 +624,11 @@ try {
     await page.locator('section.slot').first().waitFor();
     await page.getByLabel('Título').fill('Rosario en familia');
     await page.getByLabel('Título').blur();
-    await page.getByLabel('Fecha de la misa').fill('');
-    await page.getByLabel('Fecha de la misa').blur();
     await page.getByRole('link', { name: 'Volver a Listados' }).click();
     await page.getByRole('button', { name: 'Más opciones: Rosario en familia' }).waitFor();
     assert.equal(await page.getByRole('heading', { name: 'Recientes' }).count(), 0, 'no headings while nothing is starred');
     assert.equal(await page.locator('.lrow__title').first().textContent(), 'Rosario en familia', 'the list edited last comes first');
-    assert.equal(await page.locator('.lrow__detail').first().textContent(), '0 cantos', 'a list with no day shows no day');
+    assert.match((await page.locator('.lrow__detail').first().textContent()) ?? '', /^0 cantos/);
     pass('with no stars the lists are one flat list, the most recently edited first, with no text explaining the star');
     assert.equal(await page.locator('button.star').count(), 0, 'there is no star on the rows: each has a "⋯"');
 
@@ -694,25 +685,9 @@ try {
     await page.locator('section.slot').first().waitFor();
     await page.locator('.toast', { hasText: 'Copiado de «Domingo, editado en la tablet»' }).waitFor();
     assert.equal(await page.getByLabel('Título').inputValue(), 'Copia de Domingo, editado en la tablet');
-    // The copy has no day: the chip offers one and there is nothing to remove
-    await page.getByText('Fecha', { exact: true }).waitFor();
-    assert.equal(await page.getByRole('button', { name: 'Quitar la fecha' }).isVisible(), false, 'no day, nothing to remove');
     await page.getByText(new RegExp(`${original} cantos?`)).first().waitFor();
     await serverWhen(page, (data) => data.setlists.filter((list) => list.deletedAt === null && list.items.length === original).length >= 2);
-    pass('duplicating a list opens "Copia de …" with no day and the same songs, says where it came from, and leaves the original');
-    // A day can be set and taken away again: the list may serve for a month
-    await page.getByLabel('Fecha de la misa').fill('2026-11-08');
-    await page.getByLabel('Fecha de la misa').blur();
-    const clear = page.getByRole('button', { name: 'Quitar la fecha' });
-    await clear.waitFor();
-    const clearBox = await clear.boundingBox();
-    assert.ok(clearBox !== null && clearBox.width >= 44 && clearBox.height >= 44, '"Quitar la fecha" is a 44px target');
-    await serverWhen(page, (data) => data.setlists.some((list) => list.title.startsWith('Copia de') && list.eventDate === '2026-11-08'));
-    await clear.click();
-    await page.getByText('Fecha', { exact: true }).waitFor();
-    await clear.waitFor({ state: 'hidden' });
-    await serverWhen(page, (data) => data.setlists.some((list) => list.title.startsWith('Copia de') && list.eventDate === null && list.deletedAt === null));
-    pass('a day can be set and removed again with the "✕" beside it, and that reaches the server');
+    pass('duplicating a list opens "Copia de …" with the same songs, says where it came from, and leaves the original');
     await deleteOpenList(page);
 
     await page.getByRole('button', { name: 'Más opciones: Domingo, editado en la tablet' }).click();

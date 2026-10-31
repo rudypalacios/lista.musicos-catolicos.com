@@ -13,7 +13,7 @@ import type { Navigate, View } from './types.ts';
 
 /**
  * The song library. The same flat rows as the lists screen, in one column (it is read and searched down, and a
- * library grows): the title, the author under it, the key at the side and a "⋯" of 44px at the end. Touching the
+ * library grows): the title, "Autor · key" under it and a "⋯" of 44px at the end. Touching the
  * song opens it; the "⋯" opens a sheet with what is done to that song from here: edit its lyrics and chords, or
  * delete it (last, red and set apart, after a question that names the lists it is in).
  */
@@ -91,13 +91,17 @@ export function listView(app: App, navigate: Navigate): View {
     /** `query` is what is being searched: a song found only through its lyrics shows the lines that matched */
     const row = (song: Song, query: string): HTMLElement => {
         const key = songKey(parse(song.body));
-        const text = h('a', { class: 'lrow__link', href: paths.view(song.id), 'data-link': true },
-            h('span', { class: 'lrow__title' }, song.title),
-            ...(song.author === '' ? [] : [h('span', { class: 'lrow__detail' }, song.author)]),
-            ...(foundInLyricsOnly(song, query) ? [snippetBlock(songSnippet(song, query))] : []));
+        // "Autor · Do", as a song reads inside a list: the key a little brighter than the author
+        const detail = [
+            ...(song.author === '' ? [] : [song.author]),
+            ...(key === null ? [] : [h('span', { class: 'lrow__key' }, transpose(key, 0, readNotation()))]),
+        ].flatMap((part, index) => (index === 0 ? [part] : [' · ', part]));
 
-        return h('li', { class: 'lrow' }, text,
-            ...(key === null ? [] : [h('span', { class: 'chip lrow__key' }, transpose(key, 0, readNotation()))]),
+        return h('li', { class: 'lrow' },
+            h('a', { class: 'lrow__link', href: paths.view(song.id), 'data-link': true },
+                h('span', { class: 'lrow__title' }, song.title),
+                ...(detail.length === 0 ? [] : [h('span', { class: 'lrow__detail' }, ...detail)]),
+                ...(foundInLyricsOnly(song, query) ? [snippetBlock(songSnippet(song, query))] : [])),
             more(song));
     };
 

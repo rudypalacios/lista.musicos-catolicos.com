@@ -1347,29 +1347,7 @@ textarea.setlist-title:focus {
     font-size: 0.85rem;
 }
 
-/* The day is a chip; the real date field lies over it, invisible, so touching it opens the native picker */
-.chip--day {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    min-height: 2.75rem;
-    padding: 0 0.9rem;
-    font-size: 0.85rem;
-}
-
-input.chip__input {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    padding: 0;
-    opacity: 0;
-    cursor: pointer;
-}
-
-/* "Cantar" closes the row of the day and the count, at the right, no bigger than it needs */
+/* "Cantar" closes the row of the count, at the right, no bigger than it needs */
 .setlist-head__meta .button--primary {
     margin-left: auto;
     gap: 0.5rem;
@@ -1801,8 +1779,8 @@ body:has(.update) .install-banner {
 }
 
 .lrow__key {
-    flex: none;
-    margin-right: 0.25rem;
+    color: var(--text);
+    font-weight: 600;
 }
 
 /* ===== The songs screen: the lists screen's rows, with a row of buttons on top ===== */
