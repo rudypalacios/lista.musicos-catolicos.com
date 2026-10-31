@@ -151,6 +151,23 @@ try {
     assert.doesNotMatch(text, /Cuánto/);
     pass('a song prints on one page with its header, musical data and the key on screen');
 
+    // ----- the colours chosen for the screen never reach the paper -----
+    await page.evaluate(() => {
+        document.documentElement.style.setProperty('--lyric-color', '#ffffff');
+        document.documentElement.style.setProperty('--chord-color', '#7fe8c8');
+    });
+    const emulate = (media: 'print' | null): Promise<void> => (page as unknown as { emulateMedia(options: { media: 'print' | null }): Promise<void> }).emulateMedia({ media });
+    await emulate('print');
+    const paper = await page.evaluate(() => Array.from(document.querySelectorAll('#print-root .song-sheet .ch')).map((node) => getComputedStyle(node).color));
+    await emulate(null);
+    await page.evaluate(() => {
+        document.documentElement.style.removeProperty('--lyric-color');
+        document.documentElement.style.removeProperty('--chord-color');
+    });
+    assert.ok(paper.length > 0, 'there are chords on the sheet');
+    assert.deepEqual([...new Set(paper)], ['rgb(192, 0, 0)'], 'chords print dark red whatever pair is chosen for the screen');
+    pass('the chord colour chosen in Ajustes never reaches the paper');
+
     await choosePrint(page, 'Solo letra');
     pages = await toPdf(page);
     const lyricsOnly = (pages[0] ?? []).join(' ');
@@ -158,6 +175,16 @@ try {
     assert.doesNotMatch(lyricsOnly, /Tono|BPM/);
     assert.doesNotMatch(lyricsOnly, /\bRe\b/, 'no chords on the sheet to hand out');
     pass('the lyrics-only sheet leaves out chords and musical data');
+
+    // The colour of the lyrics is a setting for the screen: paper is always black on white, whatever it is set to
+    await page.evaluate(() => document.documentElement.style.setProperty('--lyric-color', '#ffffff'));
+    await emulate('print');
+    const inks = await page.evaluate(() => Array.from(document.querySelectorAll('#print-root .song-sheet .lyr')).map((node) => getComputedStyle(node).color));
+    await emulate(null);
+    await page.evaluate(() => document.documentElement.style.removeProperty('--lyric-color'));
+    assert.ok(inks.length > 0, 'there are lyrics on the sheet');
+    assert.deepEqual([...new Set(inks)], ['rgb(0, 0, 0)'], 'white lyrics chosen for the screen still print black');
+    pass('the lyric colour chosen in Ajustes never reaches the paper');
 
     // ----- the setlist: one song per page, in the order of the Mass, key of the list -----
     await page.goto(`${server.base}/listados/${sheetCases.setlist}`);

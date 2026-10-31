@@ -150,7 +150,7 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    no se ve ni se edita; el capodastro y demás anotaciones van en la letra en ChordPro (`{capo: 2}`).
 5. En *Cantar*, desliza a izquierda y derecha: **la pantalla ya no debe "ensancharse"** en los bordes y el
    canto nuevo debe entrar deslizándose. (Esto solo se puede confirmar en el teléfono.)
-6. *Ajustes* (botón de abajo a la derecha del menú): cambia el nombre de los acordes, el color de la letra y las columnas; el ejemplo
+6. *Ajustes* (botón de abajo a la derecha del menú): cambia el nombre de los acordes, los colores de lectura (ver el punto 37) y las columnas; el ejemplo
    cambia al momento. Abre un canto: ya usa lo elegido. En la tablet, el botón *Columnas* del lector
    cambia entre automático, 2 y 1. En automático, un canto que en una columna
    quedaría con letra chica (menos de 20 px) pasa a dos columnas si así la letra crece al menos 20 %; los
@@ -195,6 +195,8 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    *Eliminar listado* ya no está aquí: ver el ítem 23). En la tablet ancha, las partes van en dos columnas que bajan en el orden de la misa.
    Los íconos son propios (no se cargan de ningún sitio). **Solo se confirma en el dispositivo:** que
    el selector de fecha se abra al tocar la pastilla en el iPad, y que imprimir desde la hoja abra AirPrint.
+   **El color de la letra de Ajustes no llega al papel:** pon el color blanco en *Ajustes*, imprime con acordes y solo la letra (canto y listado):
+   la letra sale negra en el PDF.
 10. **Jalar para sincronizar.** En cualquier pantalla (menos *Cantar*), con la pantalla hasta arriba, jala el dedo hacia
    abajo: sale «Jala para sincronizar», y pasado un tramo cambia a «Suelta para sincronizar». Al soltar dice
    «Sincronizando…» y luego «Sincronizado» (o «Sin conexión», «La sesión terminó», «No se pudo sincronizar»). Un tirón
@@ -391,6 +393,15 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    acordes*, *Imprimir solo la letra*, *Editar letra y acordes* y, aparte y en rojo, *Eliminar canto* (pregunta primero, igual que en *Cantos*, y
    vuelve a la lista). **Prueba:** abre un canto en el teléfono y en la compu; mueve el tono y guárdalo; cambia el tamaño; abre el `⋯`
    y prueba cada opción (imprimir con acordes, solo la letra, editar, eliminar y cancelar). Los datos no cambian.
+
+37. **Colores de lectura: la letra y los acordes, en pares.** En *Ajustes*, «Color de la letra» (cinco nombres, con círculos) se cambió por **Colores de lectura**:
+   cuatro tarjetas, cada una con una **muestra** dibujada en sus colores: **Clásico** (letra blanca, acordes azules, como antes), **Blanco y rojo**,
+   **Ámbar y celeste** y **Verde y rosa**. Los pares están elegidos para que se lean bien sobre el fondo oscuro (contraste mínimo 7:1, y una prueba
+   lo vigila). Se guarda al tocar y se aplica a los cantos, a los listados y a *Cantar* (también a la raya bajo la sílaba del acorde).
+   **El papel no cambia:** siempre letra negra y acordes en rojo oscuro, elijas lo que elijas. **Lo que ya tenías elegido:** *Ámbar*, *Blanco* y *Verde* conservan su
+   letra (y ahora llevan acordes de otro color); *Celeste* y cualquier otro pasan a *Clásico*. **Prueba:** elige cada par y abre un canto, un
+   listado y *Cantar*; que se lean los acordes y la letra, que la muestra de cada tarjeta coincida con el canto, y que al imprimir (con acordes) el papel
+   siga en negro y rojo.
 
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).

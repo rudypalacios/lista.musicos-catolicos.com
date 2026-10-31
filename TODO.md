@@ -72,6 +72,14 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
 ## Small things to do when convenient
 
 - [ ] Tune the fit limits (`DEFAULT_LIMITS`, `COMFORTABLE_SIZE`, `TWO_COLUMNS_GAIN` in `web/src/fit.ts`) after seeing it on the devices.
+- [x] **Reading colours: lyrics and chords as one pair** (`settings.ts`, `views/settings.ts`; the owner approved the mockup): the "Color de la letra" list became four cards
+      with a sample each (Clásico, Blanco y rojo, Ámbar y celeste, Verde y rosa), applied as `--lyric-color` / `--chord-color` through the CSSOM (the page's policy refuses
+      `style` attributes: the old colour circles were empty in production, which this replaces). Every pair has contrast ≥ 7:1 on the app's background (`web/test/settings.test.ts`).
+      Paper stays fixed (black lyrics, dark red chords; e2e under print media). **Decided with the owner:** no free colours (contrast cannot be guaranteed; if ever wanted, a
+      picker that rejects what does not read) and no separate colours for paper (the same cause as the white-lyrics PDF bug). Stored ids: `predeterminado`, `blanco`, `ambar` and `verde`
+      keep their lyrics; `celeste` reads as the default (nothing breaks). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 37.
+- [x] **The lyric colour never reaches the paper** (`print/print.css`): a colour chosen in Ajustes (white, for a dark screen) made the printed lyrics vanish;
+      on paper `#print-root .song-sheet` is always black. Checked by `tests/e2e/print.ts` under print media. **Owner's check:** `DEPLOY.md`, item 11 (print).
 - [x] Keep the screen awake while a song is open or a list is being sung (Screen Wake Lock, `web/src/wakelock.ts`;
       on by default, an Ajustes choice turns it off). **Owner's check:** Android and iPad (Safari 16.4+; a
       home-screen app only from iOS 18.4), see `DEPLOY.md`.

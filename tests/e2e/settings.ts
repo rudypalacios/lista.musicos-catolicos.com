@@ -6,7 +6,7 @@
  *     npm run build && node tests/e2e/settings.ts
  */
 import assert from 'node:assert/strict';
-import { chromium, openSection, openSongMenu, reporter, signIn, startServer, synced } from './lib.ts';
+import { chromium, enforcePolicy, openSection, openSongMenu, reporter, signIn, startServer, synced } from './lib.ts';
 import type { Page } from 'playwright';
 
 const server = await startServer(18094);
@@ -77,6 +77,8 @@ try {
     const page = await context.newPage();
     const problems: string[] = [];
     page.on('pageerror', (error) => problems.push(error.message));
+    // Under the production policy, which refuses inline styles (it once left the colour circles empty)
+    const violations = await enforcePolicy(context, page);
     await signIn(page, server.base);
     await createSong(page, 'Puerta corta', SHORT);
     await createSong(page, 'Camino largo', LONG);
@@ -94,17 +96,30 @@ try {
     pass('the chord names are a setting, shown in an example and used by the songs');
     await setting(page, 'Do, Re, Mi');
 
-    // ----- lyric colour -----
-    await page.getByLabel('Ámbar').check();
+    // ----- reading colours: a pair of lyrics and chords -----
+    const cards = await page.evaluate(() => Array.from(document.querySelectorAll('.pair')).map((node) => node.textContent?.trim()));
+    assert.equal(cards.length, 4, 'four pairs');
+    // Each card draws its sample in its own colours (read from the sample itself: no colour circle to leave empty)
+    const samples = await page.evaluate(() => Array.from(document.querySelectorAll('.pair__sample')).map((node) => ({
+        lyrics: getComputedStyle(node.querySelector('.pair__lyrics') as Element).color,
+        chords: getComputedStyle(node.querySelector('.pair__chords') as Element).color,
+    })));
+    assert.deepEqual(samples[2], { lyrics: 'rgb(255, 212, 121)', chords: 'rgb(143, 208, 255)' }, 'the sample of a pair is in its colours');
+    assert.notDeepEqual(samples[0], samples[1]);
+    await page.getByLabel('Ámbar y celeste').check();
     assert.equal(await page.evaluate(() => document.documentElement.style.getPropertyValue('--lyric-color')), '#ffd479');
+    assert.equal(await page.evaluate(() => document.documentElement.style.getPropertyValue('--chord-color')), '#8fd0ff');
     await openSong(page, 'Puerta corta');
     assert.equal(await page.locator('#song-sheet .lyr').first().evaluate((el) => getComputedStyle(el).color), 'rgb(255, 212, 121)');
+    assert.equal(await page.locator('#song-sheet .ch').first().evaluate((el) => getComputedStyle(el).color), 'rgb(143, 208, 255)');
     await page.reload();
     await page.locator('#song-sheet .ch').first().waitFor();
     assert.equal(await page.locator('#song-sheet .lyr').first().evaluate((el) => getComputedStyle(el).color), 'rgb(255, 212, 121)');
-    pass('the lyric colour applies to the lyrics, not the chords, and survives a reload');
-    await setting(page, 'Predeterminado');
+    assert.equal(await page.locator('#song-sheet .ch').first().evaluate((el) => getComputedStyle(el).color), 'rgb(143, 208, 255)');
+    pass('a pair of colours applies to the lyrics and to the chords, and survives a reload');
+    await setting(page, 'Clásico');
     assert.equal(await page.evaluate(() => document.documentElement.style.getPropertyValue('--lyric-color')), '');
+    assert.equal(await page.evaluate(() => document.documentElement.style.getPropertyValue('--chord-color')), '');
 
     // ----- columns on a wide screen -----
     await openSong(page, 'Puerta corta');
@@ -280,6 +295,7 @@ try {
     await page.getByRole('button', { name: 'Más opciones: Camino largo' }).waitFor();
     pass('the tools sheet has no note field and the list shows no note');
 
+    assert.deepEqual(violations, [], 'the settings screens break no rule of the Content-Security-Policy');
     assert.deepEqual(problems, [], 'no uncaught errors in the page');
     pass('no uncaught errors in the page');
     console.log(`\n${count()} checks passed`);

@@ -4,7 +4,7 @@ import { sheetHtml } from '../chordpro/sheet.ts';
 import { h, link, setSheet } from '../dom.ts';
 import type { ColumnMode } from '../fit.ts';
 import { readColumns, readFit, readKeepAwake, readNotation, saveColumns, saveFit, saveKeepAwake, saveLyricColor, saveNotation } from '../prefs.ts';
-import { applyLyricColor, chosenLyricColor, LYRIC_COLORS } from '../settings.ts';
+import { applyReadingColors, chosenReadingColors, paintReadingColors, READING_COLORS } from '../settings.ts';
 import { paths } from '../router.ts';
 import { showToast } from '../toast.ts';
 import type { Account, View } from './types.ts';
@@ -13,7 +13,7 @@ import type { Account, View } from './types.ts';
 const SAMPLE = '[C]Abrimos la [G]puerta de [Am]casa\n[F]Entra, her[G]mano, ven';
 
 /**
- * The settings of this device: how chords are named, the colour of the lyrics, whether the
+ * The settings of this device: how chords are named, the colours of the lyrics and chords, whether the
  * song fits the screen, how many columns, and whether the screen stays on. They live on the device (a
  * tablet on a stand wants other things than a phone) and apply at once.
  */
@@ -25,7 +25,7 @@ export function settingsView(account: Account): View {
         name: string,
         legend: string,
         current: T,
-        options: readonly { value: T; label: string; swatch?: string | null }[],
+        options: readonly { value: T; label: string }[],
         save: (value: T) => void,
     ): HTMLElement => {
         const set = h('fieldset', { class: 'choice' }, h('legend', {}, legend));
@@ -37,9 +37,6 @@ export function settingsView(account: Account): View {
                 saved();
             });
             const label = h('label', { class: 'choice__option' }, input);
-            if (option.swatch !== undefined) {
-                label.append(h('span', { class: 'swatch', style: `background:${option.swatch ?? 'var(--text)'}`, 'aria-hidden': 'true' }));
-            }
             label.append(option.label);
             set.append(label);
         }
@@ -56,6 +53,37 @@ export function settingsView(account: Account): View {
     };
     setSheet(sample, sheetHtml(parse(SAMPLE)));
     chords.push(...Array.from(sample.querySelectorAll<HTMLElement>('.ch[data-chord]')));
+
+    /**
+     * The colours: one card per pair, each with a sample drawn in its own colours (a circle of one colour would say
+     * nothing about how the chords read against the lyrics), and it saves as soon as it is touched.
+     */
+    const readingChoice = (): HTMLElement => {
+        const set = h('fieldset', { class: 'choice' }, h('legend', {}, 'Colores de lectura'),
+            h('p', { class: 'muted' }, 'La letra y los acordes, ya combinados para que se lean bien. En papel siempre salen en negro y rojo.'));
+        for (const colors of READING_COLORS) {
+            const input = h('input', { type: 'radio', name: 'reading', value: colors.id });
+            input.checked = colors.id === chosenReadingColors().id;
+            input.addEventListener('change', () => {
+                saveLyricColor(colors.id);
+                applyReadingColors();
+                saved();
+            });
+            const demo = h('span', { class: 'pair__sample', 'aria-hidden': 'true' },
+                h('span', { class: 'pair__chords' }, ...['C', 'G', 'Am'].map((name) => {
+                    const chord = h('span', { 'data-chord': name }, name);
+                    chords.push(chord);
+
+                    return chord;
+                })),
+                h('span', { class: 'pair__lyrics' }, 'Abrimos la puerta de casa'));
+            paintReadingColors(demo, colors, true);
+            set.append(h('label', { class: 'pair' }, input, h('span', { class: 'pair__body' }, h('span', { class: 'pair__name' }, colors.label), demo)));
+        }
+
+        return set;
+    };
+    const readingColors = readingChoice();
     drawSample(readNotation());
 
     const fit = h('input', { type: 'checkbox', id: 'setting-fit' });
@@ -88,12 +116,7 @@ export function settingsView(account: Account): View {
             saveNotation(value);
             drawSample(value);
         }),
-        choice<string>('color', 'Color de la letra', chosenLyricColor().id, LYRIC_COLORS.map((color) => ({
-            value: color.id, label: color.label, swatch: color.value,
-        })), (id) => {
-            saveLyricColor(id);
-            applyLyricColor();
-        }),
+        readingColors,
         h('div', { class: 'choice' }, h('label', { class: 'choice__option', for: 'setting-fit' }, fit, 'Ajustar la letra a la pantalla')),
         h('div', { class: 'choice' }, h('label', { class: 'choice__option', for: 'setting-awake' }, awake, 'Mantener la pantalla encendida al leer o cantar un canto')),
         choice<ColumnMode>('columns', 'Columnas en pantallas anchas', readColumns(), [

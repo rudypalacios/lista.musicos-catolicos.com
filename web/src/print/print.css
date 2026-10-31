@@ -210,6 +210,11 @@
         text-underline-offset: 0.15em;
     }
 
+    /* The lyric colour is a choice for the screen (settings.ts): on paper the lyrics are always black, or white ones vanish */
+    #print-root .song-sheet {
+        color: #000;
+    }
+
     /* A line of chords only (an intro) has no text row under them */
     .song-sheet .line--chords .lyr {
         display: none;
