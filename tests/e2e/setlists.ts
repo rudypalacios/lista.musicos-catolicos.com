@@ -998,6 +998,35 @@ try {
     await openSection(page, 'Listados');
     pass('tags: no filter until a song has the tag, one touch tags the song picked, "Mostrar todos" and the search; the editor adds and removes them (the one still being typed is kept) and the search finds a song by its tag');
 
+    // ----- "Etiquetarlos como «Salida»": what the lists already say about the songs used in a section -----
+    for (const title of ['Sin etiqueta uno', 'Sin etiqueta dos']) {
+        await createSong(page, title, '[C]Una [G]letra');
+    }
+    await openSection(page, 'Listados');
+    await newList(page);
+    await page.locator('section.slot').first().waitFor();
+    for (const title of ['Sin etiqueta uno', 'Sin etiqueta dos']) {
+        await addToSlot(page, 'Canto de salida', title);
+    }
+    await page.getByRole('link', { name: 'Agregar canto a Canto de salida' }).click();
+    await page.getByText('2 cantos de tus listados están en Canto de salida y no tienen la etiqueta «Salida».').waitFor();
+    assert.equal(await page.locator('.tag-filter').isVisible(), false, 'no filter yet: no song carries "Salida"');
+    await page.getByRole('button', { name: 'Etiquetarlos como «Salida»' }).click();
+    await page.getByText('Estos 2 cantos están en «Canto de salida» en tus listados. Se les agrega la etiqueta «Salida».').waitFor();
+    await page.getByText('No cambia la letra, ni tus listados, ni las otras etiquetas que ya tengan.').waitFor();
+    await noTypedIcons(page, 'the sheet that tags what the lists use');
+    await page.getByRole('button', { name: 'Etiquetar 2 cantos' }).click();
+    await page.locator('.toast', { hasText: '2 cantos etiquetados como «Salida»' }).waitFor();
+    await page.locator('.tag-filter').waitFor();
+    assert.equal(await page.locator('.tag-offer').isVisible(), false, 'nothing left to offer');
+    await serverWhen(page, (data) => data.songs.filter((song) => song.title.startsWith('Sin etiqueta') && song.tags.join() === 'Salida').length === 2);
+    await page.getByRole('button', { name: 'Deshacer' }).click();
+    await page.getByText('2 cantos de tus listados están en Canto de salida y no tienen la etiqueta «Salida».').waitFor();
+    await serverWhen(page, (data) => data.songs.filter((song) => song.title.startsWith('Sin etiqueta') && song.tags.length === 0).length === 2);
+    await page.locator('.bar__back').click();
+    await deleteOpenList(page);
+    pass('"Etiquetarlos": the songs the lists use in a section are tagged with its tag after a sheet that names them, with "Deshacer"');
+
     // ----- moving a song inside its section: "al inicio" / "al final" in its sheet, and holding it to drag it -----
     for (const title of ['Arrastre uno', 'Arrastre dos', 'Arrastre tres']) {
         await createSong(page, title, '[C]Una [G]letra');

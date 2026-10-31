@@ -92,6 +92,37 @@ export class Library {
     }
 
     /**
+     * Adds `tag` to each of the songs that do not carry it and have room for it. Returns the songs it changed (the rest
+     * were not touched), so it can be taken off again. @throws ValidationError for a tag that is not valid
+     */
+    async addTag(ids: readonly string[], tag: string): Promise<Song[]> {
+        const changed: Song[] = [];
+        for (const id of ids) {
+            const current = await this.get(id);
+            if (current === undefined || current.tags.some((have) => sameTag(have, tag)) || current.tags.length >= LIMITS.tags) {
+                continue;
+            }
+            changed.push(await this.setTags(id, [...current.tags, tag]));
+        }
+
+        return changed;
+    }
+
+    /** Takes `tag` off each of the songs that carry it; the other tags stay */
+    async removeTag(ids: readonly string[], tag: string): Promise<Song[]> {
+        const changed: Song[] = [];
+        for (const id of ids) {
+            const current = await this.get(id);
+            if (current === undefined || !current.tags.some((have) => sameTag(have, tag))) {
+                continue;
+            }
+            changed.push(await this.setTags(id, current.tags.filter((have) => !sameTag(have, tag))));
+        }
+
+        return changed;
+    }
+
+    /**
      * Sets "mi tono": the key the person sings the song in, in semitones from the written one. A song
      * added to a list from now on starts in it; the lists that already have it keep theirs.
      *

@@ -1,6 +1,6 @@
 import { massTag, plain } from '../mass.ts';
 import { ValidationError } from './library.ts';
-import { LIMITS, type PartDef, type Song } from './types.ts';
+import { LIMITS, type PartDef, type Setlist, type Song } from './types.ts';
 
 /**
  * Tags on songs: free text, compared without accents or capitals ("Comunión" and "comunion" are one tag), so a
@@ -66,4 +66,17 @@ export function tagsInUse(songs: readonly Pick<Song, 'tags'>[]): string[] {
     }
 
     return [...found.values()].sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag, 'es')).map((entry) => entry.tag);
+}
+
+/**
+ * The songs the lists already use in a section (`partId`: the Mass's ids are the same in every list, and a template
+ * gives the same ids to the lists made from it) that do not carry the section's tag and have room for it: what
+ * "Etiquetarlos" would tag. Each song once, by title.
+ */
+export function untaggedUses(lists: readonly Pick<Setlist, 'items'>[], songs: readonly Song[], partId: string, tag: string): Song[] {
+    const used = new Set(lists.flatMap((list) => list.items.filter((item) => item.part === partId).map((item) => item.songId)));
+
+    return songs
+        .filter((song) => used.has(song.id) && !hasTag(song, tag) && song.tags.length < LIMITS.tags)
+        .sort((a, b) => a.title.localeCompare(b.title, 'es'));
 }

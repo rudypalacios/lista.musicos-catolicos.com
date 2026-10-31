@@ -334,6 +334,10 @@ Next, in this order (design agreed with the owner):
          ("Etiqueta: Entrada", or "Sin etiqueta" when the importer found no part) and saved with the song; the open row has the same tag field as the song editor (below the lyrics) to change
          or take it off, with the tags in use offered. Not done on purpose: aliases for the person's own sections, and a list made from the import (see below). **Owner's check:** `DEPLOY.md`
          "Fases 4 y 5", item 42.
+      5b. [x] **"Etiquetarlos como «Entrada»"** (the owner approved the wording; `views/add.ts`, `untaggedUses` in `data/tags.ts`, `Library.addTag` / `removeTag`; no migration, no locked row): in the picker of a section, a card says how many
+         songs the lists already use in that section and lack its tag ("6 cantos de tus listados están en Canto de entrada y no tienen la etiqueta «Entrada»") with one button; it opens a sheet that names the songs
+         (five, then "Y N más") and says what is added and what is not touched; "Etiquetar N cantos" does it and the toast says so with "Deshacer", which takes off exactly the tag it put. It is per section (clearer than a global
+         button) and only appears when there is something to tag (so it shows nothing until lists hold songs). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 44.
       6. [x] **Drag to reorder** (`drag-reorder.ts`, `Setlists.reorderItem` / `reordered`; the owner unlocked "Inside a list"): holding a song (0.45 s) lifts its row, the finger moves it among the songs of its
          own section with a line showing where it lands, and letting go drops it there; auto-scrolls at the edges; a short touch still sings, a touch that moves first scrolls, the drop does not sing
          and is not a pull to sync (`pull.ts`), a sync that arrives meanwhile waits for the drop. The song's sheet keeps "Subir / Bajar en esta sección" and gains **"Al inicio / Al final de esta sección"**

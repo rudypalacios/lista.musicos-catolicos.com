@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { cleanTags, hasTag, sameTag, tagOf, tagsInUse, withTag } from '../../src/data/tags.ts';
+import { cleanTags, hasTag, sameTag, tagOf, tagsInUse, untaggedUses, withTag } from '../../src/data/tags.ts';
 import { ValidationError } from '../../src/data/library.ts';
 import { LIMITS, type Song } from '../../src/data/types.ts';
-import { song } from './store.contract.ts';
+import { setlist, song } from './store.contract.ts';
 
 const tagged = (id: string, ...tags: string[]): Song => song(id, 1, { tags });
 
@@ -45,5 +45,29 @@ describe('tags', () => {
         const songs = [tagged('a', 'Entrada', 'Adviento'), tagged('b', 'entrada'), tagged('c', 'Salida', 'Adviento'), tagged('d', 'Adviento')];
 
         assert.deepEqual(tagsInUse(songs), ['Adviento', 'Entrada', 'Salida']);
+    });
+
+    describe('the songs the lists use in a section and that lack its tag', () => {
+        const use = (part: string, ...songIds: string[]): ReturnType<typeof setlist> => setlist('l', 1, {
+            items: songIds.map((songId, i) => ({ id: `i-${part}-${i}`, part, songId, transpose: 0, note: '' })),
+        });
+        const songs = [tagged('b', 'Adviento'), tagged('a'), tagged('c', 'Entrada'), tagged('d')];
+
+        it('are the ones used in that section without the tag, each once, by title', () => {
+            const lists = [use('entrada', 'a', 'b', 'c'), use('entrada', 'a'), use('salida', 'd')];
+
+            assert.deepEqual(untaggedUses(lists, songs, 'entrada', 'Entrada').map((s) => s.id), ['a', 'b']);
+        });
+
+        it('leave out a song that has the tag in any spelling, one used elsewhere, and one with no room for another tag', () => {
+            const full = tagged('f', 'T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8');
+
+            assert.deepEqual(untaggedUses([use('entrada', 'c', 'f')], [...songs, full], 'entrada', 'entrada'), []);
+            assert.deepEqual(untaggedUses([use('salida', 'a')], songs, 'entrada', 'Entrada'), []);
+        });
+
+        it('are none when no list uses the section', () => {
+            assert.deepEqual(untaggedUses([], songs, 'entrada', 'Entrada'), []);
+        });
     });
 });

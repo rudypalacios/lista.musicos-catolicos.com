@@ -467,6 +467,12 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    primer canto de una sección al final y al medio; suelta fuera de la lista; intenta con el dedo desde la parte de arriba de la pantalla (no debe sincronizar); mira que un toque corto canta; prueba
    «Al inicio» y «Al final»; mira en el otro aparato que llegue el orden nuevo. Si tu teléfono abre un menú al mantener pulsado, dímelo.
 
+44. **«Etiquetarlos como …» (fase 6, botón aparte).** En el selector de una sección («Agregar a Canto de entrada»), si **tus listados ya usan cantos en esa sección que no tienen su etiqueta**, arriba aparece una tarjeta:
+   «**6 cantos** de tus listados están en **Canto de entrada** y no tienen la etiqueta «Entrada»», con el botón **Etiquetarlos como «Entrada»**. Al tocarlo se abre una hoja que **nombra los cantos** (los cinco primeros y «Y N más»)
+   y dice «Se les agrega la etiqueta «Entrada». No cambia la letra, ni tus listados, ni las otras etiquetas que ya tengan». **Etiquetar N cantos** lo hace; el aviso dice «N cantos etiquetados como «Entrada»» y trae **Deshacer**,
+   que quita justo esa etiqueta. Es **por sección** (para otra sección, lo haces en su selector). Si no hay nada que etiquetar, la tarjeta no aparece. **Prueba:** con un listado que ya tenga cantos en «Canto de entrada» (sin etiqueta),
+   abre el selector de esa sección, toca el botón y mira la hoja; etiqueta; mira que aparezcan los dos botones («Entrada» y «Mostrar todos»); prueba **Deshacer**. Sin conexión también; sin migración.
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.

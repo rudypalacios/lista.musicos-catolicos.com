@@ -71,6 +71,31 @@ describe('Library', () => {
             assert.deepEqual((await library.get(song.id))?.tags, []);
         });
 
+        it('are added to several songs at once: only the songs that lack the tag change, and it can be taken off again', async () => {
+            const a = await library.create({ ...draft, title: 'A' });
+            const b = await library.create({ ...draft, title: 'B', tags: ['Entrada'] });
+            const c = await library.create({ ...draft, title: 'C', tags: ['Adviento'] });
+            now = 9_000;
+
+            const changed = await library.addTag([a.id, b.id, c.id, 'gone'], 'entrada');
+
+            assert.deepEqual(changed.map((song) => song.title), ['A', 'C'], 'B had it (in another spelling); a song that is gone is skipped');
+            assert.deepEqual((await library.get(c.id))?.tags, ['Adviento', 'entrada'], 'the other tags stay');
+            assert.equal((await library.get(b.id))?.updatedAt, 1000, 'what was not changed was not written');
+
+            const undone = await library.removeTag(changed.map((song) => song.id), 'Entrada');
+
+            assert.deepEqual(undone.map((song) => song.title), ['A', 'C']);
+            assert.deepEqual((await library.get(a.id))?.tags, []);
+            assert.deepEqual((await library.get(c.id))?.tags, ['Adviento']);
+        });
+
+        it('are not added to a song that already has eight', async () => {
+            const full = await library.create({ ...draft, tags: Array.from({ length: LIMITS.tags }, (_, i) => `T${i}`) });
+
+            assert.deepEqual(await library.addTag([full.id], 'Más'), []);
+        });
+
         it('read as none on a song saved before the tags', async () => {
             await store.save('songs', { id: 'old', title: 'Viejo', author: '', body: '', myShift: 0, updatedAt: 1, deletedAt: null } as never);
 
