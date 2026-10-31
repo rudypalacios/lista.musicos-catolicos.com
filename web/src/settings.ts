@@ -19,7 +19,7 @@ export const READING_COLORS: readonly ReadingColors[] = [
     { id: 'predeterminado', label: 'Clásico', lyrics: null, chords: null },
     { id: 'blanco', label: 'Blanco y rojo', lyrics: '#ffffff', chords: '#ff8b8b' },
     { id: 'ambar', label: 'Ámbar y celeste', lyrics: '#ffd479', chords: '#8fd0ff' },
-    { id: 'lavanda', label: 'Lavanda y menta', lyrics: '#dcd0ff', chords: '#7fe8c8' },
+    { id: 'verde', label: 'Verde y rosa', lyrics: '#b4eab0', chords: '#ff9ec7' },
 ];
 
 /** The pair chosen on this device; an unknown id (an older or newer version, or a colour that was dropped) is the default */

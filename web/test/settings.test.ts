@@ -32,7 +32,7 @@ describe('reading colours', () => {
     });
 
     it('keep the ids the lyric colour had, so a colour chosen before the pairs keeps its lyrics', () => {
-        for (const id of ['predeterminado', 'blanco', 'ambar']) {
+        for (const id of ['predeterminado', 'blanco', 'ambar', 'verde']) {
             assert.ok(READING_COLORS.some((colors) => colors.id === id), id);
         }
     });

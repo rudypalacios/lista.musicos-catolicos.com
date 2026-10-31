@@ -394,10 +394,10 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
 
 37. **Colores de lectura: la letra y los acordes, en pares.** En *Ajustes*, «Color de la letra» (cinco nombres, con círculos) se cambió por **Colores de lectura**:
    cuatro tarjetas, cada una con una **muestra** dibujada en sus colores: **Clásico** (letra blanca, acordes azules, como antes), **Blanco y rojo**,
-   **Ámbar y celeste** y **Lavanda y menta**. Los pares están elegidos para que se lean bien sobre el fondo oscuro (contraste mínimo 7:1, y una prueba
+   **Ámbar y celeste** y **Verde y rosa**. Los pares están elegidos para que se lean bien sobre el fondo oscuro (contraste mínimo 7:1, y una prueba
    lo vigila). Se guarda al tocar y se aplica a los cantos, a los listados y a *Cantar* (también a la raya bajo la sílaba del acorde).
-   **El papel no cambia:** siempre letra negra y acordes en rojo oscuro, elijas lo que elijas. **Lo que ya tenías elegido:** *Ámbar* y *Blanco* conservan su
-   letra (y ahora llevan acordes de otro color); *Verde*, *Celeste* y cualquier otro pasan a *Clásico*. **Prueba:** elige cada par y abre un canto, un
+   **El papel no cambia:** siempre letra negra y acordes en rojo oscuro, elijas lo que elijas. **Lo que ya tenías elegido:** *Ámbar*, *Blanco* y *Verde* conservan su
+   letra (y ahora llevan acordes de otro color); *Celeste* y cualquier otro pasan a *Clásico*. **Prueba:** elige cada par y abre un canto, un
    listado y *Cantar*; que se lean los acordes y la letra, que la muestra de cada tarjeta coincida con el canto, y que al imprimir (con acordes) el papel
    siga en negro y rojo.
 
