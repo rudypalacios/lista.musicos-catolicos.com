@@ -27,6 +27,8 @@ const DRAWINGS = {
     check: { shapes: [['path', { d: 'M5 12l5 5 9-10' }]] },
     'arrow-left': { shapes: [['path', { d: 'M19 12H5M12 19l-7-7 7-7' }]] },
     'arrow-right': { shapes: [['path', { d: 'M5 12h14M12 5l7 7-7 7' }]] },
+    'chevron-right': { shapes: [['path', { d: 'M9 6l6 6-6 6' }]] },
+    'list-plus': { shapes: [['path', { d: 'M4 6h11M4 12h8M4 18h8M17 14v6M14 17h6' }]] },
     'chevron-down': { shapes: [['path', { d: 'M6 9l6 6 6-6' }]] },
     'arrow-up': { shapes: [['path', { d: 'M12 19V5M5 12l7-7 7 7' }]] },
     'arrow-down': { shapes: [['path', { d: 'M12 5v14M5 12l7 7 7-7' }]] },

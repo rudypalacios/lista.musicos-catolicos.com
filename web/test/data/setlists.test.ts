@@ -127,6 +127,18 @@ describe('Setlists', () => {
             assert.equal((await lists.get(list.id))?.starred, true);
         });
 
+        it('adds a song in the key given, or in "mi tono" when none is given', async () => {
+            const list = await lists.create({ title: 'Misa', eventDate: null });
+            await lists.addItem(list.id, 'entrada', 's1');
+            await lists.addItem(list.id, 'salmo', 's1', 2);
+            await lists.addItem(list.id, 'gloria', 's1', -14);
+            const [own, given, wrapped] = (await lists.get(list.id))?.items ?? [];
+
+            assert.equal(own?.transpose, 0);
+            assert.equal(given?.transpose, 2);
+            assert.equal(wrapped?.transpose, -2, 'kept within an octave, like everywhere else');
+        });
+
         it('says so for a list that no longer exists', async () => {
             await assert.rejects(lists.setStarred('nope', true), /ya no existe/);
         });

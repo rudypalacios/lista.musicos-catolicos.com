@@ -8,6 +8,7 @@ import { screenKeeper } from '../wakelock.ts';
 import { planSheet } from '../print/plan.ts';
 import type { PrintVersion } from '../print/layout.ts';
 import { printPlans } from '../print/print.ts';
+import { createAddToList } from './add-to-list.ts';
 import { deleteSongAfterAsking } from './delete-song.ts';
 import { createReader } from './reader.ts';
 import { showToast } from '../toast.ts';
@@ -68,7 +69,8 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
         saved: () => mine,
         savedName: 'Mío',
         hint: 'Solo por ahora',
-        primaryLabel: 'Guardar como mi tono',
+        primaryLabel: 'Guardar',
+        keptMessage: 'Queda solo por ahora',
         destinations: [{
             label: 'Como mi tono',
             save: async (t) => {
@@ -102,12 +104,25 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
             .catch(() => fail('No se pudo preparar la impresión.'));
         sheet.close();
     };
+    // "Agregar a un listado": its own sheet, which comes after this one and goes back to it
+    const addToList = createAddToList({
+        app,
+        song,
+        // What is on screen goes in; it is said only when it is not the person's own key
+        entry: () => {
+            const label = shown === mine ? null : reader.keyName(shown);
+
+            return { shift: label === null ? mine : shown, label };
+        },
+        onBack: () => sheet.open(),
+    });
     sheet.body.replaceChildren(
         h('h4', { class: 'sheet__title' }, song.title),
         ...(song.author === '' ? [] : [h('p', { class: 'sheet__sub' }, song.author)]),
         h('h3', {}, 'Letra'),
         h('div', { class: 'toolbar', role: 'toolbar', 'aria-label': 'Herramientas de la letra' }, reader.display),
         h('h3', {}, 'Este canto'),
+        sheetAction('list-plus', 'Agregar a un listado', () => sheet.close(() => addToList.open())),
         sheetAction('printer', 'Imprimir con acordes', () => print('chords')),
         sheetAction('printer', 'Imprimir solo la letra', () => print('lyrics')),
         sheetAction('pencil', 'Editar letra y acordes', () => {
@@ -137,10 +152,11 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
     const releaseScreen = readKeepAwake() ? screenKeeper.hold() : (): void => undefined;
 
     return {
-        element: h('div', { class: 'viewer' }, tools, error, reader.stage, sheet.element),
+        element: h('div', { class: 'viewer' }, tools, error, reader.stage, sheet.element, addToList.element),
         dispose: () => {
             releaseScreen();
             sheet.release();
+            addToList.release();
             reader.dispose();
         },
     };

@@ -177,7 +177,7 @@ try {
     await page.getByRole('button', { name: /Volver al tono mío/ }).click();
     await page.getByRole('button', { name: 'Subir un semitono' }).click();
     await page.getByRole('button', { name: 'Subir un semitono' }).click();
-    await page.getByRole('button', { name: 'Guardar como mi tono' }).click();
+    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
     await page.locator('.toast', { hasText: 'Tono guardado como tu tono' }).waitFor();
     assert.ok(!page.url().includes('t='), 'the key of the person is the default: nothing in the address');
     assert.deepEqual(await chordNames(page), ['Re', 'La']);
@@ -188,12 +188,55 @@ try {
     await page.getByRole('button', { name: 'Bajar un semitono' }).click();
     await page.getByRole('button', { name: 'Bajar un semitono' }).click();
     assert.match(page.url(), /\?t=0$/, 'another key than the person\'s is in the address');
-    await page.getByRole('button', { name: 'Guardar como mi tono' }).click();
+    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
     await page.locator('.toast', { hasText: 'Tono guardado como tu tono' }).waitFor();
     assert.deepEqual(await chordNames(page), ['Do', 'Sol']);
     await synced(page);
     assert.equal((await serverSongs(page))[0]?.myShift, 0);
     pass('"Guardar como mi tono": the song opens in it, it is not in the address, and it syncs');
+
+    // The arrow beside "Guardar", like singing's: mark "Solo por ahora" (writes nothing) or "Como mi tono"
+    await page.getByRole('button', { name: 'Subir un semitono' }).click();
+    await page.getByRole('button', { name: 'Otros sitios donde guardar' }).click();
+    assert.deepEqual(await page.locator('.tone-control__option').allTextContents(), ['Solo por ahora', 'Como mi tono']);
+    await page.locator('.tone-control__option', { hasText: 'Solo por ahora' }).click();
+    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+    await page.locator('.toast', { hasText: 'Queda solo por ahora' }).waitFor();
+    assert.equal((await serverSongs(page))[0]?.myShift, 0, 'nothing was written');
+    await page.getByRole('button', { name: 'Bajar un semitono' }).click();
+    pass('the arrow of "Guardar" offers "Solo por ahora" and "Como mi tono"; "Solo por ahora" writes nothing');
+
+    // ----- "Agregar a un listado": the list, then the part; the song goes in the key on screen -----
+    const addSheet = page.getByRole('dialog', { name: 'Agregar a un listado' });
+    await page.getByRole('button', { name: 'Subir un semitono' }).click();
+    await openSongMenu(page);
+    await page.getByRole('button', { name: 'Agregar a un listado' }).click();
+    await addSheet.getByRole('button', { name: 'Nuevo listado' }).click();
+    await addSheet.getByText('¿En qué parte?').waitFor();
+    await addSheet.getByText('Entra en Do# (el tono que ves)').waitFor();
+    await addSheet.getByRole('button', { name: /^Ofertorio/ }).click();
+    await page.locator('.toast', { hasText: /agregado a Ofertorio de «.+», en Do#/ }).waitFor();
+    await page.getByRole('heading', { name: 'Caminamos con alegría' }).waitFor();
+    pass('"Agregar a un listado" with a new list: it goes to the part, in the key on screen, and says where');
+
+    await page.getByRole('button', { name: 'Bajar un semitono' }).click();
+    await openSongMenu(page);
+    await page.getByRole('button', { name: 'Agregar a un listado' }).click();
+    await addSheet.getByRole('button', { name: /1 canto/ }).click();
+    assert.equal(await addSheet.getByText('Entra en').count(), 0, 'the key is not said when it is the person\'s own');
+    assert.equal(await addSheet.locator('.lrow', { hasText: 'Ofertorio' }).innerText().then((text) => text.includes('Ya está aquí')), true, 'it says the song is already in that part');
+    await addSheet.getByRole('button', { name: /^Canto de entrada/ }).click();
+    await page.locator('.toast', { hasText: /agregado a Canto de entrada de «.+»$/ }).waitFor();
+    await openSection(page, 'Listados');
+    await page.locator('.lrow__link').first().click();
+    await page.getByRole('heading', { name: 'Ofertorio', exact: true }).waitFor();
+    assert.match(await page.locator('#parte-ofertorio').innerText(), /Do#/, 'in the key it had on screen');
+    assert.doesNotMatch(await page.locator('#parte-entrada').innerText(), /Do#/);
+    assert.equal(await page.locator('.item').count(), 2);
+    pass('the song is in both parts of the list, each in the key it was added in');
+    await openSection(page, 'Cantos');
+    await page.getByRole('link', { name: 'Caminamos con alegría' }).click();
+    await page.getByRole('heading', { name: 'Caminamos con alegría' }).waitFor();
 
     // The notation is behind the song page's "⋯", with the other ways the lyrics are drawn
     await openSongMenu(page);
@@ -214,8 +257,8 @@ try {
     await openSongMenu(page);
     assert.deepEqual(
         await page.locator('.sheet-layer.is-open .sheet-action').allTextContents(),
-        ['Imprimir con acordes', 'Imprimir solo la letra', 'Editar letra y acordes', 'Eliminar canto'],
-        'the sheet of the song page: print, edit and, last, delete',
+        ['Agregar a un listado', 'Imprimir con acordes', 'Imprimir solo la letra', 'Editar letra y acordes', 'Eliminar canto'],
+        'the sheet of the song page: add to a list, print, edit and, last, delete',
     );
     assert.equal(await page.evaluate(() => Array.from(document.querySelectorAll('.sheet-layer.is-open .sheet-action')).at(-1)?.classList.contains('sheet-action--apart')), true, 'delete is set apart like in the other sheets');
     await page.keyboard.press('Escape');

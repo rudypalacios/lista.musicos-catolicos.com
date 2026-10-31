@@ -2585,6 +2585,52 @@ main#view.is-pulling {
     font-size: 1.05rem;
 }
 
+.sheet__head {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-left: -0.6rem;
+}
+
+.sheet__back {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    color: var(--accent);
+    background: none;
+    border: 0;
+    cursor: pointer;
+}
+
+.sheet__head .sheet__sub {
+    margin-bottom: 0;
+}
+
+/* Which key the song goes in, when it is not the person's own */
+.sheet__entry {
+    display: inline-block;
+    margin: 0.4rem 0 0.2rem;
+    padding: 0.1rem 0.7rem;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.lrow > .icon {
+    flex: none;
+    margin-right: 0.5rem;
+    color: var(--muted);
+}
+
+.sheet .lrow > .lrow__detail {
+    flex: none;
+}
+
 .sheet__sub {
     margin: 0.1rem 0 0.5rem;
     color: var(--muted);
