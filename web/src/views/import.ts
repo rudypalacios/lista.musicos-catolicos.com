@@ -7,7 +7,9 @@ import { h, link, setSheet } from '../dom.ts';
 import { icon } from '../icons.ts';
 import { alreadyHave, bytesLabel, footOf, pagesLabel, readingLabel, readingPercent, repeatedInBatch, sizeLabel, suggestedTitle } from '../import-review.ts';
 import { attentionOf, importMany, type Imported } from '../importer.ts';
-import { MASS_PARTS } from '../mass.ts';
+import { sameTag, tagsInUse } from '../data/tags.ts';
+import { MASS_PARTS, massTag } from '../mass.ts';
+import { createTagField, type TagField } from './tag-field.ts';
 import { paths } from '../router.ts';
 import type { Navigate, View } from './types.ts';
 
@@ -18,6 +20,8 @@ interface Card {
     title: HTMLInputElement;
     author: HTMLInputElement;
     body: HTMLTextAreaElement;
+    /** What the song is for: the part the header named, until the person changes it */
+    tags: TagField;
     error: HTMLElement;
     /** Opens the row (to show where a problem is) */
     open: () => void;
@@ -194,9 +198,12 @@ export function importView(app: App, navigate: Navigate): View {
         saveError.textContent = '';
         // A song the person already has (the same title and the same text) starts unmarked
         const saved = await app.list();
+        // The tags offered in each row: the ones in use, then the Mass's
+        const inUse = tagsInUse(saved);
+        const offered = [...inUse, ...MASS_PARTS.map((part) => part.tag).filter((tag) => !inUse.some((used) => sameTag(used, tag)))];
         // The same song twice in one file (a repeated page) is offered once: the second starts unmarked
         const repeats = repeatedInBatch(imported);
-        current = imported.map((song, index) => card(song, index, imported.length, alreadyHave(song, saved), repeats[index] === true, refreshFoot));
+        current = imported.map((song, index) => card(song, index, imported.length, alreadyHave(song, saved), repeats[index] === true, offered, refreshFoot));
         cards.replaceChildren(...current.map((c) => c.element));
         heading.textContent = imported.length === 1 ? 'Revisa el resultado' : `Se encontraron ${imported.length} cantos`;
         hint.hidden = imported.length === 1;
@@ -261,7 +268,12 @@ async function saveAll(app: App, cards: Card[]): Promise<string[]> {
         }
         try {
             // What the card previewed is what is saved: a chord corrected by hand as [am] is read as [Am]
-            const song = await app.create({ title: card.title.value, author: card.author.value, body: capitaliseChords(card.body.value) });
+            const song = await app.create({
+                title: card.title.value,
+                author: card.author.value,
+                body: capitaliseChords(card.body.value),
+                tags: card.tags.value(),
+            });
             saved.push(song.id);
             // Saved: it must not be saved again if a later one fails and the person tries again
             card.include.checked = false;
@@ -281,9 +293,10 @@ async function saveAll(app: App, cards: Card[]): Promise<string[]> {
 
 /**
  * A row. `total`: how many songs the paste held (one song opens at once and has no mark to choose).
- * `have`: the person already has it. `repeated`: an earlier song of this same import is this one. `changed`: called when something the foot depends on changes.
+ * `have`: the person already has it. `repeated`: an earlier song of this same import is this one. `offered`: the tags a row
+ * can offer to touch. `changed`: called when something the foot depends on changes.
  */
-function card(song: Imported, index: number, total: number, have: boolean, repeated: boolean, changed: () => void): Card {
+function card(song: Imported, index: number, total: number, have: boolean, repeated: boolean, offered: readonly string[], changed: () => void): Card {
     const id = `card-${index}`;
     const include = h('input', { type: 'checkbox', id: `${id}-include`, checked: !have && !repeated, 'aria-label': 'Importar este canto' });
     const title = h('input', { id: `${id}-title`, type: 'text', autocomplete: 'off' });
@@ -295,6 +308,13 @@ function card(song: Imported, index: number, total: number, have: boolean, repea
     const error = h('p', { class: 'error', role: 'alert' });
 
     const part = MASS_PARTS.find((p) => p.id === song.part);
+    // The part the header named ("ENTRADA: …") is the song's tag; it can be changed or taken off in the open row
+    const tags = createTagField({
+        id: `${id}-tags`,
+        initial: part === undefined ? [] : [massTag(part.id) ?? part.name],
+        suggestions: () => offered,
+        onChange: () => showTags(),
+    });
     const notes = h('ul', { class: 'notes' }, ...song.warnings.map((warning) => h('li', {}, warning)));
     const sheet = h('div', { class: 'song-sheet' });
     const draw = (): void => setSheet(sheet, sheetHtml(parse(capitaliseChords(body.value))));
@@ -305,6 +325,15 @@ function card(song: Imported, index: number, total: number, have: boolean, repea
     const skipped = [...(have ? ['Ya la tienes'] : []), ...(repeated ? ['Repetido'] : [])];
     const pills = [...attentionOf(song.warnings), ...skipped];
     const pillRow = h('span', {}, ...pills.map((label) => h('span', { class: skipped.includes(label) ? 'pill pill--have' : 'pill pill--warn' }, label)));
+    // What the song will be tagged with, said in the row: the part the header named, or that it has none
+    const tagPill = h('span', { class: 'pill' });
+    const showTags = (): void => {
+        const now = tags.value();
+        tagPill.textContent = now.length === 0 ? 'Sin etiqueta' : `Etiqueta: ${now.join(', ')}`;
+        tagPill.classList.toggle('pill--none', now.length === 0);
+    };
+    pillRow.append(tagPill);
+    showTags();
     const nameButton = h('button', { type: 'button', class: 'import-card__name', 'aria-expanded': 'false', 'aria-controls': `${id}-open` }, nameText, pillRow, meta);
     const arrow = h('button', { type: 'button', class: 'import-card__arrow', 'aria-label': 'Ver y corregir este canto', 'aria-expanded': 'false', 'aria-controls': `${id}-open` }, icon('chevron-down', 20));
 
@@ -339,6 +368,7 @@ function card(song: Imported, index: number, total: number, have: boolean, repea
         tabs,
         h('div', { class: 'import-pane', id: `${id}-pane-vista`, role: 'tabpanel', 'aria-labelledby': `${id}-tab-vista` }, preview),
         h('div', { class: 'import-pane', id: `${id}-pane-letra`, role: 'tabpanel', 'aria-labelledby': `${id}-tab-letra`, hidden: true }, body),
+        tags.element,
     );
 
     const element = h('section', { class: 'import-card' }, head, fix, open, error);
@@ -406,5 +436,5 @@ function card(song: Imported, index: number, total: number, have: boolean, repea
     // One song is the whole screen: it opens at once
     setOpen(total === 1);
 
-    return { element, include, title, author, body, error, open: () => setOpen(true) };
+    return { element, include, title, author, body, tags, error, open: () => setOpen(true) };
 }

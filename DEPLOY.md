@@ -453,6 +453,12 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    «Entrada», abre el selector de *Canto de entrada* y mira el filtro y «Mostrar todos»; agrega un canto sin etiqueta y toca «Etiquetar»; en el otro aparato mira que lleguen las etiquetas.
    Sin conexión también.
 
+42. **Etiquetar al importar (fase 6, PR 5).** Al revisar lo que salió de un PDF o de un texto pegado, cada canto muestra en su fila **«Etiqueta: Entrada»** (la parte que decía su
+   encabezado: «ENTRADA: …», «GLORIA», «Ofrendas»…, con la etiqueta corta de esa parte de la Misa) o **«Sin etiqueta»** si no reconoció ninguna. Esa etiqueta se guarda con el canto.
+   Al abrir la fila, **debajo de la letra**, está el mismo campo de **Etiquetas** del editor: puedes quitar la que puso, cambiarla o agregar otras (te ofrece las que ya usas y las de
+   la Misa). **Prueba:** importa el PDF de una Misa completa y mira que cada canto diga su parte; quita la etiqueta de uno; guarda; abre el selector de una sección y mira el filtro.
+   Sin cambios en los datos ni migración.
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.
