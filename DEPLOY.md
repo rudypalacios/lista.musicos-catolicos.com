@@ -402,6 +402,7 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    («Entra en Re (el tono que ves)»); si es el tuyo, entra en tu tono y no dice nada. La flecha de la esquina vuelve un paso (al listado, y de ahí a las
    opciones); el botón atrás de Android cierra la hoja. **Prueba:** sin conexión también; sube el tono, agrega a una parte y mira el listado (la
    fila dice ese tono); vuelve al tuyo y agrégalo a otra parte; crea un listado desde ahí. Los datos no cambian.
+
 37. **Colores de lectura: la letra y los acordes, en pares.** En *Ajustes*, «Color de la letra» (cinco nombres, con círculos) se cambió por **Colores de lectura**:
    cuatro tarjetas, cada una con una **muestra** dibujada en sus colores: **Clásico** (letra blanca, acordes azules, como antes), **Blanco y rojo**,
    **Ámbar y celeste** y **Verde y rosa**. Los pares están elegidos para que se lean bien sobre el fondo oscuro (contraste mínimo 7:1, y una prueba
