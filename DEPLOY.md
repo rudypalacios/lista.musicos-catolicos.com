@@ -195,6 +195,8 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    *Eliminar listado* ya no está aquí: ver el ítem 23). En la tablet ancha, las partes van en dos columnas que bajan en el orden de la misa.
    Los íconos son propios (no se cargan de ningún sitio). **Solo se confirma en el dispositivo:** que
    el selector de fecha se abra al tocar la pastilla en el iPad, y que imprimir desde la hoja abra AirPrint.
+   **El color de la letra de Ajustes no llega al papel:** pon el color blanco en *Ajustes*, imprime con acordes y solo la letra (canto y listado):
+   la letra sale negra en el PDF.
 10. **Jalar para sincronizar.** En cualquier pantalla (menos *Cantar*), con la pantalla hasta arriba, jala el dedo hacia
    abajo: sale «Jala para sincronizar», y pasado un tramo cambia a «Suelta para sincronizar». Al soltar dice
    «Sincronizando…» y luego «Sincronizado» (o «Sin conexión», «La sesión terminó», «No se pudo sincronizar»). Un tirón

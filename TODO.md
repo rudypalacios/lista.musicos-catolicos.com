@@ -72,6 +72,8 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
 ## Small things to do when convenient
 
 - [ ] Tune the fit limits (`DEFAULT_LIMITS`, `COMFORTABLE_SIZE`, `TWO_COLUMNS_GAIN` in `web/src/fit.ts`) after seeing it on the devices.
+- [x] **The lyric colour never reaches the paper** (`print/print.css`): a colour chosen in Ajustes (white, for a dark screen) made the printed lyrics vanish;
+      on paper `#print-root .song-sheet` is always black. Checked by `tests/e2e/print.ts` under print media. **Owner's check:** `DEPLOY.md`, item 11 (print).
 - [x] Keep the screen awake while a song is open or a list is being sung (Screen Wake Lock, `web/src/wakelock.ts`;
       on by default, an Ajustes choice turns it off). **Owner's check:** Android and iPad (Safari 16.4+; a
       home-screen app only from iOS 18.4), see `DEPLOY.md`.
