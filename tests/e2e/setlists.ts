@@ -57,7 +57,7 @@ async function addToSlot(page: Page, part: string, song: string): Promise<void> 
     await page.getByRole('link', { name: `Agregar canto a ${part}` }).click();
     await page.getByRole('heading', { name: `Agregar a ${part}` }).waitFor();
     await page.getByLabel('Buscar cantos').fill(song);
-    await page.locator('button.song-item', { hasText: song }).click();
+    await page.locator('button.lrow__pick', { hasText: song }).click();
     await page.getByRole('link', { name: 'Volver a Listados' }).waitFor();
 }
 
@@ -201,9 +201,10 @@ try {
     // The picker searches the lyrics too, shows the lines that matched, and reads a song before adding it
     await page.getByRole('link', { name: 'Agregar canto a Acción de gracias' }).click();
     await page.getByLabel('Buscar cantos').fill('cielo');
-    const found = page.locator('button.song-item', { hasText: 'Gloria sencilla' });
+    const found = page.locator('button.lrow__pick', { hasText: 'Gloria sencilla' });
     await found.waitFor();
-    assert.equal(await page.locator('button.song-item').count(), 1, 'only the song with that word in its lyrics');
+    assert.equal(await page.locator('button.lrow__pick').count(), 1, 'only the song with that word in its lyrics');
+    assert.match((await page.locator('.songs__count').textContent()) ?? '', /^1 canto de \d+$/, 'the count under the search, as on Cantos');
     assert.match((await found.locator('.song-item__snippet').textContent()) ?? '', /Gloria a Dios en el cielo/);
     await page.getByRole('button', { name: 'Ver el canto completo: Gloria sencilla' }).click();
     await page.locator('.sheet-layer.is-open .preview__lyrics .ch').first().waitFor();
@@ -212,7 +213,7 @@ try {
     await page.locator('.sheet-layer.is-open').waitFor({ state: 'detached' });
     await page.getByRole('heading', { name: 'Agregar a Acción de gracias' }).waitFor();
     await page.getByLabel('Buscar cantos').fill('');
-    const first = await page.locator('button.song-item .song-item__snippet').first().textContent();
+    const first = await page.locator('button.lrow__pick .song-item__snippet').first().textContent();
     assert.ok((first ?? '') !== '', 'every row shows the start of its lyrics');
     await page.getByLabel('Buscar cantos').fill('cielo');
     await page.getByRole('button', { name: 'Ver el canto completo: Gloria sencilla' }).click();
@@ -318,9 +319,9 @@ try {
     // The same song in two parts: allowed, with a quiet notice on both (and in the picker beforehand)
     await page.getByRole('link', { name: 'Agregar canto a Canto de salida' }).click();
     await page.getByLabel('Buscar cantos').fill('puerta');
-    await page.locator('button.song-item', { hasText: 'Abrimos la puerta' }).waitFor();
+    await page.locator('button.lrow__pick', { hasText: 'Abrimos la puerta' }).waitFor();
     assert.equal(await page.getByText('Ya está en').count(), 0, 'searching does not warn');
-    await page.locator('button.song-item', { hasText: 'Abrimos la puerta' }).click();
+    await page.locator('button.lrow__pick', { hasText: 'Abrimos la puerta' }).click();
     await page.locator('.toast', { hasText: '“Abrimos la puerta” también está en: Canto de entrada' }).waitFor();
     await slot(page, 'Canto de salida').locator('.item__title').waitFor();
     await slot(page, 'Canto de salida').getByText('También está en: Canto de entrada').waitFor();

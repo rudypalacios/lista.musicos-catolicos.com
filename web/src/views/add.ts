@@ -28,9 +28,10 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Ma
         type: 'search', id: 'search', placeholder: 'Buscar por título o autor', 'aria-label': 'Buscar cantos',
         autocomplete: 'off', enterkeyhint: 'search',
     });
-    const list = h('ul', { class: 'song-list' });
+    const list = h('ul', { class: 'song-list lrows' });
     const empty = h('p', { class: 'empty empty--above-action', hidden: true });
-    const error = h('p', { class: 'error', role: 'alert' });
+    const error = h('p', { class: 'error songs__error', role: 'alert' });
+    const count = h('p', { class: 'songs__count', 'aria-live': 'polite' });
     /** The way out when the song is not in the library: write it here, with what was searched as its title */
     const create = h('div', { class: 'actions actions--center' });
     /** Where each song of the list already is, by song id: the part names */
@@ -43,8 +44,10 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Ma
         'div',
         { class: 'page' },
         h('h2', {}, `Agregar a ${part.name}`),
-        search,
+        // The same search, and the same count under it, as on Cantos
+        h('div', { class: 'songs__top' }, search),
         error,
+        count,
         list,
         empty,
         create,
@@ -55,6 +58,9 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Ma
         const shown = filterSongs(songs, search.value);
         list.replaceChildren(...shown.map((song) => row(song)));
         empty.hidden = shown.length > 0;
+        count.hidden = songs.length === 0;
+        const found = shown.length === 1 ? '1 canto' : `${shown.length} cantos`;
+        count.textContent = search.value.trim() === '' ? found : `${found} de ${songs.length}`;
         if (songs.length === 0) {
             empty.textContent = 'Todavía no hay cantos en la biblioteca.';
         } else {
@@ -72,23 +78,18 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Ma
 
     const row = (song: Song): HTMLElement => {
         const key = songKey(parse(song.body));
-        const title = h('span', { class: 'song-item__title' }, song.title);
-        const text = h('span', { class: 'song-item__text' }, title);
-        if (song.author !== '') {
-            text.append(h('span', { class: 'song-item__author' }, song.author));
-        }
+        // A song looks the same wherever it is listed (Cantos, Listados): the title, "Autor · Do" under it
+        const detail = [
+            ...(song.author === '' ? [] : [song.author]),
+            ...(key === null ? [] : [h('span', { class: 'lrow__key' }, transpose(key, 0, readNotation()))]),
+            // Searching is not the moment to warn: the notice comes when the song is added (below)
+            ...(placed.get(song.id)?.has(part.name) === true ? [h('span', { class: 'lrow__here' }, 'Ya está aquí')] : []),
+        ].flatMap((piece, index) => (index === 0 ? [piece] : [' · ', piece]));
         const snippet = songSnippet(song, search.value);
-        if (snippet.length > 0) {
-            text.append(snippetBlock(snippet));
-        }
-        const button = h('button', { type: 'button', class: 'song-item', 'data-song': song.id }, text);
-        // Searching is not the moment to warn: the notice comes when the song is added (below)
-        if (placed.get(song.id)?.has(part.name) === true) {
-            button.append(h('span', { class: 'chip chip--changed' }, 'Ya está aquí'));
-        }
-        if (key !== null) {
-            button.append(h('span', { class: 'chip' }, transpose(key, 0, readNotation())));
-        }
+        const button = h('button', { type: 'button', class: 'lrow__link lrow__pick', 'data-song': song.id },
+            h('span', { class: 'lrow__title' }, song.title),
+            ...(detail.length === 0 ? [] : [h('span', { class: 'lrow__detail' }, ...detail)]),
+            ...(snippet.length > 0 ? [snippetBlock(snippet)] : []));
         button.addEventListener('click', () => {
             button.disabled = true;
             error.textContent = '';
@@ -97,13 +98,13 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Ma
                 button.disabled = false;
             });
         });
-        const see = h('button', { type: 'button', class: 'song-see', 'aria-label': `Ver el canto completo: ${song.title}` }, icon('eye'));
+        const see = h('button', { type: 'button', class: 'lrow__more lrow__see', 'aria-label': `Ver el canto completo: ${song.title}` }, icon('eye', 22));
         see.addEventListener('click', () => {
             previewing = song;
             preview.open();
         });
 
-        return h('li', {}, h('div', { class: 'song-row' }, button, see));
+        return h('li', { class: 'lrow' }, button, see);
     };
 
     /** Adds the song at the end of the part and opens the list there; resolves once it is on its way */
