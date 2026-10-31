@@ -1,4 +1,5 @@
 import type { LocalStore } from './store.ts';
+import { cleanTags, sameTag } from './tags.ts';
 import { LIMITS, type Song } from './types.ts';
 
 /** A song the person wrote that cannot be saved; the message is Spanish and can be shown as is */
@@ -13,6 +14,8 @@ export interface SongDraft {
     title: string;
     author: string;
     body: string;
+    /** Left out: a new song has none and an edit keeps the ones it has */
+    tags?: readonly string[];
 }
 
 /**
@@ -36,7 +39,7 @@ export class Library {
 
     /** The songs that are not deleted, by title (Spanish order: "Ángel" among the A's) */
     async list(): Promise<Song[]> {
-        const songs = (await this.store.all('songs')).filter((song) => song.deletedAt === null).map(withShift);
+        const songs = (await this.store.all('songs')).filter((song) => song.deletedAt === null).map(withDefaults);
 
         return songs.sort((a, b) => a.title.localeCompare(b.title, 'es', { sensitivity: 'base' }));
     }
@@ -45,11 +48,11 @@ export class Library {
     async get(id: string): Promise<Song | undefined> {
         const song = await this.store.get('songs', id);
 
-        return song !== undefined && song.deletedAt === null ? withShift(song) : undefined;
+        return song !== undefined && song.deletedAt === null ? withDefaults(song) : undefined;
     }
 
     async create(draft: SongDraft): Promise<Song> {
-        const song: Song = { ...clean(draft), myShift: 0, id: this.newId(), updatedAt: this.now(), deletedAt: null };
+        const song: Song = { ...clean(draft), tags: cleanTags(draft.tags ?? []), myShift: 0, id: this.newId(), updatedAt: this.now(), deletedAt: null };
         await this.store.save('songs', song);
 
         return song;
@@ -61,7 +64,28 @@ export class Library {
         if (current === undefined) {
             throw new Error('La canción ya no existe.');
         }
-        const song: Song = { ...current, ...clean(draft), updatedAt: this.stamp(current) };
+        const song: Song = {
+            ...current,
+            ...clean(draft),
+            tags: draft.tags === undefined ? current.tags : cleanTags(draft.tags),
+            updatedAt: this.stamp(current),
+        };
+        await this.store.save('songs', song);
+
+        return song;
+    }
+
+    /** Replaces the song's tags; the same tag in another spelling is the same tag. @throws ValidationError */
+    async setTags(id: string, tags: readonly string[]): Promise<Song> {
+        const current = await this.get(id);
+        if (current === undefined) {
+            throw new Error('La canción ya no existe.');
+        }
+        const next = cleanTags(tags);
+        if (next.length === current.tags.length && next.every((tag, index) => sameTag(tag, current.tags[index] ?? ''))) {
+            return current;
+        }
+        const song: Song = { ...current, tags: next, updatedAt: this.stamp(current) };
         await this.store.save('songs', song);
 
         return song;
@@ -106,12 +130,15 @@ export class Library {
     }
 }
 
-/** A song saved by a version of the app that had no "mi tono" has none */
-function withShift(song: Song): Song {
-    return Number.isInteger(song.myShift) ? song : { ...song, myShift: 0 };
+/** A song saved before "mi tono" or the tags has none: the guard gives it the value they start with */
+function withDefaults(song: Song): Song {
+    const myShift = Number.isInteger(song.myShift) ? song.myShift : 0;
+    const tags = Array.isArray(song.tags) ? song.tags : [];
+
+    return myShift === song.myShift && tags === song.tags ? song : { ...song, myShift, tags };
 }
 
-function clean(draft: SongDraft): SongDraft {
+function clean(draft: SongDraft): Pick<SongDraft, 'title' | 'author' | 'body'> {
     const title = draft.title.trim();
     const author = draft.author.trim();
     if (title === '') {

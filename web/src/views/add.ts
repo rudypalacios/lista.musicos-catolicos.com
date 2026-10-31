@@ -2,14 +2,15 @@ import type { App } from '../app.ts';
 import { parse, songKey } from '../chordpro/parser.ts';
 import { transpose } from '../chordpro/chord.ts';
 import { partName } from '../data/setlists.ts';
-import type { PartDef, Setlist, Song } from '../data/types.ts';
+import { hasTag, tagOf, withTag } from '../data/tags.ts';
+import { LIMITS, type PartDef, type Setlist, type Song } from '../data/types.ts';
 import { h, link, setSheet, snippetBlock } from '../dom.ts';
 import { sheetHtml } from '../chordpro/sheet.ts';
 import { icon } from '../icons.ts';
 import { readNotation } from '../prefs.ts';
 import { paths } from '../router.ts';
 import { filterSongs, songSnippet } from '../search.ts';
-import { showToast } from '../toast.ts';
+import { showToast, showUndoToast } from '../toast.ts';
 import { createSheet } from './sheet.ts';
 import type { Navigate, View } from './types.ts';
 
@@ -17,7 +18,9 @@ import type { Navigate, View } from './types.ts';
 const WARNING_TIME = 5000;
 
 /**
- * Picking a song of the library for one section of a list. Choosing one adds it at the end of
+ * Picking a song of the library for one section of a list. The songs that carry the section's tag come first, on their
+ * own, with "Mostrar todos" always at hand (and no filter at all while no song carries it). Picking one that does not
+ * carry it offers to tag it. Choosing one adds it at the end of
  * that section and goes back to the list, where it can be moved or put in another key.
  *
  * Each row shows the first lines of the song (the lines where the search matched, when it was found
@@ -32,6 +35,10 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Pa
     const empty = h('p', { class: 'empty empty--above-action', hidden: true });
     const error = h('p', { class: 'error songs__error', role: 'alert' });
     const count = h('p', { class: 'songs__count', 'aria-live': 'polite' });
+    /** The tag this section asks of a song ("Entrada"), and whether the list of songs is cut to the ones that carry it */
+    const tag = tagOf(part);
+    let filtering = true;
+    const filter = h('div', { class: 'tag-filter', role: 'group', 'aria-label': 'Qué cantos mostrar', hidden: true });
     /** The way out when the song is not in the library: write it here, with what was searched as its title */
     const create = h('div', { class: 'actions actions--center' });
     /** Where each song of the list already is, by song id: the part names */
@@ -46,6 +53,7 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Pa
         h('h2', {}, `Agregar a ${part.name}`),
         // The same search, and the same count under it, as on Cantos
         h('div', { class: 'songs__top' }, search),
+        filter,
         error,
         count,
         list,
@@ -55,18 +63,46 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Pa
 
     let songs: Song[] = [];
     const draw = (): void => {
-        const shown = filterSongs(songs, search.value);
+        // No filter while no song carries the tag: it would show nothing, and the person has not tagged anything yet
+        const tagged = withTag(songs, tag);
+        const filtered = filtering && tagged.length > 0;
+        const pool = filtered ? tagged : songs;
+        const shown = filterSongs(pool, search.value);
+        drawFilter(tagged.length);
         list.replaceChildren(...shown.map((song) => row(song)));
         empty.hidden = shown.length > 0;
         count.hidden = songs.length === 0;
         const found = shown.length === 1 ? '1 canto' : `${shown.length} cantos`;
-        count.textContent = search.value.trim() === '' ? found : `${found} de ${songs.length}`;
+        count.textContent = search.value.trim() === '' ? found : `${found} de ${pool.length}`;
         if (songs.length === 0) {
             empty.textContent = 'Todavía no hay cantos en la biblioteca.';
+        } else if (filtered) {
+            empty.textContent = `Ningún canto con «${tag}» coincide con la búsqueda. Prueba con «Mostrar todos».`;
         } else {
             empty.textContent = 'Ningún canto coincide con la búsqueda.';
         }
         drawCreate();
+    };
+
+    /** The two ways to see the songs: the ones with the section's tag, or all of them (only once some song has the tag) */
+    const drawFilter = (taggedCount: number): void => {
+        filter.hidden = taggedCount === 0;
+        if (taggedCount === 0) {
+            return;
+        }
+        const choice = (label: string, total: number, on: boolean, set: boolean): HTMLElement => {
+            const button = h('button', { type: 'button', 'aria-pressed': String(on) }, label, h('small', {}, String(total)));
+            button.addEventListener('click', () => {
+                filtering = set;
+                draw();
+            });
+
+            return button;
+        };
+        filter.replaceChildren(
+            choice(tag, taggedCount, filtering, true),
+            choice('Mostrar todos', songs.length, !filtering, false),
+        );
     };
 
     const drawCreate = (): void => {
@@ -115,6 +151,14 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Pa
         const elsewhere = [...(placed.get(song.id) ?? [])].filter((name) => name !== part.name);
         if (elsewhere.length > 0) {
             showToast(`“${song.title}” también está en: ${elsewhere.join(', ')}`, WARNING_TIME, true);
+        } else if (!hasTag(song, tag) && song.tags.length < LIMITS.tags) {
+            // A song picked without the section's tag: one touch tags it, so the next time it is found there
+            showUndoToast(`Agregado a ${part.name}`, `Etiquetar «${tag}»`, () => {
+                app.setTags(song.id, [...song.tags, tag]).then(
+                    () => showToast(`«${song.title}» etiquetado como «${tag}»`, 3000, true),
+                    () => showToast('No se pudo etiquetar el canto.', 4000, true),
+                );
+            }, WARNING_TIME);
         }
     };
 

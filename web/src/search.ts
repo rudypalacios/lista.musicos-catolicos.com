@@ -24,7 +24,8 @@ function indexOf(song: Song): Indexed {
             .flatMap((section) => section.lines)
             .flatMap((line) => (typeof line === 'string' ? [] : [line.map((segment) => segment.text).join('').replace(/\s+/g, ' ').trim()]))
             .filter((line) => line !== '');
-        found = { head: plain(`${song.title} ${song.author}`), lines, plainLines: lines.map(plain) };
+        // The tags are read like the title and the author: a song for "Cuaresma" is found by typing it
+        found = { head: plain(`${song.title} ${song.author} ${song.tags.join(' ')}`), lines, plainLines: lines.map(plain) };
         indexes.set(song, found);
     }
 
@@ -34,7 +35,7 @@ function indexOf(song: Song): Indexed {
 const wordsOf = (query: string): string[] => plain(query).split(' ').filter((word) => word !== '');
 
 /**
- * The songs that have every word typed, ignoring accents and case, in the title, the author or the
+ * The songs that have every word typed, ignoring accents and case, in the title, the author, the tags or the
  * lyrics (the words may be on different lines). Those with the words in the title or the author come
  * first; the ones found only in the lyrics follow, each group in the order it came in.
  */

@@ -3,8 +3,8 @@ import { describe, it } from 'node:test';
 import { filterSetlists, filterSongs, foundInLyricsOnly, songSnippet } from '../src/search.ts';
 import type { Setlist, Song } from '../src/data/types.ts';
 
-const song = (title: string, author = ''): Song => ({
-    id: title, title, author, body: '', myShift: 0, updatedAt: 1, deletedAt: null,
+const song = (title: string, author = '', tags: string[] = []): Song => ({
+    id: title, title, author, body: '', tags, myShift: 0, updatedAt: 1, deletedAt: null,
 });
 const songs = [song('Caminamos con alegría'), song('Ángel de Dios', 'Anónimo'), song('Dijiste Sí'), song('Padre nuestro', 'Martín Valverde')];
 
@@ -31,6 +31,19 @@ describe('filterSongs', () => {
 
     it('treats punctuation as a separator', () => {
         assert.deepEqual(filterSongs(songs, 'padre, nuestro!').map((s) => s.title), ['Padre nuestro']);
+    });
+});
+
+describe('filterSongs and the tags', () => {
+    const tagged = [song('Abrimos la puerta', '', ['Entrada', 'Adviento']), song('Pan de vida', '', ['Comunión']), song('Gloria sencilla')];
+
+    it('finds a song by one of its tags, without accents or capitals, among those found by title', () => {
+        assert.deepEqual(filterSongs(tagged, 'comunion').map((s) => s.title), ['Pan de vida']);
+        assert.deepEqual(filterSongs(tagged, 'ADVIENTO').map((s) => s.title), ['Abrimos la puerta']);
+    });
+
+    it('does not count a tag as a line of the lyrics', () => {
+        assert.equal(foundInLyricsOnly(tagged[1] as Song, 'comunion'), false);
     });
 });
 

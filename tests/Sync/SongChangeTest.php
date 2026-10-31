@@ -43,6 +43,25 @@ final class SongChangeTest extends TestCase
         $this->assertSame(0, SongChange::fromArray($this->data(['myShift' => 0]), self::NOW)->myShift);
     }
 
+    public function testTagsAreReadTrimmedAndAnOlderClientSendsNone(): void
+    {
+        $this->assertNull(SongChange::fromArray($this->data(), self::NOW)->tags, 'not sent: keep what is stored');
+        $this->assertSame([], SongChange::fromArray($this->data(['tags' => []]), self::NOW)->tags, 'sent empty: none');
+        $change = SongChange::fromArray($this->data(['tags' => ['  Entrada ', "Señor   ten\tpiedad"]]), self::NOW);
+        $this->assertSame(['Entrada', 'Señor ten piedad'], $change->tags);
+        $this->assertSame('["Entrada","Señor ten piedad"]', $change->tagsJson());
+        $this->assertSame('[]', SongChange::fromArray($this->data(), self::NOW)->tagsJson());
+    }
+
+    public function testEightTagsAreAllowedAndNineAreNot(): void
+    {
+        $tags = static fn (int $n): array => array_map(static fn (int $i): string => 'T' . $i, range(1, $n));
+
+        $this->assertCount(8, SongChange::fromArray($this->data(['tags' => $tags(8)]), self::NOW)->tags ?? []);
+        $this->expectException(InvalidSong::class);
+        SongChange::fromArray($this->data(['tags' => $tags(9)]), self::NOW);
+    }
+
     public function testTitleAndAuthorAreTrimmedAndTheAuthorIsOptional(): void
     {
         $change = SongChange::fromArray($this->data(['title' => '  Hola  ', 'author' => null]), self::NOW);
@@ -73,6 +92,11 @@ final class SongChangeTest extends TestCase
             'shift beyond an octave, down' => [['myShift' => -12], 'tono'],
             'shift as text' => [['myShift' => '2'], 'tono'],
             'shift as a decimal' => [['myShift' => 2.5], 'tono'],
+            'tags not a list' => [['tags' => 'Entrada'], 'etiquetas'],
+            'tags as an object' => [['tags' => ['a' => 'Entrada']], 'etiquetas'],
+            'a tag that is not text' => [['tags' => [3]], 'etiqueta'],
+            'an empty tag' => [['tags' => ['  ']], 'vacía'],
+            'a long tag' => [['tags' => [str_repeat('a', 31)]], 'caracteres'],
         ];
     }
 

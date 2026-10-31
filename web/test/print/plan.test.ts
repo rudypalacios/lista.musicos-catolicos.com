@@ -4,7 +4,7 @@ import type { Song } from '../../src/data/types.ts';
 import { planSheet } from '../../src/print/plan.ts';
 
 const song = (body: string, author = 'Autor'): Song => ({
-    id: 'a', title: 'Pan de vida', author, body, myShift: 0, updatedAt: 1, deletedAt: null,
+    id: 'a', title: 'Pan de vida', author, body, tags: [], myShift: 0, updatedAt: 1, deletedAt: null,
 });
 
 describe('planSheet', () => {

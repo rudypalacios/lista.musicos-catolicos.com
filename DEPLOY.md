@@ -443,6 +443,16 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    listado nuevo con ella y mira que tenga esas secciones; cámbiale el nombre a la plantilla y mira que el listado ya hecho no cambie; mira que en el otro aparato
    lleguen las plantillas; duplica y elimina una. Sin conexión también.
 
+41. **Etiquetas en los cantos (fase 6, PR 4).** En **Nuevo canto / Editar canto**, **debajo de la letra**, hay un campo **Etiquetas (opcional)**: escribes una y pulsas
+   Enter (o coma) para agregarla; cada etiqueta puesta es un botón que la quita al tocarla; abajo salen **«Ya usadas»** (las etiquetas que ya existen y las de la Misa: Entrada, Comunión…)
+   para agregarlas con un toque. Hasta 8 por canto, de hasta 30 letras; «Comunión» y «comunion» son la misma. **El selector de una sección** («Agregar a Canto de entrada»)
+   muestra primero **los cantos con la etiqueta de esa sección** (para «Canto de entrada», «Entrada»; para una sección tuya, su nombre) y, arriba, dos botones: la etiqueta y **Mostrar todos**.
+   **Mientras ningún canto tenga la etiqueta no hay filtro** (ves todos, como antes). Al agregar un canto que no la tiene, un aviso dice «Agregado a …» con **Etiquetar «Entrada»**: un toque
+   y queda etiquetado. Un canto que escribes desde el selector («Crear …») ya empieza con la etiqueta de esa sección. La búsqueda de **Cantos** y la del selector también encuentran un canto por
+   sus etiquetas. Las etiquetas no se ven en las filas (un canto se ve igual en todos lados). La migración `0011` agrega la columna; no hay nada que ejecutar. **Prueba:** etiqueta dos o tres cantos como
+   «Entrada», abre el selector de *Canto de entrada* y mira el filtro y «Mostrar todos»; agrega un canto sin etiqueta y toca «Etiquetar»; en el otro aparato mira que lleguen las etiquetas.
+   Sin conexión también.
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.

@@ -2,7 +2,11 @@ import type { App } from '../app.ts';
 import { capitaliseChords } from '../chordpro/capitalise.ts';
 import { parse, songKey } from '../chordpro/parser.ts';
 import { sheetHtml } from '../chordpro/sheet.ts';
-import { ValidationError } from '../data/library.ts';
+import { ValidationError, type SongDraft } from '../data/library.ts';
+import { partsOf } from '../data/setlists.ts';
+import { sameTag, tagOf, tagsInUse } from '../data/tags.ts';
+import { MASS_PARTS } from '../mass.ts';
+import { createTagField } from './tag-field.ts';
 import { convertPastedSheet } from '../importer.ts';
 import type { Song } from '../data/types.ts';
 import { h, link, setSheet } from '../dom.ts';
@@ -53,6 +57,25 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
     title.value = existing?.title ?? start.title ?? '';
     author.value = existing?.author ?? '';
     body.value = existing?.body ?? '';
+
+    // The tags: below the lyrics and optional. Offered: the ones in use, then the Mass's (what a section asks for)
+    let known: string[] = MASS_PARTS.map((part) => part.tag);
+    const tagField = createTagField({ initial: existing?.tags ?? [], suggestions: () => known });
+    void app.list().then((songs) => {
+        const inUse = tagsInUse(songs);
+        known = [...inUse, ...known.filter((tag) => !inUse.some((used) => sameTag(used, tag)))];
+        tagField.refresh();
+    });
+    // A song written for a section starts with that section's tag: it is the one it was missing when it was searched for
+    if (existing === undefined && start.into !== undefined) {
+        const { setlist: setlistId, part: partId } = start.into;
+        void app.setlists.get(setlistId).then((list) => {
+            const part = list === undefined ? undefined : partsOf(list).find((candidate) => candidate.id === partId);
+            if (part !== undefined && tagField.value().length === 0) {
+                tagField.set([tagOf(part)]);
+            }
+        });
+    }
 
     const error = h('p', { class: 'error', role: 'alert' });
     const titleError = h('p', { class: 'error field-error', id: 'title-error', role: 'alert' });
@@ -222,6 +245,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         h('label', { for: 'body' }, 'Letra con acordes'),
         body,
         converted,
+        tagField.element,
         h(
             'details',
             { class: 'help' },
@@ -288,7 +312,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         }
         save.disabled = true;
         body.value = capitaliseChords(body.value);
-        const draft = { title: title.value, author: author.value, body: body.value };
+        const draft: SongDraft = { title: title.value, author: author.value, body: body.value, tags: tagField.value() };
         const saved = existing === undefined ? app.create(draft) : saveEdit(app, existing, draft);
         saved
             .then((song) => {
@@ -356,7 +380,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
  * Saves an edit. If it moved the key the song is written in, the keys people sing it in move the other way,
  * so editing a chart never changes what is sung (and the keys of today, which live on this device, with them).
  */
-async function saveEdit(app: App, existing: Song, draft: { title: string; author: string; body: string }): Promise<Song> {
+async function saveEdit(app: App, existing: Song, draft: SongDraft): Promise<Song> {
     const moved = keyDistance(songKey(parse(existing.body)), songKey(parse(draft.body))) ?? 0;
     const { song, touched } = await app.updateKeepingKeys(existing.id, draft, moved);
     for (const { setlistId, itemId } of touched) {

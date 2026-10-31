@@ -120,6 +120,11 @@ export class App {
         return this.afterWrite(await this.library.create(draft));
     }
 
+    /** Replaces the tags of a song (what it is for: "Entrada", "Cuaresma"…) */
+    async setTags(id: string, tags: readonly string[]): Promise<Song> {
+        return this.afterWrite(await this.library.setTags(id, tags));
+    }
+
     async update(id: string, draft: SongDraft): Promise<Song> {
         return this.afterWrite(await this.library.update(id, draft));
     }

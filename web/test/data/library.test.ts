@@ -20,9 +20,63 @@ describe('Library', () => {
         const song = await library.create({ title: '  Caminamos con alegría ', author: ' Anónimo ', body: '[C]Caminamos' });
 
         assert.deepEqual(song, {
-            id: 'id-0', title: 'Caminamos con alegría', author: 'Anónimo', body: '[C]Caminamos', myShift: 0, updatedAt: 1000, deletedAt: null,
+            id: 'id-0', title: 'Caminamos con alegría', author: 'Anónimo', body: '[C]Caminamos', tags: [], myShift: 0, updatedAt: 1000, deletedAt: null,
         });
         assert.deepEqual(await store.pending('songs'), [song]);
+    });
+
+    describe('tags', () => {
+        const draft = { title: 'Uno', author: '', body: '[C]a' };
+
+        it('are kept clean on a new song: trimmed, one spelling each', async () => {
+            const song = await library.create({ ...draft, tags: ['  Entrada ', 'entrada', 'Comunión', '  '] });
+
+            assert.deepEqual(song.tags, ['Entrada', 'Comunión']);
+        });
+
+        it('stay as they are when an edit does not mention them, and are replaced when it does', async () => {
+            const song = await library.create({ ...draft, tags: ['Entrada'] });
+            now = 2_000;
+
+            const edited = await library.update(song.id, { ...draft, title: 'Uno editado' });
+            assert.deepEqual(edited.tags, ['Entrada']);
+
+            now = 3_000;
+            const retagged = await library.update(song.id, { ...draft, tags: ['Salida'] });
+            assert.deepEqual(retagged.tags, ['Salida']);
+            const cleared = await library.update(song.id, { ...draft, tags: [] });
+            assert.deepEqual(cleared.tags, []);
+        });
+
+        it('are set on their own with a newer stamp, and nothing is written when they do not change', async () => {
+            const song = await library.create({ ...draft, tags: ['Entrada'] });
+            now = 5_000;
+
+            const same = await library.setTags(song.id, ['entrada']);
+            assert.equal(same.updatedAt, 1000, 'the same tag in another spelling is no change');
+            assert.equal((await store.pending('songs'))[0]?.updatedAt, 1000);
+
+            const more = await library.setTags(song.id, ['Entrada', 'Adviento']);
+            assert.deepEqual(more.tags, ['Entrada', 'Adviento']);
+            assert.equal(more.updatedAt, 5000);
+            assert.deepEqual((await store.pending('songs'))[0], more);
+        });
+
+        it('refuse more than eight or one too long, and the song is as it was', async () => {
+            const song = await library.create(draft);
+
+            await assert.rejects(library.setTags(song.id, Array.from({ length: LIMITS.tags + 1 }, (_, i) => `T${i}`)), /hasta 8 etiquetas/);
+            await assert.rejects(library.setTags(song.id, ['x'.repeat(LIMITS.tag + 1)]), /hasta 30 caracteres/);
+            await assert.rejects(library.create({ ...draft, tags: ['x'.repeat(LIMITS.tag + 1)] }), ValidationError);
+            assert.deepEqual((await library.get(song.id))?.tags, []);
+        });
+
+        it('read as none on a song saved before the tags', async () => {
+            await store.save('songs', { id: 'old', title: 'Viejo', author: '', body: '', myShift: 0, updatedAt: 1, deletedAt: null } as never);
+
+            assert.deepEqual((await library.get('old'))?.tags, []);
+            assert.deepEqual((await library.list())[0]?.tags, []);
+        });
     });
 
     describe('"mi tono"', () => {

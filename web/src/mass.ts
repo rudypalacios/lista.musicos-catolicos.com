@@ -21,6 +21,8 @@ export interface MassPart {
      * title. For the others (entrada, ofertorio, comunión…) it is the title of the song.
      */
     fixedText?: true;
+    /** The tag a song carries to be offered first for this part (the picker filters by it) */
+    tag: string;
     /** The Mass can be celebrated without a song here (the template shows the slot as optional) */
     optional?: true;
     /** A tooltip explaining the slot, when the person might wonder why it is there */
@@ -28,53 +30,58 @@ export interface MassPart {
 }
 
 export const MASS_PARTS: readonly MassPart[] = [
-    { id: 'entrada', name: 'Canto de entrada', aliases: ['entrada', 'canto de entrada', 'antifona de entrada'] },
+    { id: 'entrada', tag: 'Entrada', name: 'Canto de entrada', aliases: ['entrada', 'canto de entrada', 'antifona de entrada'] },
     {
-        id: 'senor-ten-piedad',
+        id: 'senor-ten-piedad', tag: 'Señor ten piedad',
         name: 'Señor, ten piedad',
         aliases: ['senor ten piedad', 'piedad kyrie', 'kyrie', 'piedad', 'acto penitencial'], fixedText: true },
-    { id: 'gloria', name: 'Gloria', aliases: ['gloria'], fixedText: true },
-    { id: 'salmo', name: 'Salmo responsorial', aliases: ['salmo responsorial', 'salmo'], optional: true },
+    { id: 'gloria', tag: 'Gloria', name: 'Gloria', aliases: ['gloria'], fixedText: true },
+    { id: 'salmo', tag: 'Salmo', name: 'Salmo responsorial', aliases: ['salmo responsorial', 'salmo'], optional: true },
     {
-        id: 'aclamacion',
+        id: 'aclamacion', tag: 'Aclamación',
         name: 'Aclamación antes del Evangelio',
         aliases: ['aclamacion antes del evangelio', 'aclamacion al evangelio', 'aclamacion', 'aleluya'],
     },
     {
-        id: 'ofertorio',
+        id: 'ofertorio', tag: 'Ofertorio',
         name: 'Ofertorio',
         aliases: [
             'presentacion de las ofrendas', 'presentacion de ofrendas', 'presentacion de dones',
             'preparacion de los dones', 'ofertorio', 'ofrendas',
         ],
     },
-    { id: 'santo', name: 'Santo', aliases: ['santo'], fixedText: true },
+    { id: 'santo', tag: 'Santo', name: 'Santo', aliases: ['santo'], fixedText: true },
     {
-        id: 'memorial',
+        id: 'memorial', tag: 'Memorial',
         name: 'Aclamación memorial',
         aliases: ['aclamacion despues de la consagracion', 'aclamacion memorial', 'memorial'],
         fixedText: true,
         optional: true,
         note: 'La canta la asamblea justo después de la consagración, cuando el sacerdote dice «Este es el Misterio de la fe». Por ejemplo: «Anunciamos tu muerte, proclamamos tu resurrección, ¡ven, Señor Jesús!».',
     },
-    { id: 'amen', name: 'Amén', aliases: ['gran amen', 'amen'], fixedText: true, optional: true },
-    { id: 'padre-nuestro', name: 'Padre nuestro', aliases: ['padre nuestro'], fixedText: true },
+    { id: 'amen', tag: 'Amén', name: 'Amén', aliases: ['gran amen', 'amen'], fixedText: true, optional: true },
+    { id: 'padre-nuestro', tag: 'Padre nuestro', name: 'Padre nuestro', aliases: ['padre nuestro'], fixedText: true },
     {
-        id: 'paz',
+        id: 'paz', tag: 'Paz',
         name: 'Rito de la paz',
         aliases: ['rito de la paz', 'saludo de paz', 'canto de paz', 'paz'],
         optional: true,
         note: 'No es parte de la misa: el Misal no prescribe un canto para el saludo de la paz, aunque en algunas parroquias se incluye.',
     },
-    { id: 'cordero', name: 'Cordero de Dios', aliases: ['cordero de dios', 'cordero'], fixedText: true },
-    { id: 'comunion', name: 'Canto de comunión', aliases: ['canto de comunion', 'comunion'] },
-    { id: 'accion-de-gracias', name: 'Acción de gracias', aliases: ['accion de gracias'], optional: true },
+    { id: 'cordero', tag: 'Cordero de Dios', name: 'Cordero de Dios', aliases: ['cordero de dios', 'cordero'], fixedText: true },
+    { id: 'comunion', tag: 'Comunión', name: 'Canto de comunión', aliases: ['canto de comunion', 'comunion'] },
+    { id: 'accion-de-gracias', tag: 'Acción de gracias', name: 'Acción de gracias', aliases: ['accion de gracias'], optional: true },
     {
-        id: 'salida',
+        id: 'salida', tag: 'Salida',
         name: 'Canto de salida',
         aliases: ['canto de salida', 'canto final', 'despedida', 'salida', 'final'],
     },
 ];
+
+/** The tag of a section of the Mass, by its id ("entrada" → "Entrada"); undefined for any other */
+export function massTag(id: string): string | undefined {
+    return MASS_PARTS.find((part) => part.id === id)?.tag;
+}
 
 /** The Mass as the sections a new list starts with: a copy for each list, never shared between them */
 export function massSections(): PartDef[] {

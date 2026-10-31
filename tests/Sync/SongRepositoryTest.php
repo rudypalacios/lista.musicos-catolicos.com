@@ -26,14 +26,18 @@ final class SongRepositoryTest extends TestCase
         $this->sequence = new Sequence($pdo);
     }
 
+    /**
+     * @param list<string>|null $tags
+     */
     private function change(
         string $title,
         int $at,
         bool $deleted = false,
         string $id = self::SONG,
-        ?int $myShift = null
+        ?int $myShift = null,
+        ?array $tags = null
     ): SongChange {
-        return new SongChange($id, $title, 'Autor', "[G]Letra de $title", $at, $deleted, $myShift);
+        return new SongChange($id, $title, 'Autor', "[G]Letra de $title", $at, $deleted, $myShift, $tags);
     }
 
     public function testANewSongIsStoredAndNumbered(): void
@@ -81,6 +85,31 @@ final class SongRepositoryTest extends TestCase
         $row = $this->songs->changedSince(self::ME, 0, 10)[0];
         $this->assertSame('Uno editado', $row['title']);
         $this->assertSame(-3, $row['myShift']);
+    }
+
+    public function testTagsAreStoredReadBackAndReplaced(): void
+    {
+        $this->songs->apply(self::ME, $this->change('Uno', 1000));
+        $none = $this->songs->changedSince(self::ME, 0, 10)[0]['tags'];
+        $this->assertSame([], $none, 'a song with none reads as an empty list');
+
+        $this->songs->apply(self::ME, $this->change('Uno', 2000, false, self::SONG, null, ['Entrada', 'Señor ñ']));
+        $this->assertSame(['Entrada', 'Señor ñ'], $this->songs->changedSince(self::ME, 0, 10)[0]['tags']);
+
+        $this->songs->apply(self::ME, $this->change('Uno', 3000, false, self::SONG, null, []));
+        $cleared = $this->songs->changedSince(self::ME, 0, 10)[0]['tags'];
+        $this->assertSame([], $cleared, 'sent empty: the tags are removed');
+    }
+
+    public function testAnOlderClientThatSendsNoTagsKeepsTheStoredOnes(): void
+    {
+        $this->songs->apply(self::ME, $this->change('Uno', 1000, false, self::SONG, null, ['Entrada']));
+
+        $this->songs->apply(self::ME, $this->change('Uno editado', 2000));
+
+        $row = $this->songs->changedSince(self::ME, 0, 10)[0];
+        $this->assertSame('Uno editado', $row['title']);
+        $this->assertSame(['Entrada'], $row['tags']);
     }
 
     public function testAKeyOfZeroClearsIt(): void

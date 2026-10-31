@@ -76,7 +76,7 @@ async function chords(page: Page): Promise<string[]> {
 async function serverData(page: Page) {
     return page.evaluate(async () => {
         const answer = (await (await fetch('/api/sync?since=0')).json()) as {
-            songs: { id: string; title: string; body: string; myShift: number; deletedAt: number | null }[];
+            songs: { id: string; title: string; body: string; tags: string[]; myShift: number; deletedAt: number | null }[];
             setlists: {
                 id: string; title: string; eventDate: string | null; notes: string; starred: boolean; deletedAt: number | null;
                 items: { id: string; part: string; songId: string; transpose: number; note: string }[];
@@ -193,8 +193,9 @@ try {
     // Choosing a song returns to the part it was added to, with the new song marked, and says it was saved
     await page.waitForFunction(() => document.querySelector('#parte-entrada .item.is-new') !== null);
     assert.equal(new URL(page.url()).hash, '', 'the address is cleaned once the part is shown');
-    await page.locator('.toast', { hasText: 'Guardado' }).waitFor();
-    pass('picking a song returns to its part with the new song marked, and a toast says it was saved');
+    // The toast offers to tag the song with the section's tag (it replaces the plain "Guardado")
+    await page.locator('.toast', { hasText: 'Agregado a Canto de entrada' }).waitFor();
+    pass('picking a song returns to its part with the new song marked, and a toast says where it went');
 
     await addToSlot(page, 'Canto de comunión', 'Pan de vida');
     await addToSlot(page, 'Canto de comunión', 'Gloria');
@@ -950,6 +951,53 @@ try {
     await openSection(page, 'Listados');
     pass('the templates screen: open one, rename it, add and delete a section, duplicate it, delete it after a question; no switches there');
 
+    // ----- tags: the picker of a section filters by its tag; the editor has them below the lyrics -----
+    await createSong(page, 'Etiquetado a mano', '[C]Una letra [G]cualquiera');
+    await openSection(page, 'Listados');
+    await newList(page);
+    await page.locator('section.slot').first().waitFor();
+    await page.getByRole('link', { name: 'Agregar canto a Canto de entrada' }).click();
+    await page.getByLabel('Buscar cantos').waitFor();
+    assert.equal(await page.locator('.tag-filter').isVisible(), false, 'no filter while no song carries the tag');
+    await page.getByLabel('Buscar cantos').fill('Etiquetado a mano');
+    await page.locator('button.lrow__pick', { hasText: 'Etiquetado a mano' }).click();
+    await page.getByRole('button', { name: 'Etiquetar «Entrada»' }).click();
+    await page.locator('.toast', { hasText: 'etiquetado como «Entrada»' }).waitFor();
+    await serverWhen(page, (data) => data.songs.some((song) => song.title === 'Etiquetado a mano' && song.tags.join() === 'Entrada'));
+
+    await page.getByRole('link', { name: 'Agregar canto a Canto de entrada' }).click();
+    await page.locator('.tag-filter').waitFor();
+    const entradaChip = page.locator('.tag-filter button', { hasText: 'Entrada' });
+    assert.equal(await entradaChip.getAttribute('aria-pressed'), 'true', 'the section\'s tag is on');
+    assert.equal(await page.locator('button.lrow__pick').count(), 1, 'only the songs with the tag');
+    await page.locator('.tag-filter button', { hasText: 'Mostrar todos' }).click();
+    assert.ok((await page.locator('button.lrow__pick').count()) > 1, '"Mostrar todos" shows every song');
+    await page.getByLabel('Buscar cantos').fill('zzzz');
+    await page.getByText('Ningún canto coincide con la búsqueda.').waitFor();
+    await entradaChip.click();
+    await page.getByText('Ningún canto con «Entrada» coincide con la búsqueda. Prueba con «Mostrar todos».').waitFor();
+    await noTypedIcons(page, 'the picker with its filter');
+    await page.locator('.bar__back').click();
+    await deleteOpenList(page);
+
+    await openSection(page, 'Cantos');
+    await page.getByRole('link', { name: 'Etiquetado a mano' }).click();
+    await editFromSongPage(page);
+    await page.getByRole('button', { name: 'Quitar la etiqueta Entrada' }).waitFor();
+    await page.getByLabel('Agregar etiqueta').fill('Adviento');
+    await page.getByLabel('Agregar etiqueta').press('Enter');
+    await page.getByRole('button', { name: 'Quitar la etiqueta Adviento' }).waitFor();
+    await page.getByLabel('Agregar etiqueta').fill('Cuaresma');
+    await noTypedIcons(page, 'the editor with tags');
+    await page.getByRole('button', { name: 'Guardar' }).click();
+    await page.getByRole('heading', { name: 'Etiquetado a mano' }).waitFor();
+    await serverWhen(page, (data) => data.songs.some((song) => song.title === 'Etiquetado a mano' && song.tags.join() === 'Entrada,Adviento,Cuaresma'));
+    await openSection(page, 'Cantos');
+    await page.getByLabel('Buscar cantos').fill('cuaresma');
+    await page.getByRole('link', { name: 'Etiquetado a mano' }).waitFor();
+    await openSection(page, 'Listados');
+    pass('tags: no filter until a song has the tag, one touch tags the song picked, "Mostrar todos" and the search; the editor adds and removes them (the one still being typed is kept) and the search finds a song by its tag');
+
     // ----- an empty list: the "⋯" is there, with nothing to print, and the list can be deleted from inside -----
     await newList(page);
     await page.locator('section.slot').first().waitFor();
@@ -1005,13 +1053,15 @@ try {
     assert.equal(await page.locator('.sheet-layer.is-open').count(), 0);
     pass('touching a song in the list sings it from there, and back returns to the same place');
 
-    // Back from singing a song returns to the same place in the list
+    // Back from singing a song returns to the same place in the list: the one it was left at (opening the sheet
+    // may move the screen a little, so the place is read just before leaving, not from the step above)
     await slot(page, 'Canto de salida').getByRole('button', { name: 'Más opciones: Abrimos la puerta' }).click();
+    const leftAt = await page.evaluate(() => document.querySelector('#view')?.scrollTop ?? 0);
     await page.getByRole('button', { name: /Cantar desde aquí/ }).click();
     await page.getByRole('heading', { name: 'Abrimos la puerta' }).waitFor();
     await page.goBack();
     await page.locator('section.slot').first().waitFor();
-    await page.waitForFunction((top) => (document.querySelector('#view')?.scrollTop ?? 0) >= top - 2, before);
+    await page.waitForFunction((top) => Math.abs((document.querySelector('#view')?.scrollTop ?? 0) - top) <= 30, leftAt);
     pass('back from singing a song returns to the same place in the list');
 
     // A desktop: the parts in two columns, the tools of each song on one line
