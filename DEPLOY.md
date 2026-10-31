@@ -394,6 +394,14 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    vuelve a la lista). **Prueba:** abre un canto en el teléfono y en la compu; mueve el tono y guárdalo; cambia el tamaño; abre el `⋯`
    y prueba cada opción (imprimir con acordes, solo la letra, editar, eliminar y cancelar). Los datos no cambian.
 
+36. **Agregar un canto a un listado desde su página.** En un canto, `⋯` → **Agregar a un listado** (arriba de *Imprimir*). La hoja pasa por dos pasos:
+   (1) el **listado** (destacados primero, luego recientes, cada uno con su número de cantos; al final **Nuevo listado**, que crea uno para hoy y sigue
+   a la parte) y (2) la **parte de la misa**, con cuántos cantos tiene cada una, «opcional» en las que lo son y **«Ya está aquí»** donde el canto
+   ya está (se puede agregar igual). Al tocar la parte, el canto se agrega **al final de esa parte**, la hoja se cierra, sigues en el canto y un aviso dice
+   dónde quedó. **El tono:** si en la pantalla tienes el canto en otro tono que el tuyo (con − / +), entra **en ese tono** y la hoja lo dice
+   («Entra en Re (el tono que ves)»); si es el tuyo, entra en tu tono y no dice nada. La flecha de la esquina vuelve un paso (al listado, y de ahí a las
+   opciones); el botón atrás de Android cierra la hoja. **Prueba:** sin conexión también; sube el tono, agrega a una parte y mira el listado (la
+   fila dice ese tono); vuelve al tuyo y agrégalo a otra parte; crea un listado desde ahí. Los datos no cambian.
 37. **Colores de lectura: la letra y los acordes, en pares.** En *Ajustes*, «Color de la letra» (cinco nombres, con círculos) se cambió por **Colores de lectura**:
    cuatro tarjetas, cada una con una **muestra** dibujada en sus colores: **Clásico** (letra blanca, acordes azules, como antes), **Blanco y rojo**,
    **Ámbar y celeste** y **Verde y rosa**. Los pares están elegidos para que se lean bien sobre el fondo oscuro (contraste mínimo 7:1, y una prueba

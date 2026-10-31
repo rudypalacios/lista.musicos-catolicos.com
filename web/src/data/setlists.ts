@@ -214,8 +214,11 @@ export class Setlists {
         });
     }
 
-    /** Adds the song at the end of the part. @throws ValidationError (as a rejected promise) */
-    addItem(id: string, part: string, songId: string): Promise<Setlist> {
+    /**
+     * Adds the song at the end of the part, in "mi tono" or, when `transpose` is given, in that key (semitones from
+     * the song's own: the key the person has it in on screen). @throws ValidationError (as a rejected promise)
+     */
+    addItem(id: string, part: string, songId: string, transpose?: number): Promise<Setlist> {
         return this.edit(id, async (list) => {
             if (!MASS_PARTS.some((candidate) => candidate.id === part)) {
                 throw new ValidationError('Esa parte de la misa no existe.');
@@ -229,7 +232,8 @@ export class Setlists {
             }
 
             // The song starts in the key its owner sings it in (copied: changing "mi tono" later leaves this list alone)
-            const shift = Number.isInteger(song.myShift) ? song.myShift : 0;
+            const own = Number.isInteger(song.myShift) ? song.myShift : 0;
+            const shift = transpose !== undefined && Number.isInteger(transpose) ? transpose % 12 : own;
 
             return { items: [...list.items, { id: this.newId(), part, songId, transpose: shift, note: '' }] };
         });
