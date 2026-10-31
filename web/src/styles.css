@@ -2975,36 +2975,70 @@ button.notice-line__info {
     flex: 1;
 }
 
-/* The sections of a list: a switch for each (drawn, not a native checkbox, so it looks the same on every device) */
+/* The sections of a list: a switch (drawn, not a native checkbox, so it looks the same on every device), the name, the moves and "✕" */
 .sections .srow {
+    gap: 0.2rem;
+}
+
+.sections .srow__switch {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 3.25rem;
+    min-height: 3.5rem;
+    padding: 0;
+    background: none;
+    border: 0;
+    cursor: pointer;
+}
+
+.sections .srow__switch.is-locked {
+    cursor: default;
+}
+
+.sections .srow__name {
     flex: 1;
     display: flex;
-    align-items: center;
-    gap: 0.9rem;
+    flex-direction: column;
+    justify-content: center;
     min-width: 0;
     min-height: 3.5rem;
-    padding: 0.4rem 0;
+    padding: 0.4rem 0.3rem;
     text-align: left;
     color: var(--text);
     background: none;
     border: 0;
     font: inherit;
-    cursor: pointer;
+    cursor: text;
 }
 
-.sections .srow.is-locked {
-    cursor: default;
-}
-
-.sections .srow .icon {
-    margin-left: auto;
-    color: var(--muted);
-}
-
-.srow__text {
-    display: flex;
-    flex-direction: column;
+.sections .srow__field,
+.sections__new .srow__field {
+    flex: 1;
     min-width: 0;
+    min-height: 2.75rem;
+}
+
+.sections .srow > .srow__field {
+    margin: 0.4rem 0;
+}
+
+button.srow__tool {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0;
+    color: var(--muted);
+    background: none;
+    border: 0;
+}
+
+button.srow__tool:disabled {
+    opacity: 0.3;
 }
 
 .lrow__title.is-off {
@@ -3045,4 +3079,42 @@ button.notice-line__info {
 
 .is-locked .switch {
     opacity: 0.55;
+}
+
+.sections__add {
+    margin-top: 1.5rem;
+}
+
+.sections__label {
+    margin: 1.25rem 0 0.5rem;
+    color: var(--muted);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.sections__new {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+}
+
+.sections__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.pick-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 2.75rem;
+    padding: 0 0.9rem;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font: inherit;
+    cursor: pointer;
 }

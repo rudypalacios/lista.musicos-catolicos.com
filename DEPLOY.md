@@ -423,6 +423,14 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    aparato el cambio llega solo. Los textos ahora dicen «sección» (por ejemplo «Otras secciones», «Subir en esta sección»). Las secciones propias y las
    plantillas vienen en los siguientes PR.
 
+39. **Secciones propias (fase 6, PR 2).** En `⋯` → **Secciones del listado**, cada fila ahora tiene: el interruptor, el **nombre** (tócalo para cambiarlo:
+   Enter o salir del campo lo guarda, Escape lo deja como estaba; los cantos se quedan en la sección), las **flechas** para subirla o bajarla y la **✕** para
+   borrarla. Abajo, **Agregar sección** (escribes el nombre y *Agregar*) y, en botones, **las secciones de la Misa que el listado no tiene** (para
+   volver a poner una que borraste). Una sección con cantos no se puede borrar ni apagar (la ✕ y el interruptor se ven apagados y la fila dice cuántos
+   cantos tiene), y la última sección tampoco. Máximo 30 secciones. **Prueba (teléfono y compu):** haz un listado de rosario: borra las secciones de la Misa
+   que no sirven, agrega «Primer misterio», «Segundo misterio»…, cámbiales el nombre, ordénalas, y desde el listado agrega cantos a cada una; cántalo y mira
+   que *Cantar* diga el nombre de la sección; imprímelo; en el otro aparato mira que llegue igual. Sin cambios en los datos ni migración.
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.

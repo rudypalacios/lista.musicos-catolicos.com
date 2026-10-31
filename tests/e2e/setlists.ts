@@ -302,14 +302,14 @@ try {
     assert.match(await page.locator('.bar').innerText(), /Listado/, 'a screen that hangs from the list says so in the bar');
     const entradaSwitch = page.getByRole('switch', { name: /Canto de entrada/ });
     assert.equal(await entradaSwitch.getAttribute('aria-disabled'), 'true', 'a section with songs cannot be switched off');
-    await entradaSwitch.getByText('no se puede apagar').waitFor();
+    await page.getByText('1 canto: no se puede apagar').waitFor();
     await entradaSwitch.click({ force: true });
     assert.equal(await entradaSwitch.getAttribute('aria-checked'), 'true', 'touching a locked switch does nothing');
     const salmo = page.getByRole('switch', { name: /Salmo responsorial/ });
     assert.equal(await salmo.getAttribute('aria-checked'), 'true');
     await salmo.click();
     await page.waitForFunction(() => document.querySelector('[data-focus="section:salmo"]')?.getAttribute('aria-checked') === 'false');
-    await salmo.getByText('Apagada: se oculta en el listado').waitFor();
+    await page.getByText('Apagada: se oculta en el listado').waitFor();
     await noTypedIcons(page, 'the sections screen');
     await page.locator('.bar__back').click();
     await page.locator('section.slot').first().waitFor();
@@ -323,6 +323,54 @@ try {
     await page.locator('section.slot').first().waitFor();
     assert.deepEqual((await sectionNames())[3], 'Salmo responsorial', 'it comes back where it was');
     pass('the sections of a list: one with songs is locked, one without is switched off (hidden on the list) and on again (back in its place)');
+
+    // ----- own sections: add one, rename it, move it, put a song in it, delete another -----
+    await page.getByRole('button', { name: 'Más opciones del listado' }).click();
+    await page.getByRole('button', { name: 'Secciones del listado' }).click();
+    await page.getByLabel('Nombre de la sección nueva').fill('Misterios gozosos');
+    await page.getByRole('button', { name: 'Agregar', exact: true }).click();
+    await page.getByRole('switch', { name: 'Misterios gozosos' }).waitFor();
+    assert.equal(await page.getByLabel('Nombre de la sección nueva').inputValue(), '', 'the field is ready for the next one');
+    await page.getByRole('button', { name: 'Cambiar el nombre: Misterios gozosos' }).click();
+    const renameField = page.getByLabel(/Nombre de la sección: Misterios gozosos/);
+    await renameField.fill('Misterios luminosos');
+    await renameField.press('Enter');
+    await page.getByRole('switch', { name: 'Misterios luminosos' }).waitFor();
+    assert.equal(await page.getByRole('button', { name: 'Bajar: Misterios luminosos' }).isDisabled(), true, 'the last one cannot go down');
+    await page.getByRole('button', { name: 'Subir: Misterios luminosos' }).click();
+    await page.waitForFunction(() => document.querySelector('.sections li:nth-last-child(2) .srow__name .lrow__title')?.textContent?.startsWith('Misterios luminosos') === true);
+    // The ones of the Mass that are missing are offered back: a section is deleted and offered again
+    await page.getByRole('button', { name: 'Borrar: Acción de gracias' }).click();
+    await page.getByRole('button', { name: 'Acción de gracias', exact: true }).waitFor();
+    assert.equal(await page.getByRole('switch', { name: 'Acción de gracias' }).count(), 0);
+    assert.equal(await page.getByRole('button', { name: 'Borrar: Canto de entrada' }).isDisabled(), true, 'a section with songs cannot be deleted');
+    await noTypedIcons(page, 'the sections screen with its tools');
+    await page.locator('.bar__back').click();
+    await page.locator('section.slot').first().waitFor();
+    const own = await sectionNames();
+    assert.ok(own.includes('Misterios luminosos') && !own.includes('Acción de gracias'));
+    assert.equal(own.indexOf('Misterios luminosos'), own.length - 2, 'the own section is where it was moved');
+    await addToSlot(page, 'Misterios luminosos', 'puerta');
+    await slot(page, 'Misterios luminosos').getByText('Abrimos la puerta').waitFor();
+    await page.getByRole('button', { name: 'Más opciones del listado' }).click();
+    await page.getByRole('button', { name: 'Secciones del listado' }).click();
+    assert.equal(await page.getByRole('button', { name: 'Borrar: Misterios luminosos' }).isDisabled(), true, 'now it holds a song');
+    await page.getByRole('button', { name: 'Acción de gracias', exact: true }).click();
+    await page.getByRole('switch', { name: 'Acción de gracias' }).waitFor();
+    await page.locator('.bar__back').click();
+    await page.locator('section.slot').first().waitFor();
+    // Back to the Mass as it was for the rest of the test: the song leaves, then its section can be deleted
+    await slot(page, 'Misterios luminosos').getByRole('button', { name: 'Más opciones: Abrimos la puerta' }).click();
+    await page.getByRole('button', { name: 'Quitar del listado' }).click();
+    await slot(page, 'Misterios luminosos').getByText('Abrimos la puerta').waitFor({ state: 'detached' });
+    await page.getByRole('button', { name: 'Más opciones del listado' }).click();
+    await page.getByRole('button', { name: 'Secciones del listado' }).click();
+    await page.getByRole('button', { name: 'Borrar: Misterios luminosos' }).click();
+    await page.getByRole('switch', { name: 'Misterios luminosos' }).waitFor({ state: 'detached' });
+    await page.locator('.bar__back').click();
+    await page.locator('section.slot').first().waitFor();
+    assert.equal((await sectionNames()).length, 15);
+    pass('own sections: added, renamed (keeping the song), moved, offered back from the Mass when deleted; one with a song is not deleted');
 
     // The list screen shows no notes for now (the note of a song is written while singing)
     assert.equal(await page.getByRole('button', { name: /nota/i }).count(), 0);

@@ -39,7 +39,6 @@ const DRAWINGS = {
     music: { shapes: [['path', { d: 'M9 18V5l11-2v13' }], ['circle', { cx: '6', cy: '18', r: '3' }], ['circle', { cx: '17', cy: '16', r: '3' }]] },
     /** The sections of a list: three lines, each with its own switch */
     sections: { shapes: [['path', { d: 'M4 6h2M10 6h10M4 12h8M16 12h4M4 18h4M12 18h8' }], ['circle', { cx: '8', cy: '6', r: '2' }], ['circle', { cx: '14', cy: '12', r: '2' }], ['circle', { cx: '10', cy: '18', r: '2' }]] },
-    lock: { shapes: [['rect', { x: '5', y: '11', width: '14', height: '9', rx: '2' }], ['path', { d: 'M8 11V8a4 4 0 0 1 8 0v3' }]] },
     list: { shapes: [['path', { d: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01' }]] },
     settings: { shapes: [['circle', { cx: '12', cy: '12', r: '3' }], ['path', { d: 'M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1' }]] },
     eye: { shapes: [['path', { d: 'M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z' }], ['circle', { cx: '12', cy: '12', r: '3' }]] },
