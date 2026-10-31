@@ -3,7 +3,7 @@ import { beforeEach, describe, it } from 'node:test';
 import { ValidationError } from '../../src/data/library.ts';
 import { MemoryStore } from '../../src/data/memory-store.ts';
 import {
-    copyTitle, defaultTitle, inListOrder, itemsOfPart, moveOptions, partIndex, partName, partsOf, positionInList, recentFirst, Setlists,
+    copyTitle, defaultTitle, inListOrder, itemsOfPart, moveOptions, partIndex, partName, partsOf, positionInList, recentFirst, reordered, Setlists,
     splitStarred, strayItems, visibleParts,
 } from '../../src/data/setlists.ts';
 import { LIMITS, type PartDef, type Setlist, type SetlistItem } from '../../src/data/types.ts';
@@ -710,11 +710,54 @@ describe('reading a list', () => {
     it('says which moves a song can make inside its own part', () => {
         const items = [item('a', 'comunion'), item('b', 'entrada'), item('c', 'comunion'), item('d', 'comunion')];
 
-        assert.deepEqual(moveOptions(items, 'b'), { up: false, down: false }, 'alone in its part: no move at all');
-        assert.deepEqual(moveOptions(items, 'a'), { up: false, down: true });
-        assert.deepEqual(moveOptions(items, 'c'), { up: true, down: true });
-        assert.deepEqual(moveOptions(items, 'd'), { up: true, down: false });
-        assert.deepEqual(moveOptions(items, 'zzz'), { up: false, down: false }, 'an item that is gone has none');
+        const none = { up: false, down: false, toStart: false, toEnd: false };
+        assert.deepEqual(moveOptions(items, 'b'), none, 'alone in its part: no move at all');
+        assert.deepEqual(moveOptions(items, 'a'), { up: false, down: true, toStart: false, toEnd: true });
+        assert.deepEqual(moveOptions(items, 'c'), { up: true, down: true, toStart: true, toEnd: true });
+        assert.deepEqual(moveOptions(items, 'd'), { up: true, down: false, toStart: true, toEnd: false });
+        assert.deepEqual(moveOptions(items, 'zzz'), none, 'an item that is gone has none');
+    });
+
+    it('offers "al inicio" and "al final" only when they say more than up and down (more than two songs)', () => {
+        const two = [item('a', 'comunion'), item('b', 'comunion')];
+
+        assert.deepEqual(moveOptions(two, 'b'), { up: true, down: false, toStart: false, toEnd: false });
+        assert.deepEqual(moveOptions(two, 'a'), { up: false, down: true, toStart: false, toEnd: false });
+    });
+
+    describe('putting an item at a place among those of its section', () => {
+        const items = [item('a', 'comunion'), item('x', 'entrada'), item('b', 'comunion'), item('c', 'comunion'), item('y', 'salida'), item('d', 'comunion')];
+        const ids = (list: SetlistItem[]): string[] => list.map((i) => i.id);
+
+        it('moves to the start, the middle and the end of its own section, the others keeping their order', () => {
+            assert.deepEqual(ids(reordered(items, 'd', 0)), ['d', 'a', 'x', 'b', 'c', 'y'], 'start');
+            assert.deepEqual(ids(reordered(items, 'a', 2)), ['x', 'b', 'c', 'y', 'a', 'd'], 'middle');
+            assert.deepEqual(ids(reordered(items, 'a', 3)), ['x', 'b', 'c', 'y', 'd', 'a'], 'end');
+            assert.deepEqual(ids(reordered(items, 'c', 1)), ['a', 'x', 'c', 'b', 'y', 'd'], 'one place up');
+        });
+
+        it('never touches the items of another section', () => {
+            const moved = reordered(items, 'b', 3);
+
+            assert.deepEqual(ids(moved.filter((i) => i.part === 'entrada')), ['x']);
+            assert.deepEqual(ids(moved.filter((i) => i.part === 'salida')), ['y']);
+            assert.deepEqual(ids(moved.filter((i) => i.part === 'comunion')), ['a', 'c', 'd', 'b']);
+        });
+
+        it('brings a place out of range into range, and changes nothing for an item that is gone or alone', () => {
+            assert.deepEqual(ids(reordered(items, 'a', 99)), ids(reordered(items, 'a', 3)));
+            assert.deepEqual(ids(reordered(items, 'a', -5).filter((i) => i.part === 'comunion')), ['a', 'b', 'c', 'd'], 'the first place');
+            assert.deepEqual(ids(reordered(items, 'zzz', 0)), ids(items));
+            assert.deepEqual(ids(reordered(items, 'x', 0)), ids(items), 'alone in its section');
+        });
+
+        it('does not change the list it is given', () => {
+            const before = ids(items);
+
+            reordered(items, 'd', 0);
+
+            assert.deepEqual(ids(items), before);
+        });
     });
 
     const list = (parts: PartDef[], items: SetlistItem[]): Pick<Setlist, 'parts' | 'items'> => ({ parts, items });

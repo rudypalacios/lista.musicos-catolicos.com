@@ -30,6 +30,8 @@ const DRAWINGS = {
     'chevron-right': { shapes: [['path', { d: 'M9 6l6 6-6 6' }]] },
     'list-plus': { shapes: [['path', { d: 'M4 6h11M4 12h8M4 18h8M17 14v6M14 17h6' }]] },
     'chevron-down': { shapes: [['path', { d: 'M6 9l6 6 6-6' }]] },
+    'to-top': { shapes: [['path', { d: 'M5 4h14M12 20V8M6 13l6-6 6 6' }]] },
+    'to-bottom': { shapes: [['path', { d: 'M5 20h14M12 4v12M6 11l6 6 6-6' }]] },
     'arrow-up': { shapes: [['path', { d: 'M12 19V5M5 12l7-7 7 7' }]] },
     'arrow-down': { shapes: [['path', { d: 'M12 5v14M5 12l7 7 7-7' }]] },
     x: { shapes: [['path', { d: 'M6 6l12 12M18 6L6 18' }]] },

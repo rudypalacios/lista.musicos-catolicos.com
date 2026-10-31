@@ -3,6 +3,7 @@ import { transpose } from '../chordpro/chord.ts';
 import { parse, songKey } from '../chordpro/parser.ts';
 import { LIMITS, type PartDef, type Setlist, type SetlistItem, type Song } from '../data/types.ts';
 import { inListOrder, itemsOfPart, moveOptions, partName, positionInList, strayItems, visibleParts } from '../data/setlists.ts';
+import { attachLongPressDrag, dragHintPending, markDragHintSeen, type LongPressDrag } from '../drag-reorder.ts';
 import { h } from '../dom.ts';
 import { icon, type IconName } from '../icons.ts';
 import { planSheet } from '../print/plan.ts';
@@ -10,7 +11,7 @@ import type { PrintVersion } from '../print/layout.ts';
 import { printPlans } from '../print/print.ts';
 import { readNotation } from '../prefs.ts';
 import { paths } from '../router.ts';
-import { showUndoToast } from '../toast.ts';
+import { showToast, showUndoToast } from '../toast.ts';
 import { todayKeys } from '../today-keys.ts';
 import { deleteListAfterAsking } from './delete-list.ts';
 import { createSheet, sheetAction } from './sheet.ts';
@@ -128,7 +129,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
 
     /** The item whose "⋯" is open */
     let target: string | null = null;
-    const fillSongSheet = (focus?: 'up' | 'down'): void => {
+    const fillSongSheet = (focus?: 'up' | 'down' | 'start' | 'end'): void => {
         const item = setlist.items.find((candidate) => candidate.id === target);
         if (item === undefined) {
             // Removed (here or on another device) while its sheet was open
@@ -143,6 +144,11 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
         const step = (direction: -1 | 1): void => {
             void app.setlists.moveItem(setlist.id, item.id, direction).catch((failure: unknown) => fail(failure, 'No se pudo mover el canto.'));
         };
+        /** To the start (0) or the end (the number of the others) of its section */
+        const toEnd = (end: boolean): void => {
+            const to = end ? itemsOfPart(setlist.items, item.part).length - 1 : 0;
+            void app.setlists.reorderItem(setlist.id, item.id, to).catch((failure: unknown) => fail(failure, 'No se pudo mover el canto.'));
+        };
         songSheet.body.replaceChildren(
             h('h4', { class: 'sheet__title' }, name),
             h('p', { class: 'sheet__sub' }, section),
@@ -153,6 +159,9 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             // Only the moves that can happen: a part with one song has none
             ...(can.up ? [action('arrow-up', 'Subir en esta sección', () => step(-1), { key: 'up' })] : []),
             ...(can.down ? [action('arrow-down', 'Bajar en esta sección', () => step(1), { key: 'down' })] : []),
+            // Only when they say more than the arrows (more than two songs in the section)
+            ...(can.toStart ? [action('to-top', 'Al inicio de esta sección', () => toEnd(false), { key: 'start' })] : []),
+            ...(can.toEnd ? [action('to-bottom', 'Al final de esta sección', () => toEnd(true), { key: 'end' })] : []),
             action('x', 'Quitar del listado', () => {
                 const index = setlist.items.findIndex((candidate) => candidate.id === item.id);
                 songSheet.close(() => {
@@ -167,7 +176,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
         // Moving keeps the sheet open (to move again): the button pressed is replaced, so focus its twin
         if (focus !== undefined) {
             const kept = songSheet.body.querySelector<HTMLElement>(`[data-key="${focus}"]`)
-                ?? songSheet.body.querySelector<HTMLElement>('[data-key="up"], [data-key="down"]');
+                ?? songSheet.body.querySelector<HTMLElement>('[data-key="up"], [data-key="down"], [data-key="start"], [data-key="end"]');
             kept?.focus();
         }
     };
@@ -176,7 +185,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
         songSheet.open();
     };
     // A move keeps the sheet open (to move again): it is refreshed with the new list, keeping the focus on a move
-    let lastMove: 'up' | 'down' | undefined;
+    let lastMove: 'up' | 'down' | 'start' | 'end' | undefined;
     const refreshSongSheet = (): void => {
         if (songSheet.isOpen()) {
             const focus = lastMove;
@@ -186,8 +195,15 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
     };
 
     // --- the slots ---
+    /** The long-press drags of the rows on screen: they are made again with the rows, and let go of with them */
+    let drags: LongPressDrag[] = [];
+    /** A change arrived while a song was held: it is shown when the song is dropped */
+    let reloadHeld = false;
+    let hinted = false;
     const draw = (): void => {
         const focused = document.activeElement?.getAttribute('data-focus') ?? null;
+        drags.forEach((drag) => drag.dispose());
+        drags = [];
         const rows = inListOrder(setlist);
         const known = visibleParts(setlist).map((part) => slot(part));
         const strays = strayItems(setlist);
@@ -198,6 +214,12 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             fillListSheet();
         }
         sing.hidden = rows.length === 0;
+        // Said once on a device, the first time a list has a section with more than one song: nothing on a row shows that it can be held
+        if (!hinted && drags.length > 0 && dragHintPending()) {
+            hinted = true;
+            markDragHintSeen();
+            showToast('Mantén pulsado un canto para moverlo', 6000);
+        }
         if (focused !== null) {
             element.querySelector<HTMLElement>(`[data-focus="${CSS.escape(focused)}"]`)?.focus();
         }
@@ -284,7 +306,31 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             li.append(h('div', { class: 'item__open' }, ...lines));
         } else {
             const open = h('button', { type: 'button', class: 'item__open', 'data-focus': `open:${item.id}` }, ...lines);
-            open.addEventListener('click', () => navigate(paths.perform(setlist.id, positionInList(setlist, item.id))));
+            // Holding the song lifts it to move it inside its section (a section with one song has nowhere to go); a short touch still sings it
+            const drag = itemsOfPart(setlist.items, item.part).length >= 2
+                ? attachLongPressDrag({
+                    handle: open,
+                    row: li,
+                    rowClass: 'item',
+                    scroller: () => document.getElementById('view'),
+                    onDrop: (to) => void app.setlists.reorderItem(setlist.id, item.id, to).catch((failure: unknown) => fail(failure, 'No se pudo mover el canto.')),
+                    onEnd: () => {
+                        if (reloadHeld) {
+                            reloadHeld = false;
+                            reload();
+                        }
+                    },
+                })
+                : null;
+            if (drag !== null) {
+                drags.push(drag);
+            }
+            open.addEventListener('click', () => {
+                // Dropping a song ends in a click: it is the drop, not a touch on the song
+                if (drag?.justDragged() !== true) {
+                    navigate(paths.perform(setlist.id, positionInList(setlist, item.id)));
+                }
+            });
             li.append(open);
         }
         const options = h('button', {
@@ -316,7 +362,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
     };
 
     /** A row of a sheet: an icon and what it does, big enough to tap, and a quiet line under it if it needs one */
-    function action(name: IconName, label: string, run: () => void, options: { danger?: boolean; hint?: string; key?: 'up' | 'down' } = {}): HTMLElement {
+    function action(name: IconName, label: string, run: () => void, options: { danger?: boolean; hint?: string; key?: 'up' | 'down' | 'start' | 'end' } = {}): HTMLElement {
         const button = h('button', {
             type: 'button', class: options.danger === true ? 'sheet-action is-danger' : 'sheet-action',
             ...(options.key !== undefined ? { 'data-key': options.key } : {}),
@@ -358,6 +404,12 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
         fitTitle();
     };
     const reload = (): void => {
+        // A song held in the air must not be redrawn under the finger: what arrived waits for the drop
+        if (drags.some((drag) => drag.active())) {
+            reloadHeld = true;
+
+            return;
+        }
         void Promise.all([app.setlists.get(setlist.id), songsById(app)]).then(([latest, all]) => {
             if (latest === undefined) {
                 // Deleted on another device while it was open
@@ -382,6 +434,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
         element,
         dispose: () => {
             stop();
+            drags.forEach((drag) => drag.dispose());
             songSheet.release();
             listSheet.release();
             // What was typed and not yet "changed" (a navigation can come before the blur) is still saved
