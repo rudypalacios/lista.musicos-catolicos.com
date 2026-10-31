@@ -40,6 +40,31 @@ export function isPull(dx: number, dy: number): boolean {
     return swipeAxis(dx, dy) === 'y' && dy > 0;
 }
 
+/** The pull starts only in the top part of the screen (this fraction of its height): a drag from lower down is a scroll */
+export const PULL_ZONE = 1 / 3;
+
+/** Whether a touch at `y` starts in the top part of a screen that begins at `top` and is `height` tall */
+export function inPullZone(y: number, top: number, height: number): boolean {
+    return y >= top && y - top <= height * PULL_ZONE;
+}
+
+/**
+ * Whether `target` or anything between it and `container` is scrolled away from its top. The screen is often not
+ * what scrolls (a song's stage scrolls inside it): its own `scrollTop` stays 0 while the person is at the bottom.
+ */
+export function scrolledWithin(target: Element | null, container: Element): boolean {
+    for (let node = target; node !== null; node = node.parentElement) {
+        if (node.scrollTop > 0) {
+            return true;
+        }
+        if (node === container) {
+            break;
+        }
+    }
+
+    return false;
+}
+
 /** What the person reads while pulling */
 export function pullHint(dy: number): string {
     return pullArmed(dy) ? 'Suelta para sincronizar' : 'Jala para sincronizar';
@@ -82,6 +107,8 @@ export function createPullToRefresh(container: HTMLElement, source: PullSource):
     let origin: { x: number; y: number } | null = null;
     let dragging = false;
     let busy = false;
+    /** What the finger touched first: where to look for something already scrolled */
+    let touched: Element | null = null;
 
     /** Draws the screen `offset` px down and opens the strip in the gap above it */
     const place = (offset: number): void => {
@@ -121,7 +148,10 @@ export function createPullToRefresh(container: HTMLElement, source: PullSource):
         const target = event.target instanceof Element ? event.target : null;
         const [touch] = Array.from(event.touches);
         const lone = event.touches.length === 1 && touch !== undefined;
-        origin = !busy && lone && container.scrollTop <= 0 && source.enabled() && target?.closest(OWN_TOUCH) === null
+        const bounds = container.getBoundingClientRect();
+        touched = target;
+        origin = !busy && lone && !scrolledWithin(target ?? container, container) && source.enabled() && target?.closest(OWN_TOUCH) === null
+            && inPullZone(touch.clientY, bounds.top, bounds.height)
             ? { x: touch.clientX, y: touch.clientY }
             : null;
         dragging = false;
@@ -139,7 +169,7 @@ export function createPullToRefresh(container: HTMLElement, source: PullSource):
             if (swipeAxis(dx, dy) === null) {
                 return;
             }
-            if (!isPull(dx, dy) || container.scrollTop > 0) {
+            if (!isPull(dx, dy) || scrolledWithin(touched ?? container, container)) {
                 // Sideways, upward or a scroll that already began: this touch is not ours
                 origin = null;
 

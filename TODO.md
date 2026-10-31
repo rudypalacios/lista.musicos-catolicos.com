@@ -282,6 +282,9 @@ Next, in this order (design agreed with the owner):
       "Listados first" (the library becomes secondary). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 12. The messages that
       float over the screen (saved, sync, update) rest above the menu and the install bar (`bottom-chrome.ts`,
       `--chrome-bottom`), and the screen pulled down to sync is clipped so it never paints over the menu. Open: confirm on the iPad that the menu does not fight the home gesture.
+- [x] **Pull to sync starts only at the top** (`pull.ts`): from the top third of the screen (`inPullZone`) and not when the touched element or
+      anything above it is scrolled (`scrolledWithin`): a song's stage scrolls inside `#view`, whose own `scrollTop` stayed 0, so dragging down at the
+      bottom of a long song began a sync. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 10.
 - [ ] **Owner's check on the Android** for phases 4 and 5 (`DEPLOY.md`, "Fases 4 y 5", item 9 for the lists screen).
 - [ ] Phase 6, templates and tags (a rosary or a prayer-meeting list must not get the 15 parts of the Mass; a
       section may hold a dozen songs, which is when dragging to reorder pays off) (schema change, migration): turn parts on and off per list, add own

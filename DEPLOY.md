@@ -201,6 +201,10 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    corto, o jalar con la pantalla ya desplazada, no hace nada. Prueba: escribe o cambia algo en la web, y en la tablet
    jala; debe aparecer sin esperar el minuto. **Solo se confirma en el dispositivo:** que el navegador no recargue
    la página por su cuenta (en Chrome de Android o en el iPad), y que no estorbe al desplazarte por una lista larga.
+   **Solo arranca desde el tercio de arriba de la pantalla**, y no si lo que tocas ya está desplazado (por ejemplo, un canto largo
+   con la letra más abajo): ahí jalar es desplazarse. **Prueba:** en un canto largo, baja la letra y jala hacia abajo desde ella
+   (debe subir la letra, sin «Jala para sincronizar»); jala desde la parte de abajo de una lista (nada); y desde arriba, con todo
+   arriba, sí sincroniza.
 12. **Menú abajo.** En el teléfono, abajo hay tres botones: *Cantos*, *Listados* y *Ajustes* (el de la pantalla en que estás va
    en azul). Arriba, una barra con el nombre de la pantalla y un punto. El menú está siempre abajo, fijo, en todas las pantallas
    menos al cantar (también dentro de un canto, un listado o la guía de instalación) y no se mueve al desplazarte. En una
