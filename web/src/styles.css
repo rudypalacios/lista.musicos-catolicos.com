@@ -274,15 +274,6 @@ button.button--danger-solid {
     padding-bottom: 0.25rem;
 }
 
-.song-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
 .song-item__text {
     min-width: 0;
 }
@@ -1316,11 +1307,19 @@ input[type='search'] {
 }
 
 /* The title is edited where it is read: no frame until it has the focus */
+/* The name and, in the corner at its right, the "⋯" */
+.setlist-head__top {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
 textarea.setlist-title {
     display: block;
+    flex: 1;
+    min-width: 0;
     margin: 0 0 0 -0.5rem;
     padding: 0.3rem 0.5rem;
-    width: calc(100% + 1rem);
     min-height: 0;
     overflow: hidden;
     resize: none;
@@ -1348,45 +1347,11 @@ textarea.setlist-title:focus {
     font-size: 0.85rem;
 }
 
-/* The day is a chip; the real date field lies over it, invisible, so touching it opens the native picker */
-.chip--day {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    min-height: 2.75rem;
-    padding: 0 0.9rem;
-    font-size: 0.85rem;
-}
-
-input.chip__input {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    padding: 0;
-    opacity: 0;
-    cursor: pointer;
-}
-
-.setlist-head__actions {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
-}
-
-.setlist-head__actions .button--primary {
-    flex: 1;
+/* "Cantar" closes the row of the count, at the right, no bigger than it needs */
+.setlist-head__meta .button--primary {
+    margin-left: auto;
     gap: 0.5rem;
     font-weight: 700;
-}
-
-/* A wide screen does not need a button across the whole page */
-@media (min-width: 700px) {
-    .setlist-head__actions .button--primary {
-        flex: 0 1 18rem;
-    }
 }
 
 a.button--primary .icon {
@@ -1811,6 +1776,51 @@ body:has(.update) .install-banner {
 
 .lists__new {
     flex: none;
+}
+
+.lrow__key {
+    color: var(--text);
+    font-weight: 600;
+}
+
+/* ===== The songs screen: the lists screen's rows, with a row of buttons on top ===== */
+.songs__top {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* The search takes the row; on a phone it has it to itself and the two buttons share the one under it */
+.songs__top input {
+    flex: 1 1 100%;
+    min-width: 0;
+    margin: 0;
+}
+
+.songs__top .button {
+    flex: 1;
+}
+
+@media (min-width: 700px) {
+    .songs__top input {
+        flex: 1 1 0;
+    }
+
+    .songs__top .button {
+        flex: none;
+    }
+}
+
+.songs__error {
+    min-height: 0;
+    margin: 0.5rem 0 0;
+}
+
+.songs__count {
+    margin: 0.6rem 0 0.4rem;
+    color: var(--muted);
+    font-size: 0.85rem;
 }
 
 .lgroup__label {

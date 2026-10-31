@@ -1,7 +1,6 @@
 import type { App } from '../app.ts';
 import { transpose } from '../chordpro/chord.ts';
 import { parse, songKey } from '../chordpro/parser.ts';
-import { shortDay } from '../dates.ts';
 import { LIMITS, type Setlist, type SetlistItem, type Song } from '../data/types.ts';
 import { inMassOrder, itemsOfPart, moveOptions, partIndex, positionInMass } from '../data/setlists.ts';
 import { h } from '../dom.ts';
@@ -14,19 +13,21 @@ import { readNotation } from '../prefs.ts';
 import { paths } from '../router.ts';
 import { showUndoToast } from '../toast.ts';
 import { todayKeys } from '../today-keys.ts';
-import { createSheet } from './sheet.ts';
+import { deleteListAfterAsking } from './delete-list.ts';
+import { createSheet, sheetAction } from './sheet.ts';
 import type { Navigate, View } from './types.ts';
 
 /** A part with this many songs or more also has its "agregar" at the end: the one in the head would be far away */
 const ADD_AT_END_FROM = 4;
 
 /**
- * One setlist: its title and day, and the template of the Mass with a slot for every part. A part
+ * One setlist: its title, and the template of the Mass with a slot for every part. A part
  * with no song is one quiet line; a part with songs is a heading and one row per song. A row only
  * shows the song (touching it sings it from there; the key is read-only here: it is changed while singing, so
  * it is saved to the list and not to the song); "⋯" opens a sheet with what is done now and then to one song
- * (sing from it, move it up or down within its part, remove it with an undo). The list's own "⋯" holds
- * print and delete.
+ * (sing from it, move it up or down within its part, remove it with an undo). The list's own "⋯" is always
+ * there: it holds print (only when there are songs) and, last and set apart, delete the list (after a question,
+ * the same as on the lists screen).
  *
  * The notes of a list and of its songs are kept in the data but are not shown or edited anywhere.
  */
@@ -36,7 +37,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
     /** Parts whose explanation (ⓘ) is open: it must stay open when the list is redrawn */
     const explained = new Set<string>();
 
-    // --- the header: title, day, and what to do with the list ---
+    // --- the header: title, and what to do with the list (the list keeps its day in the data; it is not shown or edited here) ---
     // A field that grows with the title: a long name is read whole, never cut off
     const title = h('textarea', {
         id: 'title', class: 'setlist-title', rows: '1', 'aria-label': 'Título', autocomplete: 'off', maxlength: String(LIMITS.title),
@@ -47,10 +48,6 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
     };
     new ResizeObserver(fitTitle).observe(title);
     title.addEventListener('input', fitTitle);
-    const dayText = h('span', {});
-    const day = h('input', { id: 'day', type: 'date', class: 'chip__input', 'aria-label': 'Fecha de la misa' });
-    const dayChip = h('label', { class: 'chip chip--day' }, dayText, icon('pencil', 14), day);
-    const clearDay = h('button', { type: 'button', class: 'button button--icon', 'aria-label': 'Quitar la fecha' }, icon('x', 18));
     const count = h('span', { class: 'muted' });
     const error = h('p', { class: 'error setlist__error', role: 'alert' });
     const sing = h('a', { class: 'button button--primary', 'data-link': true, href: paths.perform(setlist.id, 1) }, icon('play', 16), 'Cantar');
@@ -61,10 +58,10 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
         'div',
         { class: 'page' },
         h('header', { class: 'setlist-head' },
-            title,
-            h('div', { class: 'setlist-head__meta' }, dayChip, clearDay, count),
-            error,
-            h('div', { class: 'setlist-head__actions' }, sing, more)),
+            // The "⋯" is always in the corner beside the name; the count and "Cantar" share the row under it
+            h('div', { class: 'setlist-head__top' }, title, more),
+            h('div', { class: 'setlist-head__meta' }, count, sing),
+            error),
         slots,
     );
 
@@ -75,36 +72,18 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
     const saveHeader = (): Promise<unknown> => {
         error.textContent = '';
 
-        // The list's notes are not edited on this screen (kept as they are)
+        // The day and the notes of the list are not edited on this screen (kept as they are)
         return app.setlists
-            .update(setlist.id, { title: title.value, eventDate: day.value === '' ? null : day.value, notes: setlist.notes })
+            .update(setlist.id, { title: title.value, eventDate: setlist.eventDate, notes: setlist.notes })
             .catch((failure: unknown) => fail(failure, 'No se pudo guardar el listado.'));
     };
-    for (const field of [title, day]) {
-        field.addEventListener('change', () => void saveHeader());
-    }
+    title.addEventListener('change', () => void saveHeader());
     title.addEventListener('keydown', (event) => {
         // A title is one line: Enter finishes it instead of breaking it
         if (event.key === 'Enter') {
             event.preventDefault();
             title.blur();
         }
-    });
-    /** The day on its chip: "＋ Fecha" (the plus drawn) when there is none, and then nothing to remove */
-    const showDay = (value: string | null): void => {
-        clearDay.hidden = value === null || value === '';
-        if (value === null || value === '') {
-            dayText.replaceChildren(icon('plus', 14), 'Fecha');
-        } else {
-            dayText.textContent = shortDay(value);
-        }
-    };
-    day.addEventListener('input', () => showDay(day.value));
-    // A date field cannot always be emptied by hand (an iPad's picker has no "clear"): the list may have no day
-    clearDay.addEventListener('click', () => {
-        day.value = '';
-        showDay('');
-        void saveHeader();
     });
 
     // --- the sheets ---
@@ -133,6 +112,15 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             h('h4', { class: 'sheet__title' }, setlist.title),
             h('p', { class: 'sheet__sub' }, rows === 1 ? '1 canto' : `${rows} cantos`),
             ...(rows > 0 ? [action('printer', 'Imprimir con acordes', () => print('chords')), action('printer', 'Imprimir solo la letra', () => print('lyrics'))] : []),
+            // Last and set apart, so it is not touched by mistake next to printing
+            sheetAction('trash', 'Eliminar listado', () => {
+                error.textContent = '';
+                listSheet.close(() => {
+                    deleteListAfterAsking(app, setlist)
+                        .then((deleted) => (deleted ? navigate(paths.lists()) : undefined))
+                        .catch((failure: unknown) => fail(failure, 'No se pudo eliminar el listado.'));
+                });
+            }, { danger: true, apart: true }),
         );
     };
     more.addEventListener('click', listSheet.open);
@@ -204,10 +192,9 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
         const strays = rows.filter((item) => partIndex(item.part) === MASS_PARTS.length);
         slots.replaceChildren(...known, ...(strays.length > 0 ? [strangers(strays)] : []));
         count.textContent = rows.length === 1 ? '1 canto' : `${rows.length} cantos`;
-        // Printing is all this sheet holds: with no songs it would open empty
-        more.hidden = rows.length === 0;
-        if (more.hidden && listSheet.isOpen()) {
-            listSheet.close();
+        // The "⋯" is always there (deleting the list is in it); only the printing needs songs
+        if (listSheet.isOpen()) {
+            fillListSheet();
         }
         sing.hidden = rows.length === 0;
         if (focused !== null) {
@@ -364,13 +351,10 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
 
     // --- keeping it in step with the store ---
     const fill = (): void => {
-        for (const [field, value] of [[title, setlist.title], [day, setlist.eventDate ?? '']] as const) {
-            if (document.activeElement !== field && field.value !== value) {
-                field.value = value;
-            }
+        if (document.activeElement !== title && title.value !== setlist.title) {
+            title.value = setlist.title;
         }
         fitTitle();
-        showDay(setlist.eventDate);
     };
     const reload = (): void => {
         void Promise.all([app.setlists.get(setlist.id), songsById(app)]).then(([latest, all]) => {
@@ -400,7 +384,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             songSheet.release();
             listSheet.release();
             // What was typed and not yet "changed" (a navigation can come before the blur) is still saved
-            const unchanged = title.value === setlist.title && (day.value === '' ? null : day.value) === setlist.eventDate;
+            const unchanged = title.value === setlist.title;
             if (!unchanged && title.value.trim() !== '') {
                 void saveHeader();
             }
