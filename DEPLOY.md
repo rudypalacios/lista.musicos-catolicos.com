@@ -107,7 +107,7 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
 
 **Cantos (fase 1), en los dos dispositivos**
 1. Crea un canto con acordes (o impórtalo pegando uno de tu PDF) y ábrelo. Prueba `−`/`+` del
-   tono, `Do → C` y `Ajustar`: el canto entero debe caber en la pantalla sin hacer scroll (si es
+   tono, `Do → C` y `Ajustar` (en la página del canto, detrás del `⋯`): el canto entero debe caber en la pantalla sin hacer scroll (si es
    muy largo, en dos columnas en la tablet). Gira la tablet: se vuelve a ajustar.
 2. Modo avión. Cierra la app y ábrela: el canto debe seguir ahí. Escribe uno nuevo sin conexión:
    bajo la cabecera debe salir la franja "Sin conexión · 1 sin enviar". Quita el modo avión: la franja desaparece y el punto queda verde.
@@ -378,6 +378,15 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    una sola copia. (e) Sin conexión, el PDF no se puede leer (el lector no se guarda en el dispositivo: pesa unos 1,7 MB); el aviso lo dice y
    recuerda que pegar el texto sí funciona. **Prueba:** con un PDF de varias hojas, en el teléfono y en la compu; luego el mismo PDF dos veces
    («Ya la tienes»); y sin conexión, que el aviso sea claro.
+
+35. **La página del canto: una sola fila de herramientas y todo lo demás detrás del `⋯`.** Al abrir un canto desde *Cantos*, arriba hay **una fila**:
+   el tono (− Do +), **A− A+** y el `⋯` al final; la letra empieza mucho más arriba que antes y, con «Ajustar», sale algo más grande. **La pastilla «Tono Do»
+   se fue** (el tono ya está en el selector; Capo, Tempo y Compás siguen saliendo cuando el canto los trae). Al mover el tono aparece debajo,
+   como antes, **Guardar como mi tono** con «Solo por ahora». Los botones sueltos **Imprimir** y **Editar** y los de **Do → C**, **Ajustar** y
+   **Columnas** (solo en pantalla ancha) pasaron a la hoja del `⋯`, que dice **Letra** (Do → C, Ajustar, Columnas) y **Este canto**: *Imprimir con
+   acordes*, *Imprimir solo la letra*, *Editar letra y acordes* y, aparte y en rojo, *Eliminar canto* (pregunta primero, igual que en *Cantos*, y
+   vuelve a la lista). **Prueba:** abre un canto en el teléfono y en la compu; mueve el tono y guárdalo; cambia el tamaño; abre el `⋯`
+   y prueba cada opción (imprimir con acordes, solo la letra, editar, eliminar y cancelar). Los datos no cambian.
 
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).

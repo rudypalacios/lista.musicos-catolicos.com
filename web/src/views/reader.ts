@@ -22,6 +22,8 @@ export interface ReaderOptions {
      * shown, or null when the song has none. For whoever shows the key somewhere else too.
      */
     onKey?: (key: string | null) => void;
+    /** Draw the key as a "Tono Do" pill in the head of the song (default). The song page shows it in its key control instead. */
+    keyPill?: boolean;
 }
 
 /** Columns button: auto → two → one → auto */
@@ -29,8 +31,12 @@ const NEXT_COLUMNS: Readonly<Record<ColumnMode, ColumnMode>> = { auto: 'two', tw
 const COLUMNS_LABEL: Readonly<Record<ColumnMode, string>> = { auto: 'Columnas: auto', two: 'Columnas: 2', one: 'Columnas: 1' };
 
 export interface Reader {
-    /** Notation, lyrics size, fit and columns (the key is changed with `setShift`) */
+    /** Notation, lyrics size, fit and columns (the key is changed with `setShift`): `size` and `display` together */
     toolbar: HTMLElement;
+    /** A− / A+ alone, for a screen that keeps them in view; it works the same when taken out of `toolbar` */
+    size: HTMLElement;
+    /** Notation, fit and columns, for a screen that keeps them in a sheet; it works the same when taken out of `toolbar` */
+    display: HTMLElement;
     /** The key on screen, in semitones from the song's own */
     shift: () => number;
     /** Puts the song in another key, as if the person had pressed − / +: it calls `onShift` when it changes */
@@ -70,7 +76,7 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
     if (song.author !== '') {
         head.append(h('p', { class: 'by' }, song.author));
     }
-    const meta = h('div', { class: 'meta' }, keyChip);
+    const meta = h('div', { class: 'meta' }, ...(options.keyPill === false ? [] : [keyChip]));
     const labels: [string, string][] = [['capo', 'Capo'], ['tempo', 'Tempo'], ['time', 'Compás']];
     for (const [name, label] of labels) {
         const value = sheetData.meta[name];
@@ -78,7 +84,9 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
             meta.append(h('span', { class: 'chip' }, `${label} ${value}`));
         }
     }
-    head.append(meta);
+    if (meta.childElementCount > 0) {
+        head.append(meta);
+    }
     const content = h('div', { class: 'viewer-content', id: 'song-content' }, head, sheet);
     const stage = h('div', { class: 'stage', id: 'stage' }, content);
 
@@ -89,6 +97,7 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
     const bigger = h('button', { type: 'button', 'aria-label': 'Letra más grande', 'data-size': '1' }, 'A', icon('plus', 14));
     const fitButton = h('button', { type: 'button', 'data-fit': true }, 'Ajustar');
     const columnsButton = h('button', { type: 'button', 'data-columns': true });
+    const sizeGroup = h('div', { class: 'group' }, smaller, bigger);
     const extra = h(
         'div',
         { class: 'toolbar__extra' },
@@ -98,7 +107,7 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
     const toolbar = h(
         'div',
         { class: 'toolbar', role: 'toolbar', 'aria-label': 'Herramientas de la letra' },
-        h('div', { class: 'group' }, smaller, bigger),
+        sizeGroup,
         extra,
         live,
     );
@@ -179,12 +188,15 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
             options.onShift(t);
         }
     };
-    toolbar.addEventListener('click', (event) => {
-        const button = (event.target as HTMLElement).closest('button');
-        if (button !== null) {
-            press(button);
-        }
-    });
+    // On the two parts, not on `toolbar`: a screen may take either out of it
+    for (const part of [sizeGroup, extra]) {
+        part.addEventListener('click', (event) => {
+            const button = (event.target as HTMLElement).closest('button');
+            if (button !== null) {
+                press(button);
+            }
+        });
+    }
 
     // The screen changes size (rotating the tablet, a keyboard, a split view): fit again
     let frame = 0;
@@ -200,6 +212,8 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
 
     return {
         toolbar,
+        size: sizeGroup,
+        display: extra,
         shift: () => t,
         setShift: (next) => {
             const before = t;

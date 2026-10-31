@@ -11,7 +11,7 @@
  */
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { chromium, enforcePolicy, reporter, signIn, startServer, synced } from './lib.ts';
+import { chromium, enforcePolicy, openSongMenu, reporter, signIn, startServer, synced } from './lib.ts';
 import type { Page } from 'playwright';
 
 const server = await startServer(18088);
@@ -64,8 +64,8 @@ async function toPdf(page: Page): Promise<string[][]> {
 /** Opens the menu, picks a sheet and waits until the page asked the browser to print */
 async function choosePrint(page: Page, sheet: 'Con acordes' | 'Solo letra'): Promise<void> {
     const before = await page.evaluate(() => (window as unknown as { printed: number }).printed);
-    await page.locator('.print-menu summary').click();
-    await page.getByRole('button', { name: sheet, exact: true }).click();
+    await openSongMenu(page);
+    await page.getByRole('button', { name: sheet === 'Con acordes' ? 'Imprimir con acordes' : 'Imprimir solo la letra' }).click();
     await waitForPrint(page, before);
 }
 
@@ -211,8 +211,8 @@ try {
     await offline.getByRole('heading', { name: 'Cantos' }).waitFor();
     await offline.getByRole('link', { name: SAMPLES[0]?.title ?? '' }).first().click();
     await offline.locator('#song-sheet .ch').first().waitFor();
-    await offline.locator('.print-menu summary').click();
-    await offline.getByRole('button', { name: 'Con acordes', exact: true }).click();
+    await openSongMenu(offline);
+    await offline.getByRole('button', { name: 'Imprimir con acordes' }).click();
     await offline.locator('#print-root .print-page').waitFor({ state: 'attached' });
     const fonts = await offline.evaluate(async () => {
         await document.fonts.load('700 13pt "Atkinson Hyperlegible"');

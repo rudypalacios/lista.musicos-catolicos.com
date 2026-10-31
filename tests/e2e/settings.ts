@@ -6,7 +6,7 @@
  *     npm run build && node tests/e2e/settings.ts
  */
 import assert from 'node:assert/strict';
-import { chromium, openSection, reporter, signIn, startServer, synced } from './lib.ts';
+import { chromium, openSection, openSongMenu, reporter, signIn, startServer, synced } from './lib.ts';
 import type { Page } from 'playwright';
 
 const server = await startServer(18094);
@@ -125,6 +125,8 @@ try {
     // The quick button in the reader cycles auto → 2 → 1 and is remembered
     await setting(page, 'Automático (las que necesite el canto)');
     await openSong(page, 'Puerta corta');
+    // The button is in the sheet behind the song page's "⋯", which stays open while it is pressed
+    await openSongMenu(page);
     await page.getByRole('button', { name: /Columnas: auto/ }).click();
     await page.getByRole('button', { name: /Columnas: 2/ }).waitFor();
     await settled(page);
@@ -136,8 +138,11 @@ try {
     await page.getByRole('button', { name: /Columnas: 1/ }).click();
     await page.getByRole('button', { name: /Columnas: auto/ }).waitFor();
     pass('the reader has a columns button (auto → 2 → 1) on a wide screen');
+    await page.keyboard.press('Escape');
     await page.setViewportSize({ width: 390, height: 844 });
+    await openSongMenu(page);
     await page.getByRole('button', { name: /Columnas:/ }).waitFor({ state: 'hidden' });
+    await page.keyboard.press('Escape');
     pass('and not on a phone, where two columns do not fit');
     await page.setViewportSize({ width: 1280, height: 800 });
 
@@ -150,6 +155,7 @@ try {
     await settled(page);
     assert.equal(await has(page, '.viewer-content.is-columns'), true, 'auto uses two columns for a song that is small in one');
     assert.ok(await lyricSize(page) >= 20, 'and the letters are comfortable');
+    await openSongMenu(page);
     await page.getByRole('button', { name: /Columnas: auto/ }).click();
     await page.getByRole('button', { name: /Columnas: 2/ }).click();
     await page.getByRole('button', { name: /Columnas: 1/ }).waitFor();
@@ -157,6 +163,7 @@ try {
     assert.ok(await lyricSize(page) < 20, 'one column would have been small');
     await page.getByRole('button', { name: /Columnas: 1/ }).click();
     await page.getByRole('button', { name: /Columnas: auto/ }).waitFor();
+    await page.keyboard.press('Escape');
     await openSong(page, 'Puerta corta');
     await settled(page);
     assert.equal(await has(page, '.viewer-content.is-columns'), false, 'a short song stays in one column');

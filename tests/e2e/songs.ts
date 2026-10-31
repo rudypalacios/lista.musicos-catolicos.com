@@ -6,7 +6,7 @@
  *     npm run build && node tests/e2e/songs.ts
  */
 import assert from 'node:assert/strict';
-import { chromium, EMAIL, PASSWORD, reporter, openSection, signIn, signOutFromSettings, startServer, synced } from './lib.ts';
+import { chromium, editFromSongPage, EMAIL, openSongMenu, PASSWORD, reporter, openSection, signIn, signOutFromSettings, startServer, synced } from './lib.ts';
 import type { BrowserContext, Page } from 'playwright';
 
 const server = await startServer(18081);
@@ -195,12 +195,31 @@ try {
     assert.equal((await serverSongs(page))[0]?.myShift, 0);
     pass('"Guardar como mi tono": the song opens in it, it is not in the address, and it syncs');
 
+    // The notation is behind the song page's "⋯", with the other ways the lyrics are drawn
+    await openSongMenu(page);
     await page.getByRole('button', { name: 'Cambiar la notación de Do a C' }).click();
     assert.deepEqual(await chordNames(page), ['C', 'G']);
     await page.reload();
     assert.deepEqual(await chordNames(page), ['C', 'G'], 'the notation is remembered on this device');
+    await openSongMenu(page);
     await page.getByRole('button', { name: 'Cambiar la notación de C a Do' }).click();
+    await page.keyboard.press('Escape');
     pass('English notation, remembered');
+
+    // One row of tools above the song; the rest is behind "⋯", the same kind of sheet as Cantos and a list
+    const toolsRow = await page.locator('.song-tools').boundingBox();
+    assert.ok(toolsRow !== null && toolsRow.height < 70, 'the tools of the song page are one row');
+    assert.equal(await page.locator('.viewer-content .meta .chip', { hasText: 'Tono' }).count(), 0, 'the key is not said twice');
+    assert.equal(await page.getByRole('link', { name: 'Editar', exact: true }).count(), 0, 'no loose Editar button');
+    await openSongMenu(page);
+    assert.deepEqual(
+        await page.locator('.sheet-layer.is-open .sheet-action').allTextContents(),
+        ['Imprimir con acordes', 'Imprimir solo la letra', 'Editar letra y acordes', 'Eliminar canto'],
+        'the sheet of the song page: print, edit and, last, delete',
+    );
+    assert.equal(await page.evaluate(() => Array.from(document.querySelectorAll('.sheet-layer.is-open .sheet-action')).at(-1)?.classList.contains('sheet-action--apart')), true, 'delete is set apart like in the other sheets');
+    await page.keyboard.press('Escape');
+    pass('the song page has one row of tools and a "⋯" sheet like the other screens');
 
     // ----- reading: fit to the screen -----
     const short = await measure(page);
@@ -228,13 +247,19 @@ try {
     }
     console.log(`      (14 stanzas on the iPad: ${long.size}px, ${long.columns ? 'two columns' : long.scroll ? 'scroll' : 'one column'})`);
 
+    // The fit is behind the song page's "⋯"; the sheet closes before the size buttons are used
+    await openSongMenu(page);
     await page.getByRole('button', { name: 'Ajustar' }).click();
+    assert.equal(await page.getByRole('button', { name: 'Ajustar' }).getAttribute('aria-pressed'), 'false');
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Ajustar' }).waitFor({ state: 'hidden' });
     const manual = await measure(page);
     assert.equal(manual.scroll || !manual.columns, true);
-    assert.equal(await page.getByRole('button', { name: 'Ajustar' }).getAttribute('aria-pressed'), 'false');
     await page.getByRole('button', { name: 'Letra más grande' }).click();
     pass('turning the fit off gives the manual size buttons back, remembered per device');
+    await openSongMenu(page);
     await page.getByRole('button', { name: 'Ajustar' }).click();
+    await page.keyboard.press('Escape');
 
     await ipad.setOffline(false);
 
@@ -260,7 +285,7 @@ try {
 
     // ----- editing -----
     await openFromList(page, 'Caminamos con alegría');
-    await page.getByRole('link', { name: 'Editar' }).click();
+    await editFromSongPage(page);
     await page.getByLabel('Título').fill('Caminamos con alegría (v2)');
     await page.getByRole('button', { name: 'Guardar' }).click();
     await page.getByRole('heading', { name: 'Caminamos con alegría (v2)' }).waitFor();
@@ -299,7 +324,7 @@ try {
     pass('a second device signs in and receives every song');
 
     await second.getByRole('link', { name: 'Escrito sin conexión' }).click();
-    await second.getByRole('link', { name: 'Editar' }).click();
+    await editFromSongPage(second);
     await second.getByLabel('Título').fill('Editado en la otra tablet');
     await second.getByRole('button', { name: 'Guardar' }).click();
     await synced(second);
@@ -314,7 +339,6 @@ try {
     pass('an edit made on one device shows up on the other');
 
     // ----- deleting -----
-    await second.getByRole('link', { name: 'Editar' }).waitFor({ state: 'hidden' }).catch(() => undefined);
     await second.goto(BASE + '/');
     // From the "⋯" of its row on Cantos, behind a question (Cancel keeps it)
     await second.getByRole('button', { name: 'Más opciones: Editado en la otra tablet' }).click();
@@ -560,7 +584,7 @@ try {
     assert.equal(await page.locator('.edit-foot').getByRole('button', { name: 'Eliminar' }).count(), 0);
     await page.goto(BASE + '/');
     await page.getByRole('link', { name: 'Lo guardé' }).click();
-    await page.getByRole('link', { name: 'Editar' }).click();
+    await editFromSongPage(page);
     await page.getByRole('heading', { name: 'Editar canto' }).waitFor();
     const row = await page.evaluate(() => {
         const foot = document.querySelector('.edit-foot') as HTMLElement;

@@ -613,45 +613,25 @@ ul.notes {
     height: 100%;
 }
 
-.viewer__bar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.4rem 0.5rem;
+/* The one row of tools above a song: the key, the lyrics size, "⋯"; Guardar and its lines drop under it while the key is changed */
+.song-tools {
     padding: 0.4rem 0.75rem;
     border-bottom: 1px solid var(--border);
 }
 
-/* Narrow screens: back and edit share the first row, the tools get the one below */
-.viewer__bar > .back {
-    order: 1;
-    margin-right: auto;
+.song-tools__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.5rem;
 }
 
-.viewer__bar > .edit {
-    order: 2;
+.song-tools__more {
     margin-left: auto;
 }
 
-.viewer__bar > .toolbar {
-    order: 3;
-    flex-basis: 100%;
-}
-
-@media (min-width: 900px) {
-    .viewer__bar > .toolbar {
-        order: 2;
-        flex: 1;
-        flex-basis: auto;
-    }
-
-    .viewer__bar > .edit {
-        order: 3;
-    }
-
-    .viewer__bar > .back {
-        margin-right: 0;
-    }
+.song-tools .tone-control.is-changed {
+    margin-top: 0.4rem;
 }
 
 .toolbar {
@@ -697,16 +677,6 @@ ul.notes {
 .toolbar button[aria-disabled='true'] {
     opacity: 0.4;
     cursor: default;
-}
-
-.toolbar .key {
-    min-width: 5.5rem;
-    color: var(--accent);
-}
-
-.toolbar .key.is-changed {
-    color: var(--changed);
-    background: var(--changed-soft);
 }
 
 .stage {
@@ -1702,41 +1672,6 @@ button.item__more {
     from {
         background: var(--accent-soft);
     }
-}
-
-/* Imprimir: a menu with the two sheets (print/print.css lays the pages out) */
-.print-menu {
-    position: relative;
-    display: inline-block;
-}
-
-.print-menu summary {
-    cursor: pointer;
-    list-style: none;
-}
-
-.print-menu summary::-webkit-details-marker {
-    display: none;
-}
-
-.print-menu__options {
-    position: absolute;
-    z-index: 5;
-    top: 100%;
-    left: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    margin-top: 0.3rem;
-    padding: 0.5rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--surface);
-    white-space: nowrap;
-}
-
-.print-menu__status {
-    margin: 0;
 }
 
 /* Install guide and the note that points to it */
@@ -2830,33 +2765,6 @@ button.sheet-action.is-danger .icon {
     border: solid var(--accent);
     border-width: 0 2px 2px 0;
     transform: translateY(-0.1rem) rotate(45deg);
-}
-
-/* Inside the song page's toolbar (`.toolbar button` would flatten these) */
-.toolbar .tone-control__save,
-.toolbar .tone-control__more {
-    color: var(--on-accent);
-    background: var(--accent);
-    border-radius: 0;
-}
-
-.toolbar .tone-control__option {
-    border-radius: 0;
-}
-
-.toolbar .tone-control__back {
-    min-width: 0;
-    min-height: 0;
-    color: var(--warn);
-}
-
-.toolbar .tone-control__step button {
-    min-width: 2.75rem;
-    min-height: 2.75rem;
-}
-
-.toolbar .tone-control {
-    padding: 0 0.15rem;
 }
 
 /* ===== Editing a song that is in lists: one line each, the why behind a button ===== */

@@ -195,7 +195,7 @@ function routeView(data: App, route: Route, navigate: Navigate): Promise<View> {
                     return notice('Este canto no existe (o se eliminó).');
                 }
 
-                return route.name === 'view' ? viewView(data, song) : editView(data, navigate, song, route.back === undefined ? {} : { back: route.back });
+                return route.name === 'view' ? viewView(data, navigate, song) : editView(data, navigate, song, route.back === undefined ? {} : { back: route.back });
             });
         default:
             return Promise.resolve(notice('Esta página no existe.'));

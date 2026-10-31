@@ -28,10 +28,14 @@ export interface ToneControlOptions {
     destinations: readonly ToneDestination[];
     /** Where the room is short (the song page): the line under the control shows only while there is a change */
     compact?: boolean;
+    /** The caller puts `step` (− key +) where it likes; `element` then holds only the rest (Guardar, the hint, the lines under it) */
+    separateStep?: boolean;
 }
 
 export interface ToneControl {
     element: HTMLElement;
+    /** − key +: inside `element` unless `separateStep` */
+    step: HTMLElement;
     /** Draws it again from the reader and the list: call it whenever either changes */
     refresh: () => void;
 }
@@ -61,7 +65,7 @@ export function createToneControl(options: ToneControlOptions): ToneControl {
     const split = h('div', { class: 'tone-control__split' }, save, ...(options.destinations.length > 1 ? [more] : []));
     const menu = h('div', { class: 'tone-control__menu', hidden: true });
     const references = h('p', { class: 'tone-control__refs' });
-    const row = h('div', { class: 'tone-control__row' }, step, split, hint);
+    const row = h('div', { class: 'tone-control__row' }, ...(options.separateStep === true ? [] : [step]), split, hint);
     const element = h('div', { class: 'tone-control' }, row, menu, references, live);
 
     /** What "Guardar" does: a destination, or null for "solo hoy" (nothing is written). Starts on the first destination. */
@@ -105,6 +109,7 @@ export function createToneControl(options: ToneControlOptions): ToneControl {
         const changed = shift !== saved;
         label.textContent = nameOf(shift);
         step.classList.toggle('is-changed', changed);
+        element.classList.toggle('is-changed', changed);
         split.hidden = !changed;
         hint.hidden = !changed;
         if (!changed) {
@@ -160,5 +165,5 @@ export function createToneControl(options: ToneControlOptions): ToneControl {
     fillMenu();
     refresh();
 
-    return { element, refresh };
+    return { element, step, refresh };
 }
