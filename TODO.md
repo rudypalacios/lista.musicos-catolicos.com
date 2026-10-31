@@ -148,7 +148,7 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
 - [x] **Cantos like Listados** (the owner's mockup; `views/list.ts`): search, Importar and Nuevo canto in one row (the search alone on a phone),
       "N cantos" under it, flat rows in one column (title, "Autor · key", "⋯"; touching a song opens it), and a sheet with "Editar letra y
       acordes" and "Eliminar canto". Deleting a song (here and from the edit screen) asks with `confirmDialog` and names the lists it is in
-      (`views/delete-song.ts`); the browser's `confirm()` is gone there. Still on `confirm()`: signing out with unsent changes (`signOut`).
+      (`views/delete-song.ts`); the browser's `confirm()` is gone there. Signing out with unsent changes (`signOut`, in `main.ts`) asks with `confirmDialog` too (`DEPLOY.md` "Fases 4 y 5", item 32): no `confirm()` is left in the app.
       **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 30.
 - [x] **New song, PR A of the review** (`views/edit.ts`, `views/import.ts`): a missing title is said at the title field (marked,
       focused, message under it) and no longer at the foot of the form; a song saved with no lyrics says so in a toast (allowed: a

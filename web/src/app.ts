@@ -264,12 +264,15 @@ export class App {
     }
 }
 
-/** Whether signing out is safe, or songs and lists written here and never sent would be lost */
-export async function signOut(app: App, confirmLoss: (unsent: number) => boolean): Promise<boolean> {
+/**
+ * Whether signing out is safe, or songs and lists written here and never sent would be lost.
+ * `confirmLoss` asks the person (a dialog takes time, so it may answer later) and says whether to go on.
+ */
+export async function signOut(app: App, confirmLoss: (unsent: number) => boolean | Promise<boolean>): Promise<boolean> {
     // Try to send what is waiting first
     await app.syncNow();
     const unsent = await app.unsent();
-    if (unsent > 0 && !confirmLoss(unsent)) {
+    if (unsent > 0 && !(await confirmLoss(unsent))) {
         return false;
     }
     try {
