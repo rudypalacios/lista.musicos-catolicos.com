@@ -1,9 +1,9 @@
 import { isValidDate, shortDate, today } from '../dates.ts';
-import { MASS_PARTS } from '../mass.ts';
+import { massSections } from '../mass.ts';
 import { ValidationError } from './library.ts';
 import type { LocalStore } from './store.ts';
 import { nearestShift } from '../keys.ts';
-import { LIMITS, type Setlist, type SetlistItem } from './types.ts';
+import { LIMITS, type PartDef, type Setlist, type SetlistItem } from './types.ts';
 
 /** What the person edits in the header of a list */
 export interface SetlistDraft {
@@ -15,17 +15,44 @@ export interface SetlistDraft {
 
 // --- reading a list ----------------------------------------------------------------------
 
-/** Where a part stands in the Missal; a part this version does not know goes last, never lost */
-export function partIndex(part: string): number {
-    const index = MASS_PARTS.findIndex((candidate) => candidate.id === part);
-
-    return index === -1 ? MASS_PARTS.length : index;
+/**
+ * The sections of a list, in order. A list always has some (the server refuses one with none); a record that
+ * reaches here without them (a malformed one) reads as the Mass rather than as an empty screen.
+ */
+export function partsOf(list: Pick<Setlist, 'parts'>): readonly PartDef[] {
+    return Array.isArray(list.parts) && list.parts.length > 0 ? list.parts : massSections();
 }
 
-/** The items in the order of the Mass: by part, and within a part in the order they were added */
-export function inMassOrder(items: readonly SetlistItem[]): SetlistItem[] {
-    // Array.prototype.sort is stable: items of one part keep their order
-    return [...items].sort((a, b) => partIndex(a.part) - partIndex(b.part));
+/** The sections the list shows: the ones that are not switched off */
+export function visibleParts(list: Pick<Setlist, 'parts'>): PartDef[] {
+    return partsOf(list).filter((part) => part.off !== true);
+}
+
+/** Where a section stands among the visible ones; an unknown or hidden section goes last, never lost */
+export function partIndex(parts: readonly PartDef[], part: string): number {
+    const index = parts.findIndex((candidate) => candidate.id === part);
+
+    return index === -1 ? parts.length : index;
+}
+
+/** The items in the order of the list: by section, and within a section in the order they were added */
+export function inListOrder(list: Pick<Setlist, 'parts' | 'items'>): SetlistItem[] {
+    const parts = visibleParts(list);
+
+    // Array.prototype.sort is stable: items of one section keep their order
+    return [...list.items].sort((a, b) => partIndex(parts, a.part) - partIndex(parts, b.part));
+}
+
+/** The items whose section the list does not show (removed or switched off on another device): shown apart so they are never lost */
+export function strayItems(list: Pick<Setlist, 'parts' | 'items'>): SetlistItem[] {
+    const parts = visibleParts(list);
+
+    return list.items.filter((item) => partIndex(parts, item.part) === parts.length);
+}
+
+/** The name of the section, whether it is shown or not; undefined if the list has no such section */
+export function partName(list: Pick<Setlist, 'parts'>, part: string): string | undefined {
+    return partsOf(list).find((candidate) => candidate.id === part)?.name;
 }
 
 /** The items of one part, in order */
@@ -45,9 +72,9 @@ export function moveOptions(items: readonly SetlistItem[], itemId: string): { up
     return { up: at > 0, down: at < siblings.length - 1 };
 }
 
-/** 1-based place of the item in the order of the Mass, which is how singing names a song; 0 if it is not there */
-export function positionInMass(items: readonly SetlistItem[], itemId: string): number {
-    return inMassOrder(items).findIndex((item) => item.id === itemId) + 1;
+/** 1-based place of the item in the order of the list, which is how singing names a song; 0 if it is not there */
+export function positionInList(list: Pick<Setlist, 'parts' | 'items'>, itemId: string): number {
+    return inListOrder(list).findIndex((item) => item.id === itemId) + 1;
 }
 
 /** The title a new list gets: the person renames it if they like */
@@ -135,8 +162,8 @@ export class Setlists {
         return (await this.list()).filter((list) => list.items.some((item) => item.songId === songId));
     }
 
-    /** A new, empty list; with nothing given, for today */
-    async create(draft: Partial<SetlistDraft> = {}): Promise<Setlist> {
+    /** A new, empty list; with nothing given, for today and with the sections of the Mass (`parts` is copied, not shared) */
+    async create(draft: Partial<SetlistDraft> = {}, parts: readonly PartDef[] = massSections()): Promise<Setlist> {
         const eventDate = draft.eventDate === undefined ? today(new Date(this.now())) : draft.eventDate;
         const list: Setlist = {
             id: this.newId(),
@@ -145,6 +172,7 @@ export class Setlists {
                 eventDate,
                 notes: draft.notes ?? '',
             }),
+            parts: cleanParts(parts, []),
             starred: false,
             items: [],
             updatedAt: this.now(),
@@ -157,7 +185,7 @@ export class Setlists {
     }
 
     /**
-     * A copy of a list, for today: the songs in their parts and order, each in the key the list has it in. It has
+     * A copy of a list, for today: its sections, the songs in their sections and order, each in the key the list has it in. It has
      * the title of a new list, no star and no notes; a song that was deleted since is left out.
      */
     duplicate(id: string): Promise<Setlist> {
@@ -177,6 +205,7 @@ export class Setlists {
                 id: this.newId(),
                 // No day: a list may serve for a whole month, and the person gives it one if it needs it
                 ...cleanDraft({ title: copyTitle(source.title), eventDate: null, notes: '' }),
+                parts: partsOf(source),
                 starred: false,
                 items,
                 updatedAt: this.now(),
@@ -220,8 +249,8 @@ export class Setlists {
      */
     addItem(id: string, part: string, songId: string, transpose?: number): Promise<Setlist> {
         return this.edit(id, async (list) => {
-            if (!MASS_PARTS.some((candidate) => candidate.id === part)) {
-                throw new ValidationError('Esa parte de la misa no existe.');
+            if (!visibleParts(list).some((candidate) => candidate.id === part)) {
+                throw new ValidationError('Esa sección no existe en el listado.');
             }
             const song = await this.store.get('songs', songId);
             if (song === undefined || song.deletedAt !== null) {
@@ -237,6 +266,31 @@ export class Setlists {
 
             return { items: [...list.items, { id: this.newId(), part, songId, transpose: shift, note: '' }] };
         });
+    }
+
+    /**
+     * Replaces the list's sections (order, names, which are switched off). A section that holds songs cannot be
+     * switched off: nothing is hidden with songs in it. @throws ValidationError (as a rejected promise)
+     */
+    setParts(id: string, parts: readonly PartDef[]): Promise<Setlist> {
+        return this.edit(id, (list) => ({ parts: cleanParts(parts, list.items) }));
+    }
+
+    /** Switches one section off or on, where it is */
+    setPartOff(id: string, part: string, off: boolean): Promise<Setlist> {
+        return this.edit(id, (list) => ({
+            parts: cleanParts(
+                partsOf(list).map((candidate) => {
+                    if (candidate.id !== part) {
+                        return candidate;
+                    }
+                    const { off: _off, ...rest } = candidate;
+
+                    return off ? { ...rest, off: true as const } : rest;
+                }),
+                list.items,
+            ),
+        }));
     }
 
     removeItem(id: string, itemId: string): Promise<Setlist> {
@@ -374,9 +428,60 @@ function cleanDraft(draft: SetlistDraft): SetlistDraft {
     return { title, eventDate: draft.eventDate, notes };
 }
 
-/** The server takes at most this many bytes of items; better to say so here than to have it refuse the list later */
+/**
+ * The sections as they are kept: names trimmed, no empty name or repeated id, at least one that is shown, and none
+ * switched off while it holds songs. Says what is wrong in the person's words (it is shown as it is).
+ */
+function cleanParts(parts: readonly PartDef[], items: readonly SetlistItem[]): PartDef[] {
+    if (parts.length === 0) {
+        throw new ValidationError('El listado necesita al menos una sección.');
+    }
+    if (parts.length > LIMITS.parts) {
+        throw new ValidationError(`Un listado admite hasta ${LIMITS.parts} secciones.`);
+    }
+    const seen = new Set<string>();
+    const clean = parts.map((part): PartDef => {
+        const name = part.name.trim();
+        if (name === '') {
+            throw new ValidationError('Una sección necesita un nombre.');
+        }
+        if (Array.from(name).length > LIMITS.partName) {
+            throw new ValidationError(`El nombre de la sección es demasiado largo (máximo ${LIMITS.partName} caracteres).`);
+        }
+        if (seen.has(part.id)) {
+            throw new ValidationError('Dos secciones tienen el mismo identificador.');
+        }
+        seen.add(part.id);
+
+        return {
+            id: part.id,
+            name,
+            ...(part.off === true ? { off: true as const } : {}),
+            ...(part.optional === true ? { optional: true as const } : {}),
+            ...(part.note !== undefined && part.note !== '' ? { note: part.note.slice(0, LIMITS.partNote) } : {}),
+        };
+    });
+    if (clean.every((part) => part.off === true)) {
+        throw new ValidationError('El listado necesita al menos una sección encendida.');
+    }
+    for (const item of items) {
+        const part = clean.find((candidate) => candidate.id === item.part);
+        // A song whose section is unknown already shows apart: not a reason to refuse the change
+        if (part?.off === true) {
+            throw new ValidationError(`«${part.name}» tiene cantos: quítalos antes de apagarla.`);
+        }
+    }
+
+    return clean;
+}
+
+/** The server takes at most this many bytes of items and of sections; better to say so here than to have it refuse the list later */
 function assertFits(list: Setlist): void {
-    if (new TextEncoder().encode(JSON.stringify(list.items)).length > LIMITS.itemsJson) {
+    const bytes = (value: unknown): number => new TextEncoder().encode(JSON.stringify(value)).length;
+    if (bytes(list.items) > LIMITS.itemsJson) {
         throw new ValidationError('El listado es demasiado grande: quita algunas notas o cantos.');
+    }
+    if (bytes(list.parts) > LIMITS.partsJson) {
+        throw new ValidationError('Las secciones del listado son demasiado grandes.');
     }
 }

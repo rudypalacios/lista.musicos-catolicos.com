@@ -61,6 +61,28 @@ final class SetlistRepositoryTest extends TestCase
         $this->assertSame(1, $rows[0]['seq']);
     }
 
+    public function testThePartsOfAListAreStoredAndReadBack(): void
+    {
+        $parts = [
+            ['id' => 'entrada', 'name' => 'Canto de entrada'],
+            ['id' => 'p-ab12cd34', 'name' => 'Misterio ñ', 'off' => true],
+        ];
+        $this->setlists->apply(
+            self::ME,
+            new SetlistChange(self::LIST, 'Rosario', null, '', [], 1000, false, null, $parts)
+        );
+
+        $this->assertSame($parts, $this->setlists->changedSince(self::ME, 0, 10)[0]['parts']);
+
+        $newer = [['id' => 'cantos', 'name' => 'Cantos']];
+        $this->setlists->apply(
+            self::ME,
+            new SetlistChange(self::LIST, 'Rosario', null, '', [], 2000, false, null, $newer)
+        );
+
+        $this->assertSame($newer, $this->setlists->changedSince(self::ME, 0, 10)[0]['parts']);
+    }
+
     public function testASetlistWithoutDateKeepsNoDate(): void
     {
         $this->setlists->apply(self::ME, new SetlistChange(self::LIST, 'Sin fecha', null, '', [], 1000, false));

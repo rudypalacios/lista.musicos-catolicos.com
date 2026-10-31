@@ -36,7 +36,7 @@ describe('filterSongs', () => {
 
 describe('filterSetlists', () => {
     const list = (title: string, notes = ''): Setlist => ({
-        id: title, title, eventDate: null, notes, starred: false, items: [], updatedAt: 1, deletedAt: null,
+        id: title, title, eventDate: null, notes, parts: [{ id: 'a', name: 'A' }], starred: false, items: [], updatedAt: 1, deletedAt: null,
     });
     const lists = [list('Rosario en familia'), list('Misa del 1.º domingo de Adviento'), list('Avivamiento', 'jóvenes')];
 

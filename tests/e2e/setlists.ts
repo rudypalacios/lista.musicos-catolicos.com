@@ -277,21 +277,52 @@ try {
     const comunion = slot(page, 'Canto de comunión');
     await comunion.getByRole('button', { name: 'Más opciones: Gloria sencilla' }).click();
     await page.locator('.sheet-layer.is-open').waitFor();
-    assert.equal(await page.getByRole('button', { name: 'Bajar en esta parte' }).count(), 0, 'the last song of a part cannot go lower');
-    await page.getByRole('button', { name: 'Subir en esta parte' }).click();
+    assert.equal(await page.getByRole('button', { name: 'Bajar en esta sección' }).count(), 0, 'the last song of a part cannot go lower');
+    await page.getByRole('button', { name: 'Subir en esta sección' }).click();
     await page.waitForFunction(() => document.querySelector('section.slot[data-part="comunion"] .item__title')?.textContent === 'Gloria sencilla');
-    await page.getByRole('button', { name: 'Bajar en esta parte' }).waitFor();
-    assert.equal(await page.getByRole('button', { name: 'Subir en esta parte' }).count(), 0, 'now the first, it cannot go higher');
+    await page.getByRole('button', { name: 'Bajar en esta sección' }).waitFor();
+    assert.equal(await page.getByRole('button', { name: 'Subir en esta sección' }).count(), 0, 'now the first, it cannot go higher');
     assert.equal(await page.locator('.sheet-layer.is-open').count(), 1, 'the sheet stays open to move again');
     await closeSheet(page);
     pass('a song moves up from its sheet, which stays open and offers only the move that is left');
 
     await slot(page, 'Canto de entrada').getByRole('button', { name: 'Más opciones: Abrimos la puerta' }).click();
     await page.locator('.sheet-layer.is-open').waitFor();
-    assert.equal(await page.getByRole('button', { name: /en esta parte/ }).count(), 0, 'a song alone in its part has no move');
+    assert.equal(await page.getByRole('button', { name: /en esta sección/ }).count(), 0, 'a song alone in its part has no move');
     await page.getByRole('button', { name: /Cantar desde aquí/ }).waitFor();
     await closeSheet(page);
     pass('a song alone in its part has no move to offer, only singing from it and removing it');
+
+    // ----- the sections of the list: switch one off, see it go, switch it on, see it come back in its place -----
+    const sectionNames = (): Promise<string[]> => page.locator('section.slot h3').allTextContents();
+    assert.equal((await sectionNames()).length, 15);
+    await page.getByRole('button', { name: 'Más opciones del listado' }).click();
+    await page.getByRole('button', { name: 'Secciones del listado' }).click();
+    await page.getByRole('heading', { name: 'Secciones del listado' }).waitFor();
+    assert.match(await page.locator('.bar').innerText(), /Listado/, 'a screen that hangs from the list says so in the bar');
+    const entradaSwitch = page.getByRole('switch', { name: /Canto de entrada/ });
+    assert.equal(await entradaSwitch.getAttribute('aria-disabled'), 'true', 'a section with songs cannot be switched off');
+    await entradaSwitch.getByText('no se puede apagar').waitFor();
+    await entradaSwitch.click({ force: true });
+    assert.equal(await entradaSwitch.getAttribute('aria-checked'), 'true', 'touching a locked switch does nothing');
+    const salmo = page.getByRole('switch', { name: /Salmo responsorial/ });
+    assert.equal(await salmo.getAttribute('aria-checked'), 'true');
+    await salmo.click();
+    await page.waitForFunction(() => document.querySelector('[data-focus="section:salmo"]')?.getAttribute('aria-checked') === 'false');
+    await salmo.getByText('Apagada: se oculta en el listado').waitFor();
+    await noTypedIcons(page, 'the sections screen');
+    await page.locator('.bar__back').click();
+    await page.locator('section.slot').first().waitFor();
+    const without = await sectionNames();
+    assert.equal(without.length, 14);
+    assert.ok(!without.includes('Salmo responsorial'), 'the switched-off section is hidden on the list');
+    await page.getByRole('button', { name: 'Más opciones del listado' }).click();
+    await page.getByRole('button', { name: 'Secciones del listado' }).click();
+    await page.getByRole('switch', { name: /Salmo responsorial/ }).click();
+    await page.locator('.bar__back').click();
+    await page.locator('section.slot').first().waitFor();
+    assert.deepEqual((await sectionNames())[3], 'Salmo responsorial', 'it comes back where it was');
+    pass('the sections of a list: one with songs is locked, one without is switched off (hidden on the list) and on again (back in its place)');
 
     // The list screen shows no notes for now (the note of a song is written while singing)
     assert.equal(await page.getByRole('button', { name: /nota/i }).count(), 0);
@@ -800,7 +831,7 @@ try {
     await page.getByRole('button', { name: 'Nuevo listado' }).click();
     await page.locator('section.slot').first().waitFor();
     await page.getByRole('button', { name: 'Más opciones del listado' }).click();
-    assert.deepEqual(await page.locator('.sheet-layer.is-open .sheet-action').allTextContents(), ['Eliminar listado'], 'an empty list has nothing to print');
+    assert.deepEqual(await page.locator('.sheet-layer.is-open .sheet-action').allTextContents(), ['Secciones del listadoQué secciones lleva este listado', 'Eliminar listado'], 'an empty list has nothing to print');
     await page.getByRole('button', { name: 'Eliminar listado' }).click();
     await page.getByRole('alertdialog').getByRole('button', { name: 'Eliminar', exact: true }).click();
     await page.locator('.toast', { hasText: 'Listado eliminado' }).waitFor();

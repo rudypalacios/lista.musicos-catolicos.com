@@ -1,9 +1,8 @@
 import type { App } from '../app.ts';
-import { splitStarred } from '../data/setlists.ts';
-import type { Setlist, Song } from '../data/types.ts';
+import { splitStarred, visibleParts } from '../data/setlists.ts';
+import type { PartDef, Setlist, Song } from '../data/types.ts';
 import { h } from '../dom.ts';
 import { icon } from '../icons.ts';
-import { MASS_PARTS, type MassPart } from '../mass.ts';
 import { showToast } from '../toast.ts';
 import { createSheet, sheetAction, type Sheet } from './sheet.ts';
 
@@ -24,8 +23,8 @@ export interface AddToListOptions {
     onBack: () => void;
 }
 
-/** What a part says at its right: that the song is already there, how many songs it holds, or that it is optional */
-export function partNote(part: Pick<MassPart, 'optional'>, count: number, hasSong: boolean): string {
+/** What a section says at its right: that the song is already there, how many songs it holds, or that it is optional */
+export function partNote(part: Pick<PartDef, 'optional'>, count: number, hasSong: boolean): string {
     if (hasSong) {
         return 'Ya está aquí';
     }
@@ -37,10 +36,9 @@ export function partNote(part: Pick<MassPart, 'optional'>, count: number, hasSon
 }
 
 /**
- * "Agregar a un listado" from the page of a song: one sheet in two steps, the list and then the part of the Mass.
- * Touching the part adds the song at its end (in the key on screen), closes the sheet and says where it went; the
- * person stays on the song. A part is a Mass part for now: when lists get templates (phase 6), this second step is
- * what has to follow the list's own parts (see TODO.md).
+ * "Agregar a un listado" from the page of a song: one sheet in two steps, the list and then the section of that
+ * list (each list has its own). Touching the section adds the song at its end (in the key on screen), closes the
+ * sheet and says where it went; the person stays on the song.
  */
 export function createAddToList(options: AddToListOptions): Sheet {
     const { app, song } = options;
@@ -100,10 +98,10 @@ export function createAddToList(options: AddToListOptions): Sheet {
         error.hidden = true;
         const { label } = options.entry();
         sheet.body.replaceChildren(
-            head('¿En qué parte?', list.title, showLists),
+            head('¿En qué sección?', list.title, showLists),
             ...(label === null ? [] : [h('p', { class: 'sheet__entry' }, `Entra en ${label} (el tono que ves)`)]),
             error,
-            h('ul', { class: 'lrows' }, ...MASS_PARTS.map((part) => {
+            h('ul', { class: 'lrows' }, ...visibleParts(list).map((part) => {
                 const here = list.items.filter((item) => item.part === part.id);
 
                 return row(part.name, [], partNote(part, here.length, here.some((item) => item.songId === song.id)), () => place(list, part));
@@ -111,7 +109,7 @@ export function createAddToList(options: AddToListOptions): Sheet {
         );
     };
 
-    const place = (list: Setlist, part: MassPart): void => {
+    const place = (list: Setlist, part: PartDef): void => {
         const { shift, label } = options.entry();
         app.setlists.addItem(list.id, part.id, song.id, shift).then(() => {
             sheet.close();

@@ -16,6 +16,7 @@ export type Route =
     | { name: 'edit'; id: string; back?: string }
     | { name: 'lists' }
     | { name: 'setlist'; id: string }
+    | { name: 'sections'; id: string }
     | { name: 'add'; id: string; part: string }
     | { name: 'perform'; id: string; n: number }
     | { name: 'install' }
@@ -23,7 +24,7 @@ export type Route =
     | { name: 'not-found' };
 
 const ID = '([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|[\\w-]{1,64})';
-/** The id of a part of the Mass (mass.ts): lower case, digits and hyphens */
+/** The id of a section of a list: lower case, digits and hyphens (the Mass's, and the ones made on a device) */
 const PART = '([a-z0-9-]{1,40})';
 
 export function matchRoute(path: string, search = ''): Route {
@@ -57,6 +58,10 @@ export function matchRoute(path: string, search = ''): Route {
     const setlist = new RegExp(`^/listados/${ID}$`).exec(clean);
     if (setlist?.[1] !== undefined) {
         return { name: 'setlist', id: setlist[1] };
+    }
+    const sections = new RegExp(`^/listados/${ID}/secciones$`).exec(clean);
+    if (sections?.[1] !== undefined) {
+        return { name: 'sections', id: sections[1] };
     }
     const add = new RegExp(`^/listados/${ID}/agregar/${PART}$`).exec(clean);
     if (add?.[1] !== undefined && add[2] !== undefined) {
@@ -117,6 +122,8 @@ export const paths = {
     edit: (id: string, back?: string): string => (back === undefined ? `/cantos/${id}/editar` : `/cantos/${id}/editar?volver=${encodeURIComponent(back)}`),
     lists: (): string => '/listados',
     setlist: (id: string): string => `/listados/${id}`,
+    /** Which sections the list has: turn them on and off */
+    sections: (id: string): string => `/listados/${id}/secciones`,
     addToSetlist: (id: string, part: string): string => `/listados/${id}/agregar/${part}`,
     /** `n` counts from 1: the first song of the list in the order of the Mass */
     perform: (id: string, n: number): string => `/listados/${id}/cantar/${n}`,
@@ -129,6 +136,7 @@ export function sectionOf(route: Route): 'songs' | 'lists' | 'settings' {
     switch (route.name) {
         case 'lists':
         case 'setlist':
+        case 'sections':
         case 'add':
         case 'perform':
             return 'lists';
@@ -178,6 +186,8 @@ export function parentOf(route: Route): { path: string; label: string } | null {
             return { path: paths.lists(), label: 'Listados' };
         case 'add':
             return { path: paths.setlist(route.id), label: 'Volver al listado' };
+        case 'sections':
+            return { path: paths.setlist(route.id), label: 'Listado' };
         case 'install':
             return { path: paths.settings(), label: 'Ajustes' };
         default:

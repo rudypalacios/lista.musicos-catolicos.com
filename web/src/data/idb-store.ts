@@ -5,9 +5,11 @@ import { COLLECTIONS, type Collection, type Pulled, type Records } from './types
 /**
  * IndexedDB schema versions:
  * 1. `songs`, `pending` (the queue of songs), `meta`.
- * 2. adds `setlists` and `pending-setlists`; the cursor is reset (see `open`).
+ * 2. adds `setlists` and `pending-setlists`.
+ * 3. lists carry their own sections (`Setlist.parts`): the lists of the device are dropped and the cursor is reset
+ *    (see `open`).
  */
-const VERSION = 2;
+const VERSION = 3;
 
 /** The object store of each collection's records, and of its queue of unsent ones */
 const DATA: Readonly<Record<Collection, string>> = { songs: 'songs', setlists: 'setlists' };
@@ -59,11 +61,17 @@ export class IdbStore implements LocalStore {
                 if (!db.objectStoreNames.contains(META)) {
                     db.createObjectStore(META, { keyPath: 'key' });
                 }
-                // Before version 2 the server's answers carried songs only, so a cursor
-                // from then may have moved past setlists this version has never seen. Start
-                // the next pull from zero; songs already held are merged by the same rules.
-                if (event.oldVersion >= 1 && event.oldVersion < 2) {
-                    request.transaction?.objectStore(META).delete(CURSOR);
+                // Version 3: a list without sections is not valid any more, and the server removed the ones it
+                // had (migration 0008; the owner chose to start the lists again). The lists this device holds
+                // and the ones waiting to be sent go too, or they would be sent and refused. The cursor starts
+                // again from zero so the songs come back from the server as they are (they are merged by the
+                // same rules as always, and the songs not yet sent stay in their queue). This also covers an
+                // older device: before version 2 the cursor may have moved past lists this version had not seen.
+                if (event.oldVersion >= 1 && event.oldVersion < 3) {
+                    const tx = request.transaction;
+                    tx?.objectStore(DATA.setlists).clear();
+                    tx?.objectStore(QUEUE.setlists).clear();
+                    tx?.objectStore(META).delete(CURSOR);
                 }
             };
             request.onblocked = () => onBlocked?.();

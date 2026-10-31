@@ -100,7 +100,7 @@ describe('IdbStore upgrade from version 1', () => {
         assert.deepEqual(await store.get('songs', 'a'), song('a', 10));
     });
 
-    it('does not reset the cursor when the database is already version 2', async () => {
+    it('does not reset the cursor, or drop the lists, when the database is already the current version', async () => {
         const factory = new IDBFactory();
         const first = await IdbStore.open(factory, 'v2');
         await first.mergeRemote({ songs: [], setlists: [] }, 12);
@@ -109,5 +109,44 @@ describe('IdbStore upgrade from version 1', () => {
         const second = await IdbStore.open(factory, 'v2');
 
         assert.equal(await second.cursor(), 12);
+    });
+});
+
+describe('IdbStore upgrade from version 2 (lists without sections)', () => {
+    /** A database as version 2 left it: songs and setlists, each with its queue */
+    function openVersion2(factory: IDBFactory, name: string): Promise<IDBDatabase> {
+        return new Promise((resolve, reject) => {
+            const request = factory.open(name, 2);
+            request.onupgradeneeded = () => {
+                const db = request.result;
+                for (const store of ['songs', 'pending', 'setlists', 'pending-setlists']) {
+                    db.createObjectStore(store, { keyPath: 'id' });
+                }
+                db.createObjectStore('meta', { keyPath: 'key' });
+            };
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    it('drops the lists and the lists waiting to be sent, keeps the songs and what was not sent, and pulls again from zero', async () => {
+        const factory = new IDBFactory();
+        const old = await openVersion2(factory, 'v2-to-v3');
+        await put(old, 'songs', song('a', 10));
+        await put(old, 'pending', song('b', 20));
+        await put(old, 'setlists', { ...setlist('l', 30), parts: undefined });
+        await put(old, 'pending-setlists', { ...setlist('l', 30), parts: undefined });
+        await put(old, 'meta', { key: 'cursor', value: 41 });
+        await put(old, 'meta', { key: 'owner', value: 'a@b.co' });
+        old.close();
+
+        const store = await IdbStore.open(factory, 'v2-to-v3');
+
+        assert.deepEqual(await store.all('setlists'), [], 'a list with no sections would be refused by the server');
+        assert.deepEqual(await store.pending('setlists'), []);
+        assert.deepEqual(await store.get('songs', 'a'), song('a', 10));
+        assert.deepEqual(await store.pending('songs'), [song('b', 20)]);
+        assert.equal(await store.owner(), 'a@b.co');
+        assert.equal(await store.cursor(), 0, 'the songs come back from the server as they are');
     });
 });

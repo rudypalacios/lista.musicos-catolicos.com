@@ -412,6 +412,17 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    listado y *Cantar*; que se lean los acordes y la letra, que la muestra de cada tarjeta coincida con el canto, y que al imprimir (con acordes) el papel
    siga en negro y rojo.
 
+38. **Secciones por listado (fase 6, PR 1).** Cada listado lleva ahora **sus propias secciones** (antes eran siempre las 15 partes de la Misa). **Hoy
+   los listados se empiezan de nuevo** (así lo decidiste): al desplegar este cambio, la migración `0008` borra los listados que había en el servidor y, la
+   primera vez que abras la app nueva en cada aparato, la app suelta los que tenía guardados (la base del aparato pasa a la versión 3). **No hay nada que
+   ejecutar ni que borrar a mano.** Los cantos no se tocan (se vuelven a bajar del servidor). **Antes de actualizar**, si algún aparato tiene una versión
+   vieja abierta con listados sin enviar, se pierden: no hace falta nada más. En un listado, `⋯` → **Secciones del listado** (arriba de *Imprimir*): una
+   pantalla con un interruptor por sección (las de la Misa, con «opcional» donde corresponde). **Prueba:** apaga una sección sin cantos (por ejemplo
+   *Gloria*): desaparece del listado, de *Cantar* y de *Imprimir*; enciéndela y vuelve en su sitio; una sección con cantos no se puede apagar (dice cuántos
+   tiene, con un candado) y la única sección encendida tampoco; «Agregar a un listado» desde un canto ofrece solo las secciones encendidas; en otro
+   aparato el cambio llega solo. Los textos ahora dicen «sección» (por ejemplo «Otras secciones», «Subir en esta sección»). Las secciones propias y las
+   plantillas vienen en los siguientes PR.
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.

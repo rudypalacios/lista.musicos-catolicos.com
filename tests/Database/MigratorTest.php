@@ -22,6 +22,36 @@ final class MigratorTest extends TestCase
         $this->assertSame(end($first), $migrator->currentVersion());
     }
 
+    public function testTheMigrationOfTheSectionsRemovesTheListsThatHaveNone(): void
+    {
+        $dir = sys_get_temp_dir() . '/migrations-' . bin2hex(random_bytes(4));
+        mkdir($dir);
+        foreach (glob(TestDatabase::MIGRATIONS . '/*.sql') ?: [] as $file) {
+            if (basename($file) < '0008') {
+                copy($file, $dir . '/' . basename($file));
+            }
+        }
+        $pdo = new PDO('sqlite::memory:', null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+        (new Migrator($pdo, $dir))->migrate();
+        $pdo->exec(
+            'INSERT INTO setlists (id, user_id, title, notes, items, updated_at, seq) '
+            . "VALUES ('l1', 'u', 'Misa antigua', '', '[]', 1, 1)"
+        );
+
+        copy(TestDatabase::MIGRATIONS . '/0008_setlists_parts.sql', $dir . '/0008_setlists_parts.sql');
+        (new Migrator($pdo, $dir))->migrate();
+
+        $count = static fn (): int => (int) $pdo->query('SELECT COUNT(*) FROM setlists')->fetchColumn();
+        $this->assertSame(0, $count(), 'a list with no sections is gone');
+        $pdo->exec(
+            'INSERT INTO setlists (id, user_id, title, notes, items, parts, updated_at, seq) '
+            . "VALUES ('l2', 'u', 'Misa nueva', '', '[]', '[{\"id\":\"a\",\"name\":\"A\"}]', 2, 2)"
+        );
+        $pdo->exec("DELETE FROM schema_migrations WHERE version = '0008_setlists_parts'");
+        (new Migrator($pdo, $dir))->migrate();
+        $this->assertSame(1, $count(), 'running it again keeps a list that has sections');
+    }
+
     public function testItCreatesTheTables(): void
     {
         $pdo = TestDatabase::migrated();

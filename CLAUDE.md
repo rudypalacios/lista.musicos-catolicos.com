@@ -34,7 +34,9 @@ This app must behave the same:
   Latin uppercase (`SOL`, `MIm`) is normalised only by the importer, never by the parser. A chord typed
   with a lowercase letter (`[c]`, `[am]`) is capitalised by the editor when it previews and saves
   (`web/src/chordpro/capitalise.ts`), also not by the parser.
-- Mass parts use the standard names of the Roman Missal (Ofertorio, Señor, ten piedad,
+- A list carries its own sections (`Setlist.parts`; the code says "part", the person reads "sección"); the Mass is the
+  template a new list starts from today (`massSections` in `mass.ts`, whose ids are inside the owner's lists: never rename them).
+  Mass parts use the standard names of the Roman Missal (Ofertorio, Señor, ten piedad,
   Cordero de Dios…), not local ones.
 
 ## Language
@@ -88,6 +90,12 @@ server), and some of it must keep working for certain. So:
 - The shims that are kept, and why, are listed in `TODO.md` ("Compatibility shims"). Say in `DEPLOY.md` when a
   change makes data the owner has unreadable or wrong.
 - A change of shape is a **new** migration file; never edit an applied one.
+- **Update (the owner, 2026-10-31):** the app has one user and nothing he cannot make again, so a change may **start a
+  kind of record from scratch** (a migration that removes it, and the device dropping its copy when it opens the new version,
+  as IndexedDB version 3 does with the lists) instead of converting it, and old versions of the app need not keep
+  working with new data. Say so in the PR and in `DEPLOY.md`; never ask the owner to run SQL or clear a device by hand
+  when a migration or the app can do it. Defaults that guard against a missing value (`null`, `undefined`) stay, with the
+  default well defined.
 
 ## Database
 

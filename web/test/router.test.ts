@@ -49,6 +49,13 @@ describe('matchRoute', () => {
         assert.deepEqual(matchRoute(`/listados/${ID}`), { name: 'setlist', id: ID });
         assert.deepEqual(matchRoute(`/listados/${ID}/agregar/senor-ten-piedad`), { name: 'add', id: ID, part: 'senor-ten-piedad' });
         assert.deepEqual(matchRoute(`/listados/${ID}/cantar/3`), { name: 'perform', id: ID, n: 3 });
+        assert.deepEqual(matchRoute(`/listados/${ID}/secciones`), { name: 'sections', id: ID });
+    });
+
+    it('sections of a list hang from the list, inside the lists section of the menu', () => {
+        assert.deepEqual(matchRoute(paths.sections(ID)), { name: 'sections', id: ID });
+        assert.deepEqual(parentOf({ name: 'sections', id: ID }), { path: `/listados/${ID}`, label: 'Listado' });
+        assert.equal(sectionOf({ name: 'sections', id: ID }), 'lists');
     });
 
     it('builds setlist paths it can read back', () => {

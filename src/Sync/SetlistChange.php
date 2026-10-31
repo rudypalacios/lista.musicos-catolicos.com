@@ -15,10 +15,13 @@ use App\Uuid;
  * `starred` marks a favourite. A client that predates it sends no value: `null` means "keep what
  * the server has", so an old copy of the app cannot unstar a list by editing it.
  *
- * An item is one song placed in one part of the Mass:
- * {id, part, songId, transpose, note}. `part` is the id of a part of web/src/mass.ts; the
- * server checks its shape and not the list of parts, so adding a part never needs a deploy
- * of both sides at once.
+ * A list carries its own sections ("parts"): an ordered list of {id, name, off?, optional?, note?}. A list
+ * with none is refused (a deleted one carries none). `off` hides a section without deleting it.
+ *
+ * An item is one song placed in one part of the list:
+ * {id, part, songId, transpose, note}. `part` is the id of one of the list's parts; the server checks
+ * its shape and not that it exists there, so a section removed on one device never makes another
+ * device's pending list fail (the app shows such songs under "Otras secciones").
  */
 final class SetlistChange
 {
@@ -30,6 +33,11 @@ final class SetlistChange
     public const MAX_TRANSPOSE = 11;
     /** Bytes: the column is TEXT (64 KiB) in MySQL */
     public const MAX_ITEMS_JSON = 60000;
+    public const MAX_PARTS = 30;
+    public const MAX_PART_NAME = 60;
+    public const MAX_PART_NOTE = 300;
+    /** Bytes of the parts as stored: their own column, so they take nothing from the items' */
+    public const MAX_PARTS_JSON = 8000;
     /** See SongChange::MAX_FUTURE_MS */
     public const MAX_FUTURE_MS = SongChange::MAX_FUTURE_MS;
 
@@ -38,6 +46,7 @@ final class SetlistChange
 
     /**
      * @param list<array{id: string, part: string, songId: string, transpose: int, note: string}> $items
+     * @param list<array{id: string, name: string, off?: true, optional?: true, note?: string}> $parts
      */
     public function __construct(
         public readonly string $id,
@@ -48,6 +57,7 @@ final class SetlistChange
         public readonly int $updatedAt,
         public readonly bool $deleted,
         public readonly ?bool $starred = null,
+        public readonly array $parts = [],
     ) {
     }
 
@@ -72,7 +82,7 @@ final class SetlistChange
         $title = self::text($data, 'title', self::MAX_TITLE, 'El título');
         if (($data['deleted'] ?? false) === true) {
             // A tombstone keeps the title and nothing else: the list is gone, and no longer a favourite
-            return new self($id, $title, null, '', [], $updatedAt, true, false);
+            return new self($id, $title, null, '', [], $updatedAt, true, false, []);
         }
         if ($title === '') {
             throw new InvalidSetlist('El listado necesita un título.');
@@ -87,6 +97,7 @@ final class SetlistChange
             $updatedAt,
             false,
             self::starred($data['starred'] ?? null),
+            self::parts($data['parts'] ?? null),
         );
     }
 
@@ -96,10 +107,84 @@ final class SetlistChange
         return self::encode($this->items);
     }
 
+    /** The parts as they are stored: JSON, with accents left as they are */
+    public function partsJson(): string
+    {
+        return self::encode($this->parts);
+    }
+
     /** @param list<array<string, mixed>> $items */
     private static function encode(array $items): string
     {
         return json_encode($items, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+    }
+
+    /**
+     * @return list<array{id: string, name: string, off?: true, optional?: true, note?: string}>
+     *
+     * @throws InvalidSetlist
+     */
+    private static function parts(mixed $value): array
+    {
+        if (!is_array($value) || !array_is_list($value) || $value === []) {
+            throw new InvalidSetlist('El listado necesita al menos una sección.');
+        }
+        if (count($value) > self::MAX_PARTS) {
+            throw new InvalidSetlist('Un listado admite hasta ' . self::MAX_PARTS . ' secciones.');
+        }
+
+        $parts = [];
+        $seen = [];
+        foreach ($value as $raw) {
+            $part = self::part($raw);
+            if (isset($seen[$part['id']])) {
+                throw new InvalidSetlist('Un listado tiene dos secciones con el mismo identificador.');
+            }
+            $seen[$part['id']] = true;
+            $parts[] = $part;
+        }
+        if (strlen(self::encode($parts)) > self::MAX_PARTS_JSON) {
+            throw new InvalidSetlist('Las secciones del listado son demasiado grandes.');
+        }
+
+        return $parts;
+    }
+
+    /**
+     * @return array{id: string, name: string, off?: true, optional?: true, note?: string}
+     *
+     * @throws InvalidSetlist
+     */
+    private static function part(mixed $raw): array
+    {
+        if (!is_array($raw)) {
+            throw new InvalidSetlist('Una sección del listado no es válida.');
+        }
+        $id = $raw['id'] ?? null;
+        if (!is_string($id) || preg_match(self::PART, $id) !== 1) {
+            throw new InvalidSetlist('Una sección del listado no tiene un identificador válido.');
+        }
+        $name = self::text($raw, 'name', self::MAX_PART_NAME, 'El nombre de una sección');
+        if ($name === '') {
+            throw new InvalidSetlist('Una sección del listado necesita un nombre.');
+        }
+
+        $part = ['id' => $id, 'name' => $name];
+        foreach (['off', 'optional'] as $flag) {
+            $set = $raw[$flag] ?? null;
+            if ($set !== null && !is_bool($set)) {
+                throw new InvalidSetlist('Una sección del listado tiene una marca que no es válida.');
+            }
+            if ($set === true) {
+                $part[$flag] = true;
+            }
+        }
+        $note = self::text($raw, 'note', self::MAX_PART_NOTE, 'La nota de una sección');
+        if ($note !== '') {
+            $part['note'] = $note;
+        }
+
+        return $part;
     }
 
     private static function starred(mixed $value): ?bool

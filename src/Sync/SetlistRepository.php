@@ -44,6 +44,7 @@ final class SetlistRepository
                 $change->eventDate,
                 $change->notes,
                 $change->itemsJson(),
+                $change->partsJson(),
                 $change->updatedAt,
                 $change->deleted ? $change->updatedAt : null,
                 $this->sequence->next($userId),
@@ -52,16 +53,16 @@ final class SetlistRepository
                 // No star sent (an older app): keep the one stored
                 $this->pdo
                     ->prepare(
-                        'UPDATE setlists SET title = ?, event_date = ?, notes = ?, items = ?, updated_at = ?, '
-                        . 'deleted_at = ?, seq = ?, starred = COALESCE(?, starred) WHERE id = ?'
+                        'UPDATE setlists SET title = ?, event_date = ?, notes = ?, items = ?, parts = ?, '
+                        . 'updated_at = ?, deleted_at = ?, seq = ?, starred = COALESCE(?, starred) WHERE id = ?'
                     )
                     ->execute([...$values, $change->starred === null ? null : (int) $change->starred, $change->id]);
             } else {
                 $this->pdo
                     ->prepare(
                         'INSERT INTO setlists '
-                        . '(title, event_date, notes, items, updated_at, deleted_at, seq, starred, id, user_id) '
-                        . 'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+                        . '(title, event_date, notes, items, parts, updated_at, deleted_at, seq, starred, id, user_id) '
+                        . 'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
                     )
                     ->execute([...$values, (int) ($change->starred ?? false), $change->id, $userId]);
             }
@@ -80,13 +81,14 @@ final class SetlistRepository
      * @return list<array{
      *     id: string, title: string, eventDate: ?string, notes: string, starred: bool,
      *     items: list<array{id: string, part: string, songId: string, transpose: int, note: string}>,
+     *     parts: list<array{id: string, name: string, off?: true, optional?: true, note?: string}>,
      *     updatedAt: int, deletedAt: ?int, seq: int
      * }>
      */
     public function changedSince(string $userId, int $since, int $limit): array
     {
         $statement = $this->pdo->prepare(
-            'SELECT id, title, event_date, notes, starred, items, updated_at, deleted_at, seq FROM setlists '
+            'SELECT id, title, event_date, notes, starred, items, parts, updated_at, deleted_at, seq FROM setlists '
             . 'WHERE user_id = ? AND seq > ? ORDER BY seq ASC LIMIT ' . max(1, $limit)
         );
         $statement->execute([$userId, $since]);
@@ -101,6 +103,10 @@ final class SetlistRepository
                 'starred' => (int) $row['starred'] === 1,
                 // Written by itemsJson() only: an unreadable value is damage, and says so
                 'items' => json_decode((string) $row['items'], true, 4, JSON_THROW_ON_ERROR),
+                // A row with no parts (a deleted list, or one older than their column) reads as none
+                'parts' => $row['parts'] === null
+                    ? []
+                    : json_decode((string) $row['parts'], true, 4, JSON_THROW_ON_ERROR),
                 'updatedAt' => (int) $row['updated_at'],
                 'deletedAt' => $row['deleted_at'] === null ? null : (int) $row['deleted_at'],
                 'seq' => (int) $row['seq'],

@@ -3,7 +3,8 @@ import './sheet.css';
 import { api, ApiError } from './api.ts';
 import { App, signOut } from './app.ts';
 import { h } from './dom.ts';
-import { MASS_PARTS } from './mass.ts';
+import { visibleParts } from './data/setlists.ts';
+import { sectionsView } from './views/sections.ts';
 import { matchRoute, paths, type Route } from './router.ts';
 import { applyReadingColors } from './settings.ts';
 import { watchBottomChrome } from './bottom-chrome.ts';
@@ -162,6 +163,7 @@ function routeView(data: App, route: Route, navigate: Navigate): Promise<View> {
         case 'lists':
             return Promise.resolve(listsView(data, navigate));
         case 'setlist':
+        case 'sections':
         case 'add':
         case 'perform':
             return data.setlists.get(route.id).then((setlist) => {
@@ -171,12 +173,15 @@ function routeView(data: App, route: Route, navigate: Navigate): Promise<View> {
                 if (route.name === 'setlist') {
                     return setlistView(data, navigate, setlist);
                 }
+                if (route.name === 'sections') {
+                    return sectionsView(data, navigate, setlist);
+                }
                 if (route.name === 'perform') {
                     return performView(data, navigate, setlist, route.n);
                 }
-                const part = MASS_PARTS.find((candidate) => candidate.id === route.part);
+                const part = visibleParts(setlist).find((candidate) => candidate.id === route.part);
 
-                return part === undefined ? notice('Esta parte de la misa no existe.') : addView(data, navigate, setlist, part);
+                return part === undefined ? notice('Esta sección no existe en el listado.') : addView(data, navigate, setlist, part);
             });
         case 'install':
             return Promise.resolve(installView());

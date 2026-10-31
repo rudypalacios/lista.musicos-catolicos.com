@@ -2974,3 +2974,75 @@ button.notice-line__info {
 .confirm__buttons .button {
     flex: 1;
 }
+
+/* The sections of a list: a switch for each (drawn, not a native checkbox, so it looks the same on every device) */
+.sections .srow {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    min-width: 0;
+    min-height: 3.5rem;
+    padding: 0.4rem 0;
+    text-align: left;
+    color: var(--text);
+    background: none;
+    border: 0;
+    font: inherit;
+    cursor: pointer;
+}
+
+.sections .srow.is-locked {
+    cursor: default;
+}
+
+.sections .srow .icon {
+    margin-left: auto;
+    color: var(--muted);
+}
+
+.srow__text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.lrow__title.is-off {
+    color: var(--muted);
+    font-weight: 500;
+}
+
+.switch {
+    position: relative;
+    flex: none;
+    width: 2.6rem;
+    height: 1.5rem;
+    border-radius: 999px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+}
+
+.switch::after {
+    content: "";
+    position: absolute;
+    top: 0.15rem;
+    left: 0.15rem;
+    width: 1.1rem;
+    height: 1.1rem;
+    border-radius: 50%;
+    background: var(--muted);
+}
+
+.switch.is-on {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+.switch.is-on::after {
+    left: 1.2rem;
+    background: var(--bg);
+}
+
+.is-locked .switch {
+    opacity: 0.55;
+}

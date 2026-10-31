@@ -6,7 +6,7 @@ declare module 'playwright' {
         hasText?: string | RegExp;
     }
     interface Locator {
-        click(): Promise<void>;
+        click(options?: { force?: boolean }): Promise<void>;
         check(): Promise<void>;
         uncheck(): Promise<void>;
         isChecked(): Promise<boolean>;
