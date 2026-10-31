@@ -13,6 +13,7 @@ import { showToast, type Toast } from './toast.ts';
 import { screenKeeper } from './wakelock.ts';
 import { showFatal, startUpdates } from './updates.ts';
 import { addView } from './views/add.ts';
+import { confirmDialog } from './views/confirm-dialog.ts';
 import { createHeader, type Header } from './views/header.ts';
 import { editView } from './views/edit.ts';
 import { importView } from './views/import.ts';
@@ -97,11 +98,14 @@ function watchSaves(data: App): void {
 function mountShell(data: App, email: string, onSignedOut: () => void, onNeedsSignIn: () => void): void {
     requestSignOut = () => {
         void signOut(data, (unsent) =>
-            confirm(
-                unsent === 1
-                    ? 'Hay 1 canto escrito en este dispositivo que no se pudo enviar. Si sales ahora se perderá. ¿Salir de todos modos?'
-                    : `Hay ${unsent} cantos escritos en este dispositivo que no se pudieron enviar. Si sales ahora se perderán. ¿Salir de todos modos?`,
-            ),
+            confirmDialog({
+                title: '¿Salir de todos modos?',
+                text: unsent === 1
+                    ? 'Hay 1 canto escrito en este dispositivo que no se pudo enviar. Si sales ahora se perderá.'
+                    : `Hay ${unsent} cantos escritos en este dispositivo que no se pudieron enviar. Si sales ahora se perderán.`,
+                confirm: 'Salir',
+                danger: true,
+            }),
         ).then((done) => {
             if (done) {
                 onSignedOut();

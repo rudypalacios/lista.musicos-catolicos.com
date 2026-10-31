@@ -746,21 +746,17 @@ try {
     await openSection(page, 'Cantos');
     await page.getByRole('link', { name: 'Pan de vida' }).click();
     await page.getByRole('link', { name: 'Editar' }).click();
-    const dialogs: string[] = [];
-    page.once('dialog', (dialog) => {
-        dialogs.push(dialog.message());
-        void dialog.dismiss();
-    });
     await page.getByRole('button', { name: 'Eliminar' }).click();
-    for (let waited = 0; dialogs.length === 0 && waited < 50; waited++) {
-        await page.waitForTimeout(100);
-    }
-    assert.match(dialogs[0] ?? '', /está en el listado “Domingo, editado en la tablet”/);
-    assert.match(dialogs[0] ?? '', /Canto eliminado/);
+    const asking = page.getByRole('alertdialog');
+    await asking.getByText('está en el listado “Domingo, editado en la tablet”').waitFor();
+    await asking.getByText('Canto eliminado').waitFor();
+    await asking.getByRole('button', { name: 'Cancelar' }).click();
+    assert.equal(await page.getByRole('alertdialog').count(), 0);
+    assert.equal(await page.getByRole('heading', { name: 'Editar canto' }).count(), 1, 'cancelling keeps the song and the screen');
     pass('deleting a song that is in a list says so, and cancelling keeps it');
 
-    page.once('dialog', (dialog) => void dialog.accept());
     await page.getByRole('button', { name: 'Eliminar' }).click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Eliminar', exact: true }).click();
     await page.getByRole('heading', { name: 'Cantos' }).waitFor();
     await openSection(page, 'Listados');
     await page.getByRole('link', { name: /Domingo, editado en la tablet/ }).click();

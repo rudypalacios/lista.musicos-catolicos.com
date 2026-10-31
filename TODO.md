@@ -138,8 +138,9 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       asks first with a dialog drawn by the app (`views/confirm-dialog.ts`: "Cancelar" is the focused answer, Escape, a touch
       outside and the back button also cancel) instead of the browser's `confirm()`, which looks different on each device. A
       toast says "Listado eliminado". It is gone from inside a list, whose "⋮" now only prints (so it is hidden while the list has
-      no songs). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 23. Still on the browser's `confirm()`: deleting a song
-      (`views/edit.ts`) and signing out with unsent changes (`signOut`): move them to `confirmDialog` when the owner wants.
+      no songs). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 23. Deleting a song
+      (`views/edit.ts`) and signing out with unsent changes (`signOut`, in `main.ts`) used the browser's `confirm()` until they moved to `confirmDialog`
+      too (`DEPLOY.md` "Fases 4 y 5", item 29): no `confirm()` is left in the app.
 - [x] **New song, PR A of the review** (`views/edit.ts`, `views/import.ts`): a missing title is said at the title field (marked,
       focused, message under it) and no longer at the foot of the form; a song saved with no lyrics says so in a toast (allowed: a
       title first, the lyrics later); a **repeated title is neither warned nor blocked** (the owner: several "Santo" and "Gloria"

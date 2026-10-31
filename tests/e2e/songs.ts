@@ -318,8 +318,8 @@ try {
     await second.goto(BASE + '/');
     await second.getByRole('link', { name: 'Editado en la otra tablet' }).click();
     await second.getByRole('link', { name: 'Editar' }).click();
-    second.once('dialog', (dialog) => void dialog.accept());
     await second.getByRole('button', { name: 'Eliminar' }).click();
+    await second.getByRole('alertdialog').getByRole('button', { name: 'Eliminar', exact: true }).click();
     await second.getByRole('heading', { name: 'Cantos' }).waitFor();
     await synced(second);
     assert.ok(!(await second.getByRole('link', { name: 'Editado en la otra tablet' }).isVisible()));
@@ -507,17 +507,12 @@ try {
     await synced(page);
     await ipad.setOffline(true);
     await createSong(page, 'Pendiente al salir', '[G]No se pudo enviar');
-    const dialogs: string[] = [];
-    page.once('dialog', (dialog) => {
-        dialogs.push(dialog.message());
-        void dialog.dismiss();
-    });
     await signOutFromSettings(page);
-    // It tries to send first, offline that fails, and only then does it ask
-    for (let waited = 0; dialogs.length === 0 && waited < 50; waited++) {
-        await page.waitForTimeout(100);
-    }
-    assert.match(dialogs[0] ?? '', /1 canto escrito en este dispositivo/);
+    // It tries to send first, offline that fails, and only then does it ask, with the app's own dialog
+    const asking = page.getByRole('alertdialog');
+    await asking.getByText('1 canto escrito en este dispositivo').waitFor();
+    await asking.getByRole('button', { name: 'Cancelar' }).click();
+    assert.equal(await page.getByRole('alertdialog').count(), 0);
     await openSection(page, 'Cantos');
     await page.getByRole('link', { name: 'Pendiente al salir' }).waitFor();
     pass('signing out with an unsent song asks first, and cancelling keeps everything');

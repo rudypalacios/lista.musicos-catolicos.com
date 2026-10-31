@@ -14,18 +14,19 @@ import { todayKeys } from '../today-keys.ts';
 import { showToast } from '../toast.ts';
 import { transpose } from '../chordpro/chord.ts';
 import { readNotation } from '../prefs.ts';
+import { confirmDialog } from './confirm-dialog.ts';
 import type { Navigate, View } from './types.ts';
 
 /** What the confirmation says before deleting a song, naming the lists it is in */
-function deleteMessage(song: Song, lists: readonly Setlist[]): string {
-    const base = `¿Eliminar “${song.title}”? No se puede deshacer.`;
+function deleteMessage(lists: readonly Setlist[]): string {
+    const base = 'No se puede deshacer.';
     if (lists.length === 0) {
         return base;
     }
     const names = lists.map((list) => `“${list.title}”`).join(', ');
     const where = lists.length === 1 ? `el listado ${names}` : `${lists.length} listados (${names})`;
 
-    return `${base}\n\nEste canto está en ${where}. Ahí aparecerá como «Canto eliminado» hasta que lo quites.`;
+    return `Este canto está en ${where}. Ahí aparecerá como «Canto eliminado» hasta que lo quites.\n\n${base}`;
 }
 
 const HELP = `[C]Caminamos con a[G]legría, Señor,
@@ -248,11 +249,17 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         const remove = h('button', { type: 'button', class: 'button button--danger edit-remove' }, 'Eliminar');
         remove.addEventListener('click', () => {
             // A song in a list stays there as "Canto eliminado": say so before it happens
-            void app.setlists.using(existing.id).then((lists) => {
-                if (confirm(deleteMessage(existing, lists))) {
-                    void app.remove(existing.id).then(() => navigate(paths.list()));
-                }
-            });
+            void app.setlists.using(existing.id)
+                .then((lists) => confirmDialog({
+                    title: `¿Eliminar “${existing.title}”?`,
+                    text: deleteMessage(lists),
+                    confirm: 'Eliminar',
+                    danger: true,
+                }))
+                .then((confirmed) => (confirmed ? app.remove(existing.id).then(() => navigate(paths.list())) : undefined))
+                .catch((failure: unknown) => {
+                    error.textContent = failure instanceof Error ? failure.message : 'No se pudo eliminar el canto.';
+                });
         });
         writePane.append(remove);
     }

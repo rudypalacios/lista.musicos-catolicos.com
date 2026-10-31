@@ -342,6 +342,12 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    leer un PDF» (el lector no se guarda en el dispositivo). **Prueba en el Android:** importa uno de tus PDF, toca «Usar» en un canto sin título,
    abre una fila, quita la marca de uno y guarda. En el iPad, al final.
 
+29. **Los dos diálogos que quedaban son los de la app.** **Eliminar un canto** (en «Editar canto») y **Salir** con cantos escritos que no se pudieron
+   enviar ya no usan la ventanita del navegador (que se veía distinta en cada aparato): salen con el diálogo propio, igual al de «Eliminar listado»
+   (el foco empieza en «Cancelar»; Escape, tocar afuera y el botón de atrás también cancelan). Al eliminar un canto que está en listados, el diálogo los
+   nombra y dice que ahí aparecerá como «Canto eliminado». **Prueba en el Android:** elimina un canto de prueba y, sin conexión, escribe uno y toca
+   «Salir» (pide confirmación; «Cancelar» lo conserva todo).
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.
