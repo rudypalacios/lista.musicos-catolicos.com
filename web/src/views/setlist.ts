@@ -14,7 +14,8 @@ import { readNotation } from '../prefs.ts';
 import { paths } from '../router.ts';
 import { showUndoToast } from '../toast.ts';
 import { todayKeys } from '../today-keys.ts';
-import { createSheet } from './sheet.ts';
+import { deleteListAfterAsking } from './delete-list.ts';
+import { createSheet, sheetAction } from './sheet.ts';
 import type { Navigate, View } from './types.ts';
 
 /** A part with this many songs or more also has its "agregar" at the end: the one in the head would be far away */
@@ -25,8 +26,9 @@ const ADD_AT_END_FROM = 4;
  * with no song is one quiet line; a part with songs is a heading and one row per song. A row only
  * shows the song (touching it sings it from there; the key is read-only here: it is changed while singing, so
  * it is saved to the list and not to the song); "⋯" opens a sheet with what is done now and then to one song
- * (sing from it, move it up or down within its part, remove it with an undo). The list's own "⋯" holds
- * print and delete.
+ * (sing from it, move it up or down within its part, remove it with an undo). The list's own "⋯" is always
+ * there: it holds print (only when there are songs) and, last and set apart, delete the list (after a question,
+ * the same as on the lists screen).
  *
  * The notes of a list and of its songs are kept in the data but are not shown or edited anywhere.
  */
@@ -61,10 +63,10 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
         'div',
         { class: 'page' },
         h('header', { class: 'setlist-head' },
-            title,
-            h('div', { class: 'setlist-head__meta' }, dayChip, clearDay, count),
-            error,
-            h('div', { class: 'setlist-head__actions' }, sing, more)),
+            // The "⋯" is always in the corner beside the name; the day, the count and "Cantar" share the row under it
+            h('div', { class: 'setlist-head__top' }, title, more),
+            h('div', { class: 'setlist-head__meta' }, dayChip, clearDay, count, sing),
+            error),
         slots,
     );
 
@@ -133,6 +135,15 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             h('h4', { class: 'sheet__title' }, setlist.title),
             h('p', { class: 'sheet__sub' }, rows === 1 ? '1 canto' : `${rows} cantos`),
             ...(rows > 0 ? [action('printer', 'Imprimir con acordes', () => print('chords')), action('printer', 'Imprimir solo la letra', () => print('lyrics'))] : []),
+            // Last and set apart, so it is not touched by mistake next to printing
+            sheetAction('trash', 'Eliminar listado', () => {
+                error.textContent = '';
+                listSheet.close(() => {
+                    deleteListAfterAsking(app, setlist)
+                        .then((deleted) => (deleted ? navigate(paths.lists()) : undefined))
+                        .catch((failure: unknown) => fail(failure, 'No se pudo eliminar el listado.'));
+                });
+            }, { danger: true, apart: true }),
         );
     };
     more.addEventListener('click', listSheet.open);
@@ -204,10 +215,9 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
         const strays = rows.filter((item) => partIndex(item.part) === MASS_PARTS.length);
         slots.replaceChildren(...known, ...(strays.length > 0 ? [strangers(strays)] : []));
         count.textContent = rows.length === 1 ? '1 canto' : `${rows.length} cantos`;
-        // Printing is all this sheet holds: with no songs it would open empty
-        more.hidden = rows.length === 0;
-        if (more.hidden && listSheet.isOpen()) {
-            listSheet.close();
+        // The "⋯" is always there (deleting the list is in it); only the printing needs songs
+        if (listSheet.isOpen()) {
+            fillListSheet();
         }
         sing.hidden = rows.length === 0;
         if (focused !== null) {

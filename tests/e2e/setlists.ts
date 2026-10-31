@@ -746,21 +746,17 @@ try {
     await openSection(page, 'Cantos');
     await page.getByRole('link', { name: 'Pan de vida' }).click();
     await page.getByRole('link', { name: 'Editar' }).click();
-    const dialogs: string[] = [];
-    page.once('dialog', (dialog) => {
-        dialogs.push(dialog.message());
-        void dialog.dismiss();
-    });
     await page.getByRole('button', { name: 'Eliminar' }).click();
-    for (let waited = 0; dialogs.length === 0 && waited < 50; waited++) {
-        await page.waitForTimeout(100);
-    }
-    assert.match(dialogs[0] ?? '', /está en el listado “Domingo, editado en la tablet”/);
-    assert.match(dialogs[0] ?? '', /Canto eliminado/);
+    const asked = page.getByRole('alertdialog');
+    const askedText = await asked.innerText();
+    assert.match(askedText, /Está en el listado «Domingo, editado en la tablet»/);
+    assert.match(askedText, /Canto eliminado/);
+    await asked.getByRole('button', { name: 'Cancelar' }).click();
+    await asked.waitFor({ state: 'hidden' });
     pass('deleting a song that is in a list says so, and cancelling keeps it');
 
-    page.once('dialog', (dialog) => void dialog.accept());
     await page.getByRole('button', { name: 'Eliminar' }).click();
+    await asked.getByRole('button', { name: 'Eliminar', exact: true }).click();
     await page.getByRole('heading', { name: 'Cantos' }).waitFor();
     await openSection(page, 'Listados');
     await page.getByRole('link', { name: /Domingo, editado en la tablet/ }).click();
@@ -780,11 +776,17 @@ try {
     await page.locator('.setlist-head__meta').getByText('2 cantos').waitFor();
     pass('the deleted song can be removed from the list');
 
-    // ----- deleting the list: from the lists screen, behind a question -----
+    // ----- deleting the list: from inside it and from the lists screen, behind the same question -----
     await page.getByRole('button', { name: 'Más opciones del listado' }).click();
     await page.getByRole('button', { name: 'Imprimir con acordes' }).waitFor();
-    assert.equal(await page.getByRole('button', { name: 'Eliminar listado' }).count(), 0, 'inside a list there is no way to delete it');
-    await page.keyboard.press('Escape');
+    assert.equal((await page.locator('.sheet-layer.is-open .sheet-action').allTextContents()).at(-1), 'Eliminar listado', 'inside a list, delete is the last action of the "⋯"');
+    await page.getByRole('button', { name: 'Eliminar listado' }).click();
+    const inside = page.getByRole('alertdialog');
+    await inside.getByText('No se puede deshacer').waitFor();
+    await inside.getByRole('button', { name: 'Cancelar' }).click();
+    await inside.waitFor({ state: 'hidden' });
+    assert.ok(new URL(page.url()).pathname.includes('/listados/'), 'cancelling keeps the list open');
+    pass('inside a list, "Eliminar listado" asks first and Cancel keeps it');
     const openId = new URL(page.url()).pathname.split('/').at(-1) ?? '';
     await openSection(page, 'Listados');
     await page.locator(`[data-more="${openId}"]`).click();
@@ -817,6 +819,17 @@ try {
         await second.getByText('Todavía no hay listados.').waitFor();
     });
     pass('deleting a list removes it here and on the other device');
+
+    // ----- an empty list: the "⋯" is there, with nothing to print, and the list can be deleted from inside -----
+    await page.getByRole('button', { name: 'Nuevo listado' }).click();
+    await page.locator('section.slot').first().waitFor();
+    await page.getByRole('button', { name: 'Más opciones del listado' }).click();
+    assert.deepEqual(await page.locator('.sheet-layer.is-open .sheet-action').allTextContents(), ['Eliminar listado'], 'an empty list has nothing to print');
+    await page.getByRole('button', { name: 'Eliminar listado' }).click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Eliminar', exact: true }).click();
+    await page.locator('.toast', { hasText: 'Listado eliminado' }).waitFor();
+    await page.getByText('Todavía no hay listados.').waitFor();
+    pass('an empty list keeps its "⋯" (no printing) and is deleted from inside, back on the lists screen');
 
     // ----- a phone -----
     await page.setViewportSize({ width: 390, height: 844 });

@@ -138,8 +138,17 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       asks first with a dialog drawn by the app (`views/confirm-dialog.ts`: "Cancelar" is the focused answer, Escape, a touch
       outside and the back button also cancel) instead of the browser's `confirm()`, which looks different on each device. A
       toast says "Listado eliminado". It is gone from inside a list, whose "⋮" now only prints (so it is hidden while the list has
-      no songs). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 23. Still on the browser's `confirm()`: deleting a song
-      (`views/edit.ts`) and signing out with unsent changes (`signOut`): move them to `confirmDialog` when the owner wants.
+      no songs; **superseded by the next item**). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 23.
+- [x] **Delete a list from inside it too** (the owner unlocked the "Inside a list" row for this, `DESIGN-LOCK.md` updated): the list's "⋯"
+      is always shown (it used to hide with no songs) and sits in the corner beside the name; under it one row with the day, the count
+      and a smaller "Cantar" at the right. Its sheet prints only while there are songs and ends with "Eliminar listado" (red, set apart),
+      which asks with the same dialog as the lists screen (`views/delete-list.ts`, shared) and goes back to Listados.
+      **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 29.
+- [x] **Cantos like Listados** (the owner's mockup; `views/list.ts`): search, Importar and Nuevo canto in one row (the search alone on a phone),
+      "N cantos" under it, flat rows in one column (title, author, key, "⋯"; touching a song opens it), and a sheet with "Editar letra y
+      acordes" and "Eliminar canto". Deleting a song (here and from the edit screen) asks with `confirmDialog` and names the lists it is in
+      (`views/delete-song.ts`); the browser's `confirm()` is gone there. Still on `confirm()`: signing out with unsent changes (`signOut`).
+      **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 30.
 - [x] **New song, PR A of the review** (`views/edit.ts`, `views/import.ts`): a missing title is said at the title field (marked,
       focused, message under it) and no longer at the foot of the form; a song saved with no lyrics says so in a toast (allowed: a
       title first, the lyrics later); a **repeated title is neither warned nor blocked** (the owner: several "Santo" and "Gloria"
@@ -159,7 +168,7 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       with the same title and text as one held starts unmarked ("Ya la tienes"). Measured on the owner's four PDFs (not in the repo): 12 songs went from 5673px
       to 2040px. The PDF reader message says a connection is needed every time (it is not cached). **Left out on purpose (the owner):** creating a list from
       an import (revisit with the templates, phase 6, since not every list is a Mass) and reading titles and authors by their layout in the PDF headers.
-      **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 28.
+      **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 29.
 - [ ] Adding several songs to one part takes a round trip per song (the picker returns to the list).
       If that is slow in practice, let the picker stay open and show what has been added.
 - [ ] **Paused (owner, after the UI session).** Duplicate a list ("copiar listado") to start next Sunday's from this

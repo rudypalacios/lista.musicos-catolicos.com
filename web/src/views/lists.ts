@@ -7,7 +7,7 @@ import { icon, type IconName } from '../icons.ts';
 import { paths } from '../router.ts';
 import { filterSetlists } from '../search.ts';
 import { showToast } from '../toast.ts';
-import { confirmDialog } from './confirm-dialog.ts';
+import { deleteListAfterAsking } from './delete-list.ts';
 import { createSheet, sheetAction } from './sheet.ts';
 import type { Navigate, View } from './types.ts';
 
@@ -94,14 +94,7 @@ export function listsView(app: App, navigate: Navigate): View {
             sheetAction('trash', 'Eliminar listado', () => {
                 error.textContent = '';
                 sheet.close(() => {
-                    confirmDialog({
-                        title: `¿Eliminar «${list.title}»?`,
-                        text: 'Se borra el listado de todos tus dispositivos. Los cantos no se borran. No se puede deshacer.',
-                        confirm: 'Eliminar',
-                        danger: true,
-                    })
-                        .then((confirmed) => (confirmed ? app.setlists.remove(list.id).then(() => showToast('Listado eliminado', 3000, true)) : undefined))
-                        .catch((failure: unknown) => fail(failure, 'No se pudo eliminar el listado.'));
+                    deleteListAfterAsking(app, list).catch((failure: unknown) => fail(failure, 'No se pudo eliminar el listado.'));
                 });
             }, { danger: true, apart: true }),
         );
