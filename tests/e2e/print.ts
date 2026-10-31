@@ -161,9 +161,10 @@ try {
 
     // The colour of the lyrics is a setting for the screen: paper is always black on white, whatever it is set to
     await page.evaluate(() => document.documentElement.style.setProperty('--lyric-color', '#ffffff'));
-    await page.emulateMedia({ media: 'print' });
-    const inks = await page.evaluate(() => [...document.querySelectorAll('#print-root .song-sheet .lyr')].map((node) => getComputedStyle(node).color));
-    await page.emulateMedia({ media: null });
+    const emulate = (media: 'print' | null): Promise<void> => (page as unknown as { emulateMedia(options: { media: 'print' | null }): Promise<void> }).emulateMedia({ media });
+    await emulate('print');
+    const inks = await page.evaluate(() => Array.from(document.querySelectorAll('#print-root .song-sheet .lyr')).map((node) => getComputedStyle(node).color));
+    await emulate(null);
     await page.evaluate(() => document.documentElement.style.removeProperty('--lyric-color'));
     assert.ok(inks.length > 0, 'there are lyrics on the sheet');
     assert.deepEqual([...new Set(inks)], ['rgb(0, 0, 0)'], 'white lyrics chosen for the screen still print black');
