@@ -93,6 +93,18 @@ export async function openSection(page: Page, name: 'Cantos' | 'Listados' | 'Aju
     await entry.click();
 }
 
+/** The song page's "⋯": opens the sheet with how the lyrics are drawn, printing, editing and deleting */
+export async function openSongMenu(page: Page): Promise<void> {
+    await page.getByRole('button', { name: 'Más opciones', exact: true }).click();
+    await page.getByRole('button', { name: 'Editar letra y acordes' }).waitFor();
+}
+
+/** From the song page: "⋯", then "Editar letra y acordes" */
+export async function editFromSongPage(page: Page): Promise<void> {
+    await openSongMenu(page);
+    await page.getByRole('button', { name: 'Editar letra y acordes' }).click();
+}
+
 /** Signs out the way a person does: Ajustes, then "Salir" */
 export async function signOutFromSettings(page: Page): Promise<void> {
     await openSection(page, 'Ajustes');

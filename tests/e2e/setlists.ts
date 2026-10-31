@@ -7,7 +7,7 @@
  *     npm run build && node tests/e2e/setlists.ts
  */
 import assert from 'node:assert/strict';
-import { chromium, openSection, enforcePolicy, reporter, signIn, startServer, synced } from './lib.ts';
+import { chromium, editFromSongPage, openSection, enforcePolicy, reporter, signIn, startServer, synced } from './lib.ts';
 import type { Page } from 'playwright';
 
 const server = await startServer(18086);
@@ -721,7 +721,7 @@ try {
     // ----- deleting a song that is in a list -----
     await openSection(page, 'Cantos');
     await page.getByRole('link', { name: 'Pan de vida' }).click();
-    await page.getByRole('link', { name: 'Editar' }).click();
+    await editFromSongPage(page);
     await page.getByRole('button', { name: 'Eliminar' }).click();
     const asked = page.getByRole('alertdialog');
     const askedText = await asked.innerText();
