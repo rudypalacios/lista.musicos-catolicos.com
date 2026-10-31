@@ -6,6 +6,11 @@ export interface Song {
     readonly author: string;
     /** The lyrics in ChordPro */
     readonly body: string;
+    /**
+     * What the song is for ("Entrada", "Cuaresma", "Rosario"…): free text, at most `LIMITS.tags`, none by default.
+     * The picker of a section filters by the tag of that section (`tagOf`, `data/tags.ts`).
+     */
+    readonly tags: readonly string[];
     /** "Mi tono": the key the person sings it in, in semitones from the written one (−11…11; 0 is the same as none) */
     readonly myShift: number;
     /** When this version was written, by the clock of the device that wrote it (epoch ms) */
@@ -135,6 +140,9 @@ export const LIMITS = {
     itemsJson: 60000,
     /** Semitones up or down */
     transpose: 11,
+    /** Tags on a song, and the characters of one */
+    tags: 8,
+    tag: 30,
     /** Sections in one setlist, and the characters of a section's name and note, and bytes of the sections as JSON */
     parts: 30,
     partName: 60,

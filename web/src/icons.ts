@@ -38,6 +38,7 @@ const DRAWINGS = {
     info: { shapes: [['circle', { cx: '12', cy: '12', r: '9' }], ['path', { d: 'M12 11v5M12 8h.01' }]] },
     music: { shapes: [['path', { d: 'M9 18V5l11-2v13' }], ['circle', { cx: '6', cy: '18', r: '3' }], ['circle', { cx: '17', cy: '16', r: '3' }]] },
     /** The sections of a list: three lines, each with its own switch */
+    tag: { shapes: [['path', { d: 'M4 12V5a1 1 0 0 1 1-1h7l8 8-8 8z' }], ['circle', { cx: '8.5', cy: '8.5', r: '1.2' }]] },
     sections: { shapes: [['path', { d: 'M4 6h2M10 6h10M4 12h8M16 12h4M4 18h4M12 18h8' }], ['circle', { cx: '8', cy: '6', r: '2' }], ['circle', { cx: '14', cy: '12', r: '2' }], ['circle', { cx: '10', cy: '18', r: '2' }]] },
     list: { shapes: [['path', { d: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01' }]] },
     settings: { shapes: [['circle', { cx: '12', cy: '12', r: '3' }], ['path', { d: 'M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1' }]] },

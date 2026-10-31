@@ -325,7 +325,13 @@ Next, in this order (design agreed with the owner):
          from a list ("Guardar como plantilla" on the sections screen) and managed on `/plantillas` (open, rename, sections with the same editor as a list's, duplicate,
          delete after a question). Up to 20. The sheet is shown **always**, even with one template (so "Administrar plantillas" is always reachable); the plan said
          "with one template it creates at once": say if the owner prefers that. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 40.
-      4. [ ] Tags and the filter of the picker ("Mostrar todos"; the notice to tag when adding from it; optional "Etiquetar con lo que ya usas", not decided).
+      4. [x] **Tags and the filter of the picker** (`songs.tags`, migration `0011`; `data/tags.ts`, `views/tag-field.ts`, `views/add.ts`; no locked row): a song has up to 8 free
+         tags of up to 30 characters (compared without accents or capitals), edited **below the lyrics, optional** (`Etiquetas`: chips that go away when touched, Enter or a comma adds one,
+         and the ones in use plus the Mass's offered to touch); a section asks for a tag (`tagOf`: the Mass's short one by its id, "Entrada" for "Canto de entrada", else its name);
+         the picker of a section shows the songs with it first, with "Mostrar todos" always at hand, and **no filter while no song carries the tag**; picking a song without it offers "Etiquetar
+         «Entrada»" in the toast; a song written from the picker starts with the section's tag; the search reads the tags like the title. Tags are not drawn in the rows (a song looks the same
+         wherever it is listed). **Left for the owner to decide:** the one-time button "Etiquetar con lo que ya usas" (mockup in the plan's page; not built). **Owner's check:** `DEPLOY.md`
+         "Fases 4 y 5", item 41.
       5. [ ] Tag when importing (the importer already knows the part of each song).
       6. [ ] Drag to reorder (long press, the arrows stay, "Al inicio / Al final").
       Not done on purpose: ready-made templates, updating lists when a template changes, lists with no sections, dragging between sections.

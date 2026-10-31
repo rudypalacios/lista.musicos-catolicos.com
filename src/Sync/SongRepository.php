@@ -54,16 +54,22 @@ final class SongRepository
                 $this->pdo
                     ->prepare(
                         'UPDATE songs SET title = ?, author = ?, body = ?, updated_at = ?, deleted_at = ?, seq = ?, '
-                        . 'my_shift = COALESCE(?, my_shift) WHERE id = ?'
+                        . 'my_shift = COALESCE(?, my_shift), tags = COALESCE(?, tags) WHERE id = ?'
                     )
-                    ->execute([...$values, $change->myShift, $change->id]);
+                    ->execute([
+                        ...$values,
+                        $change->myShift,
+                        $change->tags === null ? null : $change->tagsJson(),
+                        $change->id,
+                    ]);
             } else {
                 $this->pdo
                     ->prepare(
-                        'INSERT INTO songs (title, author, body, updated_at, deleted_at, seq, my_shift, id, user_id) '
-                        . 'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+                        'INSERT INTO songs '
+                        . '(title, author, body, updated_at, deleted_at, seq, my_shift, tags, id, user_id) '
+                        . 'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
                     )
-                    ->execute([...$values, $change->myShift ?? 0, $change->id, $userId]);
+                    ->execute([...$values, $change->myShift ?? 0, $change->tagsJson(), $change->id, $userId]);
             }
             $this->pdo->commit();
         } catch (\Throwable $e) {
@@ -79,13 +85,13 @@ final class SongRepository
      *
      * @return list<array{
      *     id: string, title: string, author: string, body: string,
-     *     updatedAt: int, deletedAt: ?int, seq: int, myShift: int
+     *     updatedAt: int, deletedAt: ?int, seq: int, myShift: int, tags: list<string>
      * }>
      */
     public function changedSince(string $userId, int $since, int $limit): array
     {
         $statement = $this->pdo->prepare(
-            'SELECT id, title, author, body, updated_at, deleted_at, seq, my_shift FROM songs '
+            'SELECT id, title, author, body, updated_at, deleted_at, seq, my_shift, tags FROM songs '
             . 'WHERE user_id = ? AND seq > ? ORDER BY seq ASC LIMIT ' . max(1, $limit)
         );
         $statement->execute([$userId, $since]);
@@ -101,6 +107,8 @@ final class SongRepository
                 'deletedAt' => $row['deleted_at'] === null ? null : (int) $row['deleted_at'],
                 'seq' => (int) $row['seq'],
                 'myShift' => (int) $row['my_shift'],
+                // A song written before the tags has none: NULL reads as an empty list
+                'tags' => $row['tags'] === null ? [] : json_decode((string) $row['tags'], true, 4, JSON_THROW_ON_ERROR),
             ];
         }
 

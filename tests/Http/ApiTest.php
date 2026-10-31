@@ -323,6 +323,20 @@ final class ApiTest extends TestCase
         $this->assertFalse($body['hasMore']);
     }
 
+    public function testTheTagsOfASongTravelBothWays(): void
+    {
+        $cookies = [SessionCookie::NAME => $this->signIn()];
+
+        $this->call('POST', '/api/sync', ['songs' => [$this->song(['tags' => ['Entrada', 'Adviento']])]], $cookies);
+        $pulled = $this->body($this->call('GET', '/api/sync?since=0', null, $cookies))['songs'][0];
+        $this->assertSame(['Entrada', 'Adviento'], $pulled['tags']);
+
+        $broken = $this->song(['tags' => 'Entrada', 'updatedAt' => 1_700_000_000_500]);
+        $bad = $this->call('POST', '/api/sync', ['songs' => [$broken]], $cookies);
+        $this->assertSame(400, $bad->getStatusCode());
+        $this->assertSame('invalid_song', $this->body($bad)['error']);
+    }
+
     public function testPullingFromTheCursorReturnsNothingNew(): void
     {
         $cookies = [SessionCookie::NAME => $this->signIn()];

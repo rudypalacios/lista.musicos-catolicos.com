@@ -21,6 +21,9 @@ final class SongChange
     public const MAX_FUTURE_MS = 300000;
     /** "Mi tono" is within an octave of the written key, either way */
     public const MAX_SHIFT = 11;
+    /** Tags on a song, and the characters of one */
+    public const MAX_TAGS = 8;
+    public const MAX_TAG = 30;
 
     public function __construct(
         public readonly string $id,
@@ -31,6 +34,12 @@ final class SongChange
         public readonly bool $deleted,
         /** Semitones from the written key; `null` means the client did not say (an older one): keep what is stored */
         public readonly ?int $myShift = null,
+        /**
+         * What the song is for; `null` means the client did not say (an older one): keep what is stored
+         *
+         * @var list<string>|null
+         */
+        public readonly ?array $tags = null,
     ) {
     }
 
@@ -69,7 +78,45 @@ final class SongChange
             min($updatedAt, $nowMs + self::MAX_FUTURE_MS),
             $deleted,
             self::shift($data['myShift'] ?? null),
+            self::tags($data['tags'] ?? null),
         );
+    }
+
+    /** The tags as they are stored: JSON, with accents left as they are; "[]" for none */
+    public function tagsJson(): string
+    {
+        return json_encode($this->tags ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+    }
+
+    /**
+     * @return list<string>|null
+     *
+     * @throws InvalidSong
+     */
+    private static function tags(mixed $value): ?array
+    {
+        if ($value === null) {
+            return null;
+        }
+        if (!is_array($value) || !array_is_list($value) || count($value) > self::MAX_TAGS) {
+            throw new InvalidSong('Un canto admite hasta ' . self::MAX_TAGS . ' etiquetas.');
+        }
+        $tags = [];
+        foreach ($value as $raw) {
+            if (!is_string($raw)) {
+                throw new InvalidSong('Una etiqueta no es válida.');
+            }
+            $tag = trim((string) preg_replace('~\s+~u', ' ', $raw));
+            if ($tag === '') {
+                throw new InvalidSong('Una etiqueta no puede estar vacía.');
+            }
+            if (mb_strlen($tag) > self::MAX_TAG) {
+                throw new InvalidSong('Una etiqueta admite hasta ' . self::MAX_TAG . ' caracteres.');
+            }
+            $tags[] = $tag;
+        }
+
+        return $tags;
     }
 
     /**
