@@ -24,6 +24,10 @@ export interface SectionOps {
     rename: (id: string, name: string) => Promise<unknown>;
     move: (id: string, direction: -1 | 1) => Promise<unknown>;
     remove: (id: string) => Promise<unknown>;
+    /** Mark a section optional or not. Left out where that is not the owner's to say (a list takes it from its template) */
+    setOptional?: (id: string, optional: boolean) => Promise<unknown>;
+    /** Set the explanation a section shows (empty removes it). Goes with `setOptional` */
+    setNote?: (id: string, note: string) => Promise<unknown>;
 }
 
 export interface SectionEditorOptions {
@@ -41,7 +45,8 @@ export interface SectionEditor {
 /**
  * The rows that edit sections, the same for a list and for a template. Each row has, when the owner of the sections
  * can switch them (`ops.setOff`), a switch (an off section is hidden and kept, so it comes back where it was), its
- * name (touch it to rename), the arrows that move it and "✕" that deletes it. A section with songs stays on and
+ * name (touch it to rename), when it can say what is optional (`ops.setOptional`) a button that opens whether the
+ * section is optional and the explanation it shows, the arrows that move it and "✕" that deletes it. A section with songs stays on and
  * cannot be deleted (it says why), and the last one stays too. At the end, a field to add a section of the person's
  * own and the sections of the Mass that are missing.
  */
@@ -51,6 +56,9 @@ export function createSectionEditor(options: SectionEditorOptions): SectionEdito
     let parts: readonly PartDef[] = [];
     /** The section being renamed: the screen is not redrawn under the field while someone types in it */
     let renaming: string | null = null;
+    /** The sections whose details (optional, explanation) are open, and whether the explanation is being typed */
+    const opened = new Set<string>();
+    let noting = false;
     const error = h('p', { class: 'error', role: 'alert' });
     const list = h('ul', { class: 'lrows sections' });
     const extra = h('div', { class: 'sections__add' });
@@ -107,12 +115,60 @@ export function createSectionEditor(options: SectionEditorOptions): SectionEdito
             return button;
         })()];
 
+        const details = ops.setOptional === undefined ? [] : [detailsButton(part)];
+
         return h('li', { class: 'lrow srow' },
             ...toggle,
             name,
+            ...details,
             iconButton('arrow-up', `Subir: ${part.name}`, index > 0, () => run(ops.move(part.id, -1), 'No se pudo mover la sección.'), `up:${part.id}`),
             iconButton('arrow-down', `Bajar: ${part.name}`, index < parts.length - 1, () => run(ops.move(part.id, 1), 'No se pudo mover la sección.'), `down:${part.id}`),
-            iconButton('x', `Borrar: ${part.name}`, count === 0 && parts.length > 1, () => run(ops.remove(part.id), 'No se pudo borrar la sección.'), `remove:${part.id}`));
+            iconButton('x', `Borrar: ${part.name}`, count === 0 && parts.length > 1, () => run(ops.remove(part.id), 'No se pudo borrar la sección.'), `remove:${part.id}`),
+            ...(opened.has(part.id) ? [detailsPanel(part)] : []));
+    };
+
+    /** Opens or closes the details of a section: whether it is optional and the explanation people read in the list */
+    const detailsButton = (part: PartDef): HTMLButtonElement => {
+        const open = opened.has(part.id);
+        const button = h('button', {
+            type: 'button', class: 'srow__tool', 'aria-label': `Opcional y explicación: ${part.name}`, 'aria-expanded': String(open),
+            'data-focus': `details:${part.id}`,
+        }, icon('info', 20));
+        button.addEventListener('click', () => {
+            if (!opened.delete(part.id)) {
+                opened.add(part.id);
+            }
+            draw();
+        });
+
+        return button;
+    };
+
+    const detailsPanel = (part: PartDef): HTMLElement => {
+        const optional = part.optional === true;
+        const toggle = h('button', {
+            type: 'button', class: 'srow__optional', role: 'switch', 'aria-checked': String(optional), 'data-focus': `optional:${part.id}`,
+        }, h('span', { class: optional ? 'switch is-on' : 'switch', 'aria-hidden': 'true' }),
+        h('span', {}, 'Opcional: se puede cantar sin un canto aquí'));
+        toggle.addEventListener('click', () => run(ops.setOptional?.(part.id, !optional) ?? Promise.resolve(), 'No se pudo guardar el cambio.'));
+        const field = h('textarea', {
+            class: 'srow__note', rows: '3', maxlength: String(LIMITS.partNote), id: `note-${part.id}`, 'data-focus': `note:${part.id}`,
+            placeholder: 'Por ejemplo: la canta la asamblea después de la consagración',
+        });
+        field.value = part.note ?? '';
+        field.addEventListener('focus', () => {
+            noting = true;
+        });
+        field.addEventListener('blur', () => {
+            noting = false;
+        });
+        // The explanation is held as it is typed; the screen is not redrawn under the cursor
+        field.addEventListener('input', () => run(ops.setNote?.(part.id, field.value) ?? Promise.resolve(), 'No se pudo guardar la explicación.'));
+
+        return h('div', { class: 'srow__details' },
+            toggle,
+            h('label', { class: 'sections__label', for: `note-${part.id}` }, 'Explicación (se ve en el listado, junto a la sección)'),
+            field);
     };
 
     /** The name turns into a field: Enter or leaving it saves, Escape leaves the name as it was */
@@ -194,7 +250,7 @@ export function createSectionEditor(options: SectionEditorOptions): SectionEdito
     };
 
     const draw = (): void => {
-        if (renaming !== null) {
+        if (renaming !== null || noting) {
             return;
         }
         const focused = document.activeElement?.getAttribute('data-focus') ?? null;

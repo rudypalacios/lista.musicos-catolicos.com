@@ -53,6 +53,30 @@ export function switchedIn(parts: readonly PartDef[], id: string, off: boolean):
     });
 }
 
+/** One section marked optional (the slot can be left empty) or not, where it is */
+export function optionalIn(parts: readonly PartDef[], id: string, optional: boolean): PartDef[] {
+    return parts.map((candidate) => {
+        if (candidate.id !== id) {
+            return candidate;
+        }
+        const { optional: _optional, ...rest } = candidate;
+
+        return optional ? { ...rest, optional: true as const } : rest;
+    });
+}
+
+/** One section with its explanation set; an empty one removes it (`cleanParts` does the same, so it never keeps a blank) */
+export function notedIn(parts: readonly PartDef[], id: string, note: string): PartDef[] {
+    return parts.map((candidate) => {
+        if (candidate.id !== id) {
+            return candidate;
+        }
+        const { note: _note, ...rest } = candidate;
+
+        return note.trim() === '' ? rest : { ...rest, note };
+    });
+}
+
 /**
  * The sections as they are kept: names trimmed, no empty name or repeated id, at least one that is shown, and none
  * switched off while it holds songs (`items`: a template has none). Says what is wrong in the person's words (it is

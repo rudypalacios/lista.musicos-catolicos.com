@@ -926,15 +926,32 @@ try {
     assert.deepEqual((await page.locator('.lrow__title').allTextContents()).sort(), ['Mi plantilla', 'Misa']);
     await page.locator('.lrow__link', { hasText: 'Mi plantilla' }).click();
     await page.getByLabel('Nombre de la plantilla').fill('Rosario');
-    await page.getByLabel('Nombre de la plantilla').press('Enter');
     await page.getByLabel('Nombre de la sección nueva').fill('Final');
     await page.getByRole('button', { name: 'Agregar', exact: true }).click();
     await page.getByRole('button', { name: 'Cambiar el nombre: Final' }).waitFor();
-    assert.equal(await page.getByRole('switch').count(), 0, 'a template has no switches');
+    assert.equal(await page.getByRole('switch', { name: 'Final' }).count(), 0, 'a template has no on/off switches');
     await page.getByRole('button', { name: 'Borrar: Final' }).click();
     await page.getByRole('button', { name: 'Cambiar el nombre: Final' }).waitFor({ state: 'detached' });
-    await page.locator('.bar__back').click();
+    // Nothing is written until "Guardar": leaving with "Cancelar" keeps the template as it was
+    await page.getByText('Hay cambios sin guardar.').waitFor();
+    await page.getByRole('link', { name: 'Cancelar' }).click();
+    await page.locator('.lrow__link', { hasText: 'Mi plantilla' }).waitFor();
+    await page.locator('.lrow__link', { hasText: 'Mi plantilla' }).click();
+    assert.equal(await page.getByLabel('Nombre de la plantilla').inputValue(), 'Mi plantilla', 'Cancelar leaves the template alone');
+    // Optional and its explanation, then Guardar
+    await page.getByLabel('Nombre de la plantilla').fill('Rosario');
+    const firstName = (await page.locator('.srow .lrow__title').first().innerText()).replace(/\s*opcional$/, '');
+    await page.getByRole('button', { name: `Opcional y explicación: ${firstName}` }).click();
+    await page.getByRole('switch', { name: /^Opcional:/ }).click();
+    await page.locator('.srow__note').fill('Solo si hay tiempo');
+    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+    await page.locator('.toast', { hasText: 'Plantilla guardada' }).waitFor();
     await page.locator('.lrow__link', { hasText: 'Rosario' }).waitFor();
+    await page.locator('.lrow__link', { hasText: 'Rosario' }).click();
+    assert.match(await page.locator('.srow .lrow__title').first().innerText(), /opcional/, 'optional was saved');
+    await page.getByRole('button', { name: `Opcional y explicación: ${firstName}` }).click();
+    assert.equal(await page.locator('.srow__note').inputValue(), 'Solo si hay tiempo', 'the explanation was saved');
+    await page.getByRole('link', { name: 'Cancelar' }).click();
     await page.getByRole('button', { name: 'Más opciones: Rosario' }).click();
     await page.getByRole('button', { name: 'Duplicar plantilla' }).click();
     await page.getByLabel('Nombre de la plantilla').waitFor();
@@ -951,7 +968,7 @@ try {
     }
     assert.deepEqual(await page.locator('.lrow__title').allTextContents(), ['Misa']);
     await openSection(page, 'Listados');
-    pass('the templates screen: open one, rename it, add and delete a section, duplicate it, delete it after a question; no switches there');
+    pass('the templates screen: open one, rename it, add and delete a section, duplicate it, delete it after a question; optional and its explanation; nothing is saved before Guardar');
 
     // ----- tags: the picker of a section filters by its tag; the editor has them below the lyrics -----
     await createSong(page, 'Etiquetado a mano', '[C]Una letra [G]cualquiera');
