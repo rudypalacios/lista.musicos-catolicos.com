@@ -29,6 +29,10 @@ const DRAWINGS = {
     'arrow-right': { shapes: [['path', { d: 'M5 12h14M12 5l7 7-7 7' }]] },
     'chevron-right': { shapes: [['path', { d: 'M9 6l6 6-6 6' }]] },
     'list-plus': { shapes: [['path', { d: 'M4 6h11M4 12h8M4 18h8M17 14v6M14 17h6' }]] },
+    'chevron-up': { shapes: [['path', { d: 'M6 15l6-6 6 6' }]] },
+    'chevron-left': { shapes: [['path', { d: 'M15 6l-6 6 6 6' }]] },
+    /** The tools of the lyrics (key, size, notation, print): two sliders */
+    tools: { shapes: [['path', { d: 'M4 7h9M17 7h3M4 17h3M11 17h9' }], ['circle', { cx: '15', cy: '7', r: '2' }], ['circle', { cx: '9', cy: '17', r: '2' }]] },
     'chevron-down': { shapes: [['path', { d: 'M6 9l6 6 6-6' }]] },
     'to-top': { shapes: [['path', { d: 'M5 4h14M12 20V8M6 13l6-6 6 6' }]] },
     'to-bottom': { shapes: [['path', { d: 'M5 20h14M12 4v12M6 11l6 6 6-6' }]] },

@@ -497,6 +497,17 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    comparte el orden y las filas ya no abren); toca **Dejar de compartir** y recarga (debe decir «Este enlace ya no existe»); mándaselo a alguien por WhatsApp con **Compartir…** y pídele que lo abra. En el iPad al
    final: que **Compartir…** y **Copiar** funcionen y que el enlace abra bien desde Safari.
 
+47. **La página de un listado compartido, más delgada y sin conexión.** Quien abre un enlace compartido ve ahora: una **cabecera de una sola fila**, el **pie del sitio plegado** (solo una
+   pestañita ⌃ pegada al borde de abajo; la tocas y se abre sobre la página, con ⌄ se cierra) y, al abrir un canto, **la letra ajustada a la pantalla como cuando cantas un listado**: una barra delgada
+   (volver, título y posición, ‹ › y el botón de **herramientas**), las herramientas (tono, tamaño de letra, Do/C e imprimir) **plegadas bajo la barra**, que se despliegan encima de la letra sin
+   moverla, y **deslizar el dedo a la derecha o a la izquierda** (o las flechas ← → en la compu) para cambiar de canto. Ya no hay un bloque «Siguiente» al final. **Es la misma PWA:** al abrir el enlace
+   por primera vez (con conexión) el listado se **guarda en el dispositivo**, y la lista dice «Disponible sin conexión»; sin conexión se abre la copia y una línea dice «Sin conexión. Estás leyendo la
+   copia guardada el …». Si el enlace se apagó, la copia se borra. Un listado que nunca se abrió dice que necesita conexión. **No hay nada que ejecutar.** Pendiente tuyo: el texto de privacidad del sitio
+   público debe decir que se guarda esa copia en el dispositivo (está en el PR). **Prueba en el Android (y la compu):** abre un enlace compartido (también en una ventana de incógnito), mira la lista y un
+   canto; abre las herramientas y cambia el tono (se pone amarillo y el toque lo regresa al del listado); desliza para cambiar de canto; despliega y pliega el pie; pon el teléfono en **modo avión** y recarga
+   el enlace (debe abrir la copia); apaga el enlace desde tu cuenta, ábrelo con conexión (debe decir que ya no existe) y vuelve al modo avión (ya no debe abrir). Si tienes la PWA instalada, manda el enlace
+   por WhatsApp a otro chat y tócalo: mira si Android ofrece abrirlo con Listas (depende de tu Android y de Chrome; dime qué pasa) y, en el iPad al final, que el deslizar no choque con el gesto de volver de Safari.
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.

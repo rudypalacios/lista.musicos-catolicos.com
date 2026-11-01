@@ -145,6 +145,13 @@ proposed for the public site says so, so **do not add any of those without telli
 sheet asks whether the lyrics go with the link, the page says "uso personal" and links to the public site's copyright page. Stopping a share
 kills its link for good (a new share is a new code). `tests/e2e/share.ts` covers it end to end under the production policy.
 
+The visitor's page is the same PWA: it registers the app's service worker and keeps a copy of the list it opened in a database of its own
+(`web/src/shared-store.ts`, `lista-shared`, never mixed with the owner's data), so it opens with no connection and says it is a copy and from when; a
+link found stopped (404) deletes its copy. That copy and the visitor's reading preferences (key, size, notation) are the only things stored on a
+visitor's device, and the privacy text proposed for the public site says so. The page is built to read the words: a one-row header, the foot of the
+site folded away (a small tab at the bottom edge), and a song shown as when singing (the app's `createReader`, lyrics fitted to the screen, the tools
+folded under the bar, a swipe or ← → to change song). Keep it that way: the lyrics get the screen.
+
 ## Public repository
 
 Nothing private goes in the repo: no `.env`, no real server paths, user names or database

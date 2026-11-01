@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { asSong, bySection, countLabel, keyOf, readingOrder, updatedLabel, type SharedList } from '../src/shared-model.ts';
+import { asSong, bySection, copyNote, countLabel, keyOf, readingOrder, updatedLabel, type SharedList } from '../src/shared-model.ts';
 
 const list = (): SharedList => ({
     title: 'Misa',
@@ -74,5 +74,13 @@ describe('labels', () => {
         assert.equal(countLabel(1), '1 canto');
         assert.equal(countLabel(12), '12 cantos');
         assert.match(updatedLabel(Date.UTC(2026, 9, 31, 15)), /^31 de octubre$/);
+    });
+});
+
+describe('copyNote', () => {
+    it('says why a copy is shown and how old it is', () => {
+        const saved = Date.UTC(2026, 9, 31, 15);
+        assert.deepEqual(copyNote(true, saved), { lead: 'Sin conexión.', rest: ' Estás leyendo la copia guardada el 31 de octubre.' });
+        assert.equal(copyNote(false, saved).lead, 'No se pudo actualizar.');
     });
 });

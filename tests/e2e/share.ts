@@ -72,9 +72,14 @@ try {
     await visitor.goto(url);
     await visitor.getByRole('heading', { name: TITLE }).waitFor();
     await visitor.getByText('Músicos Católicos').first().waitFor();
-    await visitor.getByText('Derechos de autor').first().waitFor();
     assert.equal(await visitor.locator('.bar, .menu, nav[aria-label="Menú"]').count(), 0, 'no bar or menu of the app');
+    // The foot of the site is folded away: only its tab shows, and the links are not reachable until it is opened
+    assert.equal(await visitor.getByText('Derechos de autor').first().isVisible(), false, 'the foot is folded');
+    await visitor.getByRole('button', { name: 'Mostrar el pie' }).click();
+    await visitor.getByText('Derechos de autor').first().waitFor();
     assert.equal(await visitor.getByText('Para uso personal. Las letras y los acordes pertenecen a sus autores.').first().isVisible(), true);
+    await visitor.getByRole('button', { name: 'Ocultar el pie' }).click();
+    await visitor.getByText('Derechos de autor').first().waitFor({ state: 'hidden' });
     const rows = await visitor.locator('.pub-row').allTextContents();
     assert.equal(rows.length, 2);
     assert.match(rows[0] ?? '', /Caminamos con alegría/);
@@ -82,33 +87,91 @@ try {
     for (const private_ of ['nota privada', 'privado', 'owner@example.com']) {
         assert.equal(await visitor.getByText(private_).count(), 0, private_);
     }
-    pass('visitor: the list opens with no session, in the public site\'s look, with the keys of the list and nothing personal');
+    pass('visitor: the list opens with no session, thin, with the foot folded away that opens and closes, the keys of the list and nothing personal');
 
     await visitor.getByText('Caminamos con alegría').first().click();
-    await visitor.getByRole('heading', { name: 'Caminamos con alegría' }).waitFor();
+    await visitor.locator('.song-sheet').waitFor();
+    assert.equal(await visitor.locator('.pub-bar__text b').textContent(), 'Caminamos con alegría');
     assert.match(visitor.url(), /\/c\/[0-9a-f]{32}\/1$/);
+    assert.equal(await visitor.locator('.pub-head').count(), 0, 'a song has no header of the site: the screen is the lyrics');
     const chord = visitor.locator('.song-sheet .ch').first();
     assert.equal(await chord.textContent(), 'Re');
+    // The tools are folded under the bar: only their button shows
+    assert.equal(await visitor.getByRole('button', { name: 'Subir medio tono' }).isVisible(), false, 'the tools are folded');
+    await visitor.getByRole('button', { name: 'Herramientas' }).click();
     await visitor.getByRole('button', { name: 'Subir medio tono' }).click();
     assert.equal(await chord.textContent(), 'Mib');
     await visitor.getByRole('button', { name: /Volver al tono del listado/ }).click();
     assert.equal(await chord.textContent(), 'Re');
     await visitor.getByRole('button', { name: 'Letra más grande' }).click();
-    pass('visitor: a song opens in the list\'s key; the visitor can move it and come back, and make the lyrics bigger');
+    await visitor.getByRole('button', { name: 'Imprimir' }).click();
+    await visitor.getByRole('button', { name: /Con acordes/ }).waitFor();
+    await visitor.getByRole('button', { name: /Solo letra/ }).waitFor();
+    await visitor.keyboard.press('Escape');
+    await visitor.getByRole('button', { name: /Con acordes/ }).waitFor({ state: 'hidden' });
+    await visitor.getByRole('button', { name: 'Plegar las herramientas' }).click();
+    await visitor.getByRole('button', { name: 'Subir medio tono' }).waitFor({ state: 'hidden' });
+    pass('visitor: a song opens in the list\'s key with the tools folded under the bar; the key moves and comes back, the lyrics grow, printing offers its two sheets');
 
     await visitor.reload();
-    await visitor.getByRole('heading', { name: 'Caminamos con alegría' }).waitFor();
+    await visitor.locator('.song-sheet').waitFor();
     assert.equal(await visitor.locator('.song-sheet .ch').first().textContent(), 'Re', 'what the visitor changed was only theirs, for now');
-    await visitor.getByRole('link', { name: /Pan de vida/ }).click();
-    await visitor.getByRole('heading', { name: 'Pan de vida' }).waitFor();
+    await visitor.getByRole('button', { name: 'Canto siguiente' }).click();
+    await visitor.getByText('Pan de vida').first().waitFor();
+    assert.equal(await visitor.locator('.pub-bar__text b').textContent(), 'Pan de vida');
+    await visitor.keyboard.press('ArrowLeft');
+    await visitor.locator('.pub-bar__text b', { hasText: 'Caminamos con alegría' }).waitFor();
     await visitor.goBack();
-    await visitor.getByRole('heading', { name: 'Caminamos con alegría' }).waitFor();
-    pass('visitor: the addresses are real: reload and back work, and the next song is one link away');
+    await visitor.getByText('Pan de vida').first().waitFor();
+    pass('visitor: the addresses are real: reload and back work, ‹ › and the arrow keys change the song');
 
     assert.deepEqual([...hosts], [new URL(server.base).host], 'the page asked for nothing from another origin');
     assert.deepEqual(violations, [], 'the production security policy is respected');
     assert.deepEqual(visitorProblems, []);
     pass('visitor: no request to another origin, no policy violation, no uncaught error');
+
+    // ----- the same app: a swipe changes the song, and the list opens with no connection -----
+    const touch = await browser.newContext({ viewport: { width: 390, height: 800 }, hasTouch: true, serviceWorkers: 'block' });
+    const phone = await touch.newPage();
+    await phone.goto(`${url}/1`);
+    await phone.locator('.song-sheet').waitFor();
+    const cdp = await touch.newCDPSession(phone);
+    const finger = (type: 'touchStart' | 'touchMove' | 'touchEnd', x: number, y: number): Promise<unknown> =>
+        cdp.send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : [{ x, y }] });
+    await finger('touchStart', 320, 400);
+    for (const x of [280, 240, 200, 160, 120]) {
+        await finger('touchMove', x, 404);
+    }
+    await finger('touchEnd', 0, 0);
+    await phone.locator('.pub-bar__text b', { hasText: 'Pan de vida' }).waitFor();
+    assert.match(phone.url(), /\/2$/);
+    await finger('touchStart', 80, 400);
+    for (const x of [120, 160, 200, 240, 280]) {
+        await finger('touchMove', x, 396);
+    }
+    await finger('touchEnd', 0, 0);
+    await phone.locator('.pub-bar__text b', { hasText: 'Caminamos con alegría' }).waitFor();
+    pass('visitor: swiping the song to the left brings the next one and to the right the one before, as when singing a list');
+
+    const installed = await browser.newContext({ viewport: { width: 390, height: 800 } });
+    const reading = await installed.newPage();
+    await reading.goto(url);
+    await reading.getByRole('heading', { name: TITLE }).waitFor();
+    await reading.getByText('Disponible sin conexión').waitFor();
+    await reading.evaluate(() => navigator.serviceWorker.ready.then(() => undefined));
+    await reading.reload();
+    assert.equal(await reading.evaluate(() => navigator.serviceWorker.controller !== null), true, 'the app\'s worker keeps the page for a visitor too');
+    // The answer may be kept a minute by the browser itself: it is cleared so the page really finds no connection
+    await (await installed.newCDPSession(reading)).send('Network.clearBrowserCache');
+    await installed.setOffline(true);
+    await reading.reload();
+    await reading.getByRole('heading', { name: TITLE }).waitFor();
+    await reading.getByText('Sin conexión.').waitFor();
+    await reading.getByText(/Estás leyendo la copia guardada el/).waitFor();
+    await reading.getByText('Caminamos con alegría').first().click();
+    await reading.locator('.song-sheet').waitFor();
+    assert.equal(await reading.locator('.song-sheet .ch').first().textContent(), 'Re');
+    pass('offline: a list opened once is read again with no connection, a song included, and the page says it is a copy and from when');
 
     // ----- the owner switches the lyrics off -----
     await owner.getByRole('switch').first().click();
@@ -134,6 +197,16 @@ try {
     await visitor.getByText('Este enlace ya no existe').waitFor();
     assert.equal(await visitor.locator('.pub-gone').textContent(), stopped, 'a stopped and an invented link look the same');
     pass('stopping: the link stops working at once, and says the same as one that never existed');
+
+    // The copy the visitor kept goes when the link is found stopped; with no connection there is then nothing to read
+    await installed.setOffline(false);
+    await reading.goto(url);
+    await reading.getByText('Este enlace ya no existe').waitFor();
+    await installed.setOffline(true);
+    await reading.reload();
+    await reading.getByText('Sin conexión').first().waitFor();
+    await reading.getByText('todavía no está guardado en este dispositivo').waitFor();
+    pass('offline: when the link was stopped the kept copy is forgotten, and a list never opened says it needs a connection');
 
     assert.deepEqual(problems, []);
     pass('no uncaught errors for the owner');
