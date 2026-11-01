@@ -3024,11 +3024,12 @@ button.notice-line__info {
 
 .confirm__buttons {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.5rem;
 }
 
 .confirm__buttons .button {
-    flex: 1;
+    flex: 1 1 auto;
 }
 
 /* The sections of a list: a switch (drawn, not a native checkbox, so it looks the same on every device), the name, the moves and "✕" */

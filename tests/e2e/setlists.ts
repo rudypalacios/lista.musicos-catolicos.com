@@ -934,7 +934,26 @@ try {
     await page.getByRole('button', { name: 'Cambiar el nombre: Final' }).waitFor({ state: 'detached' });
     // Nothing is written until "Guardar": leaving with "Cancelar" keeps the template as it was
     await page.getByText('Hay cambios sin guardar.').waitFor();
+    // Leaving with something unsaved asks: the bar's back, then "Seguir editando" stays
+    await page.locator('.bar__back').click();
+    const leaving = page.getByRole('alertdialog');
+    await leaving.getByText('¿Salir sin guardar?').waitFor();
+    assert.deepEqual(await leaving.getByRole('button').allTextContents(), ['Seguir editando', 'Descartar', 'Guardar']);
+    await noTypedIcons(page, 'the unsaved-changes question');
+    await leaving.getByRole('button', { name: 'Seguir editando' }).click();
+    await page.getByText('Hay cambios sin guardar.').waitFor();
+    // The device's back button asks too, and "Descartar" leaves
+    await page.goBack();
+    await leaving.getByText('¿Salir sin guardar?').waitFor();
+    assert.match(page.url(), /\/plantillas\/[0-9a-f-]+$/, 'the address is put back while the question is open');
+    await leaving.getByRole('button', { name: 'Descartar' }).click();
+    await page.getByRole('heading', { name: 'Plantillas' }).waitFor();
+    await page.locator('.lrow__link', { hasText: 'Mi plantilla' }).waitFor();
+    assert.equal(await page.locator('.confirm').count(), 0);
+    await page.locator('.lrow__link', { hasText: 'Mi plantilla' }).click();
+    await page.getByLabel('Nombre de la plantilla').fill('Otro nombre');
     await page.getByRole('link', { name: 'Cancelar' }).click();
+    await leaving.getByRole('button', { name: 'Descartar' }).click();
     await page.locator('.lrow__link', { hasText: 'Mi plantilla' }).waitFor();
     await page.locator('.lrow__link', { hasText: 'Mi plantilla' }).click();
     assert.equal(await page.getByLabel('Nombre de la plantilla').inputValue(), 'Mi plantilla', 'Cancelar leaves the template alone');
@@ -951,7 +970,16 @@ try {
     assert.match(await page.locator('.srow .lrow__title').first().innerText(), /opcional/, 'optional was saved');
     await page.getByRole('button', { name: `Opcional y explicación: ${firstName}` }).click();
     assert.equal(await page.locator('.srow__note').inputValue(), 'Solo si hay tiempo', 'the explanation was saved');
-    await page.getByRole('link', { name: 'Cancelar' }).click();
+    // "Guardar" in the question saves and leaves
+    await page.getByLabel('Nombre de la plantilla').fill('Rosario');
+    await page.getByLabel('Nombre de la plantilla').fill('Rosario del jueves');
+    await page.locator('.bar__back').click();
+    await leaving.getByRole('button', { name: 'Guardar' }).click();
+    await page.locator('.lrow__link', { hasText: 'Rosario del jueves' }).waitFor();
+    await page.locator('.lrow__link', { hasText: 'Rosario del jueves' }).click();
+    await page.getByLabel('Nombre de la plantilla').fill('Rosario');
+    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+    await page.locator('.lrow__link', { hasText: 'Rosario' }).waitFor();
     await page.getByRole('button', { name: 'Más opciones: Rosario' }).click();
     await page.getByRole('button', { name: 'Duplicar plantilla' }).click();
     await page.getByLabel('Nombre de la plantilla').waitFor();
