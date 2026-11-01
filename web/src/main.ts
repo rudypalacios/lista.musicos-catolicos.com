@@ -31,6 +31,7 @@ import { settingsView } from './views/settings.ts';
 import { signInView } from './views/signin.ts';
 import { dismissSheetOnBack } from './views/sheet.ts';
 import type { Account, Navigate, View } from './views/types.ts';
+import { startShared } from './views/shared.ts';
 import { viewView } from './views/view.ts';
 
 /**
@@ -381,36 +382,43 @@ function splash(text: string): HTMLElement {
 
 // Whatever goes wrong while starting, say so instead of leaving a blank screen
 window.addEventListener('error', (event) => {
-    if (document.querySelector('.bar') === null) {
+    if (document.querySelector('.bar') === null && document.querySelector('.pub') === null) {
         showFatal(app, event.error ?? event.message);
     }
 });
 window.addEventListener('unhandledrejection', (event) => {
-    if (document.querySelector('.bar') === null) {
+    if (document.querySelector('.bar') === null && document.querySelector('.pub') === null) {
         showFatal(app, event.reason);
     }
 });
 
-applyReadingColors();
-// Chrome's install prompt comes once, soon after load: be listening before anything else is built
-watchInstallPrompt();
-// The browser drops the screen lock whenever the page is hidden: ask again when it is back
-document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-        screenKeeper.resume();
-    }
-});
-startUpdates();
-void App.create(() => {
-    // Another window still runs the old version and holds the data: say what to do, not just wait
-    const waiting = document.querySelector('.splash p');
-    if (waiting !== null) {
-        waiting.textContent = 'Cierra las demás ventanas de la app para terminar de actualizarla…';
-    }
-})
-    .then((data) => {
-        data.watchConnection();
-
-        return begin(data);
+const visiting = matchRoute(location.pathname);
+if (visiting.name === 'shared') {
+    // Somebody who was given a link to a list: no account, no data of this device, no sync and no service worker.
+    // The page reads the list from the server and shows it (views/shared.ts)
+    startShared(app, visiting.code);
+} else {
+    applyReadingColors();
+    // Chrome's install prompt comes once, soon after load: be listening before anything else is built
+    watchInstallPrompt();
+    // The browser drops the screen lock whenever the page is hidden: ask again when it is back
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            screenKeeper.resume();
+        }
+    });
+    startUpdates();
+    void App.create(() => {
+        // Another window still runs the old version and holds the data: say what to do, not just wait
+        const waiting = document.querySelector('.splash p');
+        if (waiting !== null) {
+            waiting.textContent = 'Cierra las demás ventanas de la app para terminar de actualizarla…';
+        }
     })
-    .catch((error: unknown) => showFatal(app, error));
+        .then((data) => {
+            data.watchConnection();
+
+            return begin(data);
+        })
+        .catch((error: unknown) => showFatal(app, error));
+}

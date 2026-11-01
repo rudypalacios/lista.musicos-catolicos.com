@@ -175,6 +175,15 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       mostly are not read (the lyrics are). **Known limits:** sharps (`#`) are often lost, a sheet turned 90° is not turned back, the reader (~6 MB: engine + language data) is not kept for offline use (like the PDF
       reader), and the policy in `public/.htaccess` now allows `wasm-unsafe-eval` (the only widening). **Not done on purpose:** a model of vision on a server (not free, and it would send the photo to a third party). Public
       use would not cost anything per person (it runs on each device). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 45 (the iPad at the end: Safari must accept `wasm-unsafe-eval`; if it does not, the card must say so).
+- [x] **Share a list by a link** (`src/Share/`, migrations `0012` and `0013`, `web/src/views/shared.ts` and `share-sheet.ts`; the owner approved the mockup, unlocked the two "⋯" sheets for it
+      and chose "cualquiera": the link is public): "Compartir listado" is a new action in the "⋯" of each row of Listados and of the list itself. Its sheet has a switch **"Incluir letra y acordes"**
+      (on by default, with the notice that the words belong to their authors), "Crear enlace" and, once shared, the link (to copy, or "Compartir…" where the phone has its own), the same switch (it applies at
+      once, the link stays) and "Dejar de compartir" (asks first; the link dies for good, sharing again makes a new code). Anyone with the link reads the list at `/c/:code` with no account, in
+      the look of the public site (its header, footer, tracks list and lyrics; no menu, nothing to edit), opens a song (`/c/:code/:n`), moves the key for themselves and prints. The server's public answer
+      carries only the title, the sections shown, the songs in order with the key each has in the list and (if chosen) the lyrics; a stopped, never given, malformed or deleted-list link all answer the same
+      404, an address that keeps missing is slowed down (`MissThrottle`), and the answer can be kept a minute with an ETag. The visitor's page has no cookies, analytics or ads and asks for nothing from another
+      origin (checked under the production policy). **Left for the owner:** publish the privacy text proposed in the PR in `musicos-catolicos` (Privacidad) and decide whether the lyrics switch stays on by default.
+      **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 46.
 - [x] Creating a list from an import was weighed and **decided against** (the owner, 2026-11-01): too many cases (a song with no title, not a Mass, repeated or already held songs). A list is made with "＋ Nuevo" and the picker of each section, which already offers the songs tagged for it.
 - [ ] A help page (FAQ) in the app: `faq.md` holds the first notes (the draft of "Nuevo canto"); make it a screen later, in Spanish, reachable from Ajustes.
 - [x] **New song, PR B** (`views/edit.ts`, `song-draft.ts`, `importer.ts` `convertPastedSheet`; the owner approved the mockup): "Escribir | Ver"
@@ -396,8 +405,12 @@ Next, in this order (design agreed with the owner):
 
 - [ ] Songs from the Músicos Católicos catalogue (approved songs per part of the Mass).
 - [ ] Personal key preference per song ("change everywhere").
-- [ ] Share a list by link; public and private profiles. Needs the privacy text (`CLAUDE.md`,
-      "Policies") and a look at copyright.
+- [ ] **Sharing, what comes after the list's link** (the owner's plan, 2026-11-01): (1) a song by a link, with the same lyrics switch and the same notice about the
+      authors' rights; (2) the visitor keeping the list to read it with no connection ("Guardar para leer sin internet", its own store apart from the person's);
+      (3) accounts of other people (sign-up, password recovery, permissions, two people editing one list: today the newest edit wins as a whole), which changes the data
+      model and the privacy text, so only once the first two are used. Public and private profiles stay with that third step.
+- [ ] Share the key a list has each song in when the lyrics are not shared: today the visitor of a list shared with no lyrics sees the order, the titles and the authors
+      but no keys (the key comes from the chords, which the server does not read: the parser lives in the app).
 - [ ] `develop` branch and a preview environment, if more people use it.
 
 ## Known limits

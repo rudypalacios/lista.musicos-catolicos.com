@@ -44,6 +44,10 @@ const DRAWINGS = {
     sections: { shapes: [['path', { d: 'M4 6h2M10 6h10M4 12h8M16 12h4M4 18h4M12 18h8' }], ['circle', { cx: '8', cy: '6', r: '2' }], ['circle', { cx: '14', cy: '12', r: '2' }], ['circle', { cx: '10', cy: '18', r: '2' }]] },
     list: { shapes: [['path', { d: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01' }]] },
     settings: { shapes: [['circle', { cx: '12', cy: '12', r: '3' }], ['path', { d: 'M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1' }]] },
+    /** Giving a list out by a link */
+    share: { shapes: [['circle', { cx: '6', cy: '12', r: '2.6' }], ['circle', { cx: '18', cy: '6', r: '2.6' }], ['circle', { cx: '18', cy: '18', r: '2.6' }], ['path', { d: 'M8.3 10.8l7.4-3.6M8.3 13.2l7.4 3.6' }]] },
+    /** A link: where a shared list is, and what stops it */
+    link: { shapes: [['path', { d: 'M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1' }]] },
     /** Taking a photo of a sheet (Importar) */
     camera: { shapes: [['path', { d: 'M4 8h3l1.6-2.2h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z' }], ['circle', { cx: '12', cy: '13.2', r: '3.6' }]] },
     /** Choosing a picture from the gallery (Importar) */

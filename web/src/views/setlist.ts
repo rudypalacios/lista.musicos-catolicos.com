@@ -14,6 +14,7 @@ import { paths } from '../router.ts';
 import { showToast, showUndoToast } from '../toast.ts';
 import { todayKeys } from '../today-keys.ts';
 import { deleteListAfterAsking } from './delete-list.ts';
+import { createShareSheet } from './share-sheet.ts';
 import { createSheet, sheetAction } from './sheet.ts';
 import type { Navigate, View } from './types.ts';
 
@@ -92,7 +93,9 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
     const songSheet = createSheet('Opciones del canto', () => fillSongSheet());
     listSheet.element.classList.add('sheet-layer--window');
     songSheet.element.classList.add('sheet-layer--window');
-    element.append(listSheet.element, songSheet.element);
+    // "Compartir listado": its own sheet, which comes after the list's
+    const shareSheet = createShareSheet();
+    element.append(listSheet.element, songSheet.element, shareSheet.element);
 
     const print = (version: PrintVersion): void => {
         // Straight from the tap (a browser may refuse to print from anything later), then the sheet goes
@@ -113,6 +116,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             h('p', { class: 'sheet__sub' }, rows === 1 ? '1 canto' : `${rows} cantos`),
             // First: what the list is made of; then what is done with it
             action('sections', 'Secciones del listado', () => listSheet.close(() => navigate(paths.sections(setlist.id))), { hint: 'Qué secciones lleva este listado' }),
+            action('share', 'Compartir listado', () => listSheet.close(() => shareSheet.open(setlist)), { hint: 'Un enlace para que cualquiera lo lea' }),
             ...(rows > 0 ? [action('printer', 'Imprimir con acordes', () => print('chords')), action('printer', 'Imprimir solo la letra', () => print('lyrics'))] : []),
             // Last and set apart, so it is not touched by mistake next to printing
             sheetAction('trash', 'Eliminar listado', () => {
@@ -437,6 +441,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             drags.forEach((drag) => drag.dispose());
             songSheet.release();
             listSheet.release();
+            shareSheet.release();
             // What was typed and not yet "changed" (a navigation can come before the blur) is still saved
             const unchanged = title.value === setlist.title;
             if (!unchanged && title.value.trim() !== '') {

@@ -16,6 +16,8 @@ Offline-first PWA to plan the music of a Mass. Private for now, built to be fold
 | `web/src/chordpro/` | ChordPro parser, chords, transposition, lyrics renderer: ports of the public site's PHP and `song.js` |
 | `web/src/data/` | Songs and setlists on the device (IndexedDB, one store contract for both collections), the queues of unsent records, the sync engine; `library.ts` and `setlists.ts` are the operations on each |
 | `web/src/` (others) | `importer.ts` (chords above the words → ChordPro; one song or a whole Mass), `fit.ts` (fit to the screen), `mass.ts` (the parts of the Mass: what a new list starts with, and what the importer recognises), `views/sections.ts` and `views/section-editor.ts` (the sections of a list, and of a template), `views/templates.ts` and `views/template.ts` (the templates), `data/templates.ts` (the Misa and the person's own templates), `data/parts.ts` (what is done to sections), `data/tags.ts` (the tags of a song and of a section), `views/tag-field.ts` (the tags in the song editor), `install.ts` (is this Safari on iOS, or the installed app?), `toast.ts` (the "Guardado" message), `bottom-chrome.ts` (keeps the messages above the menu and the install bar), `settings.ts` (lyric colours; the settings themselves are in `prefs.ts`, on the device), `sw.ts` (service worker) |
+| `web/src/views/shared.ts`, `share-sheet.ts`, `web/src/share.ts`, `shared-model.ts` | Sharing a list: the visitor's page (the public site's look), the sheet of whoever shares (the link, the lyrics switch, stop sharing) and what both need that is pure and tested |
+| `src/Share/` | The links: `ShareRepository` (make, change, stop, and what a visitor sees) and `MissThrottle` (slows an address that keeps asking for links that do not exist) |
 | `web/src/ocr/` | Importing from a photo: `words.ts` (pure, tested: puts the two readings of a photo together, takes the tilt out, tells the columns apart and hands the words to the PDF layout), `read.ts` (the Tesseract glue, loaded lazily), `progress.ts` (the bar). `web/src/pdf/` is the PDF reader: `layout.ts` (pure, tested), `read.ts` (pdf.js glue), `measure.ts` |
 | `web/src/print/` | Printing: `layout.ts` (the `PrintLayout.php` cascade, ported as it is), `plan.ts` (what a page prints: header, musical data, key), `print.ts` (fills `#print-root` and calls `window.print()`), `print.css` (copied from the public site's print rules) |
 | `web/fonts/` | The fonts the public site prints with (Atkinson Hyperlegible, Bricolage Grotesque; OFL), served from this origin so a printout looks the same and works offline |
@@ -68,6 +70,22 @@ a section, with its key in semitones for that list only); both travel inside it.
 newest-edit-wins rule. A template is the sections a new list starts with under a name (1 to 30 sections, a name of at most 60
 characters); a list takes a copy when it is made and a template never changes one that exists. `GET /api/sync` answers `{songs,
 setlists, templates, cursor, hasMore}`: the three kinds share one counter and one cursor.
+
+### Sharing a list by a link
+
+A list can be given out as a link anyone can open (read only, no account). The person's side needs a session; the visitor's does not.
+
+| Method and path | Answers |
+|---|---|
+| `GET /api/lists/{id}/share` | `200 {shared: false}` or `{shared: true, code, withLyrics}` · `401` · `404` |
+| `PUT /api/lists/{id}/share` `{withLyrics: bool}` | `200 {shared: true, code, withLyrics}`: shares the list (the first time, making the link) or changes whether the lyrics and chords go with it (the link stays) · `400` · `401` · `404` (not the user's, deleted, or not synced to the server yet) |
+| `DELETE /api/lists/{id}/share` | `200 {shared: false}`: the link stops working for good; sharing again makes a new one · `401` · `404` |
+| `GET /api/shared/{code}` (no session) | `200 {title, withLyrics, updatedAt, parts, items, songs}`, `Cache-Control: public, max-age=60` and an `ETag` (`304` with `If-None-Match`) · `404` for a link that is stopped, never given, malformed or whose list is deleted (the same answer for all) · `429` after 30 misses in 15 minutes from one address |
+
+The public answer says only what a visitor needs: the title, the sections the list shows, the songs in order with the key each has in the
+list and, if the person chose it, the lyrics. Never the account, the notes, the tags or any other list or song. The code is 128 random bits as
+32 hex characters (`src/Share/`; migration `0012`). The visitor's page is `/c/:code` (and `/c/:code/:n` for a song), served by the app shell
+and drawn like the pages of the public site (`web/src/views/shared.ts`).
 
 Errors: `{error: "<code>", message: "<texto en español>"}`.
 

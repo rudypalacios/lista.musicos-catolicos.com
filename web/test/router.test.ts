@@ -165,3 +165,24 @@ describe('editing a song from singing', () => {
         assert.deepEqual(parentOf({ name: 'edit', id: ID }), { path: paths.view(ID), label: 'Canto' });
     });
 });
+
+describe('a shared list', () => {
+    const code = '0123456789abcdef0123456789abcdef';
+
+    it('is read at its code, and at a song of it, with no account', () => {
+        assert.deepEqual(matchRoute(`/c/${code}`), { name: 'shared', code });
+        assert.deepEqual(matchRoute(`/c/${code}/3`), { name: 'shared', code, n: 3 });
+        assert.deepEqual(matchRoute(`/c/${code}/`), { name: 'shared', code });
+    });
+
+    it('builds addresses it can read back', () => {
+        assert.deepEqual(matchRoute(paths.shared(code)), { name: 'shared', code });
+        assert.deepEqual(matchRoute(paths.shared(code, 12)), { name: 'shared', code, n: 12 });
+    });
+
+    it('refuses a code that is not one and anything after the number', () => {
+        for (const wrong of ['/c', '/c/', '/c/abc', `/c/${code.toUpperCase()}`, `/c/${code}x`, `/c/${code}/0x`, `/c/${code}/1/2`, `/c/${code}/1234`]) {
+            assert.equal(matchRoute(wrong).name, 'not-found', wrong);
+        }
+    });
+});

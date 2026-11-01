@@ -1,5 +1,7 @@
 /** Thin client for the JSON API (src/Http). Every failure is an ApiError the UI can tell apart. */
 import type { ErrorKinds } from './data/sync.ts';
+import type { ShareState } from './share.ts';
+import type { SharedList } from './shared-model.ts';
 import type { Collection, Pulled, Pushed, Records, Remote, Setlist, Song, Stamped, Template } from './data/types.ts';
 
 export class ApiError extends Error {
@@ -129,6 +131,19 @@ export const api = {
     push: <C extends Collection>(collection: C, records: readonly Records[C][]): Promise<Pushed> =>
         request<Pushed>('POST', '/api/sync', { [collection]: records.map(toWire) }),
 };
+
+/** Giving a list out by a link (the person's side: it needs a session) */
+export const share = {
+    status: (setlistId: string): Promise<ShareState> => request<ShareState>('GET', `/api/lists/${setlistId}/share`),
+    /** Shares the list, or changes whether the lyrics and chords go with it (the link stays the same) */
+    enable: (setlistId: string, withLyrics: boolean): Promise<ShareState> =>
+        request<ShareState>('PUT', `/api/lists/${setlistId}/share`, { withLyrics }),
+    /** Stops sharing: the link stops working for good */
+    stop: (setlistId: string): Promise<ShareState> => request<ShareState>('DELETE', `/api/lists/${setlistId}/share`, {}),
+};
+
+/** What a link shows, for anyone: no session */
+export const readShared = (code: string): Promise<SharedList> => request<SharedList>('GET', `/api/shared/${code}`);
 
 /** The server, as the sync engine sees it */
 export const remote: Remote = { pull: api.pull, push: api.push };

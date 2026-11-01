@@ -485,6 +485,18 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    Mira cuánto tarda una foto grande en el teléfono. **Prueba en el iPad (al final):** que Safari acepte el lector (si no lo acepta, la tarjeta dice «No se pudo abrir el lector» y avísame: habría que revisar la
    política), que «Tomar fotografía» abra la cámara trasera y que la foto salga derecha aunque la hayas tomado girada.
 
+46. **Compartir un listado por un enlace (solo lectura, cualquiera puede abrirlo).** En *Listados*, el `⋯` de cada fila (y el `⋯` de la esquina dentro del listado) tiene ahora
+   **Compartir listado**. Se abre una hoja con el interruptor **«Incluir letra y acordes»** (encendido; apagado, el enlace muestra solo el orden, los títulos y los autores), el aviso de que las letras y los
+   acordes pertenecen a sus autores y **Crear enlace**. Ya compartido, la hoja muestra el enlace con **Copiar** (en el teléfono, también **Compartir…**, la hoja del sistema), el mismo interruptor (se aplica
+   al momento y el enlace no cambia) y **Dejar de compartir** (pregunta antes; el enlace deja de funcionar para siempre, y si compartes otra vez el enlace es otro). **Necesita conexión**, y que el listado ya esté en
+   el servidor (si lo acabas de crear sin conexión, dice que esperes a que se sincronice). Quien abre el enlace **no necesita cuenta**: ve el listado con el aspecto de las páginas públicas de Músicos Católicos
+   (su cabecera, su pie con los enlaces legales, la lista como la de pistas de un álbum), abre un canto, sube o baja el tono solo para él y puede imprimir; no puede editar nada y no ve tu correo, tus notas ni tus otros
+   listados. **La migración `0012` (y `0013` en MySQL) crea las tablas sola: no hay nada que ejecutar.** **Pendiente tuyo antes de compartir de verdad:** publicar en el sitio público (*Privacidad*) el texto de
+   privacidad que dejé en el PR, porque esta es la única parte de Lista que es pública (sin cookies, sin análisis, sin anuncios). **Prueba (teléfono y compu):** comparte un listado con letra y ábrelo en una ventana de
+   incógnito (sin sesión): mira que se vea como el sitio, que cada canto abra en el tono del listado y que el `+` / `−` lo cambie solo ahí; apaga la letra en la hoja y recarga el enlace (debe decir que solo se
+   comparte el orden y las filas ya no abren); toca **Dejar de compartir** y recarga (debe decir «Este enlace ya no existe»); mándaselo a alguien por WhatsApp con **Compartir…** y pídele que lo abra. En el iPad al
+   final: que **Compartir…** y **Copiar** funcionen y que el enlace abra bien desde Safari.
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.
