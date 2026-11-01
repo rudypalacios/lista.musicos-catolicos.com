@@ -137,6 +137,16 @@ try {
     await page.getByLabel('Letra con acordes').fill(SHORT);
     pass('chords typed in lowercase are read, previewed and written as capitals');
 
+    // − / + in the editor move every chord of the text, with the preview, and back leaves it as it was
+    assert.equal(await page.locator('.edit-tone .tone-control__key').innerText(), 'Do');
+    await page.getByRole('button', { name: 'Bajar el tono un semitono' }).click();
+    assert.equal(await page.getByLabel('Letra con acordes').inputValue(), SHORT.replace('[C]', '[B]').replace('[G]', '[F#]'));
+    assert.equal(await page.locator('.edit-tone .tone-control__key').innerText(), 'Si');
+    assert.deepEqual(await page.locator('.preview .ch').allTextContents(), ['Si', 'Fa#']);
+    await page.getByRole('button', { name: 'Subir el tono un semitono' }).click();
+    assert.equal(await page.getByLabel('Letra con acordes').inputValue(), SHORT);
+    pass('the editor has a key control: − / + move every chord of the text and the preview follows');
+
     // No title: said at the field, which gets the focus, and nothing is saved
     await page.getByLabel('Título').fill('');
     await page.getByRole('button', { name: 'Guardar' }).click();

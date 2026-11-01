@@ -1,5 +1,6 @@
 import type { App } from '../app.ts';
 import { capitaliseChords } from '../chordpro/capitalise.ts';
+import { transposeBody } from '../chordpro/transpose-body.ts';
 import { parse, songKey } from '../chordpro/parser.ts';
 import { sheetHtml } from '../chordpro/sheet.ts';
 import { ValidationError, type SongDraft } from '../data/library.ts';
@@ -86,6 +87,21 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         title.removeAttribute('aria-invalid');
     });
     const keyChip = h('span', { class: 'chip', hidden: true });
+    // The key of the text, with − / + to move every chord in it (the song keeps no other key than the one it is written in)
+    const toneDown = h('button', { type: 'button', 'aria-label': 'Bajar el tono un semitono' }, icon('minus', 20));
+    const toneUp = h('button', { type: 'button', 'aria-label': 'Subir el tono un semitono' }, icon('plus', 20));
+    const toneKey = h('span', { class: 'tone-control__key', 'aria-live': 'polite' });
+    const toneRow = h('div', { class: 'edit-tone' },
+        h('span', { class: 'edit-tone__label' }, 'Tono'),
+        h('div', { class: 'tone-control__step' }, toneDown, toneKey, toneUp),
+        h('span', { class: 'edit-tone__hint' }, 'Cambia los acordes de la letra'));
+    const moveChords = (by: number): void => {
+        body.value = transposeBody(capitaliseChords(body.value), by);
+        // As if typed: the preview, the notice of the key, the draft and the leave guard all follow
+        body.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    toneDown.addEventListener('click', () => moveChords(-1));
+    toneUp.addEventListener('click', () => moveChords(1));
     const sheet = h('div', { class: 'song-sheet' });
     const preview = h('section', { class: 'preview', 'aria-label': 'Vista previa' }, h('h3', {}, 'Vista previa '), keyChip, sheet);
 
@@ -96,6 +112,10 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         const key = songKey(parsed);
         keyChip.hidden = key === null;
         keyChip.textContent = key === null ? '' : `Tono ${transpose(key, 0, readNotation())}`;
+        toneKey.textContent = key === null ? '—' : transpose(key, 0, readNotation());
+        // A text with no chord has nothing to move
+        toneDown.disabled = key === null;
+        toneUp.disabled = key === null;
     };
     body.addEventListener('input', draw);
     // Leaving the box writes the capitals for real (not while typing: the text under the cursor would jump)
@@ -244,6 +264,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
     writePane.append(
         h('label', { for: 'body' }, 'Letra con acordes'),
         body,
+        toneRow,
         converted,
         tagField.element,
         h(

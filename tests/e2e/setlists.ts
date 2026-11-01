@@ -603,7 +603,7 @@ try {
     await openTools(page);
     await page.getByRole('button', { name: 'Subir un semitono' }).click();
     await page.getByRole('button', { name: 'Otros sitios donde guardar' }).click();
-    assert.deepEqual(await page.locator('.tone-control__option').allTextContents(), ['Solo hoy', 'En este listado', 'Como mi tono', 'En el canto original (todos los listados)', 'En el listado y como mi tono']);
+    assert.deepEqual(await page.locator('.tone-control__option').allTextContents(), ['Solo hoy', 'En este listado', 'Como mi tono', 'En el listado y como mi tono']);
     assert.equal(await page.locator('.tone-control__option.is-current').innerText(), 'En este listado', 'it starts marked on the list');
     // "Guardar" does what is marked. "Solo hoy": nothing is written, with the menu open or closed
     await page.getByRole('button', { name: 'Solo hoy', exact: true }).click();

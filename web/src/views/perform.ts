@@ -8,7 +8,6 @@ import { readKeepAwake } from '../prefs.ts';
 import { todayKeys } from '../today-keys.ts';
 import { showToast } from '../toast.ts';
 import { paths } from '../router.ts';
-import { writeKeyToSong } from '../transpose-song.ts';
 import { dragOffset, isSwipe, swipeAxis, type Axis } from '../swipe.ts';
 import { describeAwake, screenKeeper } from '../wakelock.ts';
 import { createReader, type Reader } from './reader.ts';
@@ -171,26 +170,6 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
             }
             showToast(said, 3500, true);
         };
-        /**
-         * The key on screen becomes the key the song is written in, for every list: the other saved keys move the
-         * other way and keep sounding as they did. Here the song is then sung as written, which is what was on screen.
-         */
-        const saveToOriginal = async (shift: number): Promise<void> => {
-            error.textContent = '';
-            try {
-                await writeKeyToSong(app, song, shift);
-            } catch (failure) {
-                fail(failure, 'No se pudo guardar el tono en el canto.');
-
-                return;
-            }
-            if (!(await writeList(0))) {
-                return;
-            }
-            showToast('Tono guardado en el canto original', 3500, true);
-            // The song on screen is the old text: draw it again from what was written
-            navigate(paths.perform(setlist.id, position), { replace: true });
-        };
         tone = createToneControl({
             reader: own,
             saved: () => saved,
@@ -201,7 +180,6 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
             destinations: [
                 { label: 'En este listado', save: saveTo({ list: true, mine: false }, 'Tono guardado en este listado') },
                 { label: 'Como mi tono', save: saveTo({ list: false, mine: true }, 'Tono guardado como tu tono') },
-                { label: 'En el canto original (todos los listados)', save: saveToOriginal },
                 { label: 'En el listado y como mi tono', save: saveTo({ list: true, mine: true }, 'Tono guardado en este listado y como tu tono') },
             ],
         });

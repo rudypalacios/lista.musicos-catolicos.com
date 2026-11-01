@@ -2754,6 +2754,29 @@ button.sheet-action.is-danger .icon {
     pointer-events: auto;
 }
 
+/* ===== The key in the editor of a song: − / + move every chord of the text ===== */
+.edit-tone {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    margin: 0.25rem 0 0.6rem;
+}
+
+.edit-tone__label {
+    font-weight: 600;
+}
+
+.edit-tone__hint {
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.edit-tone .tone-control__step button:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
 /* ===== The key of a song in a list: − / + for today, "Guardar" for the list ===== */
 .tone-control__row {
     display: flex;
