@@ -1006,6 +1006,10 @@ try {
     await page.getByLabel('Agregar etiqueta').fill('Adviento');
     await page.getByLabel('Agregar etiqueta').press('Enter');
     await page.getByRole('button', { name: 'Quitar la etiqueta Adviento' }).waitFor();
+    // A comma turns what is typed into its chip at once (also pasted, and from a phone keyboard), the rest stays in the field
+    await page.getByLabel('Agregar etiqueta').fill('Pascua, Ordinario');
+    await page.getByRole('button', { name: 'Quitar la etiqueta Pascua' }).click();
+    assert.equal(await page.getByLabel('Agregar etiqueta').inputValue(), 'Ordinario', 'the text after the comma stays in the field');
     await page.getByLabel('Agregar etiqueta').fill('Cuaresma');
     await noTypedIcons(page, 'the editor with tags');
     await page.getByRole('button', { name: 'Guardar' }).click();
