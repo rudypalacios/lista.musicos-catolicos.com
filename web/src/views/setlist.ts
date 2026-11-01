@@ -319,6 +319,10 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             if (key !== null) {
                 const label = h('span', { class: key.changed ? 'item__key is-changed' : 'item__key' }, h('span', { class: 'sr-only' }, 'Tono '), key.text);
                 sub.push(...(sub.length > 0 ? [' · ', label] : [label]));
+                // Changed in the list: the song's own key beside it, quiet, so the person sees where it started from
+                if (key.changed && key.original !== null) {
+                    sub.push(' ', h('span', { class: 'item__original' }, h('span', { class: 'sr-only' }, 'Tono original '), `(${key.original})`));
+                }
                 // A key set only for today (while rehearsing or singing, not saved): say so beside it
                 if (key.today) {
                     sub.push(h('span', { class: 'item__today' }, 'hoy'));
@@ -381,16 +385,16 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
      * The key of this use of the song, to read: changed in amber. Songs with no key show only a change.
      * A key of today, if there is one, takes the place of the saved one.
      */
-    const keyOf = (item: SetlistItem, song: Song): { text: string; changed: boolean; today: boolean } | null => {
+    const keyOf = (item: SetlistItem, song: Song): { text: string; changed: boolean; today: boolean; original: string | null } | null => {
         const original = songKey(parse(song.body));
         const shift = todayKeys.get(setlist.id, item.id) ?? item.transpose;
         const today = shift !== item.transpose;
         const changed = shift !== 0;
         if (original === null) {
-            return changed ? { text: `${shift > 0 ? '+' : ''}${shift}`, changed, today } : null;
+            return changed ? { text: `${shift > 0 ? '+' : ''}${shift}`, changed, today, original: null } : null;
         }
 
-        return { text: transpose(original, shift, readNotation()), changed, today };
+        return { text: transpose(original, shift, readNotation()), changed, today, original: transpose(original, 0, readNotation()) };
     };
 
     /** A row of a sheet: an icon and what it does, big enough to tap, and a quiet line under it if it needs one */

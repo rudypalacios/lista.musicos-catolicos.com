@@ -24,6 +24,8 @@ export interface ReaderOptions {
     onKey?: (key: string | null) => void;
     /** Draw the key as a "Tono Do" pill in the head of the song (default). The song page shows it in its key control instead. */
     keyPill?: boolean;
+    /** Draw the title and the author at the head of the song (default). Singing says them in its bar and leaves the room to the lyrics. */
+    songHead?: boolean;
 }
 
 /** Columns button: auto → two → one → auto */
@@ -72,9 +74,12 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
     const chords = Array.from(sheet.querySelectorAll<HTMLElement>('.ch[data-chord]'));
 
     const keyChip = h('span', { class: 'chip' });
-    const head = h('header', { class: 'song-head' }, h('h2', {}, song.title));
-    if (song.author !== '') {
-        head.append(h('p', { class: 'by' }, song.author));
+    const head = h('header', { class: 'song-head' });
+    if (options.songHead !== false) {
+        head.append(h('h2', {}, song.title));
+        if (song.author !== '') {
+            head.append(h('p', { class: 'by' }, song.author));
+        }
     }
     const meta = h('div', { class: 'meta' }, ...(options.keyPill === false ? [] : [keyChip]));
     const labels: [string, string][] = [['capo', 'Capo'], ['tempo', 'Tempo'], ['time', 'Compás']];
@@ -87,7 +92,10 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
     if (meta.childElementCount > 0) {
         head.append(meta);
     }
-    const content = h('div', { class: 'viewer-content', id: 'song-content' }, head, sheet);
+    // Without the visible head the title is still the heading of the screen, for a screen reader
+    const content = h('div', { class: 'viewer-content', id: 'song-content' },
+        ...(options.songHead === false ? [h('h2', { class: 'sr-only' }, song.title)] : []),
+        ...(head.childElementCount > 0 ? [head] : []), sheet);
     const stage = h('div', { class: 'stage', id: 'stage' }, content);
 
     // --- the toolbar ---

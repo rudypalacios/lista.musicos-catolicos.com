@@ -1699,6 +1699,10 @@ button.item__open:focus-visible {
     font-weight: 600;
 }
 
+.item__original {
+    color: var(--muted);
+}
+
 .item__key.is-changed {
     color: var(--changed);
 }
@@ -2396,6 +2400,40 @@ body {
     white-space: nowrap;
 }
 
+/* "Song  •  Key": the name gives way (with an ellipsis) before the key does; the dot is drawn, not typed */
+.perform__title .perform__song {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.perform__song-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.perform__song-key {
+    flex: none;
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.perform__song-key::before {
+    content: '';
+    display: inline-block;
+    width: 0.3rem;
+    height: 0.3rem;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+    background: var(--muted);
+    border-radius: 50%;
+}
+
+.perform__song-key.is-today {
+    color: var(--warn);
+}
+
 .perform__title small {
     color: var(--muted);
     font-size: 0.7rem;
@@ -2752,6 +2790,29 @@ button.sheet-action.is-danger .icon {
     border: 0;
     font-weight: 700;
     pointer-events: auto;
+}
+
+/* ===== The key in the editor of a song: − / + move every chord of the text ===== */
+.edit-tone {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    margin: 0.25rem 0 0.6rem;
+}
+
+.edit-tone__label {
+    font-weight: 600;
+}
+
+.edit-tone__hint {
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.edit-tone .tone-control__step button:disabled {
+    opacity: 0.4;
+    cursor: default;
 }
 
 /* ===== The key of a song in a list: − / + for today, "Guardar" for the list ===== */

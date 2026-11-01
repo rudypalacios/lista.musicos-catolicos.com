@@ -520,11 +520,18 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
 
 49. **Menú de cada canto en un listado: «Mover» y «Editar».** En la hoja `⋯` de un canto dentro de un listado, **Subir, Bajar, Al inicio y Al final** ya no van sueltos: hay un solo **Mover** que abre un
    submenú con ellos (y un **Volver**). Nuevo **Editar**, que abre directo la letra y los acordes y, al guardar o cancelar, **vuelve al listado**. Arrastrar (mantener pulsado el canto) sigue igual.
-50. **Guardar el tono en el canto original.** En **Cantar** (la flecha junto a *Guardar*, en `⋯`) y en la **página del canto** hay una opción nueva, **«En el canto original (todos los listados)»**. Al guardar con ella,
+50. **Guardar el tono en el canto original.** En la **página del canto** (la flecha junto a *Guardar*; **Cantar no cambia**) hay una opción nueva, **«En el canto original (todos los listados)»**. Al guardar con ella,
    **los acordes del canto se reescriben** en el tono que ves (si el canto estaba en Fa y lo bajaste un semitono, queda escrito en Mi) y **todos los tonos ya guardados se ajustan solos** (el de cada listado y «mi tono»)
    para que cada uno suene igual que antes, como cuando editas los acordes a mano. Aquí el canto queda cantándose tal como está escrito (el listado desde el que lo hiciste, o tu tono, pasan a «sin cambio»).
    **No hay migración ni nada que ejecutar.** **Prueba:** crea un canto en Fa, ponlo en dos listados (uno subido dos notas), baja el tono un semitono en Cantar y guarda «En el canto original»: el canto aparece en Mi;
    el otro listado debe seguir sonando en el mismo tono de antes. Para deshacerlo, sube un semitono y guarda otra vez en el original.
+51. **Cambiar el tono al editar la letra.** En *Nuevo canto* y en *Editar canto*, **debajo de la caja de la letra** hay un **Tono** con **−** y **+**: cada toque **sube o baja un semitono todos los acordes del texto**
+   (y la línea `{key: …}` si la tiene) y la vista previa lo sigue; sin acordes en el texto los botones se apagan. Al **Guardar**, si el tono del canto cambió, los tonos ya guardados (el de cada listado y «mi tono») se
+   **ajustan solos** para sonar igual, como ya hacía el editor (sale el aviso «El tono original pasó de … a …»). **No hay migración.** **Prueba:** abre un canto que esté en Fa, baja un semitono con **−**, guarda: queda
+   en Mi y los listados donde estaba siguen sonando como antes.
+52. **Cantar y el listado dicen el tono una sola vez.** En **Cantar** la barra de arriba dice la sección y, debajo, **«Canto • Tono»** (el tono en azul; en ámbar si es solo por hoy); **ya no se repite** el título, el autor y
+   el tono en el cuerpo (capo, tempo y compás, si el canto los trae, siguen ahí). En el **listado**, cuando el tono de un canto **no es el suyo**, sale en ámbar como antes y **al lado el tono original entre paréntesis, en gris**
+   («Autor · La (Sol)»). **No hay migración.** **Prueba:** abre un listado, sube un canto un tono y guárdalo (el listado debe mostrar «La (Sol)») y canta ese canto (la barra: «Nombre • La»).
 
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
