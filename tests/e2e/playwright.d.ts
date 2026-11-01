@@ -14,6 +14,7 @@ declare module 'playwright' {
         fill(value: string): Promise<void>;
         blur(): Promise<void>;
         first(): Locator;
+        filter(options: { hasText?: string | RegExp }): Locator;
         nth(index: number): Locator;
         boundingBox(): Promise<{ x: number; y: number; width: number; height: number } | null>;
         waitFor(options?: { state?: 'visible' | 'hidden' | 'attached' | 'detached'; timeout?: number }): Promise<void>;
@@ -53,6 +54,8 @@ declare module 'playwright' {
         evaluate<T>(callback: () => T | Promise<T>): Promise<T>;
         evaluate<T, A>(callback: (argument: A) => T | Promise<T>, argument: A): Promise<T>;
         setContent(html: string): Promise<void>;
+        addStyleTag(options: { content: string }): Promise<unknown>;
+        screenshot(options?: { type?: 'png' | 'jpeg' }): Promise<Uint8Array>;
         pdf(options?: { format?: string; printBackground?: boolean; preferCSSPageSize?: boolean }): Promise<Uint8Array>;
         on(event: 'console', listener: (message: ConsoleMessage) => void): void;
         getByLabel(text: string, options?: { exact?: boolean }): Locator;
@@ -90,6 +93,8 @@ declare module 'playwright' {
             serviceWorkers?: 'allow' | 'block';
             userAgent?: string;
             hasTouch?: boolean;
+            isMobile?: boolean;
+            deviceScaleFactor?: number;
         }): Promise<BrowserContext>;
     }
     export const chromium: { launch(): Promise<Browser> };

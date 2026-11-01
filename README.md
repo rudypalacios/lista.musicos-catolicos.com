@@ -16,6 +16,7 @@ Offline-first PWA to plan the music of a Mass. Private for now, built to be fold
 | `web/src/chordpro/` | ChordPro parser, chords, transposition, lyrics renderer: ports of the public site's PHP and `song.js` |
 | `web/src/data/` | Songs and setlists on the device (IndexedDB, one store contract for both collections), the queues of unsent records, the sync engine; `library.ts` and `setlists.ts` are the operations on each |
 | `web/src/` (others) | `importer.ts` (chords above the words → ChordPro; one song or a whole Mass), `fit.ts` (fit to the screen), `mass.ts` (the parts of the Mass: what a new list starts with, and what the importer recognises), `views/sections.ts` and `views/section-editor.ts` (the sections of a list, and of a template), `views/templates.ts` and `views/template.ts` (the templates), `data/templates.ts` (the Misa and the person's own templates), `data/parts.ts` (what is done to sections), `data/tags.ts` (the tags of a song and of a section), `views/tag-field.ts` (the tags in the song editor), `install.ts` (is this Safari on iOS, or the installed app?), `toast.ts` (the "Guardado" message), `bottom-chrome.ts` (keeps the messages above the menu and the install bar), `settings.ts` (lyric colours; the settings themselves are in `prefs.ts`, on the device), `sw.ts` (service worker) |
+| `web/src/ocr/` | Importing from a photo: `words.ts` (pure, tested: puts the two readings of a photo together, takes the tilt out, tells the columns apart and hands the words to the PDF layout), `read.ts` (the Tesseract glue, loaded lazily), `progress.ts` (the bar). `web/src/pdf/` is the PDF reader: `layout.ts` (pure, tested), `read.ts` (pdf.js glue), `measure.ts` |
 | `web/src/print/` | Printing: `layout.ts` (the `PrintLayout.php` cascade, ported as it is), `plan.ts` (what a page prints: header, musical data, key), `print.ts` (fills `#print-root` and calls `window.print()`), `print.css` (copied from the public site's print rules) |
 | `web/fonts/` | The fonts the public site prints with (Atkinson Hyperlegible, Bricolage Grotesque; OFL), served from this origin so a printout looks the same and works offline |
 | `web/test/` | Unit tests of the client (`node --test`); `fixtures/golden.json` is what the PHP answered |
@@ -83,3 +84,7 @@ Errors: `{error: "<code>", message: "<texto en español>"}`.
 - [pdf.js](https://github.com/mozilla/pdf.js) (`pdfjs-dist`, Apache-2.0), the legacy build, bundled
   by `scripts/build.ts` and served from this origin: it reads the PDFs of the import screen in the
   browser. The text never leaves the device. Its license banner is kept in the built files.
+- [Tesseract.js](https://github.com/naptha/tesseract.js) (`tesseract.js` and `tesseract.js-core`, Apache-2.0) and
+  its Spanish language data (`@tesseract.js-data/spa`, Apache-2.0): a character reader that runs in the
+  browser. `scripts/build.ts` copies its worker, its engine and the language data to `/assets/ocr/`, served
+  from this origin; it reads the photos of the import screen on the device, and the photo never leaves it.

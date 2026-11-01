@@ -44,6 +44,10 @@ const DRAWINGS = {
     sections: { shapes: [['path', { d: 'M4 6h2M10 6h10M4 12h8M16 12h4M4 18h4M12 18h8' }], ['circle', { cx: '8', cy: '6', r: '2' }], ['circle', { cx: '14', cy: '12', r: '2' }], ['circle', { cx: '10', cy: '18', r: '2' }]] },
     list: { shapes: [['path', { d: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01' }]] },
     settings: { shapes: [['circle', { cx: '12', cy: '12', r: '3' }], ['path', { d: 'M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1' }]] },
+    /** Taking a photo of a sheet (Importar) */
+    camera: { shapes: [['path', { d: 'M4 8h3l1.6-2.2h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z' }], ['circle', { cx: '12', cy: '13.2', r: '3.6' }]] },
+    /** Choosing a picture from the gallery (Importar) */
+    image: { shapes: [['rect', { x: '3', y: '4.5', width: '18', height: '15', rx: '2' }], ['circle', { cx: '8.6', cy: '9.6', r: '1.7' }], ['path', { d: 'M4 18l5.2-5.2 3.6 3.6 2.6-2.6L20 17.6' }]] },
     eye: { shapes: [['path', { d: 'M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z' }], ['circle', { cx: '12', cy: '12', r: '3' }]] },
     copy: { shapes: [['rect', { x: '9', y: '9', width: '11', height: '11', rx: '2' }], ['path', { d: 'M5 15V6a2 2 0 0 1 2-2h9' }]] },
     star: { shapes: [['path', { d: STAR }]] },

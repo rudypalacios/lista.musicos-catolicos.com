@@ -17,7 +17,8 @@ AddType application/manifest+json .webmanifest
   Header always set Referrer-Policy "same-origin"
   # Everything comes from this origin: no CDNs, fonts or scripts from elsewhere. If a change
   # needs another domain, widen this on purpose (and check the privacy policy first).
-  Header always set Content-Security-Policy "default-src 'self'; img-src 'self' data:; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
+  # 'wasm-unsafe-eval' lets WebAssembly run (the photo reader, web/src/ocr/): it does not allow eval() of text.
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; img-src 'self' data:; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
 </IfModule>
 
 #

@@ -473,6 +473,18 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    que quita justo esa etiqueta. Es **por sección** (para otra sección, lo haces en su selector). Si no hay nada que etiquetar, la tarjeta no aparece. **Prueba:** con un listado que ya tenga cantos en «Canto de entrada» (sin etiqueta),
    abre el selector de esa sección, toca el botón y mira la hoja; etiqueta; mira que aparezcan los dos botones («Entrada» y «Mostrar todos»); prueba **Deshacer**. Sin conexión también; sin migración.
 
+45. **Importar desde una foto o una imagen.** En *Importar cantos* hay dos tarjetas nuevas debajo de «Elegir PDF»: **Tomar fotografía** (abre la cámara; **solo sale en el
+   teléfono o la tableta**, no en la compu) y **Cargar imagen** (una foto o captura de la galería; en la compu también se puede soltar el archivo encima). Abajo una nota dice que va mejor con
+   acordes impresos, la hoja derecha y buena luz, y que los acordes escritos a mano se intentan leer pero sin garantía. **La foto se lee en tu dispositivo y no se envía a ningún servidor.**
+   La primera vez baja el lector (unos 6 MB, con una barra que dice «Descargando el lector…»); las siguientes veces solo dice «Abriendo el lector…» (necesita conexión solo la primera vez).
+   Al terminar sale la revisión de siempre con un aviso arriba: «Leído de una imagen. Revisa los acordes antes de guardar». **No hay nada que ejecutar ni migración.** Lo único nuevo en el servidor son
+   unos 10 MB en `assets/ocr/` (el deploy los sube solo) y la política de seguridad de `public/.htaccess`, que ahora permite `wasm-unsafe-eval` (WebAssembly; sigue sin permitir nada de otro dominio).
+   **Prueba en el Android (primero):** toma una foto de una hoja con acordes impresos, derecha y con buena luz, y mira que cada acorde quede sobre su sílaba (revisa los que llevan `#`: es lo que más falla);
+   prueba con una captura de pantalla de una hoja; prueba con una foto un poco chueca; prueba con una hoja con acordes escritos a mano (algunos se leerán y otros no; la letra sí sale);
+   prueba sin conexión **después** de haberla usado una vez (debe abrir; si no, avísame) y sin conexión sin haberla usado nunca (debe decir que necesita conexión y dejar pegar el texto).
+   Mira cuánto tarda una foto grande en el teléfono. **Prueba en el iPad (al final):** que Safari acepte el lector (si no lo acepta, la tarjeta dice «No se pudo abrir el lector» y avísame: habría que revisar la
+   política), que «Tomar fotografía» abra la cámara trasera y que la foto salga derecha aunque la hayas tomado girada.
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.
