@@ -50,8 +50,8 @@ export function matchRoute(path: string, search = ''): Route {
     if (edit?.[1] !== undefined) {
         const back = new URLSearchParams(search).get('volver') ?? '';
 
-        // Only a place of the app to sing from: nothing else is followed
-        return new RegExp(`^/listados/${ID}/cantar/\\d{1,3}$`).test(back)
+        // Only a place of the app to come back to (a song being sung, or the list it is in): nothing else is followed
+        return new RegExp(`^/listados/${ID}(/cantar/\\d{1,3})?$`).test(back)
             ? { name: 'edit', id: edit[1], back }
             : { name: 'edit', id: edit[1] };
     }
@@ -134,7 +134,7 @@ export const paths = {
     },
     import: (): string => '/cantos/importar',
     view: (id: string): string => `/cantos/${id}`,
-    /** `back` is where to return to afterwards: a song being sung (`paths.perform`) */
+    /** `back` is where to return to afterwards: a song being sung (`paths.perform`) or its list (`paths.setlist`) */
     edit: (id: string, back?: string): string => (back === undefined ? `/cantos/${id}/editar` : `/cantos/${id}/editar?volver=${encodeURIComponent(back)}`),
     lists: (): string => '/listados',
     setlist: (id: string): string => `/listados/${id}`,
@@ -204,7 +204,7 @@ export function parentOf(route: Route): { path: string; label: string } | null {
         case 'edit':
             return route.back === undefined
                 ? { path: paths.view(route.id), label: 'Canto' }
-                : { path: route.back, label: 'Volver a cantar' };
+                : { path: route.back, label: route.back.includes('/cantar/') ? 'Volver a cantar' : 'Volver al listado' };
         case 'setlist':
             return { path: paths.lists(), label: 'Listados' };
         case 'add':

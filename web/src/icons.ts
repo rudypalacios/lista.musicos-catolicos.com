@@ -34,6 +34,7 @@ const DRAWINGS = {
     /** The tools of the lyrics (key, size, notation, print): two sliders */
     tools: { shapes: [['path', { d: 'M4 7h9M17 7h3M4 17h3M11 17h9' }], ['circle', { cx: '15', cy: '7', r: '2' }], ['circle', { cx: '9', cy: '17', r: '2' }]] },
     'chevron-down': { shapes: [['path', { d: 'M6 9l6 6 6-6' }]] },
+    move: { shapes: [['path', { d: 'M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4' }]] },
     'to-top': { shapes: [['path', { d: 'M5 4h14M12 20V8M6 13l6-6 6 6' }]] },
     'to-bottom': { shapes: [['path', { d: 'M5 20h14M12 4v12M6 11l6 6 6-6' }]] },
     'arrow-up': { shapes: [['path', { d: 'M12 19V5M5 12l7-7 7 7' }]] },
