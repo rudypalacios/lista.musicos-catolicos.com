@@ -518,6 +518,14 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    (mira que cada canto quede en su sección y que el aviso diga cuántos); prueba **Deshacer**; importa el mismo PDF otra vez (todos salen «Ya la tienes») y crea el listado con **En blanco**; prueba con una plantilla tuya
    (por ejemplo un rosario) y mira qué cantos encajan; prueba sin conexión (todo se guarda en el aparato y se sincroniza después).
 
+49. **Menú de cada canto en un listado: «Mover» y «Editar».** En la hoja `⋯` de un canto dentro de un listado, **Subir, Bajar, Al inicio y Al final** ya no van sueltos: hay un solo **Mover** que abre un
+   submenú con ellos (y un **Volver**). Nuevo **Editar**, que abre directo la letra y los acordes y, al guardar o cancelar, **vuelve al listado**. Arrastrar (mantener pulsado el canto) sigue igual.
+50. **Guardar el tono en el canto original.** En **Cantar** (la flecha junto a *Guardar*, en `⋯`) y en la **página del canto** hay una opción nueva, **«En el canto original (todos los listados)»**. Al guardar con ella,
+   **los acordes del canto se reescriben** en el tono que ves (si el canto estaba en Fa y lo bajaste un semitono, queda escrito en Mi) y **todos los tonos ya guardados se ajustan solos** (el de cada listado y «mi tono»)
+   para que cada uno suene igual que antes, como cuando editas los acordes a mano. Aquí el canto queda cantándose tal como está escrito (el listado desde el que lo hiciste, o tu tono, pasan a «sin cambio»).
+   **No hay migración ni nada que ejecutar.** **Prueba:** crea un canto en Fa, ponlo en dos listados (uno subido dos notas), baja el tono un semitono en Cantar y guarda «En el canto original»: el canto aparece en Mi;
+   el otro listado debe seguir sonando en el mismo tono de antes. Para deshacerlo, sube un semitono y guarda otra vez en el original.
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.

@@ -4,6 +4,7 @@ import { h } from '../dom.ts';
 import { icon } from '../icons.ts';
 import { readKeepAwake, readNotation } from '../prefs.ts';
 import { paths } from '../router.ts';
+import { writeKeyToSong } from '../transpose-song.ts';
 import { screenKeeper } from '../wakelock.ts';
 import { planSheet } from '../print/plan.ts';
 import type { PrintVersion } from '../print/layout.ts';
@@ -86,6 +87,25 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
                 mine = t;
                 writeTransposition(shown, mine);
                 showToast('Tono guardado como tu tono', 3500, true);
+            },
+        }, {
+            // The key on screen becomes the one the song is written in; the other saved keys move the other way and sound as before
+            label: 'En el canto original (todos los listados)',
+            save: async (t) => {
+                error.hidden = true;
+                try {
+                    await writeKeyToSong(app, song, t);
+                    // Sung as written: what was on screen is now the written key
+                    await app.setMyShift(song.id, 0);
+                } catch (failure) {
+                    error.textContent = failure instanceof Error ? failure.message : 'No se pudo guardar el tono en el canto.';
+                    error.hidden = false;
+
+                    return;
+                }
+                showToast('Tono guardado en el canto original', 3500, true);
+                // The song on screen is the old text: draw it again from what was written
+                navigate(paths.view(song.id), { replace: true });
             },
         }],
     });
