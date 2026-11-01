@@ -198,13 +198,36 @@ try {
     // The arrow beside "Guardar", like singing's: mark "Solo por ahora" (writes nothing) or "Como mi tono"
     await page.getByRole('button', { name: 'Subir un semitono' }).click();
     await page.getByRole('button', { name: 'Otros sitios donde guardar' }).click();
-    assert.deepEqual(await page.locator('.tone-control__option').allTextContents(), ['Solo por ahora', 'Como mi tono']);
+    assert.deepEqual(await page.locator('.tone-control__option').allTextContents(), ['Solo por ahora', 'Como mi tono', 'En el canto original (todos los listados)']);
     await page.locator('.tone-control__option', { hasText: 'Solo por ahora' }).click();
     await page.getByRole('button', { name: 'Guardar', exact: true }).click();
     await page.locator('.toast', { hasText: 'Queda solo por ahora' }).waitFor();
     assert.equal((await serverSongs(page))[0]?.myShift, 0, 'nothing was written');
     await page.getByRole('button', { name: 'Bajar un semitono' }).click();
     pass('the arrow of "Guardar" offers "Solo por ahora" and "Como mi tono"; "Solo por ahora" writes nothing');
+
+    // "En el canto original": the key on screen becomes the one the song is written in (and back again, leaving it as it was)
+    const sungAs = async (names: string[]): Promise<void> => {
+        for (let attempt = 0; attempt < 50 && JSON.stringify(await chordNames(page)) !== JSON.stringify(names); attempt += 1) {
+            await page.waitForTimeout(100);
+        }
+        assert.deepEqual(await chordNames(page), names);
+    };
+    await page.getByRole('button', { name: 'Subir un semitono' }).click();
+    await page.getByRole('button', { name: 'Otros sitios donde guardar' }).click();
+    await page.locator('.tone-control__option', { hasText: 'En el canto original' }).click();
+    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+    await page.locator('.toast', { hasText: 'Tono guardado en el canto original' }).waitFor();
+    await sungAs(['Do#', 'Lab']);
+    assert.ok(!page.url().includes('t='), 'the key on screen is now the written one: nothing in the address');
+    await page.reload();
+    await sungAs(['Do#', 'Lab']);
+    await page.getByRole('button', { name: 'Bajar un semitono' }).click();
+    await page.getByRole('button', { name: 'Otros sitios donde guardar' }).click();
+    await page.locator('.tone-control__option', { hasText: 'En el canto original' }).click();
+    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+    await sungAs(['Do', 'Sol']);
+    pass('"En el canto original" writes the key on screen into the song (Do → Do#), it stays after a reload, and moving it back leaves the song as it was');
 
     // ----- "Agregar a un listado": the list, then the part; the song goes in the key on screen -----
     const addSheet = page.getByRole('dialog', { name: 'Agregar a un listado' });

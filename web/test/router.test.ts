@@ -154,10 +154,16 @@ describe('editing a song from singing', () => {
         assert.deepEqual(matchRoute(paths.edit(ID)), { name: 'edit', id: ID });
     });
 
-    it('follows nothing but a song being sung', () => {
-        for (const wrong of ['https://example.com/', '//example.com', '/ajustes', `/listados/${ID}`, `/listados/${ID}/cantar/x`, 'javascript:alert(1)']) {
+    it('follows nothing but a song being sung or its list', () => {
+        for (const wrong of ['https://example.com/', '//example.com', '/ajustes', `/listados/${ID}/secciones`, `/listados/${ID}/cantar/x`, 'javascript:alert(1)']) {
             assert.deepEqual(matchRoute(`/cantos/${ID}/editar`, `?volver=${encodeURIComponent(wrong)}`), { name: 'edit', id: ID }, wrong);
         }
+    });
+
+    it('follows the list the song was edited from', () => {
+        const list = `/listados/${ID}`;
+        assert.deepEqual(matchRoute(`/cantos/${ID}/editar`, `?volver=${encodeURIComponent(list)}`), { name: 'edit', id: ID, back: list });
+        assert.deepEqual(parentOf({ name: 'edit', id: ID, back: list }), { path: list, label: 'Volver al listado' });
     });
 
     it('goes back to the song being sung', () => {

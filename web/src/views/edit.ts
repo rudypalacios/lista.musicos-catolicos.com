@@ -11,10 +11,10 @@ import { convertPastedSheet } from '../importer.ts';
 import type { Song } from '../data/types.ts';
 import { h, link, setSheet } from '../dom.ts';
 import { icon } from '../icons.ts';
-import { keyDistance, nearestShift } from '../keys.ts';
+import { keyDistance } from '../keys.ts';
+import { retuneTodayKeys } from '../transpose-song.ts';
 import { paths, type Placement } from '../router.ts';
 import { newSongDraft } from '../song-draft.ts';
-import { todayKeys } from '../today-keys.ts';
 import { showToast } from '../toast.ts';
 import { deleteSongAfterAsking } from './delete-song.ts';
 import { transpose } from '../chordpro/chord.ts';
@@ -383,12 +383,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
 async function saveEdit(app: App, existing: Song, draft: SongDraft): Promise<Song> {
     const moved = keyDistance(songKey(parse(existing.body)), songKey(parse(draft.body))) ?? 0;
     const { song, touched } = await app.updateKeepingKeys(existing.id, draft, moved);
-    for (const { setlistId, itemId } of touched) {
-        const today = todayKeys.get(setlistId, itemId);
-        if (today !== null) {
-            todayKeys.set(setlistId, itemId, nearestShift(today - moved));
-        }
-    }
+    retuneTodayKeys(touched, moved);
 
     return song;
 }

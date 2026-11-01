@@ -133,6 +133,13 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
 
     /** The item whose "⋯" is open */
     let target: string | null = null;
+    /** What its sheet shows: what is done to the song, or the submenu of moves */
+    let songView: 'main' | 'move' = 'main';
+    const showSongView = (view: 'main' | 'move'): void => {
+        songView = view;
+        fillSongSheet();
+        songSheet.body.querySelector<HTMLElement>(view === 'move' ? '[data-key]' : 'button')?.focus();
+    };
     const fillSongSheet = (focus?: 'up' | 'down' | 'start' | 'end'): void => {
         const item = setlist.items.find((candidate) => candidate.id === target);
         if (item === undefined) {
@@ -153,39 +160,60 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             const to = end ? itemsOfPart(setlist.items, item.part).length - 1 : 0;
             void app.setlists.reorderItem(setlist.id, item.id, to).catch((failure: unknown) => fail(failure, 'No se pudo mover el canto.'));
         };
-        songSheet.body.replaceChildren(
-            h('h4', { class: 'sheet__title' }, name),
-            h('p', { class: 'sheet__sub' }, section),
-            ...(song === undefined ? [] : [action('play', 'Cantar desde aquí', () => {
-                const at = positionInList(setlist, item.id);
-                songSheet.close(() => navigate(paths.perform(setlist.id, at)));
-            }, { hint: 'Ahí se cambia el tono' })]),
-            // Only the moves that can happen: a part with one song has none
-            ...(can.up ? [action('arrow-up', 'Subir en esta sección', () => step(-1), { key: 'up' })] : []),
-            ...(can.down ? [action('arrow-down', 'Bajar en esta sección', () => step(1), { key: 'down' })] : []),
-            // Only when they say more than the arrows (more than two songs in the section)
-            ...(can.toStart ? [action('to-top', 'Al inicio de esta sección', () => toEnd(false), { key: 'start' })] : []),
-            ...(can.toEnd ? [action('to-bottom', 'Al final de esta sección', () => toEnd(true), { key: 'end' })] : []),
-            action('x', 'Quitar del listado', () => {
-                const index = setlist.items.findIndex((candidate) => candidate.id === item.id);
-                songSheet.close(() => {
-                    void app.setlists.removeItem(setlist.id, item.id).then(() => {
-                        showUndoToast(`«${name}» quitado del listado`, 'Deshacer', () => {
-                            void app.setlists.restoreItem(setlist.id, item, index).catch((failure: unknown) => fail(failure, 'No se pudo deshacer.'));
-                        });
-                    }).catch((failure: unknown) => fail(failure, 'No se pudo quitar el canto.'));
-                });
-            }, { danger: true }),
-        );
+        const heading = [h('h4', { class: 'sheet__title' }, name), h('p', { class: 'sheet__sub' }, section)];
+        if (songView === 'move') {
+            // The submenu: every way to move the song inside its section, one touch from the list of what is done to it
+            songSheet.body.replaceChildren(
+                ...heading,
+                sheetAction('chevron-left', 'Volver', () => showSongView('main')),
+                // Only the moves that can happen: a part with one song has none
+                ...(can.up ? [action('arrow-up', 'Subir en esta sección', () => step(-1), { key: 'up' })] : []),
+                ...(can.down ? [action('arrow-down', 'Bajar en esta sección', () => step(1), { key: 'down' })] : []),
+                // Only when they say more than the arrows (more than two songs in the section)
+                ...(can.toStart ? [action('to-top', 'Al inicio de esta sección', () => toEnd(false), { key: 'start' })] : []),
+                ...(can.toEnd ? [action('to-bottom', 'Al final de esta sección', () => toEnd(true), { key: 'end' })] : []),
+                h('p', { class: 'sheet__sub' }, 'También: mantén pulsado el canto en el listado y arrástralo.'),
+            );
+        } else {
+            songSheet.body.replaceChildren(
+                ...heading,
+                ...(song === undefined ? [] : [
+                    action('play', 'Cantar desde aquí', () => {
+                        const at = positionInList(setlist, item.id);
+                        songSheet.close(() => navigate(paths.perform(setlist.id, at)));
+                    }, { hint: 'Ahí se cambia el tono' }),
+                    // Straight to the editor; saving or cancelling comes back to this list
+                    action('pencil', 'Editar', () => songSheet.close(() => navigate(paths.edit(song.id, paths.setlist(setlist.id)))), { hint: 'Letra y acordes' }),
+                ]),
+                // One entry for every move; a part with one song has nowhere to move it
+                ...(can.up || can.down ? [action('move', 'Mover', () => showSongView('move'), { hint: 'Subir, bajar, al inicio o al final' })] : []),
+                action('x', 'Quitar del listado', () => {
+                    const index = setlist.items.findIndex((candidate) => candidate.id === item.id);
+                    songSheet.close(() => {
+                        void app.setlists.removeItem(setlist.id, item.id).then(() => {
+                            showUndoToast(`«${name}» quitado del listado`, 'Deshacer', () => {
+                                void app.setlists.restoreItem(setlist.id, item, index).catch((failure: unknown) => fail(failure, 'No se pudo deshacer.'));
+                            });
+                        }).catch((failure: unknown) => fail(failure, 'No se pudo quitar el canto.'));
+                    });
+                }, { danger: true }),
+            );
+        }
         // Moving keeps the sheet open (to move again): the button pressed is replaced, so focus its twin
         if (focus !== undefined) {
             const kept = songSheet.body.querySelector<HTMLElement>(`[data-key="${focus}"]`)
                 ?? songSheet.body.querySelector<HTMLElement>('[data-key="up"], [data-key="down"], [data-key="start"], [data-key="end"]');
             kept?.focus();
         }
+        // Nothing left to move (a section that lost songs on another device): back to the main list
+        if (songView === 'move' && !can.up && !can.down) {
+            songView = 'main';
+            fillSongSheet();
+        }
     };
     const openSongSheet = (itemId: string): void => {
         target = itemId;
+        songView = 'main';
         songSheet.open();
     };
     // A move keeps the sheet open (to move again): it is refreshed with the new list, keeping the focus on a move

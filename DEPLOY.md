@@ -462,8 +462,8 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
 43. **Arrastrar un canto para reordenarlo (fase 6, PR 6).** En un listado, **mantén pulsado un canto** (casi medio segundo): la fila se levanta (flota bajo tu dedo, con sombra y un borde azul) y,
    al mover el dedo arriba o abajo, **una línea azul muestra dónde va a caer**; al soltar queda ahí. Se mueve **solo dentro de su sección** (para pasarlo a otra, quítalo y agrégalo). Si llegas al borde de la
    pantalla, ésta se desplaza sola. Un toque corto sigue **cantando** el canto; si mueves el dedo antes de que pase el medio segundo es un desplazamiento normal (no levanta nada); soltar un canto no lo canta ni
-   sincroniza. En la hoja `⋯` de cada canto siguen **Subir** y **Bajar en esta sección** (la alternativa sin arrastrar) y ahora hay **Al inicio** y **Al final de esta sección** (cuando la sección tiene más de dos
-   cantos). La primera vez que abres un listado con una sección de dos cantos o más, un aviso dice «Mantén pulsado un canto para moverlo». **Prueba (con el dedo, en el teléfono; el iPad al final):** arrastra el
+   sincroniza. En la hoja `⋯` de cada canto hay un solo **Mover**, que abre un submenú con **Subir** y **Bajar en esta sección** (la alternativa sin arrastrar) y **Al inicio** y **Al final de esta sección** (cuando la sección
+   tiene más de dos cantos); ahí mismo hay un **Editar** que abre directo la letra y los acordes del canto y, al guardar o cancelar, vuelve al listado. La primera vez que abres un listado con una sección de dos cantos o más, un aviso dice «Mantén pulsado un canto para moverlo». **Prueba (con el dedo, en el teléfono; el iPad al final):** arrastra el
    primer canto de una sección al final y al medio; suelta fuera de la lista; intenta con el dedo desde la parte de arriba de la pantalla (no debe sincronizar); mira que un toque corto canta; prueba
    «Al inicio» y «Al final»; mira en el otro aparato que llegue el orden nuevo. Si tu teléfono abre un menú al mantener pulsado, dímelo.
 
@@ -517,6 +517,14 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    El aviso trae **Deshacer** (unos segundos): borra el listado y **deja los cantos guardados**. **No hay migración ni nada que ejecutar.** **Prueba:** importa el PDF de una Misa completa y crea el listado con la Misa
    (mira que cada canto quede en su sección y que el aviso diga cuántos); prueba **Deshacer**; importa el mismo PDF otra vez (todos salen «Ya la tienes») y crea el listado con **En blanco**; prueba con una plantilla tuya
    (por ejemplo un rosario) y mira qué cantos encajan; prueba sin conexión (todo se guarda en el aparato y se sincroniza después).
+
+49. **Menú de cada canto en un listado: «Mover» y «Editar».** En la hoja `⋯` de un canto dentro de un listado, **Subir, Bajar, Al inicio y Al final** ya no van sueltos: hay un solo **Mover** que abre un
+   submenú con ellos (y un **Volver**). Nuevo **Editar**, que abre directo la letra y los acordes y, al guardar o cancelar, **vuelve al listado**. Arrastrar (mantener pulsado el canto) sigue igual.
+50. **Guardar el tono en el canto original.** En **Cantar** (la flecha junto a *Guardar*, en `⋯`) y en la **página del canto** hay una opción nueva, **«En el canto original (todos los listados)»**. Al guardar con ella,
+   **los acordes del canto se reescriben** en el tono que ves (si el canto estaba en Fa y lo bajaste un semitono, queda escrito en Mi) y **todos los tonos ya guardados se ajustan solos** (el de cada listado y «mi tono»)
+   para que cada uno suene igual que antes, como cuando editas los acordes a mano. Aquí el canto queda cantándose tal como está escrito (el listado desde el que lo hiciste, o tu tono, pasan a «sin cambio»).
+   **No hay migración ni nada que ejecutar.** **Prueba:** crea un canto en Fa, ponlo en dos listados (uno subido dos notas), baja el tono un semitono en Cantar y guarda «En el canto original»: el canto aparece en Mi;
+   el otro listado debe seguir sonando en el mismo tono de antes. Para deshacerlo, sube un semitono y guarda otra vez en el original.
 
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).

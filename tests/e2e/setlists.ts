@@ -283,6 +283,8 @@ try {
     const comunion = slot(page, 'Canto de comunión');
     await comunion.getByRole('button', { name: 'Más opciones: Gloria sencilla' }).click();
     await page.locator('.sheet-layer.is-open').waitFor();
+    assert.equal(await page.getByRole('button', { name: 'Subir en esta sección' }).count(), 0, 'the moves are behind one "Mover", not loose in the sheet');
+    await page.getByRole('button', { name: /^Mover/ }).click();
     assert.equal(await page.getByRole('button', { name: 'Bajar en esta sección' }).count(), 0, 'the last song of a part cannot go lower');
     await page.getByRole('button', { name: 'Subir en esta sección' }).click();
     await page.waitForFunction(() => document.querySelector('section.slot[data-part="comunion"] .item__title')?.textContent === 'Gloria sencilla');
@@ -294,10 +296,14 @@ try {
 
     await slot(page, 'Canto de entrada').getByRole('button', { name: 'Más opciones: Abrimos la puerta' }).click();
     await page.locator('.sheet-layer.is-open').waitFor();
-    assert.equal(await page.getByRole('button', { name: /en esta sección/ }).count(), 0, 'a song alone in its part has no move');
+    assert.equal(await page.getByRole('button', { name: /^Mover/ }).count(), 0, 'a song alone in its part has no move');
     await page.getByRole('button', { name: /Cantar desde aquí/ }).waitFor();
-    await closeSheet(page);
-    pass('a song alone in its part has no move to offer, only singing from it and removing it');
+    await page.getByRole('button', { name: /^Editar/ }).click();
+    await page.getByRole('heading', { name: 'Editar canto' }).waitFor();
+    assert.match(page.url(), /\/cantos\/[^/]+\/editar\?volver=%2Flistados%2F/);
+    await page.getByRole('link', { name: 'Cancelar' }).click();
+    await slot(page, 'Canto de entrada').waitFor();
+    pass('a song alone in its part has no move to offer, only singing from it, editing it (and coming back to the list) and removing it');
 
     // ----- the sections of the list: switch one off, see it go, switch it on, see it come back in its place -----
     const sectionNames = (): Promise<string[]> => page.locator('section.slot h3').allTextContents();
@@ -597,7 +603,7 @@ try {
     await openTools(page);
     await page.getByRole('button', { name: 'Subir un semitono' }).click();
     await page.getByRole('button', { name: 'Otros sitios donde guardar' }).click();
-    assert.deepEqual(await page.locator('.tone-control__option').allTextContents(), ['Solo hoy', 'En este listado', 'Como mi tono', 'En el listado y como mi tono']);
+    assert.deepEqual(await page.locator('.tone-control__option').allTextContents(), ['Solo hoy', 'En este listado', 'Como mi tono', 'En el canto original (todos los listados)', 'En el listado y como mi tono']);
     assert.equal(await page.locator('.tone-control__option.is-current').innerText(), 'En este listado', 'it starts marked on the list');
     // "Guardar" does what is marked. "Solo hoy": nothing is written, with the menu open or closed
     await page.getByRole('button', { name: 'Solo hoy', exact: true }).click();
@@ -1092,6 +1098,7 @@ try {
     assert.deepEqual(await order(), ['Arrastre uno', 'Arrastre dos', 'Arrastre tres']);
     await slot(page, 'Canto de comunión').getByRole('button', { name: 'Más opciones: Arrastre dos' }).click();
     await page.locator('.sheet-layer.is-open').waitFor();
+    await page.getByRole('button', { name: /^Mover/ }).click();
     await page.getByRole('button', { name: 'Al final de esta sección' }).click();
     await page.waitForFunction(() => document.querySelector('section.slot[data-part="comunion"] .item:last-child .item__title')?.textContent === 'Arrastre dos');
     assert.deepEqual(await order(), ['Arrastre uno', 'Arrastre tres', 'Arrastre dos']);
