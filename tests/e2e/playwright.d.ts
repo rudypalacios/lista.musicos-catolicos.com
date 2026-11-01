@@ -66,6 +66,7 @@ declare module 'playwright' {
         mouse: { move(x: number, y: number, options?: { steps?: number }): Promise<void>; down(): Promise<void>; up(): Promise<void> };
         goto(url: string): Promise<unknown>;
         on(event: 'pageerror', listener: (error: Error) => void): void;
+        on(event: 'request', listener: (request: { url(): string }) => void): void;
         on(event: 'dialog', listener: (dialog: Dialog) => void): void;
         once(event: 'dialog', listener: (dialog: Dialog) => void): void;
         reload(): Promise<unknown>;

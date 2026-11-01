@@ -23,6 +23,8 @@ export type Route =
     | { name: 'perform'; id: string; n: number }
     | { name: 'install' }
     | { name: 'settings' }
+    /** A list somebody shared, read with no account (`/c/:code`), or one of its songs (`/c/:code/:n`, from 1) */
+    | { name: 'shared'; code: string; n?: number }
     | { name: 'not-found' };
 
 const ID = '([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|[\\w-]{1,64})';
@@ -89,6 +91,11 @@ export function matchRoute(path: string, search = ''): Route {
         return { name: 'settings' };
     }
 
+    const shared = /^\/c\/([0-9a-f]{32})(?:\/(\d{1,3}))?$/.exec(clean);
+    if (shared?.[1] !== undefined) {
+        return shared[2] === undefined ? { name: 'shared', code: shared[1] } : { name: 'shared', code: shared[1], n: Number(shared[2]) };
+    }
+
     return { name: 'not-found' };
 }
 
@@ -141,6 +148,8 @@ export const paths = {
     perform: (id: string, n: number): string => `/listados/${id}/cantar/${n}`,
     install: (): string => '/ayuda/instalar',
     settings: (): string => '/ajustes',
+    /** What a visitor opens: a list somebody shared, or its `n`-th song (from 1) */
+    shared: (code: string, n?: number): string => (n === undefined ? `/c/${code}` : `/c/${code}/${n}`),
 };
 
 /** The entry of the menu a route belongs to (the screens that hang from one share its entry) */

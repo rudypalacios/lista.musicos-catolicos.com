@@ -7,6 +7,7 @@ import { paths } from '../router.ts';
 import { filterSetlists } from '../search.ts';
 import { showToast } from '../toast.ts';
 import { deleteListAfterAsking } from './delete-list.ts';
+import { createShareSheet } from './share-sheet.ts';
 import { createSheet, sheetAction } from './sheet.ts';
 import { createTemplateSheet } from './template-choices.ts';
 import type { Navigate, View } from './types.ts';
@@ -54,6 +55,9 @@ export function listsView(app: App, navigate: Navigate): View {
     const sheet = createSheet('Opciones del listado', () => fill());
     sheet.element.classList.add('sheet-layer--window');
     element.append(sheet.element);
+    // "Compartir listado": its own sheet, which comes after this one
+    const shareSheet = createShareSheet();
+    element.append(shareSheet.element);
     const fail = (failure: unknown, fallback: string): void => {
         error.textContent = failure instanceof Error ? failure.message : fallback;
     };
@@ -87,6 +91,10 @@ export function listsView(app: App, navigate: Navigate): View {
                         .catch((failure: unknown) => fail(failure, 'No se pudo duplicar el listado.'));
                 });
             }, { hint: 'Una copia sin fecha, con los mismos cantos y tonos' }),
+            sheetAction('share', 'Compartir listado', () => {
+                error.textContent = '';
+                sheet.close(() => shareSheet.open(list));
+            }, { hint: 'Un enlace para que cualquiera lo lea' }),
             // Last and set apart, so it is not touched by mistake next to the others
             sheetAction('trash', 'Eliminar listado', () => {
                 error.textContent = '';
@@ -177,6 +185,7 @@ export function listsView(app: App, navigate: Navigate): View {
         dispose: () => {
             stop();
             sheet.release();
+            shareSheet.release();
         },
     };
 }

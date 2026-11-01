@@ -719,7 +719,9 @@ try {
     assert.equal(await page.locator('button.star').count(), 0, 'there is no star on the rows: each has a "⋯"');
 
     await page.getByRole('button', { name: 'Más opciones: Domingo, editado en la tablet' }).click();
-    assert.deepEqual(await page.locator('.sheet-layer.is-open .sheet-action').allTextContents(), ['Destacar', 'Duplicar listadoUna copia sin fecha, con los mismos cantos y tonos', 'Eliminar listado']);
+    assert.deepEqual(await page.locator('.sheet-layer.is-open .sheet-action').allTextContents(), [
+        'Destacar', 'Duplicar listadoUna copia sin fecha, con los mismos cantos y tonos', 'Compartir listadoUn enlace para que cualquiera lo lea', 'Eliminar listado',
+    ]);
     await page.getByRole('button', { name: 'Destacar', exact: true }).click();
     await page.getByRole('heading', { name: 'Destacados' }).waitFor();
     await page.getByRole('heading', { name: 'Recientes' }).waitFor();
@@ -1087,7 +1089,9 @@ try {
     await newList(page);
     await page.locator('section.slot').first().waitFor();
     await page.getByRole('button', { name: 'Más opciones del listado' }).click();
-    assert.deepEqual(await page.locator('.sheet-layer.is-open .sheet-action').allTextContents(), ['Secciones del listadoQué secciones lleva este listado', 'Eliminar listado'], 'an empty list has nothing to print');
+    assert.deepEqual(await page.locator('.sheet-layer.is-open .sheet-action').allTextContents(), [
+        'Secciones del listadoQué secciones lleva este listado', 'Compartir listadoUn enlace para que cualquiera lo lea', 'Eliminar listado',
+    ], 'an empty list has nothing to print');
     await page.getByRole('button', { name: 'Eliminar listado' }).click();
     await page.getByRole('alertdialog').getByRole('button', { name: 'Eliminar', exact: true }).click();
     await page.locator('.toast', { hasText: 'Listado eliminado' }).waitFor();

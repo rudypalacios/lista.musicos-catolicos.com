@@ -134,6 +134,17 @@ policy in `public/.htaccess` allows `wasm-unsafe-eval` for it (the only widening
 `tests/e2e/photo.ts` makes a picture with Chromium (straight and crooked), imports it under the production policy and checks
 every chord. Real photos and screenshots are not in the repo (they are other people's songs); the tests use invented lyrics.
 
+## Sharing a list
+
+A list can be shared by a link anyone can open, read only (the owner's decision, 2026-11-01: "cualquiera"). It is the one thing of this
+app that is public, so it says as little as it can: `GET /api/shared/:code` answers only the title, the sections the list shows, the songs in
+order with the key each has in it and, if the person chose it, the lyrics (`src/Share/ShareRepository.php`); never the account, the notes, the
+tags or anything else, and a stopped, never given or malformed link all answer the same 404. The visitor's page (`/c/:code`, `web/src/views/shared.ts`)
+is drawn like the public site's pages and loads nothing from another domain, sets no cookie and has no analytics or ads: the privacy text
+proposed for the public site says so, so **do not add any of those without telling the owner first**. The words belong to their authors: the
+sheet asks whether the lyrics go with the link, the page says "uso personal" and links to the public site's copyright page. Stopping a share
+kills its link for good (a new share is a new code). `tests/e2e/share.ts` covers it end to end under the production policy.
+
 ## Public repository
 
 Nothing private goes in the repo: no `.env`, no real server paths, user names or database
@@ -143,7 +154,7 @@ environment on GitHub and in `.env` on the server.
 ## Policies
 
 The app is private (login, `noindex`, no ads, no analytics, nothing loaded from another
-domain: the CSP in `public/.htaccess` enforces it). **Before** a change that opens it to other
+domain: the CSP in `public/.htaccess` enforces it), except the pages of a list its owner shared ("Sharing a list"). **Before** a change that opens it to other
 people, loads anything from another domain, adds analytics or ads, stores new kinds of
 personal data or publishes songs of others, tell the owner and propose the privacy text: the
 public site's policies (`musicos-catolicos`, `src/Templates/legal/`) must keep describing what
