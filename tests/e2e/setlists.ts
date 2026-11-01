@@ -347,6 +347,10 @@ try {
     await page.waitForFunction(() => document.querySelector('.sections li:nth-last-child(2) .srow__name .lrow__title')?.textContent?.startsWith('Misterios luminosos') === true);
     // The ones of the Mass that are missing are offered back: a section is deleted and offered again
     await page.getByRole('button', { name: 'Borrar: Acción de gracias' }).click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Cancelar' }).click();
+    assert.equal(await page.getByRole('button', { name: 'Borrar: Acción de gracias' }).count(), 1, 'Cancelar keeps the section');
+    await page.getByRole('button', { name: 'Borrar: Acción de gracias' }).click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Borrar', exact: true }).click();
     await page.getByRole('button', { name: 'Acción de gracias', exact: true }).waitFor();
     assert.equal(await page.getByRole('switch', { name: 'Acción de gracias' }).count(), 0);
     assert.equal(await page.getByRole('button', { name: 'Borrar: Canto de entrada' }).isDisabled(), true, 'a section with songs cannot be deleted');
@@ -372,6 +376,7 @@ try {
     await page.getByRole('button', { name: 'Más opciones del listado' }).click();
     await page.getByRole('button', { name: 'Secciones del listado' }).click();
     await page.getByRole('button', { name: 'Borrar: Misterios luminosos' }).click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Borrar', exact: true }).click();
     await page.getByRole('switch', { name: 'Misterios luminosos' }).waitFor({ state: 'detached' });
     await page.locator('.bar__back').click();
     await page.locator('section.slot').first().waitFor();
@@ -931,6 +936,7 @@ try {
     await page.getByRole('button', { name: 'Cambiar el nombre: Final' }).waitFor();
     assert.equal(await page.getByRole('switch', { name: 'Final' }).count(), 0, 'a template has no on/off switches');
     await page.getByRole('button', { name: 'Borrar: Final' }).click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Borrar', exact: true }).click();
     await page.getByRole('button', { name: 'Cambiar el nombre: Final' }).waitFor({ state: 'detached' });
     // Nothing is written until "Guardar": leaving with "Cancelar" keeps the template as it was
     await page.getByText('Hay cambios sin guardar.').waitFor();
