@@ -193,6 +193,37 @@ export class Setlists {
 
     /** A new, empty list; with nothing given, for today and with the sections of the Mass (`parts` is copied, not shared) */
     async create(draft: Partial<SetlistDraft> = {}, parts: readonly PartDef[] = massSections()): Promise<Setlist> {
+        return this.make(draft, parts, []);
+    }
+
+    /**
+     * A new list with its songs already in their sections, made in one write (a list from an import has a dozen songs: one
+     * save per song would be a dozen syncs). Each song starts in "mi tono", as `addItem` does; one the library no longer has
+     * is left out. @throws ValidationError (as a rejected promise) for too many songs or a section the list does not show
+     */
+    createWithSongs(draft: Partial<SetlistDraft>, parts: readonly PartDef[], placements: readonly { part: string; songId: string }[]): Promise<Setlist> {
+        return this.serial(async () => {
+            if (placements.length > LIMITS.items) {
+                throw new ValidationError(`Un listado admite hasta ${LIMITS.items} cantos.`);
+            }
+            const shown = new Set(parts.filter((part) => part.off !== true).map((part) => part.id));
+            const items: SetlistItem[] = [];
+            for (const placement of placements) {
+                if (!shown.has(placement.part)) {
+                    throw new ValidationError('Esa sección no existe en la plantilla.');
+                }
+                const song = await this.store.get('songs', placement.songId);
+                if (song !== undefined && song.deletedAt === null) {
+                    const own = Number.isInteger(song.myShift) ? song.myShift : 0;
+                    items.push({ id: this.newId(), part: placement.part, songId: placement.songId, transpose: own, note: '' });
+                }
+            }
+
+            return this.make(draft, parts, items);
+        });
+    }
+
+    private async make(draft: Partial<SetlistDraft>, parts: readonly PartDef[], items: readonly SetlistItem[]): Promise<Setlist> {
         const eventDate = draft.eventDate === undefined ? today(new Date(this.now())) : draft.eventDate;
         const list: Setlist = {
             id: this.newId(),
@@ -201,9 +232,9 @@ export class Setlists {
                 eventDate,
                 notes: draft.notes ?? '',
             }),
-            parts: cleanParts(parts, []),
+            parts: cleanParts(parts, items),
             starred: false,
-            items: [],
+            items: [...items],
             updatedAt: this.now(),
             deletedAt: null,
         };
