@@ -10,7 +10,7 @@
     "typecheck": "tsc -p web/tsconfig.json --noEmit && tsc -p web/tsconfig.sw.json --noEmit && tsc -p scripts/tsconfig.json --noEmit",
     "test": "node --test \"web/test/**/*.test.ts\"",
     "check": "npm run typecheck && npm test",
-    "e2e": "node tests/e2e/offline.ts && node tests/e2e/songs.ts && node tests/e2e/setlists.ts && node tests/e2e/settings.ts && node tests/e2e/pull.ts && node tests/e2e/drag.ts && node tests/e2e/print.ts && node tests/e2e/install.ts && node tests/e2e/pdf.ts && node tests/e2e/photo.ts && node tests/e2e/share.ts && node tests/e2e/update.ts",
+    "e2e": "node tests/e2e/offline.ts && node tests/e2e/songs.ts && node tests/e2e/setlists.ts && node tests/e2e/settings.ts && node tests/e2e/pull.ts && node tests/e2e/drag.ts && node tests/e2e/print.ts && node tests/e2e/install.ts && node tests/e2e/pdf.ts && node tests/e2e/photo.ts && node tests/e2e/share.ts && node tests/e2e/import-list.ts && node tests/e2e/update.ts",
     "fixtures": "node scripts/fixtures/generate.ts"
   },
   "devDependencies": {

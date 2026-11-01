@@ -43,12 +43,17 @@ export function suggestedTitle(body: string): string | null {
     return null;
 }
 
-/** Whether the person already has this very song: the same title and the same text (a repeated title alone is allowed) */
-export function alreadyHave(song: { title: string; body: string }, saved: readonly Pick<Song, 'title' | 'body'>[]): boolean {
+/** The song the person already has that is this very one: the same title and the same text (a repeated title alone is allowed) */
+export function heldSong<S extends Pick<Song, 'title' | 'body'>>(song: { title: string; body: string }, saved: readonly S[]): S | undefined {
     const title = song.title.trim().toLowerCase();
     const body = song.body.trim();
 
-    return title !== '' && saved.some((other) => other.title.trim().toLowerCase() === title && other.body.trim() === body);
+    return title === '' ? undefined : saved.find((other) => other.title.trim().toLowerCase() === title && other.body.trim() === body);
+}
+
+/** Whether the person already has this very song */
+export function alreadyHave(song: { title: string; body: string }, saved: readonly Pick<Song, 'title' | 'body'>[]): boolean {
+    return heldSong(song, saved) !== undefined;
 }
 
 /**
@@ -57,14 +62,22 @@ export function alreadyHave(song: { title: string; body: string }, saved: readon
  * with no title counts (two identical untitled songs are the same song).
  */
 export function repeatedInBatch(songs: readonly { title: string; body: string }[]): boolean[] {
-    const seen = new Set<string>();
+    return firstOfBatch(songs).map((first, index) => first !== index);
+}
 
-    return songs.map((song) => {
+/** For each song of one import, the place of the first identical one (itself when it is the first): what a repeat stands for */
+export function firstOfBatch(songs: readonly { title: string; body: string }[]): number[] {
+    const first = new Map<string, number>();
+
+    return songs.map((song, index) => {
         const key = `${song.title.trim().toLowerCase()}\u0000${song.body.trim()}`;
-        const repeated = seen.has(key);
-        seen.add(key);
+        const seen = first.get(key);
+        if (seen !== undefined) {
+            return seen;
+        }
+        first.set(key, index);
 
-        return repeated;
+        return index;
     });
 }
 

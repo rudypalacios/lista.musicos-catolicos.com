@@ -5,12 +5,18 @@ import { sheetHtml } from '../chordpro/sheet.ts';
 import { ValidationError } from '../data/library.ts';
 import { h, link, setSheet } from '../dom.ts';
 import { icon } from '../icons.ts';
-import { alreadyHave, bytesLabel, footOf, pagesLabel, readingLabel, readingPercent, repeatedInBatch, sizeLabel, suggestedTitle } from '../import-review.ts';
+import { bytesLabel, firstOfBatch, footOf, heldSong, pagesLabel, readingLabel, readingPercent, sizeLabel, suggestedTitle } from '../import-review.ts';
+import { armedMessage, entriesOf, planPlacements, type ImportRow } from '../import-list.ts';
+import { defaultTitle } from '../data/setlists.ts';
+import { today } from '../dates.ts';
+import { rememberTemplate } from '../last-template.ts';
+import { showToast, showUndoToast } from '../toast.ts';
 import { attentionOf, importMany, type Imported } from '../importer.ts';
 import type { OcrProgress } from '../ocr/read.ts';
 import { sameTag, tagsInUse } from '../data/tags.ts';
 import { MASS_PARTS, massTag } from '../mass.ts';
 import { createTagField, type TagField } from './tag-field.ts';
+import { createTemplatePickSheet, type TemplatePick } from './template-choices.ts';
 import { paths } from '../router.ts';
 import type { Navigate, View } from './types.ts';
 
@@ -26,6 +32,12 @@ interface Card {
     error: HTMLElement;
     /** Opens the row (to show where a problem is) */
     open: () => void;
+    /** The id of the song it was saved as, once it is */
+    savedId: string | null;
+    /** The id of the song the person already has that this is ("Ya la tienes"), or null */
+    heldId: string | null;
+    /** The place of the first identical row of the import (its own place when it is the first) */
+    sameAs: number;
 }
 
 /**
@@ -229,6 +241,8 @@ export function importView(app: App, navigate: Navigate): View {
     const saveError = h('p', { class: 'error', role: 'alert' });
     const footMessage = h('p', { class: 'import-foot__msg', role: 'status' });
     const save = h('button', { type: 'submit', class: 'button button--primary' }, 'Guardar');
+    // A file with several songs can also make a list of them (the person picks the template): shown from two marked songs
+    const saveAndList = h('button', { type: 'button', class: 'button', hidden: true }, 'Guardar y crear listado');
     const review = h(
         'form',
         { class: 'form', hidden: true, novalidate: true },
@@ -237,10 +251,13 @@ export function importView(app: App, navigate: Navigate): View {
         hint,
         cards,
         saveError,
-        h('div', { class: 'actions edit-foot import-foot' }, footMessage, save, link(paths.list(), 'Cancelar', 'button')),
+        h('div', { class: 'actions edit-foot import-foot' }, footMessage, save, saveAndList, link(paths.list(), 'Cancelar', 'button')),
     );
 
     let current: Card[] = [];
+    /** The rows as the list is made from them (import-list.ts) */
+    const listRows = (): ImportRow[] =>
+        current.map((card) => ({ included: card.include.checked, heldId: card.heldId, sameAs: card.sameAs, tags: card.tags.value() }));
 
     /** What the foot says and lets the person do, from the rows as they are now */
     const refreshFoot = (): void => {
@@ -248,6 +265,9 @@ export function importView(app: App, navigate: Navigate): View {
         footMessage.textContent = foot.message;
         footMessage.hidden = foot.message === '';
         save.disabled = !foot.canSave;
+        // A list of at least two songs can be made (the marked ones, and the ones the person already has); a title missing blocks it as it blocks Guardar
+        saveAndList.hidden = entriesOf(listRows()).length < 2;
+        saveAndList.disabled = current.some((card) => card.include.checked && card.title.value.trim() === '');
         save.textContent = foot.saving <= 1 ? 'Guardar canto' : `Guardar ${foot.saving} cantos`;
     };
 
@@ -282,8 +302,9 @@ export function importView(app: App, navigate: Navigate): View {
         const inUse = tagsInUse(saved);
         const offered = [...inUse, ...MASS_PARTS.map((part) => part.tag).filter((tag) => !inUse.some((used) => sameTag(used, tag)))];
         // The same song twice in one file (a repeated page) is offered once: the second starts unmarked
-        const repeats = repeatedInBatch(imported);
-        current = imported.map((song, index) => card(song, index, imported.length, alreadyHave(song, saved), repeats[index] === true, offered, refreshFoot));
+        const firsts = firstOfBatch(imported);
+        current = imported.map((song, index) =>
+            card(song, index, imported.length, heldSong(song, saved)?.id ?? null, firsts[index] ?? index, offered, refreshFoot));
         cards.replaceChildren(...current.map((c) => c.element));
         heading.textContent = imported.length === 1 ? 'Revisa el resultado' : `Se encontraron ${imported.length} cantos`;
         hint.hidden = imported.length === 1;
@@ -326,6 +347,81 @@ export function importView(app: App, navigate: Navigate): View {
         h('div', { class: 'actions' }, convert),
     );
 
+    /** The same song, whichever row says it: the one the person already has, or the first of the repeats */
+    const identity = (row: number): string => current[row]?.heldId ?? `new-${current[row]?.sameAs ?? row}`;
+    const idOf = (row: number): string | null => {
+        const card = current[row];
+
+        return card === undefined ? null : (card.savedId ?? card.heldId ?? (card.sameAs !== row ? idOf(card.sameAs) : null));
+    };
+    /**
+     * "Guardar y crear listado" once the template is picked: the songs are saved as with Guardar and a list is made with the
+     * template's sections, each song in the one its tag names. What fits no section stays only in Cantos. The list opens, and
+     * the notice can undo it (the list only: the songs stay).
+     */
+    const makeList = async (choice: TemplatePick): Promise<void> => {
+        saveError.textContent = '';
+        const { placed, leftOut } = planPlacements(entriesOf(listRows()), choice.parts, (a, b) => identity(a) === identity(b));
+        if (placed.length === 0) {
+            saveError.textContent = `Ninguno de los cantos encaja en las secciones de «${choice.name}». Elige otra plantilla (por ejemplo «En blanco»).`;
+
+            return;
+        }
+        save.disabled = true;
+        saveAndList.disabled = true;
+        try {
+            await saveAll(app, current, true);
+        } catch (failure) {
+            saveError.textContent = failure instanceof Error ? failure.message : 'No se pudo guardar.';
+            refreshFoot();
+
+            return;
+        }
+        const seen = new Set<string>();
+        const placements = placed.flatMap((place) => {
+            const songId = idOf(place.key);
+            const key = `${place.part}\u0000${songId ?? ''}`;
+            if (songId === null || seen.has(key)) {
+                return [];
+            }
+            seen.add(key);
+
+            return [{ part: place.part, songId }];
+        });
+        try {
+            const list = await app.setlists.createWithSongs({ title: defaultTitle(today(), choice.name) }, choice.parts, placements);
+            if (choice.templateId !== null) {
+                rememberTemplate(choice.templateId);
+            }
+            navigate(paths.setlist(list.id));
+            showUndoToast(armedMessage(list.items.length, leftOut.length), 'Deshacer', () => {
+                app.setlists
+                    .remove(list.id)
+                    .then(() => navigate(paths.lists()))
+                    .catch(() => showToast('No se pudo deshacer.', 3500, true));
+            });
+        } catch (failure) {
+            saveError.textContent = `Los cantos se guardaron, pero no se pudo armar el listado: ${failure instanceof Error ? failure.message : 'inténtalo de nuevo'}. Puedes armarlo desde Listados.`;
+            refreshFoot();
+        }
+    };
+    const pickSheet = createTemplatePickSheet(
+        app,
+        () => {
+            const marked = current.filter((card) => card.include.checked).length;
+
+            return marked === 0 ? 'Se arma el listado con los cantos que ya tienes.' : `${marked === 1 ? 'Se guarda 1 canto' : `Se guardan los ${marked} cantos`} y se arma el listado.`;
+        },
+        (choice) => void makeList(choice),
+        (failure) => {
+            saveError.textContent = failure instanceof Error ? failure.message : 'No se pudieron abrir las plantillas.';
+        },
+    );
+    saveAndList.addEventListener('click', () => {
+        saveError.textContent = '';
+        pickSheet.open();
+    });
+
     const element = h(
         'div',
         { class: 'page' },
@@ -338,13 +434,14 @@ export function importView(app: App, navigate: Navigate): View {
         inputs,
         pasteError,
         review,
+        pickSheet.element,
     );
 
-    return { element };
+    return { element, dispose: () => pickSheet.release() };
 }
 
 /** Saves the checked cards in order; a card with a problem is opened and nothing after it is lost */
-async function saveAll(app: App, cards: Card[]): Promise<string[]> {
+async function saveAll(app: App, cards: Card[], allowNone = false): Promise<string[]> {
     const saved: string[] = [];
     for (const card of cards) {
         card.error.textContent = '';
@@ -360,6 +457,7 @@ async function saveAll(app: App, cards: Card[]): Promise<string[]> {
                 tags: card.tags.value(),
             });
             saved.push(song.id);
+            card.savedId = song.id;
             // Saved: it must not be saved again if a later one fails and the person tries again
             card.include.checked = false;
             card.include.disabled = true;
@@ -369,7 +467,7 @@ async function saveAll(app: App, cards: Card[]): Promise<string[]> {
             throw new Error(`Hay un problema en “${card.title.value || 'un canto sin título'}”. Corrígelo y vuelve a guardar.`);
         }
     }
-    if (saved.length === 0) {
+    if (saved.length === 0 && !allowNone) {
         throw new Error('No hay ningún canto marcado para guardar.');
     }
 
@@ -378,11 +476,13 @@ async function saveAll(app: App, cards: Card[]): Promise<string[]> {
 
 /**
  * A row. `total`: how many songs the paste held (one song opens at once and has no mark to choose).
- * `have`: the person already has it. `repeated`: an earlier song of this same import is this one. `offered`: the tags a row
+ * `heldId`: the id of the song the person already has that this is, or null. `sameAs`: the place of the first identical row of the import (its own when it is the first). `offered`: the tags a row
  * can offer to touch. `changed`: called when something the foot depends on changes.
  */
-function card(song: Imported, index: number, total: number, have: boolean, repeated: boolean, offered: readonly string[], changed: () => void): Card {
+function card(song: Imported, index: number, total: number, heldId: string | null, sameAs: number, offered: readonly string[], changed: () => void): Card {
     const id = `card-${index}`;
+    const have = heldId !== null;
+    const repeated = sameAs !== index;
     const include = h('input', { type: 'checkbox', id: `${id}-include`, checked: !have && !repeated, 'aria-label': 'Importar este canto' });
     const title = h('input', { id: `${id}-title`, type: 'text', autocomplete: 'off' });
     const author = h('input', { id: `${id}-author`, type: 'text', autocomplete: 'off' });
@@ -521,5 +621,5 @@ function card(song: Imported, index: number, total: number, have: boolean, repea
     // One song is the whole screen: it opens at once
     setOpen(total === 1);
 
-    return { element, include, title, author, body, tags, error, open: () => setOpen(true) };
+    return { element, include, title, author, body, tags, error, open: () => setOpen(true), savedId: null, heldId, sameAs };
 }

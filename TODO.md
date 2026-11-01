@@ -191,7 +191,13 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       as when singing a list: a thin bar (back, title and place, ‹ ›, the tools button), **the app's own reader** with the lyrics fitted to the screen, the tools (key, size, Do/C, print) **folded
       under the bar** and dropping over the lyrics without moving them, **a swipe** (or ← →) to change song, and no "Siguiente" block. The privacy text proposed in the PR says that a copy of the
       list and the reading preferences stay on the visitor's device. **Left for the owner:** publish that text in `musicos-catolicos` (Privacidad). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 47.
-- [x] Creating a list from an import was weighed and **decided against** (the owner, 2026-11-01): too many cases (a song with no title, not a Mass, repeated or already held songs). A list is made with "＋ Nuevo" and the picker of each section, which already offers the songs tagged for it.
+- [x] **A list from an import** (`web/src/import-list.ts`, `views/import.ts`, `Setlists.createWithSongs`, `createTemplatePickSheet` in `views/template-choices.ts`; the owner approved the mockup; it was first decided against, 2026-11-01,
+      and came back once the template was in the middle): next to **Guardar**, **"Guardar y crear listado"** (shown when at least two songs would go in the list: the marked ones and the ones the person already has). It opens the
+      same sheet as "＋ Nuevo" ("Selecciona una plantilla": the person's templates, last used first, and "En blanco"; no "Administrar plantillas", it would leave the review). Picking one saves the songs as Guardar does and
+      makes the list in **one write** with the template's sections, titled from the template and the day; each song goes in the section whose tag (`tagOf`: the Mass's short tag, or the section's name) is one of its tags, a blank list
+      (one section) takes everything in the order of the file, a song the person already has ("Ya la tienes") goes in as their own song (not a copy, and a repeat in the file stands for the first), one unmarked on purpose goes
+      nowhere, and what fits no section is saved but left out of the list (the notice says how many). If nothing fits, nothing is saved and the person is told to try another template ("En blanco"). The list opens and the
+      notice offers **Deshacer**, which removes the list and leaves the songs. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 48.
 - [ ] A help page (FAQ) in the app: `faq.md` holds the first notes (the draft of "Nuevo canto"); make it a screen later, in Spanish, reachable from Ajustes.
 - [x] **New song, PR B** (`views/edit.ts`, `song-draft.ts`, `importer.ts` `convertPastedSheet`; the owner approved the mockup): "Escribir | Ver"
       above the lyrics on a phone (side by side from 900px), Guardar / Cancelar fixed at the foot, a sheet pasted with chords over the words is
@@ -359,7 +365,7 @@ Next, in this order (design agreed with the owner):
          "Fases 4 y 5", item 41.
       5. [x] **Tag when importing** (`views/import.ts`; no locked row, no migration): the part a header names ("ENTRADA: …") is the song's tag (the Mass's short one, "Entrada"), said in its row
          ("Etiqueta: Entrada", or "Sin etiqueta" when the importer found no part) and saved with the song; the open row has the same tag field as the song editor (below the lyrics) to change
-         or take it off, with the tags in use offered. Not done on purpose: aliases for the person's own sections, and a list made from the import (see below). **Owner's check:** `DEPLOY.md`
+         or take it off, with the tags in use offered. Not done on purpose: aliases for the person's own sections (a list made from the import came later: see "A list from an import"). **Owner's check:** `DEPLOY.md`
          "Fases 4 y 5", item 42.
       5b. [x] **"Etiquetarlos como «Entrada»"** (the owner approved the wording; `views/add.ts`, `untaggedUses` in `data/tags.ts`, `Library.addTag` / `removeTag`; no migration, no locked row): in the picker of a section, a card says how many
          songs the lists already use in that section and lack its tag ("6 cantos de tus listados están en Canto de entrada y no tienen la etiqueta «Entrada»") with one button; it opens a sheet that names the songs

@@ -508,6 +508,16 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    el enlace (debe abrir la copia); apaga el enlace desde tu cuenta, ábrelo con conexión (debe decir que ya no existe) y vuelve al modo avión (ya no debe abrir). Si tienes la PWA instalada, manda el enlace
    por WhatsApp a otro chat y tócalo: mira si Android ofrece abrirlo con Listas (depende de tu Android y de Chrome; dime qué pasa) y, en el iPad al final, que el deslizar no choque con el gesto de volver de Safari.
 
+48. **Crear un listado al importar.** Al revisar lo que salió de un PDF (o de un texto pegado) con **varios cantos**, junto a *Guardar* hay un botón nuevo, **Guardar y crear listado** (aparece cuando al
+   menos dos cantos van a entrar al listado: los marcados y los que ya tienes). Al tocarlo se abre la hoja **«Selecciona una plantilla»** de siempre (tus plantillas, la última usada primero, y **En blanco**; aquí no
+   está «Administrar plantillas»). Al elegir una: **se guardan los cantos** igual que con *Guardar*, **se arma un listado** con las secciones de esa plantilla y el título «Misa del 1 de noviembre» (nombre de la
+   plantilla y el día), y se abre. **Cada canto va a la sección cuyo nombre coincide con su etiqueta** (la parte que decía el encabezado: «ENTRADA» → «Canto de entrada»); con **En blanco** entran todos, en el orden del
+   PDF, en una sola sección «Cantos». Un canto **que ya tienes** («Ya la tienes») entra al listado **con el tuyo**, sin copiarlo; uno que desmarcaste no entra a nada. Los cantos que **no encajan en ninguna sección** se
+   guardan pero no entran al listado, y el aviso dice cuántos («… 1 no encajó en ninguna sección y quedó solo en Cantos»). Si ninguno encaja, **no se guarda nada** y dice que pruebes otra plantilla (por ejemplo «En blanco»).
+   El aviso trae **Deshacer** (unos segundos): borra el listado y **deja los cantos guardados**. **No hay migración ni nada que ejecutar.** **Prueba:** importa el PDF de una Misa completa y crea el listado con la Misa
+   (mira que cada canto quede en su sección y que el aviso diga cuántos); prueba **Deshacer**; importa el mismo PDF otra vez (todos salen «Ya la tienes») y crea el listado con **En blanco**; prueba con una plantilla tuya
+   (por ejemplo un rosario) y mira qué cantos encajan; prueba sin conexión (todo se guarda en el aparato y se sincroniza después).
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.

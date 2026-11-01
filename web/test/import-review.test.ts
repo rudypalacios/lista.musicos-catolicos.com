@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { alreadyHave, bytesLabel, footOf, pagesLabel, readingLabel, readingPercent, repeatedInBatch, sizeLabel, suggestedTitle } from '../src/import-review.ts';
+import { alreadyHave, bytesLabel, firstOfBatch, footOf, heldSong, pagesLabel, readingLabel, readingPercent, repeatedInBatch, sizeLabel, suggestedTitle } from '../src/import-review.ts';
 import { attentionOf } from '../src/importer.ts';
 
 describe('sizeLabel', () => {
@@ -126,5 +126,21 @@ describe('what the reading of a file says', () => {
         assert.equal(readingPercent(0, 0), 0);
         assert.equal(readingPercent(1, 4), 25);
         assert.equal(readingPercent(9, 4), 100);
+    });
+});
+
+describe('heldSong and firstOfBatch', () => {
+    it('gives the song the person already has, not only that there is one', () => {
+        const saved = [{ id: 'a', title: 'Gloria', body: '[D]Gloria a Dios' }, { id: 'b', title: 'Santo', body: '[G]Santo' }];
+
+        assert.equal(heldSong({ title: ' gloria ', body: '[D]Gloria a Dios\n' }, saved)?.id, 'a');
+        assert.equal(heldSong({ title: 'Santo', body: 'otra' }, saved), undefined);
+        assert.equal(heldSong({ title: '', body: '[G]Santo' }, saved), undefined);
+    });
+
+    it('says which row a repeat repeats', () => {
+        const songs = [{ title: 'A', body: 'x' }, { title: 'B', body: 'y' }, { title: 'a', body: 'x' }, { title: 'A', body: 'z' }, { title: 'A', body: 'x' }];
+
+        assert.deepEqual(firstOfBatch(songs), [0, 1, 0, 3, 0]);
     });
 });

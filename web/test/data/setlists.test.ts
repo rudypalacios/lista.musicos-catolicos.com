@@ -32,6 +32,46 @@ describe('Setlists', () => {
     const transposeOf = async (id: string, itemId: string): Promise<number | undefined> =>
         (await itemsOf(id)).find((item) => item.id === itemId)?.transpose;
 
+    describe('creating with songs', () => {
+        it('makes the list and its items in one write, each song in "mi tono"', async () => {
+            await store.save('songs', { ...song('s3', 1), myShift: 2 });
+
+            const list = await lists.createWithSongs({ title: 'Misa' }, massSections(), [
+                { part: 'entrada', songId: 's1' }, { part: 'comunion', songId: 's3' }, { part: 'entrada', songId: 's2' },
+            ]);
+
+            assert.deepEqual(list.items.map((item) => [item.part, item.songId, item.transpose]), [['entrada', 's1', 0], ['comunion', 's3', 2], ['entrada', 's2', 0]]);
+            assert.deepEqual(await store.pending('setlists'), [list]);
+            assert.equal(writes, 1, 'one change to send, not one per song');
+        });
+
+        it('leaves out a song the library no longer has', async () => {
+            await store.save('songs', { ...song('s2', 2), deletedAt: 2 });
+
+            const list = await lists.createWithSongs({}, massSections(), [{ part: 'entrada', songId: 's1' }, { part: 'entrada', songId: 's2' }, { part: 'entrada', songId: 'nope' }]);
+
+            assert.deepEqual(list.items.map((item) => item.songId), ['s1']);
+        });
+
+        it('refuses a section the list does not show, and too many songs, and stores nothing', async () => {
+            const off = massSections().map((part) => (part.id === 'gloria' ? { ...part, off: true as const } : part));
+
+            await assert.rejects(lists.createWithSongs({}, off, [{ part: 'gloria', songId: 's1' }]), ValidationError);
+            await assert.rejects(lists.createWithSongs({}, massSections(), [{ part: 'nope', songId: 's1' }]), ValidationError);
+            const many = Array.from({ length: LIMITS.items + 1 }, () => ({ part: 'entrada', songId: 's1' }));
+            await assert.rejects(lists.createWithSongs({}, massSections(), many), /hasta 80 cantos/);
+            assert.deepEqual(await store.pending('setlists'), []);
+            assert.equal(writes, 0);
+        });
+
+        it('is the same as create when there are no songs', async () => {
+            const list = await lists.createWithSongs({}, massSections(), []);
+
+            assert.deepEqual(list.items, []);
+            assert.equal(list.title, 'Misa del 1 de noviembre');
+        });
+    });
+
     describe('creating', () => {
         it('starts for today, with a title made of the day, and queues it', async () => {
             const list = await lists.create();
