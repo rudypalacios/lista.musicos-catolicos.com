@@ -165,6 +165,17 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       title first, the lyrics later); a **repeated title is neither warned nor blocked** (the owner: several "Santo" and "Gloria"
       exist); Importar draws its own "Elegir PDF" button instead of the browser's, with a shorter explanation; the import cards
       capitalise a lowercase chord (preview and save) like the editor. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 25.
+- [x] **Import from a photo or a screenshot** (`web/src/ocr/`, `views/import.ts`; the owner approved the mockup, version A: three cards, no tabs): "Importar" has two more cards,
+      **Tomar fotografía** (the camera; hidden where the pointer is a mouse, so on a computer) and **Cargar imagen** (the gallery; a file can be dropped on it from a computer), with a note under
+      them ("Mejor con acordes impresos…, los escritos a mano también se intentan leer, pero sin garantía de calidad"). The picture is read **on the device** by Tesseract (WebAssembly in a worker of this
+      origin, Spanish data; nothing is sent anywhere, so the privacy text is unchanged): once for the letters and once with an alphabet of only what a chord is made of, and `words.ts` puts them together (it
+      straightens the page by the baseline of its lines, drops the noise the first reading leaves in the chord rows, reads a stray low-confidence letter above the lyrics as the C the second pass missed, sets a title
+      across two columns apart) before the PDF's own layout puts each chord on its syllable. The review shows "Leído de una imagen. Revisa los acordes…". Measured on the owner's three photos (not in the
+      repo): printed chords come out almost all right (a sheet in two columns with a decorated background: every chord but one), a screenshot with printed chords is good, and chords written by hand in pen
+      mostly are not read (the lyrics are). **Known limits:** sharps (`#`) are often lost, a sheet turned 90° is not turned back, the reader (~6 MB: engine + language data) is not kept for offline use (like the PDF
+      reader), and the policy in `public/.htaccess` now allows `wasm-unsafe-eval` (the only widening). **Not done on purpose:** a model of vision on a server (not free, and it would send the photo to a third party). Public
+      use would not cost anything per person (it runs on each device). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 45 (the iPad at the end: Safari must accept `wasm-unsafe-eval`; if it does not, the card must say so).
+- [x] Creating a list from an import was weighed and **decided against** (the owner, 2026-11-01): too many cases (a song with no title, not a Mass, repeated or already held songs). A list is made with "＋ Nuevo" and the picker of each section, which already offers the songs tagged for it.
 - [ ] A help page (FAQ) in the app: `faq.md` holds the first notes (the draft of "Nuevo canto"); make it a screen later, in Spanish, reachable from Ajustes.
 - [x] **New song, PR B** (`views/edit.ts`, `song-draft.ts`, `importer.ts` `convertPastedSheet`; the owner approved the mockup): "Escribir | Ver"
       above the lyrics on a phone (side by side from 900px), Guardar / Cancelar fixed at the foot, a sheet pasted with chords over the words is

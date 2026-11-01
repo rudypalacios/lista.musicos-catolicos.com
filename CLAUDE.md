@@ -122,6 +122,18 @@ false`), its worker is a file of this origin (built first, its URL injected as `
 chord. The built app splits code (esbuild `splitting`): everything `main` imports statically must be
 precached (the build follows the imports), what loads on demand must not be.
 
+## Image import (a photo of a sheet)
+
+Importar also reads a photo or a screenshot (`web/src/ocr/`), on the device like the PDF: nothing is sent anywhere, so the
+privacy text stays true. Tesseract (WebAssembly, a worker of this origin) reads the picture twice (`read.ts`): once for
+everything and once with an alphabet of only what a chord is made of (the first reads a lone `C` as `e`); `words.ts` (pure,
+tested) puts the two together, takes the tilt out, tells the columns apart and hands the words to the PDF's `pdf/layout.ts`,
+so a chord lands on its syllable the same way. It is for printed chords; handwritten ones are tried, with no promise, and the
+review says so. `scripts/build.ts` copies the reader's files to `/assets/ocr/` (served as they are, not precached), and the
+policy in `public/.htaccess` allows `wasm-unsafe-eval` for it (the only widening: no other domain, no `eval` of text).
+`tests/e2e/photo.ts` makes a picture with Chromium (straight and crooked), imports it under the production policy and checks
+every chord. Real photos and screenshots are not in the repo (they are other people's songs); the tests use invented lyrics.
+
 ## Public repository
 
 Nothing private goes in the repo: no `.env`, no real server paths, user names or database

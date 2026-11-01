@@ -4,7 +4,7 @@
  * public/ is the web root, so the deploy uploads what this leaves there.
  */
 import { build } from 'esbuild';
-import { readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { shellVersion, type ShellFile } from './precache.ts';
@@ -63,6 +63,21 @@ const app = await build({
     metafile: true,
     logLevel: 'info',
 });
+
+// The photo reader's files (Tesseract: its worker, its engine and the Spanish language data) are served from this same origin,
+// as they are: the page's policy allows nothing from elsewhere. Only the two builds of the engine the reader asks for
+// (with and without SIMD) are copied, and none of it is precached: it is only needed to import a photo, which wants a
+// connection the first time anyway.
+const OCR_FILES: readonly (readonly [from: string, to: string])[] = [
+    ['node_modules/tesseract.js/dist/worker.min.js', 'worker.min.js'],
+    ['node_modules/tesseract.js-core/tesseract-core-simd-lstm.wasm.js', 'tesseract-core-simd-lstm.wasm.js'],
+    ['node_modules/tesseract.js-core/tesseract-core-lstm.wasm.js', 'tesseract-core-lstm.wasm.js'],
+    ['node_modules/@tesseract.js-data/spa/4.0.0_best_int/spa.traineddata.gz', 'spa.traineddata.gz'],
+];
+mkdirSync(join(publicDir, 'assets/ocr'), { recursive: true });
+for (const [from, to] of OCR_FILES) {
+    copyFileSync(join(root, from), join(publicDir, 'assets/ocr', to));
+}
 
 // What the page loads at once: main's script, every chunk it imports statically (code shared with
 // the lazy parts ends up in chunks), and the one stylesheet. What loads on demand (the PDF reader

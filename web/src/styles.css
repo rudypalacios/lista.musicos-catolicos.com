@@ -1009,6 +1009,51 @@ input[type='search'] {
     }
 }
 
+/* A computer has no camera to open: the card for a photo is for phones and tablets (where the pointer is a finger) */
+@media (hover: hover) and (pointer: fine) {
+    .pick--camera {
+        display: none;
+    }
+}
+
+/* What to expect from a photo, under the cards; and, in the review of one, what to check */
+.import-tip,
+.import-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    margin: 0.25rem 0 0.75rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.import-tip .icon,
+.import-note .icon {
+    flex: none;
+    margin-top: 0.1rem;
+    color: var(--accent);
+}
+
+.import-tip b {
+    color: var(--text);
+}
+
+.import-note {
+    padding: 0.6rem 0.75rem;
+    color: var(--text);
+    background: var(--changed-soft);
+    border-radius: 0.7rem;
+}
+
+.import-note .icon {
+    color: var(--warn);
+}
+
+.import-note[hidden] {
+    display: none;
+}
+
 /* The file once chosen: its name and a bar that fills page by page */
 .file-card {
     display: flex;

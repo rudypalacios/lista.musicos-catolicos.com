@@ -7,6 +7,7 @@ import { h, link, setSheet } from '../dom.ts';
 import { icon } from '../icons.ts';
 import { alreadyHave, bytesLabel, footOf, pagesLabel, readingLabel, readingPercent, repeatedInBatch, sizeLabel, suggestedTitle } from '../import-review.ts';
 import { attentionOf, importMany, type Imported } from '../importer.ts';
+import type { OcrProgress } from '../ocr/read.ts';
 import { sameTag, tagsInUse } from '../data/tags.ts';
 import { MASS_PARTS, massTag } from '../mass.ts';
 import { createTagField, type TagField } from './tag-field.ts';
@@ -54,6 +55,32 @@ export function importView(app: App, navigate: Navigate): View {
             h('strong', {}, 'Elegir PDF'),
             h('small', {}, h('span', { class: 'pick__drop' }, 'o suéltalo aquí · '), 'Se lee en tu dispositivo: no se envía a ningún servidor.')),
     );
+    // A photo of a sheet: the camera (a phone or a tablet; a computer has none to open, so its card is hidden there) or a picture
+    // from the gallery. Both are read on the device like the PDF (web/src/ocr/): nothing is sent anywhere.
+    const photo = h('input', { id: 'photo-file', class: 'sr-only', type: 'file', accept: 'image/*', capture: 'environment' });
+    const gallery = h('input', { id: 'image-file', class: 'sr-only', type: 'file', accept: 'image/*' });
+    const shoot = h(
+        'label',
+        { class: 'pick pick--camera', for: 'photo-file' },
+        h('span', { class: 'pick__badge' }, icon('camera', 24)),
+        h('span', { class: 'pick__text' },
+            h('strong', {}, 'Tomar fotografía'),
+            h('small', {}, 'Se lee en tu dispositivo: la foto no se envía a ningún servidor.')),
+    );
+    const pickImage = h(
+        'label',
+        { class: 'pick', for: 'image-file' },
+        h('span', { class: 'pick__badge' }, icon('image', 24)),
+        h('span', { class: 'pick__text' },
+            h('strong', {}, 'Cargar imagen'),
+            h('small', {}, h('span', { class: 'pick__drop' }, 'o suéltala aquí · '), 'Una foto o captura. Se lee en tu dispositivo.')),
+    );
+    const tip = h(
+        'p',
+        { class: 'import-tip' },
+        icon('info', 18),
+        h('span', {}, h('b', {}, 'Mejor con acordes impresos'), ', la hoja derecha y buena luz. Los acordes escritos a mano también se intentan leer, pero sin garantía de calidad: revísalos.'),
+    );
 
     // The file once chosen: its name, its size, and a bar that fills page by page
     const fileName = h('b', {});
@@ -83,15 +110,28 @@ export function importView(app: App, navigate: Navigate): View {
     };
     const showRead = (file: File, total: number, found: number): void => {
         fileCard.classList.add('is-done');
-        fileInfo.textContent = `${pagesLabel(total)} · ${bytesLabel(file.size)} · Listo`;
+        fileInfo.textContent = total > 0 ? `${pagesLabel(total)} · ${bytesLabel(file.size)} · Listo` : `${bytesLabel(file.size)} · Listo`;
         fileChange.hidden = false;
         track.hidden = true;
         say.textContent = found === 1 ? '1 canto encontrado' : `${found} cantos encontrados`;
     };
+    /** A photo has no pages: the bar fills stage by stage and the sentence says which */
+    const showImageReading = (file: File, progress: OcrProgress): void => {
+        fileName.textContent = file.name;
+        fileInfo.textContent = bytesLabel(file.size);
+        bar.style.width = `${progress.percent}%`;
+        track.setAttribute('aria-valuenow', String(progress.percent));
+        say.textContent = progress.label;
+    };
 
     let reading = false;
-    /** A PDF is read where the chords really are (their position on the page), which a paste cannot say */
-    const readFile = (file: File): void => {
+    /** What "Cambiar …" opens: the picker of the kind of file that was read last */
+    let changeInput: HTMLInputElement = pdf;
+    /**
+     * A PDF is read where the chords really are (their position on the page), which a paste cannot say. A photo is read by a
+     * character reader on the device (web/src/ocr/): the same, from the position of every word in the picture.
+     */
+    const readFile = (file: File, origin: 'pdf' | 'image'): void => {
         if (reading) {
             return;
         }
@@ -100,57 +140,89 @@ export function importView(app: App, navigate: Navigate): View {
         let total = 0;
         fileCard.classList.remove('is-done');
         fileChange.hidden = true;
+        fileChange.textContent = origin === 'pdf' ? 'Cambiar PDF' : 'Cambiar imagen';
+        changeInput = origin === 'pdf' ? pdf : gallery;
+        fileBadge.replaceChildren(icon(origin === 'pdf' ? 'file' : 'image', 22));
         track.hidden = false;
+        track.setAttribute('aria-label', origin === 'pdf' ? 'Leyendo el PDF' : 'Leyendo la imagen');
         fileCard.hidden = false;
         inputs.hidden = true;
-        showReading(file, 0, 0);
-        void import('../pdf/read.ts')
-            .then((reader) => reader.readPdf(file, (read, pages) => {
+        let text: Promise<string>;
+        if (origin === 'pdf') {
+            showReading(file, 0, 0);
+            text = import('../pdf/read.ts').then((module) => module.readPdf(file, (read, pages) => {
                 total = pages;
                 showReading(file, read, pages);
-            }))
-            .then(async (text) => {
-                const found = await convertNow(text, false);
+            }));
+        } else {
+            showImageReading(file, { percent: 0, label: 'Preparando la imagen…' });
+            text = import('../ocr/read.ts').then((module) => module.readImage(file, (progress) => showImageReading(file, progress)));
+        }
+        void text
+            .then(async (read) => {
+                const found = await convertNow(read, origin);
                 if (found > 0) {
                     showRead(file, total, found);
+                } else {
+                    // Nothing came out: the way to try again is the cards, so they come back
+                    fileCard.hidden = true;
+                    inputs.hidden = false;
                 }
             })
             .catch((failure: unknown) => {
                 fileCard.hidden = true;
                 inputs.hidden = false;
-                pasteError.textContent = failure instanceof Error && failure.name === 'PdfError'
+                const known = failure instanceof Error && (failure.name === 'PdfError' || failure.name === 'OcrError');
+                pasteError.textContent = known
                     ? failure.message
-                    : 'No se pudo cargar el lector de PDF. Leer un PDF necesita conexión; pegar el texto funciona sin ella.';
+                    : origin === 'pdf'
+                        ? 'No se pudo cargar el lector de PDF. Leer un PDF necesita conexión; pegar el texto funciona sin ella.'
+                        : 'No se pudo cargar el lector de imágenes. Leer una imagen necesita conexión la primera vez; pegar el texto funciona sin ella.';
             })
             .finally(() => {
                 pdf.value = '';
+                photo.value = '';
+                gallery.value = '';
                 reading = false;
             });
     };
-    pdf.addEventListener('change', () => {
-        const file = pdf.files?.[0];
-        if (file !== undefined) {
-            readFile(file);
-        }
-    });
-    fileChange.addEventListener('click', () => pdf.click());
-    pdf.addEventListener('focus', () => pick.classList.add('is-focus'));
-    pdf.addEventListener('blur', () => pick.classList.remove('is-focus'));
-    // On a computer the file can also be dropped on the card
-    pick.addEventListener('dragover', (event) => {
-        event.preventDefault();
-        pick.classList.add('is-over');
-    });
-    pick.addEventListener('dragleave', () => pick.classList.remove('is-over'));
-    pick.addEventListener('drop', (event) => {
-        event.preventDefault();
-        pick.classList.remove('is-over');
-        const file = event.dataTransfer?.files[0];
-        if (file !== undefined) {
-            readFile(file);
-        }
-    });
+    /** A file dropped on a card is read for what it is, whichever card it fell on */
+    const kindOf = (file: File): 'pdf' | 'image' => (file.type.startsWith('image/') ? 'image' : 'pdf');
+    for (const [input, card] of [[pdf, pick], [photo, shoot], [gallery, pickImage]] as const) {
+        input.addEventListener('change', () => {
+            const file = input.files?.[0];
+            if (file !== undefined) {
+                readFile(file, input === pdf ? 'pdf' : 'image');
+            }
+        });
+        input.addEventListener('focus', () => card.classList.add('is-focus'));
+        input.addEventListener('blur', () => card.classList.remove('is-focus'));
+    }
+    fileChange.addEventListener('click', () => changeInput.click());
+    // On a computer a file can also be dropped on its cards
+    for (const card of [pick, pickImage]) {
+        card.addEventListener('dragover', (event) => {
+            event.preventDefault();
+            card.classList.add('is-over');
+        });
+        card.addEventListener('dragleave', () => card.classList.remove('is-over'));
+        card.addEventListener('drop', (event) => {
+            event.preventDefault();
+            card.classList.remove('is-over');
+            const file = event.dataTransfer?.files[0];
+            if (file !== undefined) {
+                readFile(file, kindOf(file));
+            }
+        });
+    }
 
+    // Shown only when the songs were read from a photo: its chords can come out wrong, and the person is the one who checks them
+    const imageNote = h(
+        'p',
+        { class: 'import-note', role: 'note', hidden: true },
+        icon('info', 18),
+        h('span', {}, h('b', {}, 'Leído de una imagen.'), ' Revisa los acordes antes de guardar: algunos pueden venir mal (sobre todo los que llevan #).'),
+    );
     const heading = h('h2', {}, 'Revisa el resultado');
     const hint = h('p', { class: 'help' }, 'Revisa los que tienen aviso.');
     const cards = h('div', { class: 'cards' });
@@ -160,6 +232,7 @@ export function importView(app: App, navigate: Navigate): View {
     const review = h(
         'form',
         { class: 'form', hidden: true, novalidate: true },
+        imageNote,
         heading,
         hint,
         cards,
@@ -180,16 +253,23 @@ export function importView(app: App, navigate: Navigate): View {
 
     /**
      * Turns text into the rows of the review; returns how many songs it found.
-     * `fromPaste`: the text is the box's (a PDF's text is not put in the box: it has page breaks and nothing to edit)
+     * `origin`: where the text comes from. The paste box's own (`paste`) stays in the box; a PDF's or a photo's text is not
+     * put in it: it has page breaks and nothing to edit
      */
-    async function convertNow(text: string = paste.value, fromPaste = true): Promise<number> {
+    async function convertNow(text: string = paste.value, origin: 'paste' | 'pdf' | 'image' = 'paste'): Promise<number> {
+        const fromPaste = origin === 'paste';
         const imported = importMany(text).filter((song) => song.body !== '');
         if (imported.length === 0) {
-            pasteError.textContent = fromPaste ? 'Pega primero el canto.' : 'No se encontró ningún canto en este PDF.';
+            pasteError.textContent = fromPaste
+                ? 'Pega primero el canto.'
+                : origin === 'pdf'
+                    ? 'No se encontró ningún canto en este PDF.'
+                    : 'No se encontró ningún canto en la imagen. Prueba con más luz, la hoja de frente y sin sombras.';
             review.hidden = true;
 
             return 0;
         }
+        imageNote.hidden = origin !== 'image';
         if (fromPaste) {
             fileCard.hidden = true;
             inputs.hidden = false;
@@ -237,6 +317,9 @@ export function importView(app: App, navigate: Navigate): View {
 
     inputs.append(
         pick,
+        shoot,
+        pickImage,
+        tip,
         h('p', { class: 'or' }, 'o'),
         h('label', { for: 'paste' }, 'Pegar el texto con los acordes'),
         paste,
@@ -247,8 +330,10 @@ export function importView(app: App, navigate: Navigate): View {
         'div',
         { class: 'page' },
         h('h2', {}, 'Importar cantos'),
-        h('p', {}, 'Sube un PDF o pega el texto con los acordes sobre la letra. Si trae varios cantos, se separan solos; los revisas antes de guardar.'),
+        h('p', {}, 'Sube un PDF, una foto o pega el texto con los acordes sobre la letra. Si trae varios cantos, se separan solos; los revisas antes de guardar.'),
         pdf,
+        photo,
+        gallery,
         fileCard,
         inputs,
         pasteError,
