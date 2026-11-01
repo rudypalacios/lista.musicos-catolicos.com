@@ -926,14 +926,59 @@ try {
     assert.deepEqual((await page.locator('.lrow__title').allTextContents()).sort(), ['Mi plantilla', 'Misa']);
     await page.locator('.lrow__link', { hasText: 'Mi plantilla' }).click();
     await page.getByLabel('Nombre de la plantilla').fill('Rosario');
-    await page.getByLabel('Nombre de la plantilla').press('Enter');
     await page.getByLabel('Nombre de la sección nueva').fill('Final');
     await page.getByRole('button', { name: 'Agregar', exact: true }).click();
     await page.getByRole('button', { name: 'Cambiar el nombre: Final' }).waitFor();
-    assert.equal(await page.getByRole('switch').count(), 0, 'a template has no switches');
+    assert.equal(await page.getByRole('switch', { name: 'Final' }).count(), 0, 'a template has no on/off switches');
     await page.getByRole('button', { name: 'Borrar: Final' }).click();
     await page.getByRole('button', { name: 'Cambiar el nombre: Final' }).waitFor({ state: 'detached' });
+    // Nothing is written until "Guardar": leaving with "Cancelar" keeps the template as it was
+    await page.getByText('Hay cambios sin guardar.').waitFor();
+    // Leaving with something unsaved asks: the bar's back, then "Seguir editando" stays
     await page.locator('.bar__back').click();
+    const leaving = page.getByRole('alertdialog');
+    await leaving.getByText('¿Salir sin guardar?').waitFor();
+    assert.deepEqual(await leaving.getByRole('button').allTextContents(), ['Seguir editando', 'Descartar', 'Guardar']);
+    await noTypedIcons(page, 'the unsaved-changes question');
+    await leaving.getByRole('button', { name: 'Seguir editando' }).click();
+    await page.getByText('Hay cambios sin guardar.').waitFor();
+    // The device's back button asks too, and "Descartar" leaves
+    await page.goBack();
+    await leaving.getByText('¿Salir sin guardar?').waitFor();
+    assert.match(page.url(), /\/plantillas\/[0-9a-f-]+$/, 'the address is put back while the question is open');
+    await leaving.getByRole('button', { name: 'Descartar' }).click();
+    await page.getByRole('heading', { name: 'Plantillas' }).waitFor();
+    await page.locator('.lrow__link', { hasText: 'Mi plantilla' }).waitFor();
+    assert.equal(await page.locator('.confirm').count(), 0);
+    await page.locator('.lrow__link', { hasText: 'Mi plantilla' }).click();
+    await page.getByLabel('Nombre de la plantilla').fill('Otro nombre');
+    await page.getByRole('link', { name: 'Cancelar' }).click();
+    await leaving.getByRole('button', { name: 'Descartar' }).click();
+    await page.locator('.lrow__link', { hasText: 'Mi plantilla' }).waitFor();
+    await page.locator('.lrow__link', { hasText: 'Mi plantilla' }).click();
+    assert.equal(await page.getByLabel('Nombre de la plantilla').inputValue(), 'Mi plantilla', 'Cancelar leaves the template alone');
+    // Optional and its explanation, then Guardar
+    await page.getByLabel('Nombre de la plantilla').fill('Rosario');
+    const firstName = (await page.locator('.srow .lrow__title').first().innerText()).replace(/\s*opcional$/, '');
+    await page.getByRole('button', { name: `Opcional y explicación: ${firstName}` }).click();
+    await page.getByRole('switch', { name: /^Opcional:/ }).click();
+    await page.locator('.srow__note').fill('Solo si hay tiempo');
+    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+    await page.locator('.toast', { hasText: 'Plantilla guardada' }).waitFor();
+    await page.locator('.lrow__link', { hasText: 'Rosario' }).waitFor();
+    await page.locator('.lrow__link', { hasText: 'Rosario' }).click();
+    assert.match(await page.locator('.srow .lrow__title').first().innerText(), /opcional/, 'optional was saved');
+    await page.getByRole('button', { name: `Opcional y explicación: ${firstName}` }).click();
+    assert.equal(await page.locator('.srow__note').inputValue(), 'Solo si hay tiempo', 'the explanation was saved');
+    // "Guardar" in the question saves and leaves
+    await page.getByLabel('Nombre de la plantilla').fill('Rosario');
+    await page.getByLabel('Nombre de la plantilla').fill('Rosario del jueves');
+    await page.locator('.bar__back').click();
+    await leaving.getByRole('button', { name: 'Guardar' }).click();
+    await page.locator('.lrow__link', { hasText: 'Rosario del jueves' }).waitFor();
+    await page.locator('.lrow__link', { hasText: 'Rosario del jueves' }).click();
+    await page.getByLabel('Nombre de la plantilla').fill('Rosario');
+    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
     await page.locator('.lrow__link', { hasText: 'Rosario' }).waitFor();
     await page.getByRole('button', { name: 'Más opciones: Rosario' }).click();
     await page.getByRole('button', { name: 'Duplicar plantilla' }).click();
@@ -951,7 +996,7 @@ try {
     }
     assert.deepEqual(await page.locator('.lrow__title').allTextContents(), ['Misa']);
     await openSection(page, 'Listados');
-    pass('the templates screen: open one, rename it, add and delete a section, duplicate it, delete it after a question; no switches there');
+    pass('the templates screen: open one, rename it, add and delete a section, duplicate it, delete it after a question; optional and its explanation; nothing is saved before Guardar');
 
     // ----- tags: the picker of a section filters by its tag; the editor has them below the lyrics -----
     await createSong(page, 'Etiquetado a mano', '[C]Una letra [G]cualquiera');
@@ -989,6 +1034,10 @@ try {
     await page.getByLabel('Agregar etiqueta').fill('Adviento');
     await page.getByLabel('Agregar etiqueta').press('Enter');
     await page.getByRole('button', { name: 'Quitar la etiqueta Adviento' }).waitFor();
+    // A comma turns what is typed into its chip at once (also pasted, and from a phone keyboard), the rest stays in the field
+    await page.getByLabel('Agregar etiqueta').fill('Pascua, Ordinario');
+    await page.getByRole('button', { name: 'Quitar la etiqueta Pascua' }).click();
+    assert.equal(await page.getByLabel('Agregar etiqueta').inputValue(), 'Ordinario', 'the text after the comma stays in the field');
     await page.getByLabel('Agregar etiqueta').fill('Cuaresma');
     await noTypedIcons(page, 'the editor with tags');
     await page.getByRole('button', { name: 'Guardar' }).click();

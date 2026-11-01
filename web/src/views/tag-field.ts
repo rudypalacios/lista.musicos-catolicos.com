@@ -24,7 +24,7 @@ export interface TagField {
 
 /**
  * The "Etiquetas" of a song, optional and below the lyrics (the lyrics stay near the top): the tags it has, each
- * a chip that goes away when touched; a field where Enter (or a comma) adds one; and the tags already in use, one
+ * a chip that goes away when touched; a field where Enter or a comma turns the text into a chip; and the tags already in use, one
  * touch to add. At most `LIMITS.tags`, each `LIMITS.tag` characters.
  */
 export function createTagField(options: TagFieldOptions): TagField {
@@ -69,12 +69,27 @@ export function createTagField(options: TagFieldOptions): TagField {
         }
     };
     input.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' || event.key === ',') {
-            // Enter would send the form; the comma is how a list of tags is written
+        if (event.key === 'Enter') {
+            // Enter would send the form
             event.preventDefault();
             confirmTyped();
         } else if (event.key === 'Backspace' && input.value === '' && tags.length > 0) {
             change(tags.slice(0, -1));
+        }
+    });
+
+    // A comma ends a tag, wherever it comes from: typed, pasted ("Entrada, Salida") or from a phone keyboard, whose
+    // keydown does not say which key it was (so the comma cannot be caught there). What follows the last comma stays in the field.
+    input.addEventListener('input', () => {
+        if (!input.value.includes(',')) {
+            return;
+        }
+        const pieces = input.value.split(',');
+        input.value = pieces.pop()?.trimStart() ?? '';
+        for (const piece of pieces) {
+            if (piece.trim() !== '') {
+                add(piece.trim());
+            }
         }
     });
 

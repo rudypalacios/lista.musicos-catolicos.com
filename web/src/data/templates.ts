@@ -1,6 +1,6 @@
 import { massSections } from '../mass.ts';
 import { ValidationError } from './library.ts';
-import { addedTo, cleanParts, movedIn, renamedIn, withoutPart } from './parts.ts';
+import { addedTo, cleanParts } from './parts.ts';
 import type { LocalStore } from './store.ts';
 import { LIMITS, type PartDef, type Setlist, type Template } from './types.ts';
 
@@ -145,22 +145,12 @@ export class Templates {
         return this.edit(id, () => ({ name: cleanName(name) }));
     }
 
-    /** Adds a section at the end (see `addedTo`) */
-    addPart(id: string, name: string, section?: PartDef): Promise<Template> {
-        return this.edit(id, (template) => ({ parts: cleanParts(addedTo(template.parts, name, () => this.newId(), section), []) }));
-    }
-
-    renamePart(id: string, part: string, name: string): Promise<Template> {
-        return this.edit(id, (template) => ({ parts: cleanParts(renamedIn(template.parts, part, name), []) }));
-    }
-
-    movePart(id: string, part: string, direction: -1 | 1): Promise<Template> {
-        return this.edit(id, (template) => ({ parts: cleanParts(movedIn(template.parts, part, direction), []) }));
-    }
-
-    /** Deletes a section; a template keeps at least one */
-    removePart(id: string, part: string): Promise<Template> {
-        return this.edit(id, (template) => ({ parts: cleanParts(withoutPart(template.parts, part), []) }));
+    /**
+     * Saves the name and the sections together, as one change: what the template screen holds until the person
+     * presses "Guardar". Checked as a whole, so nothing half-valid is kept. @throws ValidationError
+     */
+    update(id: string, changes: { name: string; parts: readonly PartDef[] }): Promise<Template> {
+        return this.edit(id, () => ({ name: cleanName(changes.name), parts: cleanParts(changes.parts, []) }));
     }
 
     /** Deletes the template; the deletion syncs like any edit. Lists made from it are not touched */

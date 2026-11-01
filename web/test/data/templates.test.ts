@@ -99,30 +99,33 @@ describe('Templates', () => {
             await assert.rejects(templates.rename(made.id, ''), ValidationError);
         });
 
-        it('adds, renames, moves and deletes sections like a list does, and keeps at least one', async () => {
+        it('saves the name and the sections together, and keeps nothing if one is wrong', async () => {
             const made = await templates.create('Rosario', own);
             now += 10;
 
-            const added = await templates.addPart(made.id, ' Tercer misterio ');
-            assert.equal(added.parts.at(-1)?.name, 'Tercer misterio');
-            assert.match(added.parts.at(-1)?.id ?? '', /^p-[a-z0-9]{1,8}$/);
+            const saved = await templates.update(made.id, {
+                name: ' Rosario del jueves ',
+                parts: [{ id: 'p-dos', name: ' Segundo ', optional: true, note: 'Si hay tiempo' }, { id: 'p-uno', name: 'Primero' }],
+            });
 
-            assert.equal((await templates.renamePart(made.id, 'p-uno', 'Gozoso')).parts[0]?.name, 'Gozoso');
-            assert.deepEqual((await templates.movePart(made.id, 'p-dos', -1)).parts.slice(0, 2).map((p) => p.id), ['p-dos', 'p-uno']);
-            await templates.removePart(made.id, 'p-dos');
-            await templates.removePart(made.id, 'p-uno');
-            await assert.rejects(templates.removePart(made.id, added.parts.at(-1)?.id ?? ''), /al menos una sección/);
-            assert.equal((await templates.get(made.id))?.parts.length, 1);
+            assert.equal(saved.name, 'Rosario del jueves');
+            assert.deepEqual(saved.parts, [{ id: 'p-dos', name: 'Segundo', optional: true, note: 'Si hay tiempo' }, { id: 'p-uno', name: 'Primero' }]);
+            await assert.rejects(templates.update(made.id, { name: 'X', parts: [] }), /al menos una sección/);
+            await assert.rejects(templates.update(made.id, { name: '', parts: own }), ValidationError);
+            await assert.rejects(templates.update(made.id, { name: 'X', parts: [{ id: 'g', name: 'Gloria' }, { id: 'g', name: 'Gloria' }] }), /mismo identificador/);
+            assert.deepEqual(await templates.get(made.id), saved);
         });
 
-        it('offers a section of the Mass back with its own id, once', async () => {
+        it('drops a blank note and keeps a long one to the limit', async () => {
             const made = await templates.create('Rosario', own);
-            const gloria = massSections().find((part) => part.id === 'gloria');
 
-            const added = await templates.addPart(made.id, 'Gloria', gloria);
+            const saved = await templates.update(made.id, {
+                name: 'Rosario',
+                parts: [{ id: 'p-uno', name: 'Uno', note: '' }, { id: 'p-dos', name: 'Dos', note: 'x'.repeat(LIMITS.partNote + 50) }],
+            });
 
-            assert.equal(added.parts.at(-1)?.id, 'gloria');
-            await assert.rejects(templates.addPart(made.id, 'Gloria', gloria), /mismo identificador/);
+            assert.equal(saved.parts[0]?.note, undefined);
+            assert.equal(saved.parts[1]?.note?.length, LIMITS.partNote);
         });
 
         it('duplicates as "Copia de …" with the same sections, and a copy of a copy keeps one prefix', async () => {

@@ -30,6 +30,7 @@ import { setlistView } from './views/setlist.ts';
 import { settingsView } from './views/settings.ts';
 import { signInView } from './views/signin.ts';
 import { dismissSheetOnBack } from './views/sheet.ts';
+import { askToLeave, leaveIsRisky, setLeaveGuard } from './leave-guard.ts';
 import type { Account, Navigate, View } from './views/types.ts';
 import { startShared } from './views/shared.ts';
 import { viewView } from './views/view.ts';
@@ -277,11 +278,28 @@ function runRouter(data: App): void {
         const anchor = (event.target as HTMLElement).closest<HTMLAnchorElement>('a[data-link]');
         if (anchor !== null && anchor.origin === location.origin) {
             event.preventDefault();
-            navigate(anchor.pathname + anchor.search);
+            const path = anchor.pathname + anchor.search;
+            if (leaveIsRisky()) {
+                void askToLeave().then((leave) => leave && navigate(path));
+            } else {
+                navigate(path);
+            }
         }
     });
     window.addEventListener('popstate', () => {
         if (dismissSheetOnBack()) {
+            return;
+        }
+        if (leaveIsRisky()) {
+            // The address has already changed: put it back, ask, and only if the person leaves go back for real
+            history.pushState(null, '', shown);
+            void askToLeave().then((leave) => {
+                if (leave) {
+                    setLeaveGuard(null);
+                    history.back();
+                }
+            });
+
             return;
         }
         rememberScroll();
