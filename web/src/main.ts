@@ -412,8 +412,10 @@ window.addEventListener('unhandledrejection', (event) => {
 
 const visiting = matchRoute(location.pathname);
 if (visiting.name === 'shared') {
-    // Somebody who was given a link to a list: no account, no data of this device, no sync and no service worker.
-    // The page reads the list from the server and shows it (views/shared.ts)
+    // Somebody who was given a link to a list: no account, no data of this device and no sync.
+    // The page reads the list from the server, keeps a copy of it apart and shows it (views/shared.ts)
+    // It is still this app: the same service worker keeps it (and the list the visitor opened) for reading with no connection
+    startUpdates(false);
     startShared(app, visiting.code);
 } else {
     applyReadingColors();

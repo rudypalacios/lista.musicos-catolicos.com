@@ -50,7 +50,11 @@ const MIN_SHOWN_MS = 900;
 /** How often an open app asks whether there is a new version */
 const CHECK_EVERY_MS = 60 * 60 * 1000;
 
-export function startUpdates(): void {
+/**
+ * @param keepData ask the browser to keep this origin's data when it is short of space (the person's songs). A visitor of a
+ *     shared list has none to keep, so the page does not ask: some browsers show a question for it.
+ */
+export function startUpdates(keepData = true): void {
     if (!('serviceWorker' in navigator)) {
         return;
     }
@@ -199,7 +203,9 @@ export function startUpdates(): void {
         });
 
     // Ask the browser to keep this origin's data (the songs) when it is short of space
-    void navigator.storage?.persist?.();
+    if (keepData) {
+        void navigator.storage?.persist?.();
+    }
 
     try {
         if (sessionStorage.getItem(JUST_UPDATED) === '1') {

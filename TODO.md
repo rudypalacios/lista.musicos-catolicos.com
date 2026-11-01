@@ -184,6 +184,13 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       404, an address that keeps missing is slowed down (`MissThrottle`), and the answer can be kept a minute with an ETag. The visitor's page has no cookies, analytics or ads and asks for nothing from another
       origin (checked under the production policy). **Left for the owner:** publish the privacy text proposed in the PR in `musicos-catolicos` (Privacidad) and decide whether the lyrics switch stays on by default.
       **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 46.
+- [x] **The visitor's page, thin and offline** (`web/src/views/shared.ts`, `shared-store.ts`; the owner approved mockup v6): the page is the same PWA, so it registers the app's service worker
+      and **keeps a copy of the list it opens** in a database of its own (`lista-shared`, at most 20 copies, nothing mixed with the person's data): with no connection it opens the copy and
+      says "Sin conexión. Estás leyendo la copia guardada el …"; a link found stopped deletes its copy; a list never opened says it needs a connection. The layout gives the lyrics the screen:
+      a header of one row (the mark of the site), a list with small titles, the foot of the site **folded away** (a small tab ⌃ at the bottom edge opens it over the page, ⌄ closes it), and a song
+      as when singing a list: a thin bar (back, title and place, ‹ ›, the tools button), **the app's own reader** with the lyrics fitted to the screen, the tools (key, size, Do/C, print) **folded
+      under the bar** and dropping over the lyrics without moving them, **a swipe** (or ← →) to change song, and no "Siguiente" block. The privacy text proposed in the PR says that a copy of the
+      list and the reading preferences stay on the visitor's device. **Left for the owner:** publish that text in `musicos-catolicos` (Privacidad). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 47.
 - [x] Creating a list from an import was weighed and **decided against** (the owner, 2026-11-01): too many cases (a song with no title, not a Mass, repeated or already held songs). A list is made with "＋ Nuevo" and the picker of each section, which already offers the songs tagged for it.
 - [ ] A help page (FAQ) in the app: `faq.md` holds the first notes (the draft of "Nuevo canto"); make it a screen later, in Spanish, reachable from Ajustes.
 - [x] **New song, PR B** (`views/edit.ts`, `song-draft.ts`, `importer.ts` `convertPastedSheet`; the owner approved the mockup): "Escribir | Ver"
@@ -406,8 +413,7 @@ Next, in this order (design agreed with the owner):
 - [ ] Songs from the Músicos Católicos catalogue (approved songs per part of the Mass).
 - [ ] Personal key preference per song ("change everywhere").
 - [ ] **Sharing, what comes after the list's link** (the owner's plan, 2026-11-01): (1) a song by a link, with the same lyrics switch and the same notice about the
-      authors' rights; (2) the visitor keeping the list to read it with no connection ("Guardar para leer sin internet", its own store apart from the person's);
-      (3) accounts of other people (sign-up, password recovery, permissions, two people editing one list: today the newest edit wins as a whole), which changes the data
+      authors' rights; (2) accounts of other people (sign-up, password recovery, permissions, two people editing one list: today the newest edit wins as a whole), which changes the data
       model and the privacy text, so only once the first two are used. Public and private profiles stay with that third step.
 - [ ] Share the key a list has each song in when the lyrics are not shared: today the visitor of a list shared with no lyrics sees the order, the titles and the authors
       but no keys (the key comes from the chords, which the server does not read: the parser lives in the app).

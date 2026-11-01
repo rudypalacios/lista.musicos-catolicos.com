@@ -3466,9 +3466,9 @@ button.srow__tool:disabled {
     color: var(--muted);
 }
 
-/* ===== A list somebody shared: the public site's look (views/shared.ts) =====
+/* ===== A list somebody shared (views/shared.ts) =====
  * The colours and the two typefaces are the ones this app and musicos-catolicos already share; the header, the list as the
- * tracks of an album, the lyrics and the footer are drawn the way its pages draw them. */
+ * tracks of an album and the footer are drawn the way its pages draw them, but small: the lyrics are what the visitor came for. */
 /* The page of a visitor is a page that scrolls, not the app's screen of fixed height with its rail */
 #app.is-public {
     display: block;
@@ -3490,8 +3490,8 @@ button.srow__tool:disabled {
     color: var(--text);
     background: var(--bg);
     font-family: var(--font-body);
-    font-size: 1.125rem;
-    line-height: 1.5;
+    font-size: 1.0625rem;
+    line-height: 1.45;
 }
 
 .pub a {
@@ -3503,20 +3503,18 @@ button.srow__tool:disabled {
     width: 100%;
     max-width: 75rem;
     margin: 0 auto;
-    padding: 0 1.25rem;
+    padding: 0 1rem;
 }
 
+/* One thin row: just the mark of the site */
 .pub-head {
     border-bottom: 1px solid var(--line);
 }
 
 .pub-head__inner {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    justify-content: space-between;
-    min-height: 4rem;
-    column-gap: 0.75rem;
+    min-height: 2.75rem;
 }
 
 .pub .pub-brand {
@@ -3526,7 +3524,7 @@ button.srow__tool:disabled {
     min-height: 2.75rem;
     color: var(--text);
     font-family: var(--font-display);
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 700;
     line-height: 1.1;
     white-space: nowrap;
@@ -3535,14 +3533,6 @@ button.srow__tool:disabled {
 .pub-brand svg {
     flex: none;
     stroke: var(--accent);
-}
-
-.pub .pub-nav a {
-    display: flex;
-    align-items: center;
-    min-height: 2.75rem;
-    color: var(--muted);
-    font-size: 0.95rem;
 }
 
 .pub-main {
@@ -3555,7 +3545,7 @@ button.srow__tool:disabled {
 
 .pub-page {
     max-width: 45rem;
-    padding: 1.5rem 0 3rem;
+    padding: 0.75rem 0 3.5rem;
 }
 
 .pub-kick {
@@ -3563,115 +3553,62 @@ button.srow__tool:disabled {
     align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
+    min-height: 2.75rem;
     color: var(--accent);
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
 }
 
-.pub-kick__tools {
-    display: flex;
-    gap: 0.4rem;
-}
-
 .pub-title {
-    margin: 0.4rem 0 0;
+    margin: 0;
     font-family: var(--font-display);
-    font-size: 2.25rem;
+    font-size: 1.5rem;
     font-weight: 800;
     letter-spacing: -0.03em;
-    line-height: 1.02;
+    line-height: 1.05;
     overflow-wrap: anywhere;
     text-wrap: balance;
 }
 
 .pub-sub {
-    margin: 0.4rem 0 0;
+    margin: 0.3rem 0 0.4rem;
     color: var(--muted);
-    font-size: 1rem;
+    font-size: 0.82rem;
 }
 
-.pub-pill {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.35rem;
-    min-width: 2.75rem;
-    height: 2.75rem;
-    padding: 0 0.75rem;
-    color: var(--text);
-    background: none;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    font: 700 0.875rem var(--font-body);
-    letter-spacing: 0;
-    text-transform: none;
+.pub-ok {
+    color: var(--ok);
+    font-weight: 600;
 }
 
-.pub-pill b {
-    color: var(--accent);
-}
-
-.pub-pill.is-changed,
-.pub-tool.is-changed {
+.pub-offline {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin: 0.4rem 0;
+    padding: 0.45rem 0.65rem;
     background: var(--changed-soft);
-    border-color: var(--changed);
+    border-radius: 0.65rem;
+    font-size: 0.8rem;
 }
 
-.pub-pill.is-changed b,
-.pub-key.is-changed b,
-.pub-key.is-changed small {
-    color: var(--changed);
-}
-
-.pub-print {
-    position: relative;
-}
-
-.pub-print__menu {
-    position: absolute;
-    top: 3.1rem;
-    right: 0;
-    z-index: 5;
-    display: flex;
-    flex-direction: column;
-    min-width: 13rem;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 0.75rem;
-    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.45);
-}
-
-.pub-print__option {
-    display: flex;
-    flex-direction: column;
-    min-height: 3rem;
-    padding: 0.4rem 0.9rem;
-    color: var(--text);
-    background: none;
-    border: 0;
-    font: 700 0.95rem var(--font-body);
-    letter-spacing: 0;
-    text-align: left;
-    text-transform: none;
-}
-
-.pub-print__option small {
-    color: var(--muted);
-    font-size: 0.78rem;
-    font-weight: 400;
+.pub-offline .icon {
+    flex: none;
+    margin-top: 0.1rem;
+    color: var(--warn);
 }
 
 .pub-sec {
     display: inline-block;
-    margin: 1.25rem 0 0.15rem;
-    padding: 0.25rem 0.65rem;
+    margin: 0.9rem 0 0.1rem;
+    padding: 0.2rem 0.6rem;
     color: var(--muted);
     background: var(--surface-2);
     border-radius: 0.5rem;
     font-family: var(--font-body);
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -3690,13 +3627,13 @@ button.srow__tool:disabled {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    min-height: 3.5rem;
+    min-height: 3.25rem;
     color: var(--accent);
     border-top: 1px solid var(--line-soft);
 }
 
 .pub-row:hover {
-    background: var(--surface-3);
+    background: var(--surface-3, var(--surface-2));
 }
 
 .pub-row.is-plain {
@@ -3705,7 +3642,7 @@ button.srow__tool:disabled {
 
 .pub-row__n {
     flex: none;
-    width: 1.75rem;
+    width: 1.5rem;
     color: var(--faint);
     font-variant-numeric: tabular-nums;
 }
@@ -3720,7 +3657,7 @@ button.srow__tool:disabled {
 
 .pub-row__text small {
     color: var(--muted);
-    font-size: 0.82rem;
+    font-size: 0.78rem;
 }
 
 .pub-row__key {
@@ -3734,24 +3671,25 @@ button.srow__tool:disabled {
     color: var(--disabled);
 }
 
-.pub-tools {
+.pub-banner {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.4rem;
-    margin: 1rem calc(var(--gutter, 1.25rem) * -1) 0;
-    padding: 0.6rem 1.25rem;
+    align-items: flex-start;
+    gap: 0.6rem;
+    margin: 0.7rem 0 0;
+    padding: 0.55rem 0.75rem;
+    color: var(--muted);
     background: var(--surface);
-    border-top: 1px solid var(--line);
-    border-bottom: 1px solid var(--line);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    font-size: 0.85rem;
 }
 
-.pub-tools__group {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
+.pub-banner .icon {
+    flex: none;
+    color: var(--accent);
 }
 
+/* A button of the tools (key, print): the same look as the song's own tools, 44px to touch */
 .pub-tool {
     display: inline-flex;
     align-items: center;
@@ -3762,96 +3700,337 @@ button.srow__tool:disabled {
     color: var(--text);
     background: none;
     border: 1px solid var(--border);
-    border-radius: 0.75rem;
+    border-radius: 0.7rem;
     font: 700 0.95rem var(--font-body);
-}
-
-.pub-tool[aria-disabled='true'] {
-    color: var(--disabled);
-    border-color: var(--line);
+    letter-spacing: 0;
+    text-transform: none;
 }
 
 .pub-key {
     flex-direction: column;
-    min-width: 3.75rem;
+    min-width: 3.5rem;
     padding: 0 0.25rem;
     border-color: transparent;
-    line-height: 1.1;
+    line-height: 1.05;
 }
 
 .pub-key small {
     color: var(--faint);
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     font-weight: 400;
 }
 
 .pub-key b {
     color: var(--accent);
-    font-size: 1.05rem;
+    font-size: 1rem;
 }
 
 .pub-key.is-changed {
+    background: var(--changed-soft);
     border-color: var(--changed);
 }
 
-.pub-sheet {
-    padding-top: 1.25rem;
+.pub-key.is-changed b,
+.pub-key.is-changed small {
+    color: var(--changed);
 }
 
-.pub-note {
-    margin: 1.25rem 0 0;
-    color: var(--faint);
-    font-size: 0.82rem;
+.pub-print {
+    position: relative;
 }
 
-.pub-note a {
-    text-decoration: underline;
-}
-
-.pub-banner {
+.pub-print__menu {
+    position: absolute;
+    top: 3rem;
+    right: 0;
+    z-index: 30;
     display: flex;
-    align-items: flex-start;
-    gap: 0.6rem;
-    margin: 0.9rem 0 0;
-    padding: 0.65rem 0.8rem;
-    color: var(--muted);
+    flex-direction: column;
+    min-width: 12.5rem;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 0.75rem;
-    font-size: 0.9rem;
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.5);
 }
 
-.pub-banner .icon {
+.pub-print__option {
+    display: flex;
+    flex-direction: column;
+    min-height: 3rem;
+    padding: 0.35rem 0.9rem;
+    color: var(--text);
+    background: none;
+    border: 0;
+    font: 700 0.92rem var(--font-body);
+    text-align: left;
+}
+
+.pub-print__option + .pub-print__option {
+    border-top: 1px solid var(--line-soft);
+}
+
+.pub-print__option small {
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 400;
+}
+
+/* A song, as when singing a list: a thin bar, and the rest of the screen is the lyrics, fitted to it */
+.pub-song {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+}
+
+.pub-song .stage {
+    padding: 0.5rem 1rem 1.75rem;
+}
+
+.pub-bar {
+    display: flex;
     flex: none;
+    align-items: center;
+    gap: 0.1rem;
+    min-height: 2.75rem;
+    padding: 0 0.25rem;
+    border-bottom: 1px solid var(--line);
+}
+
+.pub .pub-bar__button {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.75rem;
+    padding: 0;
+    color: var(--text);
+    background: none;
+    border: 0;
+}
+
+.pub-bar__button:disabled {
+    color: var(--disabled);
+}
+
+.pub .pub-bar__tools[aria-expanded='true'] {
     color: var(--accent);
 }
 
-.pub-nexts {
+.pub-bar__text {
     display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-top: 1.75rem;
-}
-
-.pub .pub-next {
-    display: flex;
+    flex: 1;
     flex-direction: column;
-    max-width: 48%;
-    min-height: 2.75rem;
+    min-width: 0;
+    line-height: 1.15;
 }
 
-.pub-next small {
-    color: var(--faint);
-    font-size: 0.75rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+.pub-bar__text b {
+    overflow: hidden;
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pub-bar__text small {
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 0.7rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* The tools fold down from under the bar, over the lyrics, and take no room while folded */
+.pub-tools {
+    position: absolute;
+    top: 2.75rem;
+    right: 0;
+    left: 0;
+    z-index: 20;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem 0.4rem;
+    padding: 0.3rem 0.4rem 0.4rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 0.6rem 1.5rem rgba(0, 0, 0, 0.45);
+}
+
+.pub-tools__group {
+    display: flex;
+    align-items: center;
+    gap: 0.15rem;
+}
+
+.pub-tools .toolbar {
+    gap: 0.25rem;
+}
+
+.pub-tools .toolbar .group {
+    padding: 0;
+    border: 0;
+}
+
+.pub-tools .toolbar button {
+    min-width: 2.6rem;
+    min-height: 2.75rem;
+    padding: 0 0.4rem;
+}
+
+/* The bar already says which song this is: the lyrics start at the top of the screen */
+.pub-song .song-head h2,
+.pub-song .song-head .by {
+    display: none;
+}
+
+/* Fit and columns are the song's own and the visitor does not need them here: only the notation is kept */
+.pub-tools__notation .group + .group {
+    display: none;
+}
+
+.pub-tools__tab,
+.pub-fold__tab,
+.pub-fold__close {
+    display: flex;
+    justify-content: center;
+    min-height: 0;
+    padding: 0;
+    color: var(--muted);
+    background: none;
+    border: 0;
+}
+
+.pub-tools__tab {
+    position: absolute;
+    bottom: -1.5rem;
+    left: 50%;
+    width: 4.5rem;
+    height: 1.5rem;
+    transform: translateX(-50%);
+}
+
+/* The tabs are small to look at and still easy to touch: their box reaches past the drawn tab */
+.pub-tools__tab::after,
+.pub-fold__tab::after,
+.pub-fold__close::after {
+    position: absolute;
+    content: '';
+}
+
+.pub-tools__tab::after {
+    inset: 0 -0.75rem -0.9rem;
+}
+
+.pub-fold__tab::after {
+    inset: -1.1rem -0.75rem 0;
+}
+
+.pub-fold__close::after {
+    inset: 0 25% -0.9rem;
+}
+
+.pub-fold__close {
+    position: relative;
+}
+
+.pub-fold__grip {
+    display: grid;
+    place-items: center;
+    width: 4rem;
+    height: 1.4rem;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+}
+
+.pub-tools__tab .pub-fold__grip {
+    border-top: 0;
+    border-radius: 0 0 0.75rem 0.75rem;
+}
+
+/* The foot of the site, folded: a small tab at the bottom edge, and a panel that opens over the page */
+.pub-fold__tab {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    z-index: 25;
+    width: 4.5rem;
+    height: 1.5rem;
+    transform: translateX(-50%);
+}
+
+.pub-fold__tab .pub-fold__grip {
+    opacity: 0.92;
+    border-bottom: 0;
+    border-radius: 0.75rem 0.75rem 0 0;
+}
+
+.pub-fold__panel {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 40;
+    padding: 0 1rem calc(0.6rem + env(safe-area-inset-bottom));
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-radius: 0.9rem 0.9rem 0 0;
+    box-shadow: 0 -0.5rem 1.5rem rgba(0, 0, 0, 0.5);
+    transform: translateY(105%);
+    visibility: hidden;
+    transition: transform 160ms ease-out, visibility 0s linear 160ms;
+}
+
+.pub-fold__panel.is-open {
+    transform: none;
+    visibility: visible;
+    transition: transform 160ms ease-out;
+}
+
+.pub-fold__close {
+    width: 100%;
+    height: 1.5rem;
+}
+
+.pub-fold__close .pub-fold__grip {
+    border-top: 0;
+    border-radius: 0 0 0.75rem 0.75rem;
+}
+
+.pub-fold__links {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 1.25rem;
+    margin: 0.2rem 0 0;
+    padding: 0;
+    font-size: 0.9rem;
+    list-style: none;
+}
+
+.pub .pub-fold__links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    color: var(--text);
+}
+
+.pub-fold__copy {
+    margin: 0 0 0.2rem;
+    color: var(--muted);
+    font-size: 0.78rem;
 }
 
 .pub-wait,
 .pub-gone {
     max-width: 28rem;
     margin: 0 auto;
-    padding: 3.5rem 0 0;
+    padding: 3rem 0 0;
     color: var(--muted);
     text-align: center;
 }
@@ -3867,7 +4046,7 @@ button.srow__tool:disabled {
     margin: 1rem 0 0.5rem;
     color: var(--text);
     font-family: var(--font-display);
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     font-weight: 800;
     letter-spacing: -0.03em;
     line-height: 1.05;
@@ -3877,48 +4056,19 @@ button.srow__tool:disabled {
     margin: 0 auto 1rem;
 }
 
-.pub-foot {
-    color: var(--muted);
-    border-top: 1px solid var(--line);
-    font-size: 0.875rem;
-}
-
-.pub-foot__inner {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    column-gap: 1rem;
-    min-height: 3.75rem;
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
-}
-
-.pub-foot__links {
-    display: flex;
-    flex-wrap: wrap;
-    column-gap: 1.25rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.pub .pub-foot__links a {
-    display: inline-flex;
-    align-items: center;
-    min-height: 2.75rem;
-    color: var(--text);
+@media (prefers-reduced-motion: reduce) {
+    .pub-fold__panel,
+    .pub-fold__panel.is-open {
+        transition: none;
+    }
 }
 
 @media (min-width: 900px) {
     .pub-title {
-        font-size: 2.5rem;
+        font-size: 1.75rem;
     }
 
-    .pub-tools {
-        margin-right: 0;
-        margin-left: 0;
-        border: 1px solid var(--line);
-        border-radius: 0.75rem;
+    .pub-wrap {
+        padding: 0 1.5rem;
     }
 }

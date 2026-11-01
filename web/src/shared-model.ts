@@ -95,3 +95,14 @@ export function countLabel(count: number): string {
 export function updatedLabel(updatedAt: number): string {
     return new Intl.DateTimeFormat('es', { day: 'numeric', month: 'long' }).format(new Date(updatedAt));
 }
+
+/**
+ * What the page says when it shows the copy kept on the device and not the list at the server: the first words are the
+ * reason (no connection, or the server did not answer) and the rest says how old the copy is.
+ */
+export function copyNote(offline: boolean, savedAt: number): { lead: string; rest: string } {
+    return {
+        lead: offline ? 'Sin conexión.' : 'No se pudo actualizar.',
+        rest: ` Estás leyendo la copia guardada el ${updatedLabel(savedAt)}.`,
+    };
+}
