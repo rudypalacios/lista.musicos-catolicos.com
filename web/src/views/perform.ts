@@ -76,7 +76,11 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     const back = link(paths.setlist(setlist.id), '', 'perform__back');
     back.append(icon('arrow-left', 22));
     back.setAttribute('aria-label', 'Volver al listado');
-    const heading = h('span', { class: 'perform__title' }, h('small', { class: 'perform__part' }, sectionName(setlist, item)), h('strong', { class: 'perform__song' }, title));
+    // The title and the key say it all here: the head of the song (title, author, key) is not repeated under the bar
+    const barKey = h('span', { class: 'perform__song-key' });
+    barKey.hidden = true;
+    const heading = h('span', { class: 'perform__title' }, h('small', { class: 'perform__part' }, sectionName(setlist, item)),
+        h('strong', { class: 'perform__song' }, h('span', { class: 'perform__song-name' }, title), barKey));
     const jumpButton = h('button', { type: 'button', class: 'perform__jump', 'aria-label': `Ir a otro canto. Canto ${position} de ${order.length}` },
         h('span', { class: 'perform__count' }, countText), icon('chevron-down', 16));
     const moreButton = h('button', { type: 'button', class: 'perform__more', 'aria-label': 'Más herramientas' }, icon('more', 22));
@@ -111,10 +115,14 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
         }
         let reader: Reader | undefined;
         const markStrip = (): void => {
-            stripKey.classList.toggle('is-today', reader !== undefined && reader.shift() !== saved);
+            const changed = reader !== undefined && reader.shift() !== saved;
+            stripKey.classList.toggle('is-today', changed);
+            barKey.classList.toggle('is-today', changed);
         };
         reader = createReader(song, {
             sizeScope: 'setlist',
+            songHead: false,
+            keyPill: false,
             shift: today ?? saved,
             onShift: (shift) => {
                 error.textContent = '';
@@ -127,6 +135,8 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
             },
             onKey: (key) => {
                 stripKey.textContent = key ?? '';
+                barKey.textContent = key ?? '';
+                barKey.hidden = key === null;
                 markStrip();
                 tone?.refresh();
             },

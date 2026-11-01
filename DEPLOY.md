@@ -529,6 +529,9 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    (y la línea `{key: …}` si la tiene) y la vista previa lo sigue; sin acordes en el texto los botones se apagan. Al **Guardar**, si el tono del canto cambió, los tonos ya guardados (el de cada listado y «mi tono») se
    **ajustan solos** para sonar igual, como ya hacía el editor (sale el aviso «El tono original pasó de … a …»). **No hay migración.** **Prueba:** abre un canto que esté en Fa, baja un semitono con **−**, guarda: queda
    en Mi y los listados donde estaba siguen sonando como antes.
+52. **Cantar y el listado dicen el tono una sola vez.** En **Cantar** la barra de arriba dice la sección y, debajo, **«Canto • Tono»** (el tono en azul; en ámbar si es solo por hoy); **ya no se repite** el título, el autor y
+   el tono en el cuerpo (capo, tempo y compás, si el canto los trae, siguen ahí). En el **listado**, cuando el tono de un canto **no es el suyo**, sale en ámbar como antes y **al lado el tono original entre paréntesis, en gris**
+   («Autor · La (Sol)»). **No hay migración.** **Prueba:** abre un listado, sube un canto un tono y guárdalo (el listado debe mostrar «La (Sol)») y canta ese canto (la barra: «Nombre • La»).
 
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).

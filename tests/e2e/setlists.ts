@@ -253,6 +253,10 @@ try {
     await entrada.getByRole('button', { name: 'Más opciones: Abrimos la puerta' }).click();
     await page.getByRole('button', { name: /Cantar desde aquí/ }).click();
     await page.getByRole('heading', { name: 'Abrimos la puerta' }).waitFor();
+    // The bar says "Song • Key"; the head of the song (title, author, key) is not repeated under it
+    assert.equal(await page.locator('.perform__song-key').innerText(), 'Do');
+    assert.equal(await page.locator('.perform__song').innerText().then((text) => text.replace(/\s+/g, ' ')), 'Abrimos la puerta Do');
+    assert.equal(await page.locator('.song-head h2, .song-head .by, .song-head .chip').count(), 0, 'no title, author or key in the body');
     await noTypedIcons(page, 'singing');
     await openTools(page);
     await noTypedIcons(page, 'the sheet of singing');
@@ -267,6 +271,7 @@ try {
     await page.getByRole('link', { name: 'Volver al listado' }).click();
     await entrada.locator('.item__key.is-changed', { hasText: 'Re' }).waitFor();
     assert.equal(await entrada.locator('.item__today').count(), 0, 'a saved key is not "hoy"');
+    assert.equal((await entrada.locator('.item__original').innerText()).replace(/\s+/g, ' ').trim(), 'Tono original (Do)', 'the song\'s own key is beside it, quiet');
     pass('the list shows the key to read; it is changed while singing, saved with "Guardar", and shows in amber when it is not the song\'s own (Do → Re)');
 
     await openSection(page, 'Cantos');
