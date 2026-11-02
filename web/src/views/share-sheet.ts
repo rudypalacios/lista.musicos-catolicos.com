@@ -4,7 +4,7 @@ import { icon } from '../icons.ts';
 import { shareFailure, shareSummary, shareUrl, type ShareState } from '../share.ts';
 import { showToast } from '../toast.ts';
 import { confirmDialog } from './confirm-dialog.ts';
-import { createSheet, sheetAction } from './sheet.ts';
+import { createSheet, sheetAction, sheetList } from './sheet.ts';
 
 /** The list a share is for: only what the sheet names */
 export interface SharedTarget {
@@ -114,25 +114,27 @@ export function createShareSheet(): ShareSheet {
                 say('Guardando…');
                 share.enable(list.id, next).then(draw).catch((failure: unknown) => failed(failure, () => void load()));
             }),
-            sheetAction('link', 'Dejar de compartir', () => {
-                void confirmDialog({
-                    title: '¿Dejar de compartir?',
-                    text: 'El enlace dejará de funcionar para todos los que lo tengan. Si compartes el listado otra vez, el enlace será otro.',
-                    confirm: 'Dejar de compartir',
-                    danger: true,
-                }).then((sure) => {
-                    if (!sure) {
-                        return;
-                    }
-                    say('Dejando de compartir…');
-                    share.stop(list.id)
-                        .then(() => {
-                            showToast('Ya no se comparte', 3000, true);
-                            sheet.close();
-                        })
-                        .catch((failure: unknown) => failed(failure, () => void load()));
-                });
-            }, { danger: true, apart: true }),
+            ...sheetList(
+                sheetAction('link', 'Dejar de compartir', () => {
+                    void confirmDialog({
+                        title: '¿Dejar de compartir?',
+                        text: 'El enlace dejará de funcionar para todos los que lo tengan. Si compartes el listado otra vez, el enlace será otro.',
+                        confirm: 'Dejar de compartir',
+                        danger: true,
+                    }).then((sure) => {
+                        if (!sure) {
+                            return;
+                        }
+                        say('Dejando de compartir…');
+                        share.stop(list.id)
+                            .then(() => {
+                                showToast('Ya no se comparte', 3000, true);
+                                sheet.close();
+                            })
+                            .catch((failure: unknown) => failed(failure, () => void load()));
+                    });
+                }, { danger: true, apart: true }),
+            ),
         );
     };
 

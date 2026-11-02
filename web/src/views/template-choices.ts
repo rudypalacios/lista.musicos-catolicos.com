@@ -6,7 +6,7 @@ import { today } from '../dates.ts';
 import { h } from '../dom.ts';
 import { readLastTemplate, rememberTemplate } from '../last-template.ts';
 import { paths } from '../router.ts';
-import { createSheet, sheetAction, type Sheet } from './sheet.ts';
+import { createSheet, sheetAction, sheetList, type Sheet } from './sheet.ts';
 import type { Navigate } from './types.ts';
 
 export interface TemplateChoiceHandlers {
@@ -47,13 +47,13 @@ export async function templateRows(
         all = await app.templates.list();
     }
 
-    return [
+    return sheetList(
         ...lastUsedFirst(all, readLastTemplate()).map((template) =>
             sheetAction('list', template.name, () => close(() => pick({ name: template.name, parts: template.parts, templateId: template.id })), { hint: sectionsText(template.parts.length) })),
         sheetAction('plus', 'En blanco', () => close(() => pick({ name: BLANK_NAME, parts: blankSections(), templateId: null })), { hint: 'Una sola sección, «Cantos»' }),
         // Last and set apart: where the templates are made, changed and deleted
         ...(manage === null ? [] : [sheetAction('settings', 'Administrar plantillas', () => close(manage), { apart: true })]),
-    ];
+    );
 }
 
 /** "Selecciona una plantilla" for "＋ Nuevo": picking one makes the list, empty, for today */

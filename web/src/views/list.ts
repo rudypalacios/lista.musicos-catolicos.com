@@ -8,7 +8,7 @@ import { readNotation } from '../prefs.ts';
 import { paths } from '../router.ts';
 import { filterSongs, foundInLyricsOnly, songSnippet } from '../search.ts';
 import { deleteSongAfterAsking } from './delete-song.ts';
-import { createSheet, sheetAction } from './sheet.ts';
+import { createSheet, sheetAction, sheetList } from './sheet.ts';
 import type { Navigate, View } from './types.ts';
 
 /**
@@ -62,17 +62,19 @@ export function listView(app: App, navigate: Navigate): View {
         sheet.body.replaceChildren(
             h('h4', { class: 'sheet__title' }, song.title),
             ...(song.author === '' ? [] : [h('p', { class: 'sheet__sub' }, song.author)]),
-            sheetAction('pencil', 'Editar letra y acordes', () => {
-                error.textContent = '';
-                sheet.close(() => navigate(paths.edit(song.id)));
-            }),
-            // Last and set apart, so it is not touched by mistake next to the others
-            sheetAction('trash', 'Eliminar canto', () => {
-                error.textContent = '';
-                sheet.close(() => {
-                    deleteSongAfterAsking(app, song).catch((failure: unknown) => fail(failure, 'No se pudo eliminar el canto.'));
-                });
-            }, { danger: true, apart: true }),
+            ...sheetList(
+                sheetAction('pencil', 'Editar letra y acordes', () => {
+                    error.textContent = '';
+                    sheet.close(() => navigate(paths.edit(song.id)));
+                }),
+                // Last and set apart, so it is not touched by mistake next to the others
+                sheetAction('trash', 'Eliminar canto', () => {
+                    error.textContent = '';
+                    sheet.close(() => {
+                        deleteSongAfterAsking(app, song).catch((failure: unknown) => fail(failure, 'No se pudo eliminar el canto.'));
+                    });
+                }, { danger: true, apart: true }),
+            ),
         );
     };
 

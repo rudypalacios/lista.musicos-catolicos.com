@@ -31,6 +31,7 @@ Everything not in the table is not locked, but it keeps the same look and the st
   screen (the bar of singing, the head of a list, the rows of the lists and of the songs). It is never typed as a character.
 - **Spacing is in `rem`**, in the steps the app already uses; do not introduce pixel values.
 - **Touch targets of at least 44px** for what is pressed.
+- **The options of a sheet or a menu are a list with no bullets** (`sheetList` in `web/src/views/sheet.ts`, `.sheet-list` in the styles; the owner asked on 2026-11-02): one `<li>` per option, each at least 44px, the space between two options is the `li`'s own small padding and a line between neighbours (none after the last), nothing added at the edges (the sheet and the floating menu already have their padding), the icon and the words centred in the row; an option with a second line ("Un enlace para que cualquiera lo lea") keeps it inside the same row. What is "set apart" (Eliminar…) is a list of its own after the others.
 - **A song looks the same wherever it is listed** (Cantos, the picker of a part, inside a list): the title, under it "Autor · key", the key in blue
   (amber inside a list when it is not the song's own). The picker also shows the first lines of the lyrics under it, to tell songs apart.
 - **One way to do each thing in one place:** one "back", one name per screen.

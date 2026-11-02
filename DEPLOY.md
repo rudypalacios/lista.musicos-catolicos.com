@@ -535,6 +535,10 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
 53. **En pantalla ancha, el menú de los tres puntos sale junto al botón.** Desde 900 px de ancho (una computadora o el iPad horizontal grande) el `⋯` de un listado, de un canto dentro de un listado, de las filas de
    Cantos, Listados y Plantillas y de la página del canto **abre un menú pegado al botón** (debajo de él, o arriba si no cabe) y **ya no oscurece** la pantalla; tocar fuera lo cierra. **En el teléfono y por debajo de 900 px
    sigue igual: la hoja que sube desde abajo.** **No hay migración.** **Prueba:** en la computadora abre un listado y toca el `⋯` de un canto (y el de la esquina); en el teléfono comprueba que sigue saliendo la hoja de siempre.
+54. **Las opciones de todos los menús y hojas, con el mismo espaciado.** Cada opción de un `⋯` (listados, cantos, plantillas, la hoja de Cantar, «Selecciona una plantilla», «Compartir»…) ahora es un renglón de una **lista sin viñetas**:
+   **mínimo 44 px**, **todos separados igual**, con una raya entre una opción y la siguiente (**la última no lleva raya debajo**) y el ícono y el texto **centrados**; las que traen una segunda línea («Un enlace para que
+   cualquiera lo lea») siguen igual. **Eliminar** y lo que va «aparte» queda como su propio grupo al final. **No cambia nada de lo que hace cada opción ni el orden.** **No hay migración.** **Prueba:** abre el `⋯` de un listado,
+   de un canto dentro de un listado, de Cantar y de una plantilla, en el teléfono y en la computadora, y mira que el espacio entre opciones sea el mismo en todos.
 
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).

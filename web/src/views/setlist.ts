@@ -15,7 +15,7 @@ import { showToast, showUndoToast } from '../toast.ts';
 import { todayKeys } from '../today-keys.ts';
 import { deleteListAfterAsking } from './delete-list.ts';
 import { createShareSheet } from './share-sheet.ts';
-import { createSheet, sheetAction } from './sheet.ts';
+import { createSheet, sheetAction, sheetList } from './sheet.ts';
 import type { Navigate, View } from './types.ts';
 
 /** A section with this many songs or more also has its "agregar" at the end: the one in the head would be far away */
@@ -114,19 +114,21 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
         listSheet.body.replaceChildren(
             h('h4', { class: 'sheet__title' }, setlist.title),
             h('p', { class: 'sheet__sub' }, rows === 1 ? '1 canto' : `${rows} cantos`),
-            // First: what the list is made of; then what is done with it
-            action('sections', 'Secciones del listado', () => listSheet.close(() => navigate(paths.sections(setlist.id))), { hint: 'Qué secciones lleva este listado' }),
-            action('share', 'Compartir listado', () => listSheet.close(() => shareSheet.open(setlist)), { hint: 'Un enlace para que cualquiera lo lea' }),
-            ...(rows > 0 ? [action('printer', 'Imprimir con acordes', () => print('chords')), action('printer', 'Imprimir solo la letra', () => print('lyrics'))] : []),
-            // Last and set apart, so it is not touched by mistake next to printing
-            sheetAction('trash', 'Eliminar listado', () => {
-                error.textContent = '';
-                listSheet.close(() => {
-                    deleteListAfterAsking(app, setlist)
-                        .then((deleted) => (deleted ? navigate(paths.lists()) : undefined))
-                        .catch((failure: unknown) => fail(failure, 'No se pudo eliminar el listado.'));
-                });
-            }, { danger: true, apart: true }),
+            ...sheetList(
+                // First: what the list is made of; then what is done with it
+                action('sections', 'Secciones del listado', () => listSheet.close(() => navigate(paths.sections(setlist.id))), { hint: 'Qué secciones lleva este listado' }),
+                action('share', 'Compartir listado', () => listSheet.close(() => shareSheet.open(setlist)), { hint: 'Un enlace para que cualquiera lo lea' }),
+                ...(rows > 0 ? [action('printer', 'Imprimir con acordes', () => print('chords')), action('printer', 'Imprimir solo la letra', () => print('lyrics'))] : []),
+                // Last and set apart, so it is not touched by mistake next to printing
+                sheetAction('trash', 'Eliminar listado', () => {
+                    error.textContent = '';
+                    listSheet.close(() => {
+                        deleteListAfterAsking(app, setlist)
+                            .then((deleted) => (deleted ? navigate(paths.lists()) : undefined))
+                            .catch((failure: unknown) => fail(failure, 'No se pudo eliminar el listado.'));
+                    });
+                }, { danger: true, apart: true }),
+            ),
         );
     };
     more.addEventListener('click', () => listSheet.open(more));
@@ -165,38 +167,42 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             // The submenu: every way to move the song inside its section, one touch from the list of what is done to it
             songSheet.body.replaceChildren(
                 ...heading,
-                sheetAction('chevron-left', 'Volver', () => showSongView('main')),
-                // Only the moves that can happen: a part with one song has none
-                ...(can.up ? [action('arrow-up', 'Subir en esta sección', () => step(-1), { key: 'up' })] : []),
-                ...(can.down ? [action('arrow-down', 'Bajar en esta sección', () => step(1), { key: 'down' })] : []),
-                // Only when they say more than the arrows (more than two songs in the section)
-                ...(can.toStart ? [action('to-top', 'Al inicio de esta sección', () => toEnd(false), { key: 'start' })] : []),
-                ...(can.toEnd ? [action('to-bottom', 'Al final de esta sección', () => toEnd(true), { key: 'end' })] : []),
+                ...sheetList(
+                    sheetAction('chevron-left', 'Volver', () => showSongView('main')),
+                    // Only the moves that can happen: a part with one song has none
+                    ...(can.up ? [action('arrow-up', 'Subir en esta sección', () => step(-1), { key: 'up' })] : []),
+                    ...(can.down ? [action('arrow-down', 'Bajar en esta sección', () => step(1), { key: 'down' })] : []),
+                    // Only when they say more than the arrows (more than two songs in the section)
+                    ...(can.toStart ? [action('to-top', 'Al inicio de esta sección', () => toEnd(false), { key: 'start' })] : []),
+                    ...(can.toEnd ? [action('to-bottom', 'Al final de esta sección', () => toEnd(true), { key: 'end' })] : []),
+                ),
                 h('p', { class: 'sheet__sub' }, 'También: mantén pulsado el canto en el listado y arrástralo.'),
             );
         } else {
             songSheet.body.replaceChildren(
                 ...heading,
-                ...(song === undefined ? [] : [
-                    action('play', 'Cantar desde aquí', () => {
-                        const at = positionInList(setlist, item.id);
-                        songSheet.close(() => navigate(paths.perform(setlist.id, at)));
-                    }, { hint: 'Ahí se cambia el tono' }),
-                    // Straight to the editor; saving or cancelling comes back to this list
-                    action('pencil', 'Editar', () => songSheet.close(() => navigate(paths.edit(song.id, paths.setlist(setlist.id)))), { hint: 'Letra y acordes' }),
-                ]),
-                // One entry for every move; a part with one song has nowhere to move it
-                ...(can.up || can.down ? [action('move', 'Mover', () => showSongView('move'), { hint: 'Subir, bajar, al inicio o al final' })] : []),
-                action('x', 'Quitar del listado', () => {
-                    const index = setlist.items.findIndex((candidate) => candidate.id === item.id);
-                    songSheet.close(() => {
-                        void app.setlists.removeItem(setlist.id, item.id).then(() => {
-                            showUndoToast(`«${name}» quitado del listado`, 'Deshacer', () => {
-                                void app.setlists.restoreItem(setlist.id, item, index).catch((failure: unknown) => fail(failure, 'No se pudo deshacer.'));
-                            });
-                        }).catch((failure: unknown) => fail(failure, 'No se pudo quitar el canto.'));
-                    });
-                }, { danger: true }),
+                ...sheetList(
+                    ...(song === undefined ? [] : [
+                        action('play', 'Cantar desde aquí', () => {
+                            const at = positionInList(setlist, item.id);
+                            songSheet.close(() => navigate(paths.perform(setlist.id, at)));
+                        }, { hint: 'Ahí se cambia el tono' }),
+                        // Straight to the editor; saving or cancelling comes back to this list
+                        action('pencil', 'Editar', () => songSheet.close(() => navigate(paths.edit(song.id, paths.setlist(setlist.id)))), { hint: 'Letra y acordes' }),
+                    ]),
+                    // One entry for every move; a part with one song has nowhere to move it
+                    ...(can.up || can.down ? [action('move', 'Mover', () => showSongView('move'), { hint: 'Subir, bajar, al inicio o al final' })] : []),
+                    action('x', 'Quitar del listado', () => {
+                        const index = setlist.items.findIndex((candidate) => candidate.id === item.id);
+                        songSheet.close(() => {
+                            void app.setlists.removeItem(setlist.id, item.id).then(() => {
+                                showUndoToast(`«${name}» quitado del listado`, 'Deshacer', () => {
+                                    void app.setlists.restoreItem(setlist.id, item, index).catch((failure: unknown) => fail(failure, 'No se pudo deshacer.'));
+                                });
+                            }).catch((failure: unknown) => fail(failure, 'No se pudo quitar el canto.'));
+                        });
+                    }, { danger: true }),
+                ),
             );
         }
         // Moving keeps the sheet open (to move again): the button pressed is replaced, so focus its twin
