@@ -85,13 +85,19 @@ final class TemplateRepositoryTest extends TestCase
         $this->assertSame([], $row['parts']);
     }
 
-    public function testAnotherUsersTemplateIsNeitherReadNorOverwritten(): void
+    public function testTheSameIdInTwoAccountsIsTwoTemplatesThatNeverTouchEachOther(): void
     {
+        // The Mass has the same fixed id in every account: each one makes its own
         $this->templates->apply(self::ME, $this->change('Mía', 1000));
 
-        $this->assertFalse($this->templates->apply(self::OTHER, $this->change('De otro', 9000)));
-        $this->assertSame([], $this->templates->changedSince(self::OTHER, 0, 10));
-        $this->assertSame('Mía', $this->templates->changedSince(self::ME, 0, 10)[0]['name']);
+        $this->assertTrue($this->templates->apply(self::OTHER, $this->change('De otro', 9000)));
+        $this->assertTrue($this->templates->apply(self::OTHER, $this->change('De otro, editada', 9500)));
+
+        $this->assertSame(['Mía'], array_column($this->templates->changedSince(self::ME, 0, 10), 'name'));
+        $this->assertSame(
+            ['De otro, editada'],
+            array_column($this->templates->changedSince(self::OTHER, 0, 10), 'name')
+        );
     }
 
     public function testOnlyWhatChangedAfterTheCursorIsReturned(): void

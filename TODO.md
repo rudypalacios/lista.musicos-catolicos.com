@@ -426,8 +426,16 @@ Next, in this order (design agreed with the owner):
 
 - [ ] Songs from the Músicos Católicos catalogue (approved songs per part of the Mass).
 - [ ] Personal key preference per song ("change everywhere").
-- [ ] **Sharing, what comes after the list's link** (the owner's plan, 2026-11-01; (1) a song by a link is done, below): (2) accounts of other people (sign-up, password recovery, permissions, two people editing one list: today the newest edit wins as a whole), which changes the data
-      model and the privacy text, so only once the first two are used. Public and private profiles stay with that third step.
+- [ ] **Sharing, what comes after the list's link** (the owner's plan, 2026-11-01; (1) a song by a link is done, below): (2) accounts of other people: see "Open sign-up" below. Public and private profiles stay for later.
+- [ ] **Open sign-up** (the owner's decision, 2026-11-02: anyone can register; no invitations; Google and the merge of accounts come after the password one). Steps, one PR each:
+      (1) **done:** records keyed by (user, id) (migration `0016`), so two accounts can hold the same ids and never touch each other's rows (tests: `AccountIsolationTest`, the repositories, the migration on SQLite and MariaDB).
+      (2) **guest mode:** the app opens with no account; the data stays on the device ("guardado solo en este dispositivo", no sync); losing the browser's data loses it, and it says so.
+      (3) **sign-up and sign-in with email and password**, email verification and password recovery by email (the owner will create a cPanel mailbox for SMTP and give its data as secrets in the `production` environment),
+      throttles per address, a quota per account and a proof-of-work check of our own (no third-party captcha: the policy forbids another domain; the owner agreed to a captcha if it is the safe option); on signing up the guest
+      is asked **bring what I have to my account / start from zero**, and on signing in to an account that exists **add it to my account / discard it** (the records have client UUIDs, so bringing them is just sending them).
+      (4) **Google** (redirect flow on the server, no script of Google in the page) and the **merge by email**: only into an account whose email is verified; a password account never verified is claimed by Google, which drops its password and sessions
+      (otherwise someone who registered a stranger's email with a password would get the stranger's data when the stranger signed in with Google).
+      (5) the privacy text for the public site (emails of other people are stored: the owner publishes it before opening sign-up), delete my account, export. **Before opening sign-up:** the owner publishes the privacy text.
 - [ ] Share the key a list has each song in when the lyrics are not shared: today the visitor of a list shared with no lyrics sees the order, the titles and the authors
       but no keys (the key comes from the chords, which the server does not read: the parser lives in the app).
 - [ ] `develop` branch and a preview environment, if more people use it.

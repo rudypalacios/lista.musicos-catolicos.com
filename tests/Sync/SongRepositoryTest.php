@@ -172,14 +172,16 @@ final class SongRepositoryTest extends TestCase
         $this->assertSame('Canto 🎶', $row['title']);
     }
 
-    public function testSomeoneElsesSongIsNeitherReadNorOverwritten(): void
+    public function testTheSameIdInTwoAccountsIsTwoSongsThatNeverTouchEachOther(): void
     {
         $this->songs->apply(self::OTHER, $this->change('De otro', 1000));
 
-        $this->assertFalse($this->songs->apply(self::ME, $this->change('Robado', 9000)));
+        // Same id, newer: a record of its own in this account, not an overwrite of the other one
+        $this->assertTrue($this->songs->apply(self::ME, $this->change('Mío', 9000)));
+        $this->assertTrue($this->songs->apply(self::ME, $this->change('Mío, editado', 9500)));
 
-        $this->assertSame([], $this->songs->changedSince(self::ME, 0, 10));
-        $this->assertSame('De otro', $this->songs->changedSince(self::OTHER, 0, 10)[0]['title']);
+        $this->assertSame(['Mío, editado'], array_column($this->songs->changedSince(self::ME, 0, 10), 'title'));
+        $this->assertSame(['De otro'], array_column($this->songs->changedSince(self::OTHER, 0, 10), 'title'));
     }
 
     public function testEachUserHasTheirOwnNumbering(): void

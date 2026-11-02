@@ -21,18 +21,19 @@ final class SetlistRepository
     }
 
     /**
-     * Stores a change unless the server already holds an equal or newer one (or the id is
-     * another user's). Returns whether it was applied.
+     * Stores a change unless the server already holds an equal or newer one of this user's. A record is the
+     * user's own: the same id in another account is another record (the Mass template has a fixed id in all of
+     * them). Returns whether it was applied.
      */
     public function apply(string $userId, SetlistChange $change): bool
     {
-        $existing = $this->pdo->prepare('SELECT user_id, updated_at FROM setlists WHERE id = ?');
-        $existing->execute([$change->id]);
+        $existing = $this->pdo->prepare('SELECT updated_at FROM setlists WHERE id = ? AND user_id = ?');
+        $existing->execute([$change->id, $userId]);
         $row = $existing->fetch();
 
         if (is_array($row)) {
-            // Someone else's id, or this very edit again, or an older one: nothing to do
-            if ($row['user_id'] !== $userId || $change->updatedAt <= (int) $row['updated_at']) {
+            // This very edit again, or an older one: nothing to do
+            if ($change->updatedAt <= (int) $row['updated_at']) {
                 return false;
             }
         }
@@ -54,9 +55,15 @@ final class SetlistRepository
                 $this->pdo
                     ->prepare(
                         'UPDATE setlists SET title = ?, event_date = ?, notes = ?, items = ?, parts = ?, '
-                        . 'updated_at = ?, deleted_at = ?, seq = ?, starred = COALESCE(?, starred) WHERE id = ?'
+                        . 'updated_at = ?, deleted_at = ?, seq = ?, starred = COALESCE(?, starred) '
+                        . 'WHERE id = ? AND user_id = ?'
                     )
-                    ->execute([...$values, $change->starred === null ? null : (int) $change->starred, $change->id]);
+                    ->execute([
+                        ...$values,
+                        $change->starred === null ? null : (int) $change->starred,
+                        $change->id,
+                        $userId,
+                    ]);
             } else {
                 $this->pdo
                     ->prepare(

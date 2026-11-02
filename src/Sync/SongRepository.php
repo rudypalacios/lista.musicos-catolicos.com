@@ -23,18 +23,19 @@ final class SongRepository
     }
 
     /**
-     * Stores a change unless the server already holds an equal or newer one (or the id is
-     * another user's). Returns whether it was applied.
+     * Stores a change unless the server already holds an equal or newer one of this user's. A record is the
+     * user's own: the same id in another account is another record (the Mass template has a fixed id in all of
+     * them). Returns whether it was applied.
      */
     public function apply(string $userId, SongChange $change): bool
     {
-        $existing = $this->pdo->prepare('SELECT user_id, updated_at FROM songs WHERE id = ?');
-        $existing->execute([$change->id]);
+        $existing = $this->pdo->prepare('SELECT updated_at FROM songs WHERE id = ? AND user_id = ?');
+        $existing->execute([$change->id, $userId]);
         $row = $existing->fetch();
 
         if (is_array($row)) {
-            // Someone else's id, or this very edit again, or an older one: nothing to do
-            if ($row['user_id'] !== $userId || $change->updatedAt <= (int) $row['updated_at']) {
+            // This very edit again, or an older one: nothing to do
+            if ($change->updatedAt <= (int) $row['updated_at']) {
                 return false;
             }
         }
@@ -54,13 +55,14 @@ final class SongRepository
                 $this->pdo
                     ->prepare(
                         'UPDATE songs SET title = ?, author = ?, body = ?, updated_at = ?, deleted_at = ?, seq = ?, '
-                        . 'my_shift = COALESCE(?, my_shift), tags = COALESCE(?, tags) WHERE id = ?'
+                        . 'my_shift = COALESCE(?, my_shift), tags = COALESCE(?, tags) WHERE id = ? AND user_id = ?'
                     )
                     ->execute([
                         ...$values,
                         $change->myShift,
                         $change->tags === null ? null : $change->tagsJson(),
                         $change->id,
+                        $userId,
                     ]);
             } else {
                 $this->pdo

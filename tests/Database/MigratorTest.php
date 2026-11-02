@@ -155,4 +155,47 @@ final class MigratorTest extends TestCase
         unlink($dir . '/0001_a.sql');
         rmdir($dir);
     }
+
+    public function testTheRecordsKeepTheirRowsWhenTheirKeyBecomesTheUserAndTheId(): void
+    {
+        $dir = sys_get_temp_dir() . '/migrations-' . bin2hex(random_bytes(4));
+        mkdir($dir);
+        foreach (glob(TestDatabase::MIGRATIONS . '/*.sql') ?: [] as $file) {
+            if (basename($file) < '0016') {
+                copy($file, $dir . '/' . basename($file));
+            }
+        }
+        $pdo = new PDO('sqlite::memory:', null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+        (new Migrator($pdo, $dir))->migrate();
+        $pdo->exec(
+            'INSERT INTO songs (id, user_id, title, author, body, updated_at, seq, my_shift, tags) '
+            . "VALUES ('s1', 'u1', 'Canto', 'Autor', '[C]x', 5, 3, 2, '" . json_encode(['Entrada']) . "')"
+        );
+        $pdo->exec(
+            'INSERT INTO setlists (id, user_id, title, notes, items, parts, updated_at, seq, starred) '
+            . "VALUES ('l1', 'u1', 'Misa', 'n', '[]', '[]', 6, 4, 1)"
+        );
+        $template = static fn (string $user, string $name, int $seq): string => 'INSERT INTO templates '
+            . "(id, user_id, name, parts, updated_at, seq) VALUES ('t1', '$user', '$name', '[]', 7, $seq)";
+        $pdo->exec($template('u1', 'Misa', 5));
+
+        $applied = (new Migrator($pdo, TestDatabase::MIGRATIONS))->migrate();
+
+        $this->assertContains('0016_user_scoped_ids.sqlite', $applied);
+        $song = $pdo->query('SELECT * FROM songs')->fetch(PDO::FETCH_ASSOC);
+        $this->assertSame(
+            ['s1', 'u1', 'Canto', 'Autor', '[C]x', 5, 3, 2],
+            [$song['id'], $song['user_id'], $song['title'], $song['author'], $song['body'], (int) $song['updated_at'],
+                (int) $song['seq'], (int) $song['my_shift']]
+        );
+        $this->assertSame('["Entrada"]', $song['tags']);
+        $list = $pdo->query('SELECT * FROM setlists')->fetch(PDO::FETCH_ASSOC);
+        $this->assertSame(['l1', 1, 4], [$list['id'], (int) $list['starred'], (int) $list['seq']]);
+        $this->assertSame('t1', $pdo->query('SELECT id FROM templates')->fetchColumn());
+
+        // The same id in another account is allowed now; twice in one account still is not
+        $pdo->exec($template('u2', 'Misa', 1));
+        $this->expectException(\PDOException::class);
+        $pdo->exec($template('u2', 'Otra', 2));
+    }
 }
