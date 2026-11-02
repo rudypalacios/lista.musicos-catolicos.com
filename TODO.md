@@ -184,6 +184,11 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       404, an address that keeps missing is slowed down (`MissThrottle`), and the answer can be kept a minute with an ETag. The visitor's page has no cookies, analytics or ads and asks for nothing from another
       origin (checked under the production policy). **Left for the owner:** publish the privacy text proposed in the PR in `musicos-catolicos` (Privacidad) and decide whether the lyrics switch stays on by default.
       **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 46.
+- [x] **Share one song by a link, and a preview that names what the link opens** (`SongShareRepository`, `SongShareAction`, `SharePreview`, `Http/ShellPage`, migrations `0014` and `0015`; the owner asked
+      for it on 2026-11-02): "Compartir canto" is in the "⋯" of the song's page. Its sheet is the list's without the lyrics switch (a song's words always go; the owner's plan said "the same switch", but a song
+      without its words shows nothing, so I left it out: say if you want "solo título" anyway). The visitor opens straight on the song, in its own key (not the owner's "mi tono"), with the reader's tools and no list around it.
+      The link of a list or of a song now carries its name in the page's `<title>` and `og:` tags, so WhatsApp and the like show "Misa del domingo" and not "Listas". No image in the preview yet.
+      **Next, by the owner's plan:** "Compartidos conmigo" (links opened, kept for the account) and then sign-up with Google; neither is started. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 55.
 - [x] **The visitor's page, thin and offline** (`web/src/views/shared.ts`, `shared-store.ts`; the owner approved mockup v6): the page is the same PWA, so it registers the app's service worker
       and **keeps a copy of the list it opens** in a database of its own (`lista-shared`, at most 20 copies, nothing mixed with the person's data): with no connection it opens the copy and
       says "Sin conexión. Estás leyendo la copia guardada el …"; a link found stopped deletes its copy; a list never opened says it needs a connection. The layout gives the lyrics the screen:
@@ -418,8 +423,7 @@ Next, in this order (design agreed with the owner):
 
 - [ ] Songs from the Músicos Católicos catalogue (approved songs per part of the Mass).
 - [ ] Personal key preference per song ("change everywhere").
-- [ ] **Sharing, what comes after the list's link** (the owner's plan, 2026-11-01): (1) a song by a link, with the same lyrics switch and the same notice about the
-      authors' rights; (2) accounts of other people (sign-up, password recovery, permissions, two people editing one list: today the newest edit wins as a whole), which changes the data
+- [ ] **Sharing, what comes after the list's link** (the owner's plan, 2026-11-01; (1) a song by a link is done, below): (2) accounts of other people (sign-up, password recovery, permissions, two people editing one list: today the newest edit wins as a whole), which changes the data
       model and the privacy text, so only once the first two are used. Public and private profiles stay with that third step.
 - [ ] Share the key a list has each song in when the lyrics are not shared: today the visitor of a list shared with no lyrics sees the order, the titles and the authors
       but no keys (the key comes from the chords, which the server does not read: the parser lives in the app).

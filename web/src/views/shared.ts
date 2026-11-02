@@ -12,7 +12,7 @@ import { dragOffset, isSwipe, swipeAxis, type Axis } from '../swipe.ts';
 import { createReader, type Reader } from './reader.ts';
 
 /**
- * A list somebody shared, as a visitor reads it: no account, no menu, nothing to edit or save. It is the same app (the same
+ * A list (or one song) somebody shared, as a visitor reads it: no account, no menu, nothing to edit or save. It is the same app (the same
  * service worker, the same lyrics reader) dressed like the public pages of Músicos Católicos, which it shares its colours and
  * typefaces with, but built to read the words: the header is one thin row, the footer is folded away, and a song is shown as
  * when singing a list (the lyrics fitted to the screen, the tools folded under the bar, a swipe to change song).
@@ -263,10 +263,13 @@ export function startShared(root: HTMLElement, code: string): void {
         };
         toolsButton.addEventListener('click', () => setTools(tools.hidden));
         fold.addEventListener('click', () => setTools(false));
+        // A link to one song has no list to go back to and no neighbours: just the song, its author and the tools
+        const single = data.kind === 'song';
         const bar = h('div', { class: 'pub-bar' },
-            h('a', { class: 'pub-bar__button', href: paths.shared(code), 'data-link': true, 'aria-label': `Volver al listado: ${data.title}` }, icon('arrow-left', 22)),
-            h('span', { class: 'pub-bar__text' }, h('b', {}, row.song.title), h('small', {}, `${row.part.name} · ${row.n} de ${rows.length}`)),
-            before, after, toolsButton);
+            ...(single ? [] : [h('a', { class: 'pub-bar__button', href: paths.shared(code), 'data-link': true, 'aria-label': `Volver al listado: ${data.title}` }, icon('arrow-left', 22))]),
+            h('span', { class: 'pub-bar__text' }, h('b', {}, row.song.title),
+                h('small', {}, single ? (row.song.author === '' ? 'Canto compartido' : row.song.author) : `${row.part.name} · ${row.n} de ${rows.length}`)),
+            ...(single ? [] : [before, after]), toolsButton);
 
         // --- the song follows the finger from the first sideways move, as when singing a list ---
         const stage = reader.stage;
@@ -345,7 +348,10 @@ export function startShared(root: HTMLElement, code: string): void {
         document.title = `${list.title} · Músicos Católicos`;
         const route = matchRoute(location.pathname);
         const rows = readingOrder(list);
-        const row = route.name === 'shared' && route.n !== undefined && list.withLyrics ? rows.find((candidate) => candidate.n === route.n) : undefined;
+        // A shared song is its one page, whatever number the address carries
+        const row = list.kind === 'song'
+            ? rows[0]
+            : route.name === 'shared' && route.n !== undefined && list.withLyrics ? rows.find((candidate) => candidate.n === route.n) : undefined;
         if (row === undefined) {
             listPage(list);
         } else {
@@ -354,8 +360,8 @@ export function startShared(root: HTMLElement, code: string): void {
     };
 
     const load = (): void => {
-        document.title = 'Listado compartido · Músicos Católicos';
-        show(h('p', { class: 'pub-wait', role: 'status' }, h('span', { class: 'spinner spinner--big', 'aria-hidden': 'true' }), 'Abriendo el listado…'));
+        document.title = 'Enlace compartido · Músicos Católicos';
+        show(h('p', { class: 'pub-wait', role: 'status' }, h('span', { class: 'spinner spinner--big', 'aria-hidden': 'true' }), 'Abriendo el enlace…'));
         readShared(code)
             .then(async (data) => {
                 list = data;
@@ -386,8 +392,8 @@ export function startShared(root: HTMLElement, code: string): void {
                     return;
                 }
                 show(header(), h('main', { class: 'pub-main' }, h('div', { class: 'pub-wrap' }, offline
-                    ? message('Sin conexión', h('p', {}, 'Este listado todavía no está guardado en este dispositivo. Conéctate para abrirlo; después se podrá leer sin conexión.'), retry)
-                    : message('No se pudo abrir el listado', h('p', {}, failure instanceof Error ? failure.message : 'Inténtalo de nuevo.'), retry))));
+                    ? message('Sin conexión', h('p', {}, 'Este enlace todavía no está guardado en este dispositivo. Conéctate para abrirlo; después se podrá leer sin conexión.'), retry)
+                    : message('No se pudo abrir el enlace', h('p', {}, failure instanceof Error ? failure.message : 'Inténtalo de nuevo.'), retry))));
             });
     };
 

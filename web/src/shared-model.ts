@@ -23,6 +23,8 @@ export interface SharedItem {
 }
 
 export interface SharedList {
+    /** What the link gives: a list, or one song (a list of one section and one song). Missing in a copy kept before songs could be shared: a list */
+    kind?: 'list' | 'song';
     title: string;
     withLyrics: boolean;
     /** Epoch ms of the latest change in the list or in one of its songs */

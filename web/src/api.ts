@@ -142,6 +142,13 @@ export const share = {
     stop: (setlistId: string): Promise<ShareState> => request<ShareState>('DELETE', `/api/lists/${setlistId}/share`, {}),
 };
 
+/** Giving one song out by a link: the same as a list's, except that its lyrics and chords always go with it */
+export const songShare = {
+    status: (songId: string): Promise<ShareState> => request<ShareState>('GET', `/api/songs/${songId}/share`),
+    enable: (songId: string): Promise<ShareState> => request<ShareState>('PUT', `/api/songs/${songId}/share`, {}),
+    stop: (songId: string): Promise<ShareState> => request<ShareState>('DELETE', `/api/songs/${songId}/share`, {}),
+};
+
 /** What a link shows, for anyone: no session */
 export const readShared = (code: string): Promise<SharedList> => request<SharedList>('GET', `/api/shared/${code}`);
 

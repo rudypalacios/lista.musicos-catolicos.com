@@ -14,6 +14,7 @@ import { deleteSongAfterAsking } from './delete-song.ts';
 import { createReader } from './reader.ts';
 import { showToast } from '../toast.ts';
 import { createToneControl, type ToneControl } from './tone-control.ts';
+import { createShareSheet } from './share-sheet.ts';
 import { createSheet, sheetAction, sheetList } from './sheet.ts';
 import type { Navigate, View } from './types.ts';
 
@@ -137,6 +138,8 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
         onBack: () => sheet.open(),
         onManage: () => addToList.close(() => navigate(paths.templates())),
     });
+    // "Compartir canto": a link anyone can read, with its own sheet that comes after this one
+    const shareSheet = createShareSheet();
     sheet.body.replaceChildren(
         h('h4', { class: 'sheet__title' }, song.title),
         ...(song.author === '' ? [] : [h('p', { class: 'sheet__sub' }, song.author)]),
@@ -145,6 +148,7 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
         h('h3', {}, 'Este canto'),
         ...sheetList(
             sheetAction('list-plus', 'Agregar a un listado', () => sheet.close(() => addToList.open())),
+            sheetAction('share', 'Compartir canto', () => sheet.close(() => shareSheet.open({ id: song.id, title: song.title, kind: 'song' })), { hint: 'Un enlace para que cualquiera lo lea' }),
             sheetAction('printer', 'Imprimir con acordes', () => print('chords')),
             sheetAction('printer', 'Imprimir solo la letra', () => print('lyrics')),
             sheetAction('pencil', 'Editar letra y acordes', () => {
@@ -175,11 +179,12 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
     const releaseScreen = readKeepAwake() ? screenKeeper.hold() : (): void => undefined;
 
     return {
-        element: h('div', { class: 'viewer' }, tools, error, reader.stage, sheet.element, addToList.element),
+        element: h('div', { class: 'viewer' }, tools, error, reader.stage, sheet.element, addToList.element, shareSheet.element),
         dispose: () => {
             releaseScreen();
             sheet.release();
             addToList.release();
+            shareSheet.release();
             reader.dispose();
         },
     };
