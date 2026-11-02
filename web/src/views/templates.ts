@@ -6,7 +6,7 @@ import { icon } from '../icons.ts';
 import { paths } from '../router.ts';
 import { showToast } from '../toast.ts';
 import { confirmDialog } from './confirm-dialog.ts';
-import { createSheet, sheetAction } from './sheet.ts';
+import { createSheet, sheetAction, sheetList } from './sheet.ts';
 import type { Navigate, View } from './types.ts';
 
 /** The name a new template starts with, before the person gives it its own */
@@ -66,37 +66,39 @@ export function templatesView(app: App, navigate: Navigate): View {
         sheet.body.replaceChildren(
             h('h4', { class: 'sheet__title' }, template.name),
             h('p', { class: 'sheet__sub' }, sectionsText(template.parts.length)),
-            sheetAction('copy', 'Duplicar plantilla', () => {
-                error.textContent = '';
-                sheet.close(() => {
-                    app.templates
-                        .duplicate(template.id)
-                        .then((copy) => {
-                            navigate(paths.template(copy.id));
-                            showToast(`Copiada de «${template.name}»`, 4000, true);
+            ...sheetList(
+                sheetAction('copy', 'Duplicar plantilla', () => {
+                    error.textContent = '';
+                    sheet.close(() => {
+                        app.templates
+                            .duplicate(template.id)
+                            .then((copy) => {
+                                navigate(paths.template(copy.id));
+                                showToast(`Copiada de «${template.name}»`, 4000, true);
+                            })
+                            .catch((failure: unknown) => fail(failure, 'No se pudo duplicar la plantilla.'));
+                    });
+                }, { hint: 'Una copia con las mismas secciones' }),
+                // Last and set apart, so it is not touched by mistake next to the other
+                sheetAction('trash', 'Eliminar plantilla', () => {
+                    error.textContent = '';
+                    sheet.close(() => {
+                        confirmDialog({
+                            title: `¿Eliminar la plantilla «${template.name}»?`,
+                            text: 'Los listados que ya hiciste con ella no cambian. No se puede deshacer.',
+                            confirm: 'Eliminar',
+                            danger: true,
                         })
-                        .catch((failure: unknown) => fail(failure, 'No se pudo duplicar la plantilla.'));
-                });
-            }, { hint: 'Una copia con las mismas secciones' }),
-            // Last and set apart, so it is not touched by mistake next to the other
-            sheetAction('trash', 'Eliminar plantilla', () => {
-                error.textContent = '';
-                sheet.close(() => {
-                    confirmDialog({
-                        title: `¿Eliminar la plantilla «${template.name}»?`,
-                        text: 'Los listados que ya hiciste con ella no cambian. No se puede deshacer.',
-                        confirm: 'Eliminar',
-                        danger: true,
-                    })
-                        .then(async (confirmed) => {
-                            if (confirmed) {
-                                await app.templates.remove(template.id);
-                                showToast('Plantilla eliminada', 3000, true);
-                            }
-                        })
-                        .catch((failure: unknown) => fail(failure, 'No se pudo eliminar la plantilla.'));
-                });
-            }, { danger: true, apart: true }),
+                            .then(async (confirmed) => {
+                                if (confirmed) {
+                                    await app.templates.remove(template.id);
+                                    showToast('Plantilla eliminada', 3000, true);
+                                }
+                            })
+                            .catch((failure: unknown) => fail(failure, 'No se pudo eliminar la plantilla.'));
+                    });
+                }, { danger: true, apart: true }),
+            ),
         );
     };
 

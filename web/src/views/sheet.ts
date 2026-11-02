@@ -204,3 +204,17 @@ export function sheetAction(name: IconName, label: string, run: () => void, opti
 
     return button;
 }
+
+/**
+ * The options of a sheet or menu as lists with no bullets: one `<li>` per option, so the space between options is
+ * the list's and nothing else's (see `.sheet-list` in the styles). The options that are "set apart" (Eliminar…)
+ * come out as a list of their own, after the others.
+ */
+export function sheetList(...actions: HTMLElement[]): HTMLElement[] {
+    const apart = actions.filter((action) => action.classList.contains('sheet-action--apart'));
+    const regular = actions.filter((action) => !apart.includes(action));
+    const list = (items: HTMLElement[], className: string): HTMLElement[] =>
+        items.length === 0 ? [] : [h('ul', { class: className }, ...items.map((item) => h('li', {}, item)))];
+
+    return [...list(regular, 'sheet-list'), ...list(apart, 'sheet-list sheet-list--apart')];
+}

@@ -14,7 +14,7 @@ import { deleteSongAfterAsking } from './delete-song.ts';
 import { createReader } from './reader.ts';
 import { showToast } from '../toast.ts';
 import { createToneControl, type ToneControl } from './tone-control.ts';
-import { createSheet, sheetAction } from './sheet.ts';
+import { createSheet, sheetAction, sheetList } from './sheet.ts';
 import type { Navigate, View } from './types.ts';
 
 /** ?t=2 → 2; no `t` (or anything else) → null. Kept within an octave (−11…11), as on the public site. */
@@ -143,21 +143,23 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
         h('h3', {}, 'Letra'),
         h('div', { class: 'toolbar', role: 'toolbar', 'aria-label': 'Herramientas de la letra' }, reader.display),
         h('h3', {}, 'Este canto'),
-        sheetAction('list-plus', 'Agregar a un listado', () => sheet.close(() => addToList.open())),
-        sheetAction('printer', 'Imprimir con acordes', () => print('chords')),
-        sheetAction('printer', 'Imprimir solo la letra', () => print('lyrics')),
-        sheetAction('pencil', 'Editar letra y acordes', () => {
-            sheet.close(() => navigate(paths.edit(song.id)));
-        }),
-        // Last and set apart, so it is not touched by mistake next to printing
-        sheetAction('trash', 'Eliminar canto', () => {
-            error.hidden = true;
-            sheet.close(() => {
-                deleteSongAfterAsking(app, song)
-                    .then((deleted) => (deleted ? navigate(paths.list()) : undefined))
-                    .catch((failure: unknown) => fail(failure instanceof Error ? failure.message : 'No se pudo eliminar el canto.'));
-            });
-        }, { danger: true, apart: true }),
+        ...sheetList(
+            sheetAction('list-plus', 'Agregar a un listado', () => sheet.close(() => addToList.open())),
+            sheetAction('printer', 'Imprimir con acordes', () => print('chords')),
+            sheetAction('printer', 'Imprimir solo la letra', () => print('lyrics')),
+            sheetAction('pencil', 'Editar letra y acordes', () => {
+                sheet.close(() => navigate(paths.edit(song.id)));
+            }),
+            // Last and set apart, so it is not touched by mistake next to printing
+            sheetAction('trash', 'Eliminar canto', () => {
+                error.hidden = true;
+                sheet.close(() => {
+                    deleteSongAfterAsking(app, song)
+                        .then((deleted) => (deleted ? navigate(paths.list()) : undefined))
+                        .catch((failure: unknown) => fail(failure instanceof Error ? failure.message : 'No se pudo eliminar el canto.'));
+                });
+            }, { danger: true, apart: true }),
+        ),
     );
     const more = h('button', { type: 'button', class: 'lrow__more song-tools__more', 'aria-label': 'Más opciones' }, icon('more', 22));
     more.addEventListener('click', () => sheet.open(more));

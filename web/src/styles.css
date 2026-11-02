@@ -2769,25 +2769,44 @@ main#view.is-pulling {
     font-size: 0.85rem;
 }
 
+/*
+ * The options of a sheet or menu are lists with no bullets. The space between two options is the `li`'s alone (a
+ * little padding, and a line between neighbours, none after the last): the sheet and the floating menu already have
+ * their own padding, so nothing adds more at the edges. Inside, the option keeps its icon and words, centred.
+ */
+.sheet-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.sheet-list > li {
+    padding: 0.2rem 0;
+}
+
+.sheet-list > li + li {
+    border-top: 1px solid var(--border);
+}
+
+/* Set apart from the tools above it: its own list, with room before its line */
+.sheet-list--apart {
+    margin-top: 1.1rem;
+    border-top: 1px solid var(--border);
+}
+
 button.sheet-action {
     display: flex;
     gap: 0.8rem;
     align-items: center;
     width: 100%;
-    min-height: 3.25rem;
+    /* 44px: what is touched is never smaller than its icon */
+    min-height: 2.75rem;
     padding: 0;
     color: var(--text);
     background: none;
     border: 0;
-    border-top: 1px solid var(--border);
     font: inherit;
     text-align: left;
-}
-
-/* Set apart from the tools above it: room before its line and between the line and the words */
-button.sheet-action--apart {
-    margin-top: 1.1rem;
-    padding: 0.6rem 0;
 }
 
 button.sheet-action.is-lit .icon {

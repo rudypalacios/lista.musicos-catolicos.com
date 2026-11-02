@@ -8,7 +8,7 @@ import { filterSetlists } from '../search.ts';
 import { showToast } from '../toast.ts';
 import { deleteListAfterAsking } from './delete-list.ts';
 import { createShareSheet } from './share-sheet.ts';
-import { createSheet, sheetAction } from './sheet.ts';
+import { createSheet, sheetAction, sheetList } from './sheet.ts';
 import { createTemplateSheet } from './template-choices.ts';
 import type { Navigate, View } from './types.ts';
 
@@ -73,35 +73,37 @@ export function listsView(app: App, navigate: Navigate): View {
         sheet.body.replaceChildren(
             h('h4', { class: 'sheet__title' }, list.title),
             h('p', { class: 'sheet__sub' }, count === 1 ? '1 canto' : `${count} cantos`),
-            // Not starred: an empty grey star. Starred: the filled yellow one it has on the list
-            sheetAction(list.starred ? 'star-filled' : 'star', list.starred ? 'Quitar de destacados' : 'Destacar', () => {
-                error.textContent = '';
-                sheet.close();
-                app.setlists.setStarred(list.id, !list.starred).catch((failure: unknown) => fail(failure, 'No se pudo cambiar el listado.'));
-            }, { lit: list.starred }),
-            sheetAction('copy', 'Duplicar listado', () => {
-                error.textContent = '';
-                sheet.close(() => {
-                    app.setlists
-                        .duplicate(list.id)
-                        .then((copy) => {
-                            navigate(paths.setlist(copy.id));
-                            showToast(`Copiado de «${list.title}»`, 4000, true);
-                        })
-                        .catch((failure: unknown) => fail(failure, 'No se pudo duplicar el listado.'));
-                });
-            }, { hint: 'Una copia sin fecha, con los mismos cantos y tonos' }),
-            sheetAction('share', 'Compartir listado', () => {
-                error.textContent = '';
-                sheet.close(() => shareSheet.open(list));
-            }, { hint: 'Un enlace para que cualquiera lo lea' }),
-            // Last and set apart, so it is not touched by mistake next to the others
-            sheetAction('trash', 'Eliminar listado', () => {
-                error.textContent = '';
-                sheet.close(() => {
-                    deleteListAfterAsking(app, list).catch((failure: unknown) => fail(failure, 'No se pudo eliminar el listado.'));
-                });
-            }, { danger: true, apart: true }),
+            ...sheetList(
+                // Not starred: an empty grey star. Starred: the filled yellow one it has on the list
+                sheetAction(list.starred ? 'star-filled' : 'star', list.starred ? 'Quitar de destacados' : 'Destacar', () => {
+                    error.textContent = '';
+                    sheet.close();
+                    app.setlists.setStarred(list.id, !list.starred).catch((failure: unknown) => fail(failure, 'No se pudo cambiar el listado.'));
+                }, { lit: list.starred }),
+                sheetAction('copy', 'Duplicar listado', () => {
+                    error.textContent = '';
+                    sheet.close(() => {
+                        app.setlists
+                            .duplicate(list.id)
+                            .then((copy) => {
+                                navigate(paths.setlist(copy.id));
+                                showToast(`Copiado de «${list.title}»`, 4000, true);
+                            })
+                            .catch((failure: unknown) => fail(failure, 'No se pudo duplicar el listado.'));
+                    });
+                }, { hint: 'Una copia sin fecha, con los mismos cantos y tonos' }),
+                sheetAction('share', 'Compartir listado', () => {
+                    error.textContent = '';
+                    sheet.close(() => shareSheet.open(list));
+                }, { hint: 'Un enlace para que cualquiera lo lea' }),
+                // Last and set apart, so it is not touched by mistake next to the others
+                sheetAction('trash', 'Eliminar listado', () => {
+                    error.textContent = '';
+                    sheet.close(() => {
+                        deleteListAfterAsking(app, list).catch((failure: unknown) => fail(failure, 'No se pudo eliminar el listado.'));
+                    });
+                }, { danger: true, apart: true }),
+            ),
         );
     };
 
