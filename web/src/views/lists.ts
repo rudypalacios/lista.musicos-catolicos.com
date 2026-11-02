@@ -8,7 +8,7 @@ import { filterSetlists } from '../search.ts';
 import { showToast } from '../toast.ts';
 import { deleteListAfterAsking } from './delete-list.ts';
 import { createShareSheet } from './share-sheet.ts';
-import { createSheet, sheetAction, sheetList } from './sheet.ts';
+import { createSheet, sheetAction, sheetHead, sheetList } from './sheet.ts';
 import { createTemplateSheet } from './template-choices.ts';
 import type { Navigate, View } from './types.ts';
 
@@ -71,9 +71,7 @@ export function listsView(app: App, navigate: Navigate): View {
         }
         const count = list.items.length;
         sheet.body.replaceChildren(
-            h('h4', { class: 'sheet__title' }, list.title),
-            h('p', { class: 'sheet__sub' }, count === 1 ? '1 canto' : `${count} cantos`),
-            ...sheetList(
+            sheetList(
                 // Not starred: an empty grey star. Starred: the filled yellow one it has on the list
                 sheetAction(list.starred ? 'star-filled' : 'star', list.starred ? 'Quitar de destacados' : 'Destacar', () => {
                     error.textContent = '';
@@ -102,7 +100,7 @@ export function listsView(app: App, navigate: Navigate): View {
                     sheet.close(() => {
                         deleteListAfterAsking(app, list).catch((failure: unknown) => fail(failure, 'No se pudo eliminar el listado.'));
                     });
-                }, { danger: true, apart: true }),
+                }, { danger: true }),
             ),
         );
     };

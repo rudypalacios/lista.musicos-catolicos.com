@@ -1245,32 +1245,44 @@ try {
     assert.ok(Math.abs(menu.panel.right - menu.button.right) <= 20 || menu.panel.right <= menu.button.right + 20, 'it hangs from the right of its button');
     assert.ok(menu.panel.top >= menu.button.bottom - 2 || menu.panel.bottom <= menu.button.top + 2, 'it opens below the button, or above it, never over it');
     assert.match(menu.scrim, /rgba\(0, 0, 0, 0\)|transparent/, 'nothing is dimmed');
-    // The options are lists with no bullets: 44px at least, flush with each other, a line between and none after the last, centred
-    const options = await page.evaluate(() => Array.from(document.querySelectorAll('.sheet-layer.is-open .sheet-list')).map((list) =>
-        Array.from(list.children).map((li, at, all) => {
-            const box = li.getBoundingClientRect();
-            const button = li.querySelector('button')?.getBoundingClientRect();
-            const icon = li.querySelector('svg')?.getBoundingClientRect();
+    // The menu is ONE list with no bullets: the title is its first row, then the options; every row after the first has the line
+    // above it (so there is one after the title and none after the last), they are flush, and an option is 44px at least and centred
+    const menuRows = await page.evaluate(() => {
+        const lists = Array.from(document.querySelectorAll('.sheet-layer.is-open .sheet-list'));
 
-            return {
-                tag: li.tagName,
-                bullets: getComputedStyle(list).listStyleType,
-                button: button?.height ?? 0,
-                gapAfter: at < all.length - 1 ? (all[at + 1] as Element).getBoundingClientRect().top - box.bottom : 0,
-                lineAfter: parseFloat(getComputedStyle(li).borderBottomWidth),
-                centred: icon === undefined ? false : Math.abs((icon.top + icon.bottom) / 2 - (box.top + box.bottom) / 2) <= 1.5,
-            };
-        })));
-    assert.ok(options.length > 0 && options.flat().length >= 2, 'the options are in lists');
-    for (const row of options.flat()) {
+        return {
+            lists: lists.length,
+            rows: Array.from(lists[0]?.children ?? []).map((li, at, all) => {
+                const box = li.getBoundingClientRect();
+                const button = li.querySelector('button')?.getBoundingClientRect();
+                const icon = li.querySelector('svg')?.getBoundingClientRect();
+
+                return {
+                    tag: li.tagName,
+                    head: li.classList.contains('sheet-list__head'),
+                    bullets: getComputedStyle(lists[0] as Element).listStyleType,
+                    button: button?.height ?? 0,
+                    gapAfter: at < all.length - 1 ? (all[at + 1] as Element).getBoundingClientRect().top - box.bottom : 0,
+                    lineAbove: parseFloat(getComputedStyle(li).borderTopWidth),
+                    lineBelow: parseFloat(getComputedStyle(li).borderBottomWidth),
+                    centred: icon === undefined ? true : Math.abs((icon.top + icon.bottom) / 2 - (box.top + box.bottom) / 2) <= 1.5,
+                };
+            }),
+        };
+    });
+    assert.equal(menuRows.lists, 1, 'the title and the options are one list');
+    assert.ok(menuRows.rows.length >= 3 && menuRows.rows[0]?.head === true, 'the title is the first row of the list');
+    menuRows.rows.forEach((row, at) => {
         assert.equal(row.tag, 'LI');
         assert.equal(row.bullets, 'none');
-        assert.ok(row.button >= 43.5, `an option is 44px at least (${row.button})`);
-        assert.ok(Math.abs(row.gapAfter) <= 0.5, `options are flush (${row.gapAfter})`);
-        assert.equal(row.lineAfter, 0, 'no line after an option: the line is between neighbours');
+        assert.ok(row.head || row.button >= 43.5, `an option is 44px at least (${row.button})`);
+        assert.ok(Math.abs(row.gapAfter) <= 0.5, `rows are flush (${row.gapAfter})`);
+        assert.equal(row.lineAbove, at === 0 ? 0 : 1, 'a line between rows: above every one but the first (so after the title, none after the last)');
+        assert.equal(row.lineBelow, 0);
         assert.ok(row.centred, 'icon and words centred in the row');
-    }
+    });
     if (process.env['SHEET_SHOT'] !== undefined) {
+        await page.waitForTimeout(300);
         writeFileSync(process.env['SHEET_SHOT'], await page.screenshot({ type: 'png' }));
     }
     await closeSheet(page);

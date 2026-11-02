@@ -6,7 +6,7 @@ import { today } from '../dates.ts';
 import { h } from '../dom.ts';
 import { readLastTemplate, rememberTemplate } from '../last-template.ts';
 import { paths } from '../router.ts';
-import { createSheet, sheetAction, sheetList, type Sheet } from './sheet.ts';
+import { createSheet, sheetAction, sheetHead, sheetList, type Sheet } from './sheet.ts';
 import type { Navigate } from './types.ts';
 
 export interface TemplateChoiceHandlers {
@@ -40,6 +40,8 @@ export async function templateRows(
     pick: (choice: TemplatePick) => void,
     manage: (() => void) | null,
     close: (then: () => void) => void,
+    /** The title of the sheet, as the first row of the list (a wizard with a title of its own gives none) */
+    head?: HTMLElement,
 ): Promise<HTMLElement[]> {
     let all = await app.templates.list();
     if (all.length === 0) {
@@ -47,17 +49,18 @@ export async function templateRows(
         all = await app.templates.list();
     }
 
-    return sheetList(
+    return [sheetList(
+        ...(head === undefined ? [] : [head]),
         ...lastUsedFirst(all, readLastTemplate()).map((template) =>
             sheetAction('list', template.name, () => close(() => pick({ name: template.name, parts: template.parts, templateId: template.id })), { hint: sectionsText(template.parts.length) })),
         sheetAction('plus', 'En blanco', () => close(() => pick({ name: BLANK_NAME, parts: blankSections(), templateId: null })), { hint: 'Una sola sección, «Cantos»' }),
-        // Last and set apart: where the templates are made, changed and deleted
-        ...(manage === null ? [] : [sheetAction('settings', 'Administrar plantillas', () => close(manage), { apart: true })]),
-    );
+        // Last: where the templates are made, changed and deleted
+        ...(manage === null ? [] : [sheetAction('settings', 'Administrar plantillas', () => close(manage))]),
+    )];
 }
 
 /** "Selecciona una plantilla" for "＋ Nuevo": picking one makes the list, empty, for today */
-export function templateChoices(app: App, handlers: TemplateChoiceHandlers, close: (then: () => void) => void): Promise<HTMLElement[]> {
+export function templateChoices(app: App, handlers: TemplateChoiceHandlers, close: (then: () => void) => void, head?: HTMLElement): Promise<HTMLElement[]> {
     return templateRows(app, (choice) => {
         app.setlists
             .create({ title: defaultTitle(today(), choice.name) }, choice.parts)
@@ -68,7 +71,7 @@ export function templateChoices(app: App, handlers: TemplateChoiceHandlers, clos
                 handlers.created(list);
             })
             .catch(handlers.failed);
-    }, handlers.manage, close);
+    }, handlers.manage, close, head);
 }
 
 /**
@@ -81,9 +84,10 @@ export function createTemplatePickSheet(app: App, sub: () => string, pick: (choi
     const sheet = createSheet('Selecciona una plantilla', () => fill());
     sheet.element.classList.add('sheet-layer--window');
     const fill = (): void => {
-        sheet.body.replaceChildren(h('h4', { class: 'sheet__title' }, 'Selecciona una plantilla'), h('p', { class: 'sheet__sub' }, sub()));
-        templateRows(app, pick, null, (then) => sheet.close(then))
-            .then((rows) => sheet.body.append(...rows))
+        const head = sheetHead('Selecciona una plantilla', sub());
+        sheet.body.replaceChildren(sheetList(head));
+        templateRows(app, pick, null, (then) => sheet.close(then), head)
+            .then((rows) => sheet.body.replaceChildren(...rows))
             .catch(fail);
     };
 
@@ -95,13 +99,14 @@ export function createTemplateSheet(app: App, navigate: Navigate, fail: (failure
     const sheet = createSheet('Selecciona una plantilla', () => fill());
     sheet.element.classList.add('sheet-layer--window');
     const fill = (): void => {
-        sheet.body.replaceChildren(h('h4', { class: 'sheet__title' }, 'Nuevo listado'), h('p', { class: 'sheet__sub' }, 'Selecciona una plantilla'));
+        const head = sheetHead('Nuevo listado', 'Selecciona una plantilla');
+        sheet.body.replaceChildren(sheetList(head));
         templateChoices(app, {
             created: (list) => navigate(paths.setlist(list.id)),
             manage: () => navigate(paths.templates()),
             failed: fail,
-        }, (then) => sheet.close(then))
-            .then((rows) => sheet.body.append(...rows))
+        }, (then) => sheet.close(then), head)
+            .then((rows) => sheet.body.replaceChildren(...rows))
             .catch(fail);
     };
 

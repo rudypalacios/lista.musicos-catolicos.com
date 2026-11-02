@@ -197,24 +197,30 @@ export function createSheet(label: string, onOpen?: () => void | Promise<void>, 
 }
 
 /** A row of a sheet: an icon and what it does, big enough to tap, and a quiet line under it if it needs one */
-export function sheetAction(name: IconName, label: string, run: () => void, options: { danger?: boolean; hint?: string; lit?: boolean; apart?: boolean } = {}): HTMLElement {
-    const button = h('button', { type: 'button', class: ['sheet-action', ...(options.danger === true ? ['is-danger'] : []), ...(options.lit === true ? ['is-lit'] : []), ...(options.apart === true ? ['sheet-action--apart'] : [])].join(' ') },
+export function sheetAction(name: IconName, label: string, run: () => void, options: { danger?: boolean; hint?: string; lit?: boolean } = {}): HTMLElement {
+    const button = h('button', { type: 'button', class: ['sheet-action', ...(options.danger === true ? ['is-danger'] : []), ...(options.lit === true ? ['is-lit'] : [])].join(' ') },
         icon(name, 20), h('span', { class: 'sheet-action__text' }, label, ...(options.hint === undefined ? [] : [h('small', {}, options.hint)])));
     button.addEventListener('click', run);
 
     return button;
 }
 
-/**
- * The options of a sheet or menu as lists with no bullets: one `<li>` per option, so the space between options is
- * the list's and nothing else's (see `.sheet-list` in the styles). The options that are "set apart" (Eliminar…)
- * come out as a list of their own, after the others.
- */
-export function sheetList(...actions: HTMLElement[]): HTMLElement[] {
-    const apart = actions.filter((action) => action.classList.contains('sheet-action--apart'));
-    const regular = actions.filter((action) => !apart.includes(action));
-    const list = (items: HTMLElement[], className: string): HTMLElement[] =>
-        items.length === 0 ? [] : [h('ul', { class: className }, ...items.map((item) => h('li', {}, item)))];
+/** The title of a sheet or menu, with a line under it if it needs one: the first row of its `sheetList` */
+export function sheetHead(title: string, sub?: string): HTMLElement {
+    return h('div', { class: 'sheet-head' }, h('h4', { class: 'sheet__title' }, title), ...(sub === undefined || sub === '' ? [] : [h('p', { class: 'sheet__sub' }, sub)]));
+}
 
-    return [...list(regular, 'sheet-list'), ...list(apart, 'sheet-list sheet-list--apart')];
+/**
+ * The rows of a sheet or menu as one list with no bullets: one `<li>` for the title (`sheetHead`) and for each option,
+ * so the space and the line between any two rows is the list's and nothing else's (see `.sheet-list` in the styles).
+ */
+export function sheetList(...items: HTMLElement[]): HTMLElement {
+    return h('ul', { class: 'sheet-list' }, ...items.map((item) => h('li', { class: item.classList.contains('sheet-head') ? 'sheet-list__head' : '' }, item)));
+}
+
+/** A list that comes after other content (tools, a toolbar): with room before it */
+export function spaced(list: HTMLElement): HTMLElement {
+    list.classList.add('sheet-list--spaced');
+
+    return list;
 }

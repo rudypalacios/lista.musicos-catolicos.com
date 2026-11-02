@@ -11,7 +11,7 @@ import { paths } from '../router.ts';
 import { dragOffset, isSwipe, swipeAxis, type Axis } from '../swipe.ts';
 import { describeAwake, screenKeeper } from '../wakelock.ts';
 import { createReader, type Reader } from './reader.ts';
-import { createSheet, sheetList } from './sheet.ts';
+import { createSheet, sheetList, spaced } from './sheet.ts';
 import { createToneControl, type ToneControl } from './tone-control.ts';
 import type { Navigate, View } from './types.ts';
 
@@ -202,10 +202,10 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     const toolsSheet = createSheet('Tono y letra');
     if (tools !== null && tone !== null && song !== undefined) {
         // The lyrics and chords belong to the song, so the edit is the song's (it comes back here when it ends)
-        const edit = h('button', { type: 'button', class: 'sheet-action sheet-action--apart' }, icon('pencil', 20),
+        const edit = h('button', { type: 'button', class: 'sheet-action' }, icon('pencil', 20),
             h('span', { class: 'sheet-action__text' }, 'Editar letra y acordes', h('small', {}, 'Se cambia en todos los listados donde está')));
         edit.addEventListener('click', () => toolsSheet.close(() => navigate(paths.edit(song.id, paths.perform(setlist.id, position)))));
-        toolsSheet.body.append(h('h3', {}, 'Tono'), tone.element, h('h3', {}, 'Letra'), tools, ...sheetList(edit));
+        toolsSheet.body.append(h('h3', {}, 'Tono'), tone.element, h('h3', {}, 'Letra'), tools, spaced(sheetList(edit)));
     }
     // The screen stays on while a song is on screen, unless the person turned that off in Ajustes. Nothing
     // on screen says so any more: only a failure is worth a word.
