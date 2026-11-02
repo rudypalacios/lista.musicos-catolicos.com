@@ -8,7 +8,7 @@ import { filterSetlists } from '../search.ts';
 import { showToast } from '../toast.ts';
 import { deleteListAfterAsking } from './delete-list.ts';
 import { createShareSheet } from './share-sheet.ts';
-import { createSheet, sheetAction, sheetHead, sheetList } from './sheet.ts';
+import { createSheet, sheetAction, sheetHead, sheetList, sheetShare } from './sheet.ts';
 import { createTemplateSheet } from './template-choices.ts';
 import type { Navigate, View } from './types.ts';
 
@@ -72,6 +72,10 @@ export function listsView(app: App, navigate: Navigate): View {
         const count = list.items.length;
         sheet.body.replaceChildren(
             sheetList(
+                sheetHead(list.title, count === 1 ? '1 canto' : `${count} cantos`, sheetShare('listado', () => {
+                    error.textContent = '';
+                    sheet.close(() => shareSheet.open(list));
+                })),
                 // Not starred: an empty grey star. Starred: the filled yellow one it has on the list
                 sheetAction(list.starred ? 'star-filled' : 'star', list.starred ? 'Quitar de destacados' : 'Destacar', () => {
                     error.textContent = '';
@@ -90,10 +94,6 @@ export function listsView(app: App, navigate: Navigate): View {
                             .catch((failure: unknown) => fail(failure, 'No se pudo duplicar el listado.'));
                     });
                 }, { hint: 'Una copia sin fecha, con los mismos cantos y tonos' }),
-                sheetAction('share', 'Compartir listado', () => {
-                    error.textContent = '';
-                    sheet.close(() => shareSheet.open(list));
-                }, { hint: 'Un enlace para que cualquiera lo lea' }),
                 // Last and set apart, so it is not touched by mistake next to the others
                 sheetAction('trash', 'Eliminar listado', () => {
                     error.textContent = '';

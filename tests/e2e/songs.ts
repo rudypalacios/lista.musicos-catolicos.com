@@ -9,6 +9,25 @@ import assert from 'node:assert/strict';
 import { chromium, editFromSongPage, EMAIL, openSongMenu, PASSWORD, reporter, openSection, signIn, signOutFromSettings, startServer, synced } from './lib.ts';
 import type { BrowserContext, Page } from 'playwright';
 
+/**
+ * The menu that is open carries "Compartir" as a button at the right of its title (not as one of its options), touchable
+ * (44px) and level with the title, and there is more room under the title than between two options (1rem).
+ */
+async function shareButtonAndTitleGap(page: Page, name: string): Promise<void> {
+    const open = page.locator('.sheet-layer.is-open');
+    // The sheet slides up: measure it where it rests
+    await page.waitForTimeout(500);
+    const button = open.getByRole('button', { name, exact: true });
+    const box = await button.boundingBox();
+    const title = await open.locator('.sheet__title').first().boundingBox();
+    assert.ok(box !== null && title !== null, `${name}: the button and the title are on screen`);
+    assert.ok(box.width >= 44 && box.height >= 44, `${name}: at least 44px to touch (got ${box.width}x${box.height})`);
+    assert.ok(box.x > title.x + title.width - 1, `${name}: at the right of the title`);
+    assert.ok(Math.abs(box.y + box.height / 2 - (title.y + title.height / 2)) < 30, `${name}: level with the title`);
+    const gap = await open.locator('.sheet-list__head').first().evaluate((head) => getComputedStyle(head).paddingBottom);
+    assert.equal(gap, '16px', 'the title has 1rem under it, before the line');
+}
+
 const server = await startServer(18081);
 const { pass, count } = reporter();
 const BASE = server.base;
@@ -292,9 +311,10 @@ try {
     await openSongMenu(page);
     assert.deepEqual(
         await page.locator('.sheet-layer.is-open .sheet-action').allTextContents(),
-        ['Agregar a un listado', 'Compartir cantoUn enlace para que cualquiera lo lea', 'Imprimir con acordes', 'Imprimir solo la letra', 'Editar letra y acordes', 'Eliminar canto'],
-        'the sheet of the song page: add to a list, share, print, edit and, last, delete',
+        ['Agregar a un listado', 'Imprimir con acordes', 'Imprimir solo la letra', 'Editar letra y acordes', 'Eliminar canto'],
+        'the sheet of the song page: add to a list, print, edit and, last, delete (sharing is the button at the right of its title)',
     );
+    await shareButtonAndTitleGap(page, 'Compartir canto');
     assert.equal(await page.evaluate(() => {
         const options = Array.from(document.querySelectorAll('.sheet-layer.is-open .sheet-action'));
 
@@ -427,8 +447,9 @@ try {
     assert.deepEqual(
         await second.locator('.sheet-layer.is-open .sheet-action').allTextContents(),
         ['Editar letra y acordes', 'Eliminar canto'],
-        'the sheet of a song: edit it, and last, delete it',
+        'the sheet of a song: edit it, and last, delete it (sharing is the button at the right of its title)',
     );
+    await shareButtonAndTitleGap(second, 'Compartir canto');
     await second.getByRole('button', { name: 'Eliminar canto' }).click();
     const asked = second.getByRole('alertdialog');
     await asked.getByText('No se puede deshacer').waitFor();

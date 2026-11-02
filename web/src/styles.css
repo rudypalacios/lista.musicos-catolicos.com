@@ -2794,8 +2794,39 @@ main#view.is-pulling {
     border-bottom: 1px solid var(--border);
 }
 
+/* The title is set apart from the options: more room under it than between two options (the line comes after it) */
+.sheet-list > .sheet-list__head {
+    padding-bottom: 1rem;
+}
+
+.sheet-head {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+.sheet-head__text {
+    flex: 1;
+    min-width: 0;
+}
+
 .sheet-head .sheet__sub {
     margin: 0.1rem 0 0;
+}
+
+/* "Compartir", at the right of the title: 44px to touch, its icon level with the title, and a little out into the padding like the "⋯" of a row */
+.sheet-head__tool {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin: -0.55rem -0.6rem -0.55rem 0;
+    padding: 0;
+    color: var(--text);
+    background: none;
+    border: 0;
+    cursor: pointer;
 }
 
 /* A list that comes after other content: room before it */

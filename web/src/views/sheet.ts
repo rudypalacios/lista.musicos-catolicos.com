@@ -205,9 +205,22 @@ export function sheetAction(name: IconName, label: string, run: () => void, opti
     return button;
 }
 
-/** The title of a sheet or menu, with a line under it if it needs one: the first row of its `sheetList` */
-export function sheetHead(title: string, sub?: string): HTMLElement {
-    return h('div', { class: 'sheet-head' }, h('h4', { class: 'sheet__title' }, title), ...(sub === undefined || sub === '' ? [] : [h('p', { class: 'sheet__sub' }, sub)]));
+/**
+ * The title of a sheet or menu, with a line under it if it needs one: the first row of its `sheetList`. `tool` is a button
+ * at its right (`sheetShare`), level with the title.
+ */
+export function sheetHead(title: string, sub?: string, tool?: HTMLElement): HTMLElement {
+    return h('div', { class: 'sheet-head' },
+        h('div', { class: 'sheet-head__text' }, h('h4', { class: 'sheet__title' }, title), ...(sub === undefined || sub === '' ? [] : [h('p', { class: 'sheet__sub' }, sub)])),
+        ...(tool === undefined ? [] : [tool]));
+}
+
+/** "Compartir": the button at the right of a menu's title. `what` is what is shared ("canto", "listado"), for who cannot see the icon */
+export function sheetShare(what: 'canto' | 'listado', run: () => void): HTMLElement {
+    const button = h('button', { type: 'button', class: 'sheet-head__tool', 'aria-label': `Compartir ${what}` }, icon('share', 22));
+    button.addEventListener('click', run);
+
+    return button;
 }
 
 /**

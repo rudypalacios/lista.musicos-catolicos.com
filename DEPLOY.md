@@ -552,6 +552,13 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    renglón de esa lista** (en rojo, sin hueco extra): hay **una raya entre cada dos renglones, también debajo del título, y ninguna después del último**. **No cambia lo que hace cada opción.** **No hay migración.** **Prueba:** abre el `⋯` de
    un canto en un listado, el de un listado, el de Cantos y el de una plantilla, y mira que las rayas y el espacio sean iguales en todos.
 
+56. **«Compartir» pasa a un botón junto al título de cada menú, y el título tiene más aire.** En los **cuatro menús** (la página de un canto, el `⋯` de una fila de Cantos, el `⋯` de una fila de Listados y el `⋯` de dentro de un
+   listado) **«Compartir canto» / «Compartir listado» ya no es una opción de la lista**: es un **botón de compartir arriba a la derecha, a la altura del título**. Toca ese botón y se abre la misma hoja de siempre (la del enlace).
+   El menú de una fila de **Cantos ahora también puede compartir** (antes no tenía la opción). Además, **entre el título del menú (con su segunda línea) y la raya que lo separa de las opciones hay ahora 1 rem** (antes 0,2 rem), en
+   **todos** los menús; el resto del espacio no cambia. **Arreglo:** el menú de una fila de Listados había perdido su título (nombre y «N cantos»); vuelve. **Prueba (teléfono y compu):** abre el `⋯` de un canto, de una fila de Cantos, de una fila de
+   Listados y de un listado por dentro: en los cuatro, el botón de compartir está arriba a la derecha, la lista de opciones ya no tiene «Compartir…» y hay más espacio bajo el título; toca el botón y comprueba que abre la hoja del enlace.
+   Sin conexión, el botón abre la hoja y esta dice que compartir necesita conexión.
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.

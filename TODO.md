@@ -189,6 +189,9 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       without its words shows nothing, so I left it out: say if you want "solo título" anyway). The visitor opens straight on the song, in its own key (not the owner's "mi tono"), with the reader's tools and no list around it.
       The link of a list or of a song now carries its name in the page's `<title>` and `og:` tags, so WhatsApp and the like show "Misa del domingo" and not "Listas". No image in the preview yet.
       **Next, by the owner's plan:** "Compartidos conmigo" (links opened, kept for the account) and then sign-up with Google; neither is started. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 55.
+- [x] **"Compartir" as a button at the right of each menu's title** (`sheetShare` in `web/src/views/sheet.ts`; the owner asked on 2026-11-02, after a mockup, and unlocked the two sheets in `DESIGN-LOCK.md`): the song page, the "⋯" of a row of Cantos
+      (which had no share before), the "⋯" of a row of Listados and the "⋯" inside a list show it; "Compartir canto/listado" is no longer a row. The title of every menu has 1rem under it before its line. The Listados row menu had lost its
+      title in the previous change: it is back. **Not done:** the song rows inside a list keep their sheet as it was (no share). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 56.
 - [x] **The visitor's page, thin and offline** (`web/src/views/shared.ts`, `shared-store.ts`; the owner approved mockup v6): the page is the same PWA, so it registers the app's service worker
       and **keeps a copy of the list it opens** in a database of its own (`lista-shared`, at most 20 copies, nothing mixed with the person's data): with no connection it opens the copy and
       says "Sin conexión. Estás leyendo la copia guardada el …"; a link found stopped deletes its copy; a list never opened says it needs a connection. The layout gives the lyrics the screen:
