@@ -15,7 +15,7 @@ import { showToast, showUndoToast } from '../toast.ts';
 import { todayKeys } from '../today-keys.ts';
 import { deleteListAfterAsking } from './delete-list.ts';
 import { createShareSheet } from './share-sheet.ts';
-import { createSheet, sheetAction, sheetHead, sheetList } from './sheet.ts';
+import { createSheet, sheetAction, sheetHead, sheetList, sheetShare } from './sheet.ts';
 import type { Navigate, View } from './types.ts';
 
 /** A section with this many songs or more also has its "agregar" at the end: the one in the head would be far away */
@@ -113,10 +113,9 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
         const rows = setlist.items.length;
         listSheet.body.replaceChildren(
             sheetList(
-                sheetHead(setlist.title, rows === 1 ? '1 canto' : `${rows} cantos`),
+                sheetHead(setlist.title, rows === 1 ? '1 canto' : `${rows} cantos`, sheetShare('listado', () => listSheet.close(() => shareSheet.open(setlist)))),
                 // First: what the list is made of; then what is done with it
                 action('sections', 'Secciones del listado', () => listSheet.close(() => navigate(paths.sections(setlist.id))), { hint: 'Qué secciones lleva este listado' }),
-                action('share', 'Compartir listado', () => listSheet.close(() => shareSheet.open(setlist)), { hint: 'Un enlace para que cualquiera lo lea' }),
                 ...(rows > 0 ? [action('printer', 'Imprimir con acordes', () => print('chords')), action('printer', 'Imprimir solo la letra', () => print('lyrics'))] : []),
                 // Last and set apart, so it is not touched by mistake next to printing
                 sheetAction('trash', 'Eliminar listado', () => {

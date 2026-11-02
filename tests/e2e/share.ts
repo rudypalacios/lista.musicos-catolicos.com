@@ -51,7 +51,7 @@ try {
     await owner.getByText('Cualquiera con el enlace podrá ver este listado').waitFor();
     assert.equal(await owner.getByRole('switch').first().getAttribute('aria-checked'), 'true', 'the lyrics go with it unless the person says no');
     await owner.getByText('Las letras y los acordes pertenecen a sus autores').waitFor();
-    pass('sharing: the row\'s "⋯" has "Compartir listado"; its sheet asks about the lyrics and says the words belong to their authors');
+    pass('sharing: the "Compartir" button at the right of the row menu\'s title opens a sheet that asks about the lyrics and says the words belong to their authors');
 
     await owner.getByRole('button', { name: 'Crear enlace' }).click();
     await owner.getByText('Compartido · con letra y acordes').waitFor();
@@ -225,7 +225,7 @@ try {
     const songPreview = await (await fetch(songUrl)).text();
     assert.match(songPreview, /<title>Caminamos con alegría · Músicos Católicos<\/title>/);
     assert.match(songPreview, /<meta property="og:description" content="Canto compartido">/);
-    pass('song: "Compartir canto" is in the song\'s "⋯", has no lyrics switch, says the words belong to their authors and makes a link whose preview names the song');
+    pass('song: "Compartir canto" is the button at the right of the song menu\'s title, has no lyrics switch, says the words belong to their authors and makes a link whose preview names the song');
 
     await visitor.goto(songUrl);
     await visitor.locator('.song-sheet').waitFor();

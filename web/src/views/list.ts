@@ -8,7 +8,8 @@ import { readNotation } from '../prefs.ts';
 import { paths } from '../router.ts';
 import { filterSongs, foundInLyricsOnly, songSnippet } from '../search.ts';
 import { deleteSongAfterAsking } from './delete-song.ts';
-import { createSheet, sheetAction, sheetHead, sheetList } from './sheet.ts';
+import { createShareSheet } from './share-sheet.ts';
+import { createSheet, sheetAction, sheetHead, sheetList, sheetShare } from './sheet.ts';
 import type { Navigate, View } from './types.ts';
 
 /**
@@ -48,6 +49,9 @@ export function listView(app: App, navigate: Navigate): View {
     const sheet = createSheet('Opciones del canto', () => fill(), { anchored: true });
     sheet.element.classList.add('sheet-layer--window');
     element.append(sheet.element);
+    // "Compartir canto", from the button at the right of the menu's title: its own sheet, which comes after this one
+    const shareSheet = createShareSheet();
+    element.append(shareSheet.element);
     const fail = (failure: unknown, fallback: string): void => {
         error.textContent = failure instanceof Error ? failure.message : fallback;
     };
@@ -61,7 +65,10 @@ export function listView(app: App, navigate: Navigate): View {
         }
         sheet.body.replaceChildren(
             sheetList(
-                sheetHead(song.title, song.author),
+                sheetHead(song.title, song.author, sheetShare('canto', () => {
+                    error.textContent = '';
+                    sheet.close(() => shareSheet.open({ id: song.id, title: song.title, kind: 'song' }));
+                })),
                 sheetAction('pencil', 'Editar letra y acordes', () => {
                     error.textContent = '';
                     sheet.close(() => navigate(paths.edit(song.id)));
@@ -141,6 +148,7 @@ export function listView(app: App, navigate: Navigate): View {
         dispose: () => {
             stop();
             sheet.release();
+            shareSheet.release();
         },
     };
 }
