@@ -88,6 +88,7 @@ final class ShareRepository
      * What anyone with the code sees; null for a code that was never given, was stopped, or whose list is deleted.
      *
      * @return array{
+     *     kind: 'list',
      *     title: string,
      *     withLyrics: bool,
      *     updatedAt: int,
@@ -146,6 +147,7 @@ final class ShareRepository
         ));
 
         return [
+            'kind' => 'list',
             'title' => (string) $row['title'],
             'withLyrics' => $withLyrics,
             'updatedAt' => $updatedAt,
@@ -157,6 +159,19 @@ final class ShareRepository
                 return $song;
             }, $songs['rows'])),
         ];
+    }
+
+    /** The title of the list a live link shows, for the preview of the link; null when the link shows nothing */
+    public function titleOf(string $code): ?string
+    {
+        $statement = $this->pdo->prepare(
+            'SELECT l.title FROM shares s JOIN setlists l ON l.id = s.setlist_id AND l.user_id = s.user_id '
+            . 'WHERE s.code = ? AND s.revoked_at IS NULL AND l.deleted_at IS NULL'
+        );
+        $statement->execute([$code]);
+        $title = $statement->fetchColumn();
+
+        return $title === false ? null : (string) $title;
     }
 
     private function ownsList(string $userId, string $setlistId): bool

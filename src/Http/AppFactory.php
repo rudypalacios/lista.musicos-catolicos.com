@@ -17,10 +17,12 @@ use App\Http\Actions\ShareEnableAction;
 use App\Http\Actions\ShareRevokeAction;
 use App\Http\Actions\ShareStatusAction;
 use App\Http\Actions\SharedViewAction;
+use App\Http\Actions\SongShareAction;
 use App\Http\Middleware\JsonOnly;
 use App\Http\Middleware\RequireUser;
 use App\Share\MissThrottle;
 use App\Share\ShareRepository;
+use App\Share\SongShareRepository;
 use App\Sync\ChangeFeed;
 use App\Sync\SetlistRepository;
 use App\Sync\TemplateRepository;
@@ -53,6 +55,7 @@ final class AppFactory
         $templates = new TemplateRepository($pdo);
         $feed = new ChangeFeed($songs, $setlists, $templates);
         $shares = new ShareRepository($pdo);
+        $songShares = new SongShareRepository($pdo);
         $misses = new MissThrottle($pdo);
 
         $app = SlimFactory::create();
@@ -67,6 +70,7 @@ final class AppFactory
             $templates,
             $feed,
             $shares,
+            $songShares,
             $misses
         ): void {
             $api->get('/health', new HealthAction($migrator));
@@ -80,7 +84,13 @@ final class AppFactory
             $api->get('/lists/{id}/share', new ShareStatusAction($shares))->add(new RequireUser($authenticator));
             $api->put('/lists/{id}/share', new ShareEnableAction($shares))->add(new RequireUser($authenticator));
             $api->delete('/lists/{id}/share', new ShareRevokeAction($shares))->add(new RequireUser($authenticator));
-            $api->get('/shared/{code}', new SharedViewAction($shares, $misses));
+            $api->get('/shared/{code}', new SharedViewAction($shares, $songShares, $misses));
+
+            // The same for one song
+            $song = new SongShareAction($songShares);
+            $api->get('/songs/{id}/share', [$song, 'status'])->add(new RequireUser($authenticator));
+            $api->put('/songs/{id}/share', [$song, 'enable'])->add(new RequireUser($authenticator));
+            $api->delete('/songs/{id}/share', [$song, 'revoke'])->add(new RequireUser($authenticator));
         })->add(new JsonOnly());
 
         // Errors answer in JSON; the details only outside production

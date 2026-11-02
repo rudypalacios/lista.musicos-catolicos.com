@@ -8,13 +8,15 @@ use App\Auth\TooManyAttemptsException;
 use App\Http\Json;
 use App\Share\MissThrottle;
 use App\Share\ShareRepository;
+use App\Share\SongShareRepository;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * GET /api/shared/{code} → 200 the list a link shows, for anyone: no session, no cookie. This is the only public
- * endpoint that reads the person's data, so it says as little as it can (see ShareRepository::view), answers a link
- * that was stopped, never given or malformed with the same 404 (nobody learns which), and slows down an address that
+ * GET /api/shared/{code} → 200 the list (or the one song) a link shows, for anyone: no session, no cookie. This is
+ * the only public endpoint that reads the person's data, so it says as little as it can (see
+ * ShareRepository::view), answers a link that was stopped, never given or malformed with the same 404 (nobody
+ * learns which), and slows down an address that
  * keeps asking for links that do not exist.
  *
  * The answer may be kept by the browser and by anything in between for a minute, with an ETag after that, so a
@@ -24,8 +26,11 @@ final class SharedViewAction
 {
     private const CACHE_SECONDS = 60;
 
-    public function __construct(private readonly ShareRepository $shares, private readonly MissThrottle $throttle)
-    {
+    public function __construct(
+        private readonly ShareRepository $shares,
+        private readonly SongShareRepository $songShares,
+        private readonly MissThrottle $throttle
+    ) {
     }
 
     /** @param array<string, string> $args */
@@ -42,7 +47,9 @@ final class SharedViewAction
         }
 
         $code = $args['code'] ?? '';
-        $view = preg_match('~^[0-9a-f]{32}$~', $code) === 1 ? $this->shares->view($code) : null;
+        $view = preg_match('~^[0-9a-f]{32}$~', $code) === 1
+            ? ($this->shares->view($code) ?? $this->songShares->view($code))
+            : null;
         if ($view === null) {
             $this->throttle->record($ip);
 

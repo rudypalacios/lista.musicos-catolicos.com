@@ -540,6 +540,15 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    cualquiera lo lea») siguen igual. **Eliminar** y lo que va «aparte» queda como su propio grupo al final. **No cambia nada de lo que hace cada opción ni el orden.** **No hay migración.** **Prueba:** abre el `⋯` de un listado,
    de un canto dentro de un listado, de Cantar y de una plantilla, en el teléfono y en la computadora, y mira que el espacio entre opciones sea el mismo en todos.
 
+55. **Compartir un canto por un enlace, y la vista previa con el nombre.** (1) En la **página de un canto**, el `⋯` tiene ahora **Compartir canto** (después de *Agregar a un listado*). Su hoja es la del listado
+   pero **sin el interruptor de la letra**: un canto sin su letra no muestra nada, así que la letra y los acordes siempre van. Dice que son de sus autores, **Crear enlace** y, ya compartido, el enlace con **Copiar** /
+   **Compartir…** y **Dejar de compartir** (el enlace muere para siempre; si compartes otra vez, es otro). **Necesita conexión** y que el canto ya esté en el servidor. Quien abre el enlace ve **solo ese canto**, en el
+   tono del canto (no en tu «mi tono»), con las mismas herramientas que en un listado (tono solo para él, tamaño, Do/C, imprimir), sin lista alrededor ni flechas. (2) **Vista previa:** al pegar un enlace de un listado o de un canto en
+   WhatsApp, iMessage o Telegram, la vista previa y el título de la pestaña dicen **el nombre del listado o del canto** («Misa del domingo · Músicos Católicos») y no «Listas». Un enlace apagado o inventado muestra la
+   vista previa normal. **Las migraciones `0014` (y `0015` en MySQL) crean la tabla solas: no hay nada que ejecutar.** **Prueba:** comparte un canto, ábrelo en incógnito (debe abrir directo en el canto, sin flechas ni «Volver
+   al listado»); pégalo en WhatsApp y mira que la vista previa diga el nombre del canto; haz lo mismo con un listado; toca **Dejar de compartir** y recarga el enlace («Este enlace ya no existe»). **Aviso:** WhatsApp guarda
+   la vista previa que ya conoce de un enlace; si cambias el nombre del listado después de compartirlo, el chat puede seguir mostrando el anterior un tiempo. La vista previa no lleva imagen, solo el nombre.
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.

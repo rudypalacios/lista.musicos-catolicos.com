@@ -7,7 +7,7 @@
  *     npm run build && node tests/e2e/share.ts
  */
 import assert from 'node:assert/strict';
-import { chromium, enforcePolicy, openSection, reporter, signIn, startServer } from './lib.ts';
+import { chromium, enforcePolicy, openSection, openSongMenu, reporter, signIn, startServer } from './lib.ts';
 
 const TITLE = 'Misa del 1 de noviembre';
 const SONG_ONE = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
@@ -60,6 +60,14 @@ try {
     await owner.getByRole('button', { name: 'Copiar' }).click();
     await owner.locator('.toast').waitFor();
     pass('sharing: the link is made, shown, and copying says it did (or how to copy by hand)');
+
+    // A chat app reads only the HTML the server sends: the link already carries the name of the list
+    const preview = await (await fetch(url)).text();
+    assert.match(preview, new RegExp(`<title>${TITLE} · Músicos Católicos</title>`));
+    assert.match(preview, new RegExp(`<meta property="og:title" content="${TITLE}">`));
+    assert.match(preview, /<meta property="og:description" content="Listado compartido">/);
+    assert.doesNotMatch(preview, /nota privada/);
+    pass('preview: the link\'s page carries the name of the list in its title and its preview tags, and nothing else of it');
 
     // ----- a visitor with no session reads it -----
     const visitorContext = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
@@ -196,7 +204,49 @@ try {
     await visitor.goto(`${server.base}/c/${'0'.repeat(32)}`);
     await visitor.getByText('Este enlace ya no existe').waitFor();
     assert.equal(await visitor.locator('.pub-gone').textContent(), stopped, 'a stopped and an invented link look the same');
-    pass('stopping: the link stops working at once, and says the same as one that never existed');
+    const afterStopping = await (await fetch(url)).text();
+    assert.match(afterStopping, /<title>Listas · Músicos Católicos<\/title>/, 'a stopped link has no preview of its own');
+    assert.doesNotMatch(afterStopping, new RegExp(TITLE));
+    pass('stopping: the link stops working at once, says the same as one that never existed and its preview is the plain one');
+
+    // ----- one song by a link -----
+    await owner.goto(`${server.base}/`);
+    await openSection(owner, 'Cantos');
+    await owner.getByText('Caminamos con alegría').first().click();
+    await openSongMenu(owner);
+    await owner.getByRole('button', { name: 'Compartir canto' }).click();
+    await owner.getByText('Cualquiera con el enlace podrá ver este canto').waitFor();
+    assert.equal(await owner.getByRole('switch').count(), 0, 'a song has no lyrics switch: its words always go');
+    await owner.getByText('Las letras y los acordes pertenecen a sus autores').waitFor();
+    await owner.getByRole('button', { name: 'Crear enlace' }).click();
+    await owner.getByText('Compartido · con letra y acordes').waitFor();
+    const songUrl = (await owner.locator('.share__url').textContent()) ?? '';
+    assert.match(songUrl, new RegExp(`^${server.base}/c/[0-9a-f]{32}$`));
+    const songPreview = await (await fetch(songUrl)).text();
+    assert.match(songPreview, /<title>Caminamos con alegría · Músicos Católicos<\/title>/);
+    assert.match(songPreview, /<meta property="og:description" content="Canto compartido">/);
+    pass('song: "Compartir canto" is in the song\'s "⋯", has no lyrics switch, says the words belong to their authors and makes a link whose preview names the song');
+
+    await visitor.goto(songUrl);
+    await visitor.locator('.song-sheet').waitFor();
+    assert.equal(await visitor.locator('.pub-bar__text b').textContent(), 'Caminamos con alegría');
+    assert.equal(await visitor.locator('.pub-bar__text small').textContent(), 'Ana Pérez');
+    assert.equal(await visitor.getByRole('button', { name: 'Canto siguiente' }).count(), 0, 'one song has no neighbours');
+    assert.equal(await visitor.locator('a[aria-label^="Volver al listado"]').count(), 0, 'and no list to go back to');
+    assert.equal(await visitor.locator('.song-sheet .ch').first().textContent(), 'Do', 'in the song\'s own key');
+    assert.equal(await visitor.getByText('Pan de vida').count(), 0, 'no other song comes with it');
+    await visitor.goto(`${songUrl}/1`);
+    await visitor.locator('.song-sheet').waitFor();
+    assert.deepEqual(visitorProblems, []);
+    pass('song: the visitor opens straight on the song, in its own key, with no list around it');
+
+    await owner.getByRole('button', { name: 'Dejar de compartir' }).click();
+    await owner.getByRole('alertdialog').waitFor();
+    await owner.locator('.confirm__buttons .button--danger-solid').click();
+    await owner.getByText('Ya no se comparte').waitFor();
+    await visitor.goto(songUrl);
+    await visitor.getByText('Este enlace ya no existe').waitFor();
+    pass('song: stopping its link kills it for good');
 
     // The copy the visitor kept goes when the link is found stopped; with no connection there is then nothing to read
     await installed.setOffline(false);

@@ -292,8 +292,8 @@ try {
     await openSongMenu(page);
     assert.deepEqual(
         await page.locator('.sheet-layer.is-open .sheet-action').allTextContents(),
-        ['Agregar a un listado', 'Imprimir con acordes', 'Imprimir solo la letra', 'Editar letra y acordes', 'Eliminar canto'],
-        'the sheet of the song page: add to a list, print, edit and, last, delete',
+        ['Agregar a un listado', 'Compartir cantoUn enlace para que cualquiera lo lea', 'Imprimir con acordes', 'Imprimir solo la letra', 'Editar letra y acordes', 'Eliminar canto'],
+        'the sheet of the song page: add to a list, share, print, edit and, last, delete',
     );
     assert.equal(await page.evaluate(() => Array.from(document.querySelectorAll('.sheet-layer.is-open .sheet-action')).at(-1)?.classList.contains('sheet-action--apart')), true, 'delete is set apart like in the other sheets');
     await page.keyboard.press('Escape');

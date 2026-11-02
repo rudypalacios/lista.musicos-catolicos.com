@@ -1,4 +1,4 @@
-import { ApiError, share } from '../api.ts';
+import { ApiError, share, songShare } from '../api.ts';
 import { h } from '../dom.ts';
 import { icon } from '../icons.ts';
 import { shareFailure, shareSummary, shareUrl, type ShareState } from '../share.ts';
@@ -6,11 +6,23 @@ import { showToast } from '../toast.ts';
 import { confirmDialog } from './confirm-dialog.ts';
 import { createSheet, sheetAction, sheetList } from './sheet.ts';
 
-/** The list a share is for: only what the sheet names */
+/** The list (or the song) a share is for: only what the sheet names */
 export interface SharedTarget {
     id: string;
     title: string;
+    /** A list unless it says otherwise */
+    kind?: 'list' | 'song';
 }
+
+/** What the server is asked, for a list and for a song: a song has no lyrics switch (its words always go) */
+interface Calls {
+    status: (id: string) => Promise<ShareState>;
+    enable: (id: string, withLyrics: boolean) => Promise<ShareState>;
+    stop: (id: string) => Promise<ShareState>;
+}
+
+const LIST_CALLS: Calls = share;
+const SONG_CALLS: Calls = { status: songShare.status, enable: (id) => songShare.enable(id), stop: songShare.stop };
 
 export interface ShareSheet {
     /** Put it inside the screen it covers (it is a sheet over the window) */
@@ -38,20 +50,23 @@ async function copy(text: string, field: HTMLElement): Promise<boolean> {
 }
 
 /**
- * "Compartir listado": anyone with the link can read the list, with no account, and nothing else. Before it is shared
+ * "Compartir listado" (or "Compartir canto"): anyone with the link can read it, with no account, and nothing else. Before it is shared
  * the person chooses whether the lyrics and chords go with it and creates the link; once shared the sheet has the link
  * (to copy, or to hand over through the phone's own sharing), the same choice (which applies at once) and, last, the
- * way to stop sharing, which kills the link for good. Sharing is a thing the server does, so it needs a connection.
+ * way to stop sharing, which kills the link for good. A song has no such choice: its lyrics and chords always go with it,
+ * since a song without them shows nothing. Sharing is a thing the server does, so it needs a connection.
  */
 export function createShareSheet(): ShareSheet {
-    const sheet = createSheet('Compartir listado');
+    const sheet = createSheet('Compartir');
     sheet.element.classList.add('sheet-layer--window');
     let target: SharedTarget | null = null;
     /** What the person chose before creating the link; once shared the server's answer is the truth */
     let withLyrics = true;
+    const isSong = (): boolean => target?.kind === 'song';
+    const calls = (): Calls => (isSong() ? SONG_CALLS : LIST_CALLS);
 
     const title = (sub: string): HTMLElement[] => [
-        h('h4', { class: 'sheet__title' }, 'Compartir listado'),
+        h('h4', { class: 'sheet__title' }, isSong() ? 'Compartir canto' : 'Compartir listado'),
         h('p', { class: 'sheet__sub' }, sub),
     ];
 
@@ -90,7 +105,8 @@ export function createShareSheet(): ShareSheet {
             return;
         }
         const code = state.code;
-        const on = state.withLyrics === true;
+        // A song's words always go with it
+        const on = isSong() || state.withLyrics === true;
         const url = shareUrl(location.origin, code);
         const field = h('span', { class: 'share__url' }, url);
         const copyButton = h('button', { type: 'button', class: 'button share__copy' }, icon('copy', 18), 'Copiar');
@@ -110,15 +126,15 @@ export function createShareSheet(): ShareSheet {
             h('p', { class: 'share__state' }, h('i', { 'aria-hidden': 'true' }), shareSummary(on)),
             h('div', { class: 'share__link' }, field, copyButton),
             ...(handOver === null ? [] : [handOver]),
-            lyricsSwitch(on, (next) => {
+            ...(isSong() ? [] : [lyricsSwitch(on, (next) => {
                 say('Guardando…');
-                share.enable(list.id, next).then(draw).catch((failure: unknown) => failed(failure, () => void load()));
-            }),
+                calls().enable(list.id, next).then(draw).catch((failure: unknown) => failed(failure, () => void load()));
+            })]),
             ...sheetList(
                 sheetAction('link', 'Dejar de compartir', () => {
                     void confirmDialog({
                         title: '¿Dejar de compartir?',
-                        text: 'El enlace dejará de funcionar para todos los que lo tengan. Si compartes el listado otra vez, el enlace será otro.',
+                        text: `El enlace dejará de funcionar para todos los que lo tengan. Si compartes ${isSong() ? 'el canto' : 'el listado'} otra vez, el enlace será otro.`,
                         confirm: 'Dejar de compartir',
                         danger: true,
                     }).then((sure) => {
@@ -126,7 +142,7 @@ export function createShareSheet(): ShareSheet {
                             return;
                         }
                         say('Dejando de compartir…');
-                        share.stop(list.id)
+                        calls().stop(list.id)
                             .then(() => {
                                 showToast('Ya no se comparte', 3000, true);
                                 sheet.close();
@@ -142,16 +158,18 @@ export function createShareSheet(): ShareSheet {
         const create = h('button', { type: 'button', class: 'button button--primary share__create' }, icon('link', 18), 'Crear enlace');
         create.addEventListener('click', () => {
             say('Creando el enlace…');
-            share.enable(list.id, withLyrics).then(draw).catch((failure: unknown) => failed(failure, () => void load()));
+            calls().enable(list.id, withLyrics).then(draw).catch((failure: unknown) => failed(failure, () => void load()));
         });
         const cancel = h('button', { type: 'button', class: 'button' }, 'Cancelar');
         cancel.addEventListener('click', () => sheet.close());
         sheet.body.replaceChildren(
-            ...title('Cualquiera con el enlace podrá ver este listado, sin cuenta y solo para leer.'),
-            lyricsSwitch(withLyrics, (next) => {
+            ...title(isSong()
+                ? 'Cualquiera con el enlace podrá ver este canto, con su letra y sus acordes, sin cuenta y solo para leer.'
+                : 'Cualquiera con el enlace podrá ver este listado, sin cuenta y solo para leer.'),
+            ...(isSong() ? [] : [lyricsSwitch(withLyrics, (next) => {
                 withLyrics = next;
                 drawOff(list);
-            }),
+            })]),
             rights(),
             h('div', { class: 'actions' }, create, cancel),
         );
@@ -164,7 +182,7 @@ export function createShareSheet(): ShareSheet {
         }
         say('Comprobando…');
         try {
-            draw(await share.status(list.id));
+            draw(await calls().status(list.id));
         } catch (failure) {
             failed(failure, () => void load());
         }

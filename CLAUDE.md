@@ -143,7 +143,10 @@ tags or anything else, and a stopped, never given or malformed link all answer t
 is drawn like the public site's pages and loads nothing from another domain, sets no cookie and has no analytics or ads: the privacy text
 proposed for the public site says so, so **do not add any of those without telling the owner first**. The words belong to their authors: the
 sheet asks whether the lyrics go with the link, the page says "uso personal" and links to the public site's copyright page. Stopping a share
-kills its link for good (a new share is a new code). `tests/e2e/share.ts` covers it end to end under the production policy.
+kills its link for good (a new share is a new code). **One song** can be shared the same way (`src/Share/SongShareRepository.php`, table `song_shares`; the owner's decision, 2026-11-02): the answer has the
+shape of a list of one section and one song (`kind: 'song'`), in the song's own key, and its lyrics always go (a song without them shows nothing), so its sheet has no lyrics switch. **The preview:** a chat app reads only the HTML
+the server sends, so `public/index.php` writes the name of the list or song into the `<title>` and `og:` tags of `/c/:code` (`SharePreview`, `Http/ShellPage`). It says only what the page itself says to anyone with the
+link, a link that shows nothing gets the plain shell, and its misses count against the same throttle. `tests/e2e/share.ts` covers it end to end under the production policy.
 
 The visitor's page is the same PWA: it registers the app's service worker and keeps a copy of the list it opened in a database of its own
 (`web/src/shared-store.ts`, `lista-shared`, never mixed with the owner's data), so it opens with no connection and says it is a copy and from when; a
