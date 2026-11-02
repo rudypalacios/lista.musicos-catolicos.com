@@ -52,7 +52,7 @@ export function templatesView(app: App, navigate: Navigate): View {
     // --- "⋯" of a row ---
     let templates: Template[] = [];
     let target: string | null = null;
-    const sheet = createSheet('Opciones de la plantilla', () => fill());
+    const sheet = createSheet('Opciones de la plantilla', () => fill(), { anchored: true });
     sheet.element.classList.add('sheet-layer--window');
     element.append(sheet.element);
     const fill = (): void => {
@@ -106,7 +106,7 @@ export function templatesView(app: App, navigate: Navigate): View {
         }, icon('more', 22));
         more.addEventListener('click', () => {
             target = template.id;
-            sheet.open();
+            sheet.open(more);
         });
 
         return h('li', { class: 'lrow' },

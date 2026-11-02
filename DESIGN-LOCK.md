@@ -20,6 +20,8 @@ why, and wait. When the owner unlocks something, change it and update this file 
 
 Everything not in the table is not locked, but it keeps the same look and the standards below.
 
+**On a wide screen (from 900px) the "⋯" sheets** (a list's, a song's inside a list, the rows of the two lists and of the templates, the song page's) **open as a menu beside their button** instead of a sheet from the bottom (the owner asked on 2026-11-02): below the button, hanging from its right edge, or above it when there is no room, nothing dimmed. **Under 900px they are the sheet from the bottom, unchanged.** `createSheet(…, { anchored: true })` in `web/src/views/sheet.ts`.
+
 ## Standards that hold everywhere
 
 - **It looks the same on every device.** No icon, mark or symbol drawn by the device's font (a

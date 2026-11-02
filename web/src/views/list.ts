@@ -45,7 +45,7 @@ export function listView(app: App, navigate: Navigate): View {
     /** The song whose "⋯" is open */
     let target: string | null = null;
     // The screen scrolls inside the app, so the sheet covers the window, not the page
-    const sheet = createSheet('Opciones del canto', () => fill());
+    const sheet = createSheet('Opciones del canto', () => fill(), { anchored: true });
     sheet.element.classList.add('sheet-layer--window');
     element.append(sheet.element);
     const fail = (failure: unknown, fallback: string): void => {
@@ -82,7 +82,7 @@ export function listView(app: App, navigate: Navigate): View {
         }, icon('more', 22));
         button.addEventListener('click', () => {
             target = song.id;
-            sheet.open();
+            sheet.open(button);
         });
 
         return button;

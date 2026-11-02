@@ -29,12 +29,27 @@ export function dismissSheetOnBack(): boolean {
     return true;
 }
 
+/** From this width a screen has room for a menu beside its button (the same width at which the app's own menu goes to the left) */
+const WIDE = '(min-width: 900px)';
+/** The space kept between an anchored menu and the button, and the edges of the window (px: it is a measure of the window, not of the design) */
+const GAP = 8;
+const EDGE = 16;
+
+export interface SheetOptions {
+    /**
+     * On a wide screen the sheet is a menu beside the button that opened it (below it, or above when there is no
+     * room), and the rest of the screen stays still. On a phone it is the sheet from the bottom, as always.
+     */
+    anchored?: boolean;
+}
+
 export interface Sheet {
     /** The panel; its scrim comes with it. Put it inside the screen it covers (a positioned element). */
     element: HTMLElement;
     /** Where the content goes */
     body: HTMLElement;
-    open: () => void;
+    /** `trigger` is the button that asks for it: an anchored sheet opens beside it (without one it keeps the last place) */
+    open: (trigger?: Element | Event) => void;
     /**
      * Closes it (and gives back the history entry it took). `then` runs once that is done, which is
      * when it is safe to navigate: going somewhere before would leave the entry behind.
@@ -57,18 +72,47 @@ export interface Sheet {
  * @param label what a screen reader calls the panel
  * @param onOpen called just before it slides up (to fill it with what is current)
  */
-export function createSheet(label: string, onOpen?: () => void | Promise<void>): Sheet {
+export function createSheet(label: string, onOpen?: () => void | Promise<void>, options: SheetOptions = {}): Sheet {
     const body = h('div', { class: 'sheet__body' });
     const panel = h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': label, tabindex: '-1' },
         h('div', { class: 'sheet__grab', 'aria-hidden': 'true' }), body);
     const scrim = h('div', { class: 'sheet__scrim' });
-    const element = h('div', { class: 'sheet-layer' }, scrim, panel);
+    const element = h('div', { class: options.anchored === true ? 'sheet-layer sheet-layer--anchored' : 'sheet-layer' }, scrim, panel);
     panel.inert = true;
     let opener: Element | null = null;
     let open = false;
     /** Whether it took an entry in the history, which the back button gives back */
     let holdsEntry = false;
     const self = { closeFromBack: () => release() };
+    /** The button an anchored sheet sits beside, and what watches the sheet and the window while it is open */
+    let anchor: Element | null = null;
+    let watcher: ResizeObserver | undefined;
+    const wide = window.matchMedia(WIDE);
+
+    /** Puts the menu beside its button: its right edge under the button's, below it or above it, always inside the window */
+    const place = (): void => {
+        if (options.anchored !== true || !open) {
+            return;
+        }
+        if (!wide.matches || anchor === null || !anchor.isConnected) {
+            // A phone (or a window that became one): the sheet from the bottom, with nothing of ours on it. A button
+            // redrawn away leaves the menu where it was.
+            if (!wide.matches) {
+                panel.style.removeProperty('left');
+                panel.style.removeProperty('top');
+            }
+
+            return;
+        }
+        const button = anchor.getBoundingClientRect();
+        const width = panel.offsetWidth;
+        const height = panel.offsetHeight;
+        const below = window.innerHeight - button.bottom - GAP - EDGE;
+        const above = button.top - GAP - EDGE;
+        const top = height <= below || below >= above ? button.bottom + GAP : button.top - GAP - height;
+        panel.style.left = `${Math.max(EDGE, Math.min(button.right - width, window.innerWidth - width - EDGE))}px`;
+        panel.style.top = `${Math.max(EDGE, Math.min(top, window.innerHeight - height - EDGE))}px`;
+    };
 
     /** Everything about closing except the history */
     const release = (): void => {
@@ -81,6 +125,8 @@ export function createSheet(label: string, onOpen?: () => void | Promise<void>):
         element.classList.remove('is-open');
         panel.inert = true;
         document.removeEventListener('keydown', onKey);
+        watcher?.disconnect();
+        window.removeEventListener('resize', place);
         if (opener instanceof HTMLElement && opener.isConnected) {
             opener.focus({ preventScroll: true });
         }
@@ -116,12 +162,16 @@ export function createSheet(label: string, onOpen?: () => void | Promise<void>):
         },
         release,
         isOpen: () => open,
-        open: () => {
+        open: (trigger) => {
             if (open) {
                 return;
             }
             open = true;
             opener = document.activeElement;
+            // A click does not always focus a button (Safari), so the button is given, not guessed
+            if (trigger instanceof Element) {
+                anchor = trigger;
+            }
             void Promise.resolve(onOpen?.()).then(() => {
                 if (!open) {
                     return;
@@ -134,6 +184,13 @@ export function createSheet(label: string, onOpen?: () => void | Promise<void>):
                 // preventScroll: focusing a panel that is still sliding in would scroll the screen under it
                 panel.focus({ preventScroll: true });
                 document.addEventListener('keydown', onKey);
+                if (options.anchored === true) {
+                    // Its height changes when it is filled again (a submenu), and so does the window
+                    watcher = new ResizeObserver(place);
+                    watcher.observe(panel);
+                    window.addEventListener('resize', place);
+                    place();
+                }
             });
         },
     };

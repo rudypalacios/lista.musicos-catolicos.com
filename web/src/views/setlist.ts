@@ -89,8 +89,8 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
 
     // --- the sheets ---
     // The screen scrolls inside the app, so a sheet here covers the window, not the page
-    const listSheet = createSheet('Opciones del listado', () => fillListSheet());
-    const songSheet = createSheet('Opciones del canto', () => fillSongSheet());
+    const listSheet = createSheet('Opciones del listado', () => fillListSheet(), { anchored: true });
+    const songSheet = createSheet('Opciones del canto', () => fillSongSheet(), { anchored: true });
     listSheet.element.classList.add('sheet-layer--window');
     songSheet.element.classList.add('sheet-layer--window');
     // "Compartir listado": its own sheet, which comes after the list's
@@ -129,7 +129,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             }, { danger: true, apart: true }),
         );
     };
-    more.addEventListener('click', listSheet.open);
+    more.addEventListener('click', () => listSheet.open(more));
 
     /** The item whose "⋯" is open */
     let target: string | null = null;
@@ -211,10 +211,10 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             fillSongSheet();
         }
     };
-    const openSongSheet = (itemId: string): void => {
+    const openSongSheet = (itemId: string, trigger: Element): void => {
         target = itemId;
         songView = 'main';
-        songSheet.open();
+        songSheet.open(trigger);
     };
     // A move keeps the sheet open (to move again): it is refreshed with the new list, keeping the focus on a move
     let lastMove: 'up' | 'down' | 'start' | 'end' | undefined;
@@ -374,7 +374,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
         }, icon('more', 22));
         options.addEventListener('click', () => {
             lastMove = undefined;
-            openSongSheet(item.id);
+            openSongSheet(item.id, options);
         });
         li.append(options);
 
