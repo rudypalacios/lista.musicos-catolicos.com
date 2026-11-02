@@ -4,7 +4,7 @@ import type { PartDef, Setlist, Song } from '../data/types.ts';
 import { h } from '../dom.ts';
 import { icon } from '../icons.ts';
 import { showToast } from '../toast.ts';
-import { createSheet, sheetAction, sheetList, type Sheet } from './sheet.ts';
+import { createSheet, sheetAction, sheetList, spaced, type Sheet } from './sheet.ts';
 import { templateChoices } from './template-choices.ts';
 import { paths } from '../router.ts';
 
@@ -88,13 +88,13 @@ export function createAddToList(options: AddToListOptions): Sheet {
                 head('Agregar a un listado', song.title, () => sheet.close(options.onBack)),
                 error,
                 ...(starred.length === 0 ? group(null, others) : [...group('Destacados', starred), ...group('Recientes', others)]),
-                ...sheetList(
+                spaced(sheetList(
                     // Last, set apart: a list for today (from a template the person selects), and straight on to its section
                     sheetAction('plus', 'Nuevo listado', () => {
                         error.hidden = true;
                         showTemplates();
-                    }, { apart: true }),
-                ),
+                    }),
+                )),
             );
         }).catch((failure: unknown) => fail(failure, 'No se pudieron leer los listados.'));
     };

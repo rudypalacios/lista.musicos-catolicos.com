@@ -548,6 +548,9 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    vista previa normal. **Las migraciones `0014` (y `0015` en MySQL) crean la tabla solas: no hay nada que ejecutar.** **Prueba:** comparte un canto, ábrelo en incógnito (debe abrir directo en el canto, sin flechas ni «Volver
    al listado»); pégalo en WhatsApp y mira que la vista previa diga el nombre del canto; haz lo mismo con un listado; toca **Dejar de compartir** y recarga el enlace («Este enlace ya no existe»). **Aviso:** WhatsApp guarda
    la vista previa que ya conoce de un enlace; si cambias el nombre del listado después de compartirlo, el chat puede seguir mostrando el anterior un tiempo. La vista previa no lleva imagen, solo el nombre.
+55. **Menús y hojas: una sola lista, con el título dentro y la misma raya en todas partes.** El **título** del menú (y su segunda línea) ahora es el **primer renglón de la misma lista** que las opciones, y **«Eliminar…» es el último
+   renglón de esa lista** (en rojo, sin hueco extra): hay **una raya entre cada dos renglones, también debajo del título, y ninguna después del último**. **No cambia lo que hace cada opción.** **No hay migración.** **Prueba:** abre el `⋯` de
+   un canto en un listado, el de un listado, el de Cantos y el de una plantilla, y mira que las rayas y el espacio sean iguales en todos.
 
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).

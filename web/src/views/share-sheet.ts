@@ -4,7 +4,7 @@ import { icon } from '../icons.ts';
 import { shareFailure, shareSummary, shareUrl, type ShareState } from '../share.ts';
 import { showToast } from '../toast.ts';
 import { confirmDialog } from './confirm-dialog.ts';
-import { createSheet, sheetAction, sheetList } from './sheet.ts';
+import { createSheet, sheetAction, sheetList, spaced } from './sheet.ts';
 
 /** The list (or the song) a share is for: only what the sheet names */
 export interface SharedTarget {
@@ -130,7 +130,7 @@ export function createShareSheet(): ShareSheet {
                 say('Guardando…');
                 calls().enable(list.id, next).then(draw).catch((failure: unknown) => failed(failure, () => void load()));
             })]),
-            ...sheetList(
+            spaced(sheetList(
                 sheetAction('link', 'Dejar de compartir', () => {
                     void confirmDialog({
                         title: '¿Dejar de compartir?',
@@ -149,8 +149,8 @@ export function createShareSheet(): ShareSheet {
                             })
                             .catch((failure: unknown) => failed(failure, () => void load()));
                     });
-                }, { danger: true, apart: true }),
-            ),
+                }, { danger: true }),
+            )),
         );
     };
 

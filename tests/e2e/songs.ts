@@ -295,7 +295,11 @@ try {
         ['Agregar a un listado', 'Compartir cantoUn enlace para que cualquiera lo lea', 'Imprimir con acordes', 'Imprimir solo la letra', 'Editar letra y acordes', 'Eliminar canto'],
         'the sheet of the song page: add to a list, share, print, edit and, last, delete',
     );
-    assert.equal(await page.evaluate(() => Array.from(document.querySelectorAll('.sheet-layer.is-open .sheet-action')).at(-1)?.classList.contains('sheet-action--apart')), true, 'delete is set apart like in the other sheets');
+    assert.equal(await page.evaluate(() => {
+        const options = Array.from(document.querySelectorAll('.sheet-layer.is-open .sheet-action'));
+
+        return options.at(-1)?.classList.contains('is-danger') === true && options.at(-1)?.closest('ul') === options[0]?.closest('ul');
+    }), true, 'delete is the last row of the same list as the other options');
     await page.keyboard.press('Escape');
     pass('the song page has one row of tools and a "⋯" sheet like the other screens');
 

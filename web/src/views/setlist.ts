@@ -15,7 +15,7 @@ import { showToast, showUndoToast } from '../toast.ts';
 import { todayKeys } from '../today-keys.ts';
 import { deleteListAfterAsking } from './delete-list.ts';
 import { createShareSheet } from './share-sheet.ts';
-import { createSheet, sheetAction, sheetList } from './sheet.ts';
+import { createSheet, sheetAction, sheetHead, sheetList } from './sheet.ts';
 import type { Navigate, View } from './types.ts';
 
 /** A section with this many songs or more also has its "agregar" at the end: the one in the head would be far away */
@@ -112,9 +112,8 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
     const fillListSheet = (): void => {
         const rows = setlist.items.length;
         listSheet.body.replaceChildren(
-            h('h4', { class: 'sheet__title' }, setlist.title),
-            h('p', { class: 'sheet__sub' }, rows === 1 ? '1 canto' : `${rows} cantos`),
-            ...sheetList(
+            sheetList(
+                sheetHead(setlist.title, rows === 1 ? '1 canto' : `${rows} cantos`),
                 // First: what the list is made of; then what is done with it
                 action('sections', 'Secciones del listado', () => listSheet.close(() => navigate(paths.sections(setlist.id))), { hint: 'Qué secciones lleva este listado' }),
                 action('share', 'Compartir listado', () => listSheet.close(() => shareSheet.open(setlist)), { hint: 'Un enlace para que cualquiera lo lea' }),
@@ -127,7 +126,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
                             .then((deleted) => (deleted ? navigate(paths.lists()) : undefined))
                             .catch((failure: unknown) => fail(failure, 'No se pudo eliminar el listado.'));
                     });
-                }, { danger: true, apart: true }),
+                }, { danger: true }),
             ),
         );
     };
@@ -162,12 +161,12 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             const to = end ? itemsOfPart(setlist.items, item.part).length - 1 : 0;
             void app.setlists.reorderItem(setlist.id, item.id, to).catch((failure: unknown) => fail(failure, 'No se pudo mover el canto.'));
         };
-        const heading = [h('h4', { class: 'sheet__title' }, name), h('p', { class: 'sheet__sub' }, section)];
+        const heading = sheetHead(name, section);
         if (songView === 'move') {
             // The submenu: every way to move the song inside its section, one touch from the list of what is done to it
             songSheet.body.replaceChildren(
-                ...heading,
-                ...sheetList(
+                sheetList(
+                    heading,
                     sheetAction('chevron-left', 'Volver', () => showSongView('main')),
                     // Only the moves that can happen: a part with one song has none
                     ...(can.up ? [action('arrow-up', 'Subir en esta sección', () => step(-1), { key: 'up' })] : []),
@@ -180,8 +179,8 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             );
         } else {
             songSheet.body.replaceChildren(
-                ...heading,
-                ...sheetList(
+                sheetList(
+                    heading,
                     ...(song === undefined ? [] : [
                         action('play', 'Cantar desde aquí', () => {
                             const at = positionInList(setlist, item.id);

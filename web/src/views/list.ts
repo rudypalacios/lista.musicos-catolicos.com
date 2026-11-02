@@ -8,7 +8,7 @@ import { readNotation } from '../prefs.ts';
 import { paths } from '../router.ts';
 import { filterSongs, foundInLyricsOnly, songSnippet } from '../search.ts';
 import { deleteSongAfterAsking } from './delete-song.ts';
-import { createSheet, sheetAction, sheetList } from './sheet.ts';
+import { createSheet, sheetAction, sheetHead, sheetList } from './sheet.ts';
 import type { Navigate, View } from './types.ts';
 
 /**
@@ -60,9 +60,8 @@ export function listView(app: App, navigate: Navigate): View {
             return;
         }
         sheet.body.replaceChildren(
-            h('h4', { class: 'sheet__title' }, song.title),
-            ...(song.author === '' ? [] : [h('p', { class: 'sheet__sub' }, song.author)]),
-            ...sheetList(
+            sheetList(
+                sheetHead(song.title, song.author),
                 sheetAction('pencil', 'Editar letra y acordes', () => {
                     error.textContent = '';
                     sheet.close(() => navigate(paths.edit(song.id)));
@@ -73,7 +72,7 @@ export function listView(app: App, navigate: Navigate): View {
                     sheet.close(() => {
                         deleteSongAfterAsking(app, song).catch((failure: unknown) => fail(failure, 'No se pudo eliminar el canto.'));
                     });
-                }, { danger: true, apart: true }),
+                }, { danger: true }),
             ),
         );
     };

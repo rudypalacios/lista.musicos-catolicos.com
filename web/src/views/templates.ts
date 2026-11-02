@@ -6,7 +6,7 @@ import { icon } from '../icons.ts';
 import { paths } from '../router.ts';
 import { showToast } from '../toast.ts';
 import { confirmDialog } from './confirm-dialog.ts';
-import { createSheet, sheetAction, sheetList } from './sheet.ts';
+import { createSheet, sheetAction, sheetHead, sheetList } from './sheet.ts';
 import type { Navigate, View } from './types.ts';
 
 /** The name a new template starts with, before the person gives it its own */
@@ -64,9 +64,8 @@ export function templatesView(app: App, navigate: Navigate): View {
             return;
         }
         sheet.body.replaceChildren(
-            h('h4', { class: 'sheet__title' }, template.name),
-            h('p', { class: 'sheet__sub' }, sectionsText(template.parts.length)),
-            ...sheetList(
+            sheetList(
+                sheetHead(template.name, sectionsText(template.parts.length)),
                 sheetAction('copy', 'Duplicar plantilla', () => {
                     error.textContent = '';
                     sheet.close(() => {
@@ -97,7 +96,7 @@ export function templatesView(app: App, navigate: Navigate): View {
                             })
                             .catch((failure: unknown) => fail(failure, 'No se pudo eliminar la plantilla.'));
                     });
-                }, { danger: true, apart: true }),
+                }, { danger: true }),
             ),
         );
     };
