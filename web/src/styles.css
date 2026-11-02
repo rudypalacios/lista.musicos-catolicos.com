@@ -2581,6 +2581,44 @@ body {
     font-weight: 700;
 }
 
+/* ===== A wide screen: the "⋯" sheets are menus beside their button (a phone keeps the sheet from the bottom) ===== */
+@media (min-width: 900px) {
+    .sheet-layer--anchored {
+        position: fixed;
+        z-index: 10;
+    }
+
+    /* Nothing is dimmed: the screen stays as it is, and a touch outside closes the menu */
+    .sheet-layer--anchored .sheet__scrim {
+        background: transparent;
+    }
+
+    .sheet-layer--anchored .sheet {
+        right: auto;
+        bottom: auto;
+        width: 22rem;
+        max-width: calc(100vw - 2rem);
+        max-height: calc(100vh - 2rem);
+        margin: 0;
+        padding: 0.6rem 1rem 1rem;
+        border-bottom: 1px solid var(--border);
+        border-radius: 0.8rem;
+        box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+        opacity: 0;
+        transform: none;
+        transition: opacity 120ms ease-out, visibility 0s linear 120ms;
+    }
+
+    .sheet-layer--anchored.is-open .sheet {
+        opacity: 1;
+        transition: opacity 120ms ease-out;
+    }
+
+    .sheet-layer--anchored .sheet__grab {
+        display: none;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .perform__chrome,
     .perform__full,

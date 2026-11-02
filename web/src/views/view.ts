@@ -111,7 +111,7 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
     });
 
     // --- "⋯": what is done less often ---
-    const sheet = createSheet('Opciones del canto');
+    const sheet = createSheet('Opciones del canto', undefined, { anchored: true });
     sheet.element.classList.add('sheet-layer--window');
     const fail = (message: string): void => {
         error.textContent = message;
@@ -160,7 +160,7 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
         }, { danger: true, apart: true }),
     );
     const more = h('button', { type: 'button', class: 'lrow__more song-tools__more', 'aria-label': 'Más opciones' }, icon('more', 22));
-    more.addEventListener('click', () => sheet.open());
+    more.addEventListener('click', () => sheet.open(more));
 
     const tools = h(
         'div',

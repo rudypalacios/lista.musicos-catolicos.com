@@ -532,6 +532,9 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
 52. **Cantar y el listado dicen el tono una sola vez.** En **Cantar** la barra de arriba dice la sección y, debajo, **«Canto • Tono»** (el tono en azul; en ámbar si es solo por hoy); **ya no se repite** el título, el autor y
    el tono en el cuerpo (capo, tempo y compás, si el canto los trae, siguen ahí). En el **listado**, cuando el tono de un canto **no es el suyo**, sale en ámbar como antes y **al lado el tono original entre paréntesis, en gris**
    («Autor · La (Sol)»). **No hay migración.** **Prueba:** abre un listado, sube un canto un tono y guárdalo (el listado debe mostrar «La (Sol)») y canta ese canto (la barra: «Nombre • La»).
+53. **En pantalla ancha, el menú de los tres puntos sale junto al botón.** Desde 900 px de ancho (una computadora o el iPad horizontal grande) el `⋯` de un listado, de un canto dentro de un listado, de las filas de
+   Cantos, Listados y Plantillas y de la página del canto **abre un menú pegado al botón** (debajo de él, o arriba si no cabe) y **ya no oscurece** la pantalla; tocar fuera lo cierra. **En el teléfono y por debajo de 900 px
+   sigue igual: la hoja que sube desde abajo.** **No hay migración.** **Prueba:** en la computadora abre un listado y toca el `⋯` de un canto (y el de la esquina); en el teléfono comprueba que sigue saliendo la hoja de siempre.
 
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).

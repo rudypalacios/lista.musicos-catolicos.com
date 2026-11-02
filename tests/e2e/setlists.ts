@@ -1222,6 +1222,32 @@ try {
     assert.ok(rowHeight < 80, `a song takes one compact row on a desktop (got ${rowHeight}px)`);
     pass('on a desktop the parts go in two columns and each song takes one compact row');
 
+    // The "⋯" of a song is a menu beside its button on a wide screen, and the sheet from the bottom on a narrower one
+    const aSong = slot(page, 'Canto de salida').getByRole('button', { name: 'Más opciones: Abrimos la puerta' });
+    await aSong.click();
+    await page.locator('.sheet-layer.is-open').waitFor();
+    const menu = await page.evaluate(() => {
+        const button = document.querySelector('[data-focus^="more:"]')?.getBoundingClientRect();
+        const panel = document.querySelector('.sheet-layer.is-open .sheet')?.getBoundingClientRect();
+        const scrim = getComputedStyle(document.querySelector('.sheet-layer.is-open .sheet__scrim') as Element).backgroundColor;
+
+        return { button, panel, scrim, height: window.innerHeight };
+    });
+    assert.ok(menu.panel !== undefined && menu.button !== undefined);
+    assert.ok(menu.panel.width <= 360 && menu.panel.bottom < menu.height - 8, `a menu, not a sheet from the bottom (${JSON.stringify(menu.panel)})`);
+    assert.ok(Math.abs(menu.panel.right - menu.button.right) <= 20 || menu.panel.right <= menu.button.right + 20, 'it hangs from the right of its button');
+    assert.ok(menu.panel.top >= menu.button.bottom - 2 || menu.panel.bottom <= menu.button.top + 2, 'it opens below the button, or above it, never over it');
+    assert.match(menu.scrim, /rgba\(0, 0, 0, 0\)|transparent/, 'nothing is dimmed');
+    await closeSheet(page);
+    await page.setViewportSize({ width: 820, height: 1180 });
+    await aSong.click();
+    await page.locator('.sheet-layer.is-open').waitFor();
+    const sheetBox = await page.locator('.sheet-layer.is-open .sheet').boundingBox();
+    assert.ok(sheetBox !== null && sheetBox.y + sheetBox.height >= 1180 - 2 && sheetBox.width > 400, 'under 900px it is still the sheet from the bottom');
+    await closeSheet(page);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    pass('on a wide screen the "⋯" of a song opens beside its button and dims nothing; on a narrower one it is the sheet from the bottom');
+
     assert.deepEqual(problems, [], 'no uncaught errors in the page');
     pass('no uncaught errors in the page');
 

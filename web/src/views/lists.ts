@@ -52,7 +52,7 @@ export function listsView(app: App, navigate: Navigate): View {
     /** The list whose "⋯" is open */
     let target: string | null = null;
     // The screen scrolls inside the app, so the sheet covers the window, not the page
-    const sheet = createSheet('Opciones del listado', () => fill());
+    const sheet = createSheet('Opciones del listado', () => fill(), { anchored: true });
     sheet.element.classList.add('sheet-layer--window');
     element.append(sheet.element);
     // "Compartir listado": its own sheet, which comes after this one
@@ -111,7 +111,7 @@ export function listsView(app: App, navigate: Navigate): View {
         }, icon('more', 22));
         button.addEventListener('click', () => {
             target = list.id;
-            sheet.open();
+            sheet.open(button);
         });
 
         return button;
