@@ -46,8 +46,8 @@ export interface SectionEditor {
 /**
  * The rows that edit sections, the same for a list and for a template. Each row has, when the owner of the sections
  * can switch them (`ops.setOff`), a switch (an off section is hidden and kept, so it comes back where it was), its
- * name (touch it to rename), when it can say what is optional (`ops.setOptional`) a button that opens whether the
- * section is optional and the explanation it shows, the arrows that move it and "✕" that deletes it. A section with songs stays on and
+ * when it can say what is optional (`ops.setOptional`) a chevron at the start that opens whether the section is optional
+ * and the explanation it shows, its name (touch it to rename), the arrows that move it and "✕" that deletes it. A section with songs stays on and
  * cannot be deleted (it says why), and the last one stays too. At the end, a field to add a section of the person's
  * own and the sections of the Mass that are missing.
  */
@@ -120,8 +120,8 @@ export function createSectionEditor(options: SectionEditorOptions): SectionEdito
 
         return h('li', { class: 'lrow srow' },
             ...toggle,
-            name,
             ...details,
+            name,
             iconButton('arrow-up', `Subir: ${part.name}`, index > 0, () => run(ops.move(part.id, -1), 'No se pudo mover la sección.'), `up:${part.id}`),
             iconButton('arrow-down', `Bajar: ${part.name}`, index < parts.length - 1, () => run(ops.move(part.id, 1), 'No se pudo mover la sección.'), `down:${part.id}`),
             iconButton('x', `Borrar: ${part.name}`, count === 0 && parts.length > 1, () => askToRemove(part), `remove:${part.id}`),
