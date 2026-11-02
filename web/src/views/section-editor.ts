@@ -3,6 +3,7 @@ import { LIMITS } from '../data/types.ts';
 import { h } from '../dom.ts';
 import { icon, type IconName } from '../icons.ts';
 import { massSections } from '../mass.ts';
+import { confirmDialog } from './confirm-dialog.ts';
 
 /** What a section says under its name when it cannot be switched off: the songs it holds */
 export function lockedNote(count: number): string {
@@ -123,8 +124,22 @@ export function createSectionEditor(options: SectionEditorOptions): SectionEdito
             ...details,
             iconButton('arrow-up', `Subir: ${part.name}`, index > 0, () => run(ops.move(part.id, -1), 'No se pudo mover la sección.'), `up:${part.id}`),
             iconButton('arrow-down', `Bajar: ${part.name}`, index < parts.length - 1, () => run(ops.move(part.id, 1), 'No se pudo mover la sección.'), `down:${part.id}`),
-            iconButton('x', `Borrar: ${part.name}`, count === 0 && parts.length > 1, () => run(ops.remove(part.id), 'No se pudo borrar la sección.'), `remove:${part.id}`),
+            iconButton('x', `Borrar: ${part.name}`, count === 0 && parts.length > 1, () => askToRemove(part), `remove:${part.id}`),
             ...(opened.has(part.id) ? [detailsPanel(part)] : []));
+    };
+
+    /** "✕" asks first: it sits right beside the arrows and a slip would lose the section with its name and details */
+    const askToRemove = (part: PartDef): void => {
+        confirmDialog({
+            title: `¿Borrar la sección «${part.name}»?`,
+            text: 'No tiene cantos. Se quita de las secciones.',
+            confirm: 'Borrar',
+            danger: true,
+        }).then((confirmed) => {
+            if (confirmed) {
+                run(ops.remove(part.id), 'No se pudo borrar la sección.');
+            }
+        }, () => undefined);
     };
 
     /** Opens or closes the details of a section: whether it is optional and the explanation people read in the list */
@@ -133,7 +148,7 @@ export function createSectionEditor(options: SectionEditorOptions): SectionEdito
         const button = h('button', {
             type: 'button', class: 'srow__tool', 'aria-label': `Opcional y explicación: ${part.name}`, 'aria-expanded': String(open),
             'data-focus': `details:${part.id}`,
-        }, icon('info', 20));
+        }, icon(open ? 'chevron-up' : 'chevron-down', 20));
         button.addEventListener('click', () => {
             if (!opened.delete(part.id)) {
                 opened.add(part.id);
