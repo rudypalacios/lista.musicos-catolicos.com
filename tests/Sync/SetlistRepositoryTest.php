@@ -199,14 +199,16 @@ final class SetlistRepositoryTest extends TestCase
         $this->assertSame('Con 🎻 y «guitarra» ♯', $row['items'][0]['note']);
     }
 
-    public function testSomeoneElsesSetlistIsNeitherReadNorOverwritten(): void
+    public function testTheSameIdInTwoAccountsIsTwoSetlistsThatNeverTouchEachOther(): void
     {
         $this->setlists->apply(self::OTHER, $this->change('De otro', 1000));
 
-        $this->assertFalse($this->setlists->apply(self::ME, $this->change('Robado', 9000)));
+        // Same id, newer: a record of its own in this account, not an overwrite of the other one
+        $this->assertTrue($this->setlists->apply(self::ME, $this->change('Mío', 9000)));
+        $this->assertTrue($this->setlists->apply(self::ME, $this->change('Mío, editado', 9500)));
 
-        $this->assertSame([], $this->setlists->changedSince(self::ME, 0, 10));
-        $this->assertSame('De otro', $this->setlists->changedSince(self::OTHER, 0, 10)[0]['title']);
+        $this->assertSame(['Mío, editado'], array_column($this->setlists->changedSince(self::ME, 0, 10), 'title'));
+        $this->assertSame(['De otro'], array_column($this->setlists->changedSince(self::OTHER, 0, 10), 'title'));
     }
 
     public function testChangedSinceReturnsOnlyWhatIsNewInOrder(): void

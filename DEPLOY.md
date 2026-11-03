@@ -559,6 +559,11 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    Listados y de un listado por dentro: en los cuatro, el botón de compartir está arriba a la derecha, la lista de opciones ya no tiene «Compartir…» y hay más espacio bajo el título; toca el botón y comprueba que abre la hoja del enlace.
    Sin conexión, el botón abre la hoja y esta dice que compartir necesita conexión.
 
+57. **Cuentas de varias personas, paso 1: cada cuenta tiene sus propios registros (no se ve nada nuevo).** Los cantos, listados y plantillas se guardaban con una clave que era solo su `id`; ahora la clave es **(cuenta, id)**.
+   Así dos cuentas pueden tener un registro con el mismo id sin chocar (la plantilla «Misa» tiene el mismo id en todas las cuentas) y lo que cada una sube, baja o comparte es solo suyo. **La migración `0016` lo hace sola al
+   primer uso después del deploy** (en MySQL cambia la clave de tres tablas; no se pierde ni se mueve ningún dato). **No hay nada que ejecutar ni probar a mano más que abrir la app y ver que todo sigue igual:** tus cantos,
+   tus listados, tus plantillas y tus enlaces compartidos. Si algo no aparece, avísame antes de tocar nada.
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.
