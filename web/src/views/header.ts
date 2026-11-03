@@ -15,12 +15,13 @@ export interface Header {
 }
 
 export interface HeaderOptions {
-    email: string;
+    /** Who is signed in; null for a person trying the app with no account */
+    email: string | null;
     /** Syncs now; the dot in the bar does this when touched */
     onSync: () => void;
     /** Asks to sign out (it asks first when something was never sent) */
     onSignOut: () => void;
-    /** The session ended: lets the person sign in again */
+    /** The session ended, or there is no account: lets the person sign in */
     onNeedsSignIn: () => void;
 }
 
@@ -63,12 +64,13 @@ export function createHeader(options: HeaderOptions): Header {
         element: h('a', { href: entry.path, class: 'menu__entry', 'data-link': true, 'data-section': entry.section },
             icon(entry.glyph, 22), h('span', {}, entry.label)),
     }));
-    const signOut = h('button', { type: 'button', class: 'link' }, 'Salir');
-    signOut.addEventListener('click', options.onSignOut);
+    // With no account there is nothing to sign out of: the foot offers to sign in instead
+    const signOut = h('button', { type: 'button', class: 'link' }, options.email === null ? 'Iniciar sesión' : 'Salir');
+    signOut.addEventListener('click', options.email === null ? options.onNeedsSignIn : options.onSignOut);
     const menu = h('nav', { class: 'menu', 'aria-label': 'Menú' },
         h('span', { class: 'menu__brand' }, 'Lista'),
         ...entries.map(({ element }) => element),
-        h('div', { class: 'menu__foot' }, h('span', { class: 'menu__email' }, options.email), signOut));
+        h('div', { class: 'menu__foot' }, h('span', { class: 'menu__email' }, options.email ?? 'Sin cuenta'), signOut));
 
     return {
         top: [bar, line],
@@ -107,7 +109,7 @@ export function createHeader(options: HeaderOptions): Header {
             line.className = `sync-line sync-line--${tone}`;
             speaks = showsLine(tone);
             drawLine();
-            renew.hidden = status.state !== 'signed-out';
+            renew.hidden = status.state !== 'signed-out' && !status.guest;
         },
     };
 }

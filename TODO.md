@@ -184,6 +184,10 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       404, an address that keeps missing is slowed down (`MissThrottle`), and the answer can be kept a minute with an ETag. The visitor's page has no cookies, analytics or ads and asks for nothing from another
       origin (checked under the production policy). **Left for the owner:** publish the privacy text proposed in the PR in `musicos-catolicos` (Privacidad) and decide whether the lyrics switch stays on by default.
       **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 46.
+- [x] **Try the app with no account** (`web/src/guest.ts`, `views/welcome.ts`, `App.startGuest` / `adoptKeepingGuestWork`; step 2 of open sign-up; the owner approved the mockup and the changes to the bar, the dot and Ajustes on 2026-11-03):
+      a device with nothing on it and no session opens on a welcome ("Probar sin cuenta" / "Ya tengo cuenta"); a guest writes to the device, nothing is synced, the dot is an empty circle, a line under the bar says so and offers
+      "Iniciar sesión", and Ajustes says "Sin cuenta". Signing in asks, only if something was written, to add it to the account, drop it or cancel (cancelling changes nothing). The Mass of the account always wins over the guest's.
+      **Not done:** creating an account (step 3), so "Crear cuenta" is not offered yet. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 58.
 - [x] **Share one song by a link, and a preview that names what the link opens** (`SongShareRepository`, `SongShareAction`, `SharePreview`, `Http/ShellPage`, migrations `0014` and `0015`; the owner asked
       for it on 2026-11-02): "Compartir canto" is in the "⋯" of the song's page. Its sheet is the list's without the lyrics switch (a song's words always go; the owner's plan said "the same switch", but a song
       without its words shows nothing, so I left it out: say if you want "solo título" anyway). The visitor opens straight on the song, in its own key (not the owner's "mi tono"), with the reader's tools and no list around it.
@@ -429,7 +433,7 @@ Next, in this order (design agreed with the owner):
 - [ ] **Sharing, what comes after the list's link** (the owner's plan, 2026-11-01; (1) a song by a link is done, below): (2) accounts of other people: see "Open sign-up" below. Public and private profiles stay for later.
 - [ ] **Open sign-up** (the owner's decision, 2026-11-02: anyone can register; no invitations; Google and the merge of accounts come after the password one). Steps, one PR each:
       (1) **done:** records keyed by (user, id) (migration `0016`), so two accounts can hold the same ids and never touch each other's rows (tests: `AccountIsolationTest`, the repositories, the migration on SQLite and MariaDB).
-      (2) **guest mode:** the app opens with no account; the data stays on the device ("guardado solo en este dispositivo", no sync); losing the browser's data loses it, and it says so.
+      (2) **done:** guest mode (see the item above): the app opens with no account; the data stays on the device, no sync, and it says so.
       (3) **sign-up and sign-in with email and password**, email verification and password recovery by email (the owner will create a cPanel mailbox for SMTP and give its data as secrets in the `production` environment),
       throttles per address, a quota per account and a proof-of-work check of our own (no third-party captcha: the policy forbids another domain; the owner agreed to a captcha if it is the safe option); on signing up the guest
       is asked **bring what I have to my account / start from zero**, and on signing in to an account that exists **add it to my account / discard it** (the records have client UUIDs, so bringing them is just sending them).

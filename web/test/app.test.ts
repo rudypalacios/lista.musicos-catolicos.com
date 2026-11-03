@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { App, signOut } from '../src/app.ts';
+import { MISA_ID } from '../src/data/templates.ts';
+import { GUEST_OWNER } from '../src/guest.ts';
 
 // In Node there is no IndexedDB, so App falls back to its in-memory store (as an old browser would)
 const draft = (title: string) => ({ title, author: '', body: '[G]Letra' });
@@ -140,5 +142,98 @@ describe('App', () => {
         await signOut(app, () => true);
 
         assert.deepEqual(await app.setlists.list(), []);
+    });
+
+    describe('with no account', () => {
+        it('opens for a device with nothing on it, belongs to no account and has the Mass', async () => {
+            const app = await App.create();
+
+            await app.startGuest();
+
+            assert.equal(await app.owner(), GUEST_OWNER);
+            assert.equal(app.isGuest(), true);
+            assert.equal(app.status().guest, true);
+            assert.equal(app.status().state, 'local');
+            assert.deepEqual((await app.templates.list()).map((template) => template.id), [MISA_ID]);
+        });
+
+        it('keeps what is written and never syncs it', async () => {
+            const app = await App.create();
+            await app.startGuest();
+
+            await app.create(draft('Probando'));
+            await app.syncNow();
+            app.requestSync(0);
+
+            assert.deepEqual((await app.list()).map((song) => song.title), ['Probando']);
+            assert.equal(app.status().state, 'local', 'there is nobody to sync with: it neither runs nor fails');
+            assert.equal(await app.unsent(), 2, 'the song and the Mass wait for the day the person signs in');
+        });
+
+        it('counts what the person wrote, not the Mass every device makes', async () => {
+            const app = await App.create();
+            await app.startGuest();
+            assert.deepEqual(await app.guestWork(), { songs: 0, lists: 0, templates: 0 });
+
+            await app.create(draft('Uno'));
+            await app.create(draft('Dos'));
+            await app.setlists.create();
+            await app.templates.create('Rosario', [{ id: 'a', name: 'Misterios' }]);
+
+            assert.deepEqual(await app.guestWork(), { songs: 2, lists: 1, templates: 1 });
+        });
+
+        it('signs in and keeps what was written: it stays on the device, owned by the account, and waits to be sent', async () => {
+            const app = await App.create();
+            await app.startGuest();
+            await app.create(draft('Mío'));
+
+            await app.adoptKeepingGuestWork('a@example.com');
+
+            assert.equal(await app.owner(), 'a@example.com');
+            assert.equal(app.isGuest(), false);
+            assert.deepEqual((await app.list()).map((song) => song.title), ['Mío']);
+            assert.equal(await app.unsent(), 2, 'it is all still to be sent');
+        });
+
+        it('gives way to the account\'s Mass: the one made with no account is stamped as the oldest', async () => {
+            const app = await App.create();
+            await app.startGuest();
+
+            await app.adoptKeepingGuestWork('a@example.com');
+
+            assert.equal((await app.templates.get(MISA_ID))?.updatedAt, 0);
+        });
+
+        it('signs in and drops what was written when that is the choice', async () => {
+            const app = await App.create();
+            await app.startGuest();
+            await app.create(draft('Descartado'));
+
+            await app.adopt('a@example.com');
+
+            assert.deepEqual(await app.list(), []);
+            assert.equal(await app.unsent(), 0);
+            assert.equal(await app.owner(), 'a@example.com');
+            assert.equal(app.isGuest(), false);
+        });
+
+        it('keeps what an earlier visit wrote when the app opens again', async () => {
+            const app = await App.create();
+            await app.startGuest();
+            await app.create(draft('De ayer'));
+
+            await app.startGuest();
+
+            assert.deepEqual((await app.list()).map((song) => song.title), ['De ayer']);
+            assert.equal(await app.owner(), GUEST_OWNER);
+        });
+
+        it('refuses to keep what a device holds if it was not used with no account', async () => {
+            const app = await App.create();
+            await app.adopt('a@example.com');
+
+            await assert.rejects(app.adoptKeepingGuestWork('b@example.com'));
+        });
     });
 });

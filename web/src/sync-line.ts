@@ -7,9 +7,10 @@ import type { Status } from './app.ts';
  * - `pending`: online, with something about to be sent: an amber dot and no line, because this lasts a
  *   second after every edit and a line that came and went would make the screen jump;
  * - `quiet`: no connection and nothing waiting to be sent, a muted line;
- * - `warn`: something is waiting with no way to send it, failed or needs the person: an amber line.
+ * - `warn`: something is waiting with no way to send it, failed or needs the person: an amber line;
+ * - `local`: no account, so nothing is ever sent: an empty circle, and a line that says what that means and offers to sign in.
  */
-export type SyncTone = 'ok' | 'busy' | 'pending' | 'quiet' | 'warn';
+export type SyncTone = 'ok' | 'busy' | 'pending' | 'quiet' | 'warn' | 'local';
 
 export interface SyncLine {
     text: string;
@@ -23,6 +24,9 @@ export function describeSync(status: Status): SyncLine {
     const extra = [unsent, refused].filter((part) => part !== '').join(' · ');
     if (!status.durable) {
         return { text: 'Este navegador no guarda datos sin conexión', tone: 'warn' };
+    }
+    if (status.guest) {
+        return { text: 'Estás probando sin cuenta. Lo que escribas se guarda solo en este dispositivo.', tone: 'local' };
     }
     switch (status.state) {
         case 'syncing':
@@ -41,5 +45,5 @@ export function describeSync(status: Status): SyncLine {
 
 /** Whether the line under the header has something to say */
 export function showsLine(tone: SyncTone): boolean {
-    return tone === 'quiet' || tone === 'warn';
+    return tone === 'quiet' || tone === 'warn' || tone === 'local';
 }

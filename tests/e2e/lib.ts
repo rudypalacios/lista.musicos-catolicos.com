@@ -70,6 +70,8 @@ export function reporter(): { pass(name: string): void; count(): number } {
 
 export async function signIn(page: Page, base: string): Promise<void> {
     await page.goto(base + '/');
+    // A device with nothing on it and no session opens on the welcome: the app is not behind a login
+    await page.getByRole('button', { name: 'Ya tengo cuenta' }).click();
     await page.getByRole('heading', { name: 'Inicia sesión' }).waitFor();
     await page.getByLabel('Correo').fill(EMAIL);
     await page.getByLabel('Contraseña').fill(PASSWORD);

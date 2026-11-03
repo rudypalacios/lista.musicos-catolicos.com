@@ -1319,6 +1319,13 @@ input[type='search'] {
     background: var(--warn);
 }
 
+/* No account: an empty circle (nothing is ever sent), drawn, so it looks the same on every device */
+.sync-dot--local .sync-dot__mark {
+    box-sizing: border-box;
+    background: none;
+    border: 0.15rem solid var(--faint);
+}
+
 @media (prefers-reduced-motion: no-preference) {
     .sync-dot--busy .sync-dot__mark {
         animation: sync-pulse 1s ease-in-out infinite;
@@ -1456,6 +1463,11 @@ input[type='search'] {
 .sync-line--warn {
     color: var(--changed);
     background: var(--changed-soft);
+}
+
+/* Trying the app with no account: not a warning, but it stays on every screen, with the way to sign in */
+.sync-line--local {
+    color: var(--text);
 }
 
 .sync-line .link {
@@ -4229,4 +4241,20 @@ button.srow__tool:disabled {
     .pub-wrap {
         padding: 0 1.5rem;
     }
+}
+
+/* ----- the first screen of a device with nothing on it: try the app, or sign in ----- */
+.welcome__card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.welcome__card p {
+    margin: 0;
+}
+
+.welcome__actions {
+    flex-direction: column;
+    align-items: stretch;
 }

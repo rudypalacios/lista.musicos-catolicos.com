@@ -12,12 +12,14 @@ export type Navigate = (path: string, options?: { replace?: boolean }) => void;
  * has to offer it itself: the sync line and signing out.
  */
 export interface Account {
-    /** Who is signed in */
-    email: string;
+    /** Who is signed in; null for a person trying the app with no account */
+    email: string | null;
     /** What the header says about the sync ("Sincronizado", "Sin conexión · 2 sin enviar"…) */
     syncText: () => string;
     /** Calls `listener` whenever that line changes; returns how to stop */
     onSync: (listener: (text: string) => void) => () => void;
     /** Signs out (asks first when something written here was never sent) */
     signOut: () => void;
+    /** Signs in (for a person with no account: what they wrote here is asked about once they do) */
+    signIn: () => void;
 }

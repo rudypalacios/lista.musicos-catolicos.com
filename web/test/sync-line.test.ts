@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 import type { Status } from '../src/app.ts';
 import { describeSync, showsLine } from '../src/sync-line.ts';
 
-const status = (changes: Partial<Status>): Status => ({ state: 'idle', pending: 0, rejected: 0, durable: true, ...changes });
+const status = (changes: Partial<Status>): Status => ({ state: 'idle', pending: 0, rejected: 0, durable: true, guest: false, ...changes });
 
 describe('describeSync', () => {
     it('is silent when everything is sent', () => {
@@ -37,5 +37,19 @@ describe('describeSync', () => {
         assert.deepEqual(describeSync(status({ state: 'error' })), { text: 'Error al sincronizar', tone: 'warn' });
         assert.deepEqual(describeSync(status({ state: 'error', pending: 1 })), { text: 'Error al sincronizar · 1 sin enviar', tone: 'warn' });
         assert.equal(describeSync(status({ durable: false })).tone, 'warn');
+    });
+
+    it('says that a device with no account keeps everything on itself, and offers to sign in', () => {
+        const line = describeSync(status({ state: 'local', guest: true, pending: 5 }));
+
+        assert.equal(line.tone, 'local');
+        assert.match(line.text, /sin cuenta/);
+        assert.match(line.text, /solo en este dispositivo/);
+        assert.ok(!line.text.includes('sin enviar'), 'what is waiting is not "unsent": there is nowhere to send it');
+        assert.equal(showsLine('local'), true);
+    });
+
+    it('still warns that the browser keeps nothing, which matters most to someone with no account', () => {
+        assert.equal(describeSync(status({ guest: true, state: 'local', durable: false })).tone, 'warn');
     });
 });

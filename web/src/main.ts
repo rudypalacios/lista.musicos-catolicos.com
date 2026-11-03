@@ -16,7 +16,9 @@ import { showToast, type Toast } from './toast.ts';
 import { screenKeeper } from './wakelock.ts';
 import { showFatal, startUpdates } from './updates.ts';
 import { addView } from './views/add.ts';
-import { confirmDialog } from './views/confirm-dialog.ts';
+import { chooseDialog, confirmDialog } from './views/confirm-dialog.ts';
+import { describeGuestWork, hasGuestWork, isGuest } from './guest.ts';
+import { welcomeView } from './views/welcome.ts';
 import { createHeader, type Header } from './views/header.ts';
 import { editView } from './views/edit.ts';
 import { importView } from './views/import.ts';
@@ -48,14 +50,16 @@ if (root === null) {
 const app: HTMLElement = root;
 
 let current: View | null = null;
-/** Who is signed in, for the account block of Ajustes */
-let signedInEmail = '';
+/** Who is signed in, for the account block of Ajustes; null for a person trying the app with no account */
+let signedInEmail: string | null = '';
 /** The bar and the menu, once the person is in */
 let header: Header | null = null;
 /** The "install the app" bar at the bottom, one for the whole page, until the app is installed */
 const installBanner = createInstallBanner();
 /** Signs out, asking first when something written here was never sent (set once the header exists) */
 let requestSignOut: () => void = () => undefined;
+/** Signs in, for a person with no account (set once they are in) */
+let requestSignIn: () => void = () => undefined;
 
 function show(view: View): void {
     current?.dispose?.();
@@ -100,7 +104,7 @@ function watchSaves(data: App): void {
 }
 
 /** The frame around every screen. Built once per sign-in. */
-function mountShell(data: App, email: string, onSignedOut: () => void, onNeedsSignIn: () => void): void {
+function mountShell(data: App, email: string | null, onSignedOut: () => void, onNeedsSignIn: () => void): void {
     requestSignOut = () => {
         void signOut(data, (unsent) =>
             confirmDialog({
@@ -121,7 +125,8 @@ function mountShell(data: App, email: string, onSignedOut: () => void, onNeedsSi
     const frame = createHeader({
         email,
         onSync: () => {
-            void data.syncNow().then(() => showToast(pullAnswer(data.status().state)));
+            // With no account the dot says so; there is nothing to sync
+            void data.syncNow().then(() => showToast(data.status().guest ? 'Sin cuenta: tus cantos están solo en este dispositivo' : pullAnswer(data.status().state)));
         },
         onSignOut: () => requestSignOut(),
         onNeedsSignIn,
@@ -159,6 +164,7 @@ function accountOf(data: App): Account {
         syncText: () => describeSync(data.status()).text,
         onSync: (listener) => data.onStatus((status) => listener(describeSync(status).text)),
         signOut: () => requestSignOut(),
+        signIn: () => requestSignIn(),
     };
 }
 
@@ -338,6 +344,89 @@ function enter(data: App, email: string): void {
 }
 
 /**
+ * Shows the app for a person with no account: their songs are on this device and nothing is synced. The bar's dot and its
+ * line say so and offer to sign in; signing in asks what to do with what was written (see `signInFromGuest`).
+ */
+function enterGuest(data: App): void {
+    requestSignIn = () => signInFromGuest(data);
+    mountShell(data, null, () => undefined, () => signInFromGuest(data));
+    if (!routerStarted) {
+        routerStarted = true;
+        runRouter(data);
+    } else {
+        window.dispatchEvent(new PopStateEvent('popstate'));
+    }
+}
+
+function reportSignInFailure(failure: unknown): void {
+    showToast(failure instanceof Error ? failure.message : 'No se pudo iniciar sesión.');
+}
+
+/** Shows the sign-in form over the app of a person with no account; "Volver" gives the app back */
+function signInFromGuest(data: App): void {
+    show(signInView(
+        (email) => void finishGuestSignIn(data, email).catch(reportSignInFailure),
+        '',
+        () => window.dispatchEvent(new PopStateEvent('popstate')),
+    ));
+}
+
+/**
+ * The person with no account signed in. If they wrote anything, they choose: add it to the account, or drop it (nothing is
+ * decided for them: cancelling keeps them where they were, signed out again). With nothing written there is nothing to ask.
+ */
+async function finishGuestSignIn(data: App, email: string): Promise<void> {
+    const work = await data.guestWork();
+    let keep = false;
+    if (hasGuestWork(work)) {
+        const answer = await chooseDialog<'keep' | 'drop'>({
+            title: `Tienes ${describeGuestWork(work)} en este dispositivo`,
+            text: 'Los escribiste sin cuenta. Puedes sumarlos a tu cuenta (se agregan a lo que ya tienes) o descartarlos (se borran de este dispositivo y queda solo lo de tu cuenta).',
+            cancel: 'Cancelar',
+            choices: [
+                { label: 'Sumarlos a mi cuenta', value: 'keep', kind: 'primary' },
+                { label: 'Descartarlos', value: 'drop', kind: 'danger' },
+            ],
+        });
+        if (answer === null) {
+            // Nothing was decided: the session the sign-in just made is not wanted, and the person goes on as they were
+            await api.logout().catch(() => undefined);
+            window.dispatchEvent(new PopStateEvent('popstate'));
+
+            return;
+        }
+        keep = answer === 'keep';
+    }
+    if (keep) {
+        await data.adoptKeepingGuestWork(email);
+    } else {
+        await data.adopt(email);
+        // The screen the person was on may show something that was just dropped: they start from the songs
+        history.replaceState(null, '', paths.list());
+    }
+    enter(data, email);
+    data.requestSync(0);
+}
+
+/** What a device with nothing on it and no session shows: try the app, or sign in */
+function showWelcome(data: App, message?: string): void {
+    show(welcomeView({
+        onTry: () => {
+            void data.startGuest().then(() => enterGuest(data));
+        },
+        onSignIn: () => {
+            show(signInView((email) => {
+                void data.adopt(email).then(() => {
+                    enter(data, email);
+                    data.requestSync(0);
+                });
+            }, '', () => showWelcome(data, message)));
+        },
+        ...(message === undefined ? {} : { message }),
+    }));
+}
+
+/**
  * Starts the app. When this device already holds someone's songs it opens from them at once,
  * with no network: whether the session is still good is found out in the background, and a
  * slow or missing connection never keeps the person from their songs. Only a device with nothing
@@ -345,6 +434,13 @@ function enter(data: App, email: string): void {
  */
 async function begin(data: App): Promise<void> {
     const owner = await data.owner();
+    if (isGuest(owner)) {
+        // No account: nothing to ask the server, so it opens at once, online or not
+        await data.startGuest();
+        enterGuest(data);
+
+        return;
+    }
     if (owner !== null) {
         enter(data, owner);
         void verifySession(data, owner);
@@ -363,17 +459,8 @@ async function begin(data: App): Promise<void> {
         enter(data, me.email);
         data.requestSync(0);
     } catch (failure: unknown) {
-        if (failure instanceof ApiError && failure.isOffline) {
-            show(notice('Sin conexión. Conéctate una vez para iniciar sesión.'));
-
-            return;
-        }
-        show(signInView((email) => {
-            void data.adopt(email).then(() => {
-                enter(data, email);
-                data.requestSync(0);
-            });
-        }));
+        // No session on a device with nothing on it: the app is open to try; signing in needs a connection
+        showWelcome(data, failure instanceof ApiError && failure.isOffline ? 'Sin conexión: puedes probar la app; para iniciar sesión necesitas conexión.' : undefined);
     }
 }
 

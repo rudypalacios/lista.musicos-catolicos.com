@@ -134,6 +134,16 @@ policy in `public/.htaccess` allows `wasm-unsafe-eval` for it (the only widening
 `tests/e2e/photo.ts` makes a picture with Chromium (straight and crooked), imports it under the production policy and checks
 every chord. Real photos and screenshots are not in the repo (they are other people's songs); the tests use invented lyrics.
 
+## Trying the app with no account (the owner's decision, 2026-11-02/03)
+
+The app is not behind a login. A device with nothing on it and no session opens on the welcome ("Probar sin cuenta" / "Ya tengo cuenta",
+`web/src/views/welcome.ts`); trying it makes the device a **guest** (`web/src/guest.ts`: the store's owner is `GUEST_OWNER`, which is not an email,
+so no account can have it). A guest writes songs, lists and templates to the device like anyone, they wait in the queue, and **nothing is synced**
+(`App.syncNow` and `requestSync` do nothing while `guest`; the status is `local`). Signing in asks, once, only if something was written, what to do with it:
+`App.adoptKeepingGuestWork` (it joins the account: the records carry client UUIDs, so signing in only changes whose they are and syncs; the Mass is stamped
+as the oldest so the account's own always wins) or `App.adopt` (drops it). Cancelling the question changes nothing and ends the session the sign-in made.
+The bar, the dot and Ajustes say there is no account (`DESIGN-LOCK.md`). Sign-up with email and Google come next (see `TODO.md`, "Open sign-up").
+
 ## Sharing a list
 
 A list can be shared by a link anyone can open, read only (the owner's decision, 2026-11-01: "cualquiera"). It is the one thing of this

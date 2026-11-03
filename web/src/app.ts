@@ -4,13 +4,15 @@ import { IdbStore } from './data/idb-store.ts';
 import { Library, type SongDraft } from './data/library.ts';
 import { MemoryStore } from './data/memory-store.ts';
 import { Setlists } from './data/setlists.ts';
-import { Templates } from './data/templates.ts';
+import { MISA_ID, Templates } from './data/templates.ts';
 import type { LocalStore } from './data/store.ts';
 import { SyncEngine, SyncStopped } from './data/sync.ts';
 import { COLLECTIONS, type Song } from './data/types.ts';
+import { GUEST_OWNER, type GuestWork } from './guest.ts';
 import { newSongDraft } from './song-draft.ts';
 
-export type SyncState = 'idle' | 'syncing' | 'offline' | 'signed-out' | 'error';
+/** `local`: no account, so nothing is synced (see guest.ts) */
+export type SyncState = 'idle' | 'syncing' | 'offline' | 'signed-out' | 'error' | 'local';
 
 export interface Status {
     state: SyncState;
@@ -20,6 +22,8 @@ export interface Status {
     rejected: number;
     /** False when the browser cannot keep data (no IndexedDB): nothing survives a reload */
     durable: boolean;
+    /** The person has no account: what they write stays on this device */
+    guest: boolean;
 }
 
 /**
@@ -41,6 +45,8 @@ export class App {
     private rejected = new Set<string>();
     private state: SyncState = 'idle';
     private pendingCount = 0;
+    /** No account: nothing is sent or brought (see `startGuest`) */
+    private guest = false;
     private readonly statusListeners = new Set<(status: Status) => void>();
     private readonly dataListeners = new Set<() => void>();
     private readonly savedListeners = new Set<() => void>();
@@ -77,6 +83,58 @@ export class App {
         return this.store.owner();
     }
 
+    /** Whether this device is being used with no account */
+    isGuest(): boolean {
+        return this.guest;
+    }
+
+    /**
+     * Starts (or goes on) using the device with no account. The device's songs, if it holds someone's, are not touched:
+     * this is only called for a device with nothing on it or one that is already the guest's. Nothing is sent; the
+     * Mass is made at once (there is no server to hear from first, see `ensureMisa`).
+     */
+    async startGuest(): Promise<void> {
+        const owner = await this.store.owner();
+        if (owner === null) {
+            await this.store.setOwner(GUEST_OWNER);
+        }
+        this.guest = true;
+        this.state = 'local';
+        await this.templates.ensureMisa();
+        await this.refreshPending();
+        this.emitData();
+    }
+
+    /** What the guest wrote, to ask what to do with it when they sign in */
+    async guestWork(): Promise<GuestWork> {
+        const templates = await this.templates.list();
+
+        return {
+            songs: (await this.library.list()).length,
+            lists: (await this.setlists.list()).length,
+            templates: templates.filter((template) => template.id !== MISA_ID).length,
+        };
+    }
+
+    /**
+     * The guest signs in and keeps what they wrote: it joins the account's. Every record is already queued to be sent
+     * (a guest's writes never were), so signing in only has to change whose they are and sync. The records carry their
+     * own ids, so nothing is converted. The Mass is the one record both sides have: the account's wins, so a default
+     * Mass made here never replaces one the person set up before (made with the oldest stamp, so any other version beats it).
+     */
+    async adoptKeepingGuestWork(email: string): Promise<void> {
+        if (!this.guest) {
+            throw new Error('Only a device used with no account can keep what it holds');
+        }
+        await this.templates.yieldMisa();
+        await this.store.setOwner(email);
+        this.guest = false;
+        this.state = 'idle';
+        await this.refreshPending();
+        this.emitData();
+        this.requestSync(0);
+    }
+
     /**
      * Claims the device's songs for `email`. If they were another person's they are removed
      * first: a shared tablet must never show one account's songs to another.
@@ -88,6 +146,11 @@ export class App {
             this.rejected.clear();
         }
         await this.store.setOwner(email);
+        // A guest who signs in and does not keep what they wrote has just had it cleared above
+        this.guest = false;
+        if (this.state === 'local') {
+            this.state = 'idle';
+        }
         await this.refreshPending();
         this.emitData();
     }
@@ -100,6 +163,8 @@ export class App {
     /** Forgets everything on this device (sign out) */
     async wipe(): Promise<void> {
         await this.store.clear();
+        this.guest = false;
+        this.state = 'idle';
         this.rejected.clear();
         this.pendingCount = 0;
         this.emitData();
@@ -186,6 +251,10 @@ export class App {
 
     /** Syncs soon (a burst of edits becomes one sync) */
     requestSync(delay = 800): void {
+        // Nobody to sync with: what a guest writes waits in the queue for the day they sign in
+        if (this.guest) {
+            return;
+        }
         if (this.timer !== null) {
             clearTimeout(this.timer);
         }
@@ -197,6 +266,9 @@ export class App {
 
     /** Runs a sync now, or joins the one that is running. Never throws: the outcome is the status. */
     syncNow(): Promise<void> {
+        if (this.guest) {
+            return Promise.resolve();
+        }
         if (this.running === null) {
             this.running = this.run().finally(() => {
                 this.running = null;
@@ -225,7 +297,7 @@ export class App {
     }
 
     status(): Status {
-        return { state: this.state, pending: this.pendingCount, rejected: this.rejected.size, durable: this.durable };
+        return { state: this.state, pending: this.pendingCount, rejected: this.rejected.size, durable: this.durable, guest: this.guest };
     }
 
     onStatus(listener: (status: Status) => void): () => void {

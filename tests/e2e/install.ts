@@ -45,11 +45,11 @@ try {
     // is behind the sign-in, so a link to it would only lead back to the sign-in form)
     const stranger = await (await browser.newContext({ viewport: { width: 390, height: 844 }, userAgent: IPAD_SAFARI, hasTouch: true })).newPage();
     await stranger.goto(server.base);
-    await stranger.getByRole('heading', { name: 'Inicia sesión' }).waitFor();
+    await stranger.getByRole('button', { name: 'Probar sin cuenta' }).waitFor();
     assert.equal(await stranger.locator('.install-banner__steps').isVisible(), false, 'the steps wait to be asked for');
     await stranger.getByRole('button', { name: 'Cómo instalar', exact: true }).click();
     await stranger.getByText('Añadir a pantalla de inicio').waitFor();
-    assert.equal(await stranger.getByRole('heading', { name: 'Inicia sesión' }).isVisible(), true, 'and the person stays where they were');
+    assert.equal(await stranger.getByRole('button', { name: 'Probar sin cuenta' }).isVisible(), true, 'and the person stays where they were');
     await stranger.getByRole('button', { name: 'Cómo instalar', exact: true }).click();
     await stranger.locator('.install-banner__steps').waitFor({ state: 'hidden' });
     pass('on an iPhone that is not signed in, "Cómo" opens the steps right in the bar and closes them again');
