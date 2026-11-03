@@ -198,4 +198,27 @@ final class MigratorTest extends TestCase
         $this->expectException(\PDOException::class);
         $pdo->exec($template('u2', 'Otra', 2));
     }
+
+    public function testTheAccountsThatExistWhenAddressConfirmationArrivesCountAsConfirmed(): void
+    {
+        $dir = sys_get_temp_dir() . '/migrations-' . bin2hex(random_bytes(4));
+        mkdir($dir);
+        foreach (glob(TestDatabase::MIGRATIONS . '/*.sql') ?: [] as $file) {
+            if (basename($file) < '0017') {
+                copy($file, $dir . '/' . basename($file));
+            }
+        }
+        $pdo = new PDO('sqlite::memory:', null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+        (new Migrator($pdo, $dir))->migrate();
+        $insert = static fn (string $id, string $email): string =>
+            "INSERT INTO users (id, email, password_hash, created_at) VALUES ('$id', '$email', 'x', '2026-01-01')";
+        $pdo->exec($insert('u1', 'dueno@example.com'));
+
+        (new Migrator($pdo, TestDatabase::MIGRATIONS))->migrate();
+
+        $this->assertSame(1, (int) $pdo->query("SELECT email_verified_at FROM users WHERE id = 'u1'")->fetchColumn());
+        $pdo->exec($insert('u2', 'nueva@example.com'));
+        $second = $pdo->query("SELECT email_verified_at FROM users WHERE id = 'u2'")->fetchColumn();
+        $this->assertNull($second, 'a new one is not');
+    }
 }

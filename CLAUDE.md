@@ -144,6 +144,19 @@ so no account can have it). A guest writes songs, lists and templates to the dev
 as the oldest so the account's own always wins) or `App.adopt` (drops it). Cancelling the question changes nothing and ends the session the sign-in made.
 The bar, the dot and Ajustes say there is no account (`DESIGN-LOCK.md`). Sign-up with email and Google come next (see `TODO.md`, "Open sign-up").
 
+## Accounts of other people (server side, step 3a of "Open sign-up")
+
+`POST /api/register` makes an account and opens its session; the address is confirmed by a link sent to it (`Auth/Accounts.php`, `Auth/EmailTokens.php`),
+and a forgotten password is chosen again by another (`/api/forgot`, `/api/reset`). Rules that matter: **sign-up is closed until `SIGNUP_OPEN=1` is in `.env`**
+(the owner opens it once the privacy text is published: the app now stores other people's emails); the **links in the emails point at `APP_URL`**
+(default the production address), never at the host of the request (a reset link that followed `Host` would hand the code to whoever asked);
+a link's code is 256 random bits, only its hash is kept, it works once and expires; `/api/forgot` answers the same whether or not the address has an
+account; a new password ends every session; sign-up and forgot need a **proof of work** solved by the browser (`Security/ProofOfWork.php`: SHA-256 with
+18 zero bits, signed by the server with a secret it makes itself in `app_secrets`, spent once) because the policy forbids a third-party captcha. It prices a
+script, it does not tell a person from a program: the limits per address (`Security/RateLimiter.php`) and the confirmation of the address do the rest.
+Email goes through the site's mailbox over SMTP (`Mail/SmtpMailer.php`, PHPMailer); with no `SMTP_HOST` it is written to the error log (`LogMailer`).
+Every account is separate: records are keyed by (user, id) (migration 0016). The accounts that existed before confirmation (the owner's) count as confirmed.
+
 ## Sharing a list
 
 A list can be shared by a link anyone can open, read only (the owner's decision, 2026-11-01: "cualquiera"). It is the one thing of this

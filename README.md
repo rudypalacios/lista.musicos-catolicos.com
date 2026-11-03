@@ -61,7 +61,13 @@ All JSON, Spanish messages, `Cache-Control: no-store`. Requests that change data
 | `GET /api/health` | `200 {status, schema}` |
 | `POST /api/login` `{email, password}` | `200 {email}` + cookie · `400` · `401` · `429` |
 | `POST /api/logout` | `200 {ok}` and clears the cookie |
-| `GET /api/me` | `200 {email}` · `401` |
+| `GET /api/me` | `200 {email, verified}` · `401` |
+| `GET /api/challenge` | `200 {challenge, bits, expiresAt}`: a proof-of-work puzzle for sign-up and password reset (`src/Security/ProofOfWork.php`) |
+| `POST /api/register` `{email, password, pow: {challenge, nonce}}` | `201 {email, verified: false, mailSent}` and the session cookie · `400` (`invalid_email`, `weak_password`) · `403` (`invalid_proof`, `signup_closed`) · `409 email_taken` · `429` (6 an hour per address) |
+| `POST /api/verify-email` `{token}` | `200 {email}` (no session needed) · `400 invalid_token` |
+| `POST /api/verify-email/resend` (session) | `200 {mailSent}` · `401` · `429` (3 an hour) |
+| `POST /api/forgot` `{email, pow}` | `200 {ok: true}` whether or not the address has an account · `400` · `403 invalid_proof` |
+| `POST /api/reset` `{token, password}` | `200 {email}` and every session of the account ends · `400` (`weak_password`, `invalid_token`) |
 | `GET /api/sync?since=N` | `200 {songs, setlists, templates, cursor, hasMore}`: songs, setlists and templates changed after change number N (one counter for both), tombstones included · `400` · `401` |
 | `POST /api/sync` `{songs?: [{id, title, author, body, tags?, myShift?, updatedAt, deleted}], setlists?: [{id, title, eventDate, notes, starred?, items, parts, updatedAt, deleted}], templates?: [{id, name, parts, updatedAt, deleted}]}` (`starred`, `tags` and `myShift`, "mi tono" in semitones from the written key, −11…11, left out keep the stored value; `tags` is at most 8 texts of at most 30 characters) | `200 {applied, ignored}`; the newest `updatedAt` (client clock, epoch ms) wins · `400` (nothing stored; `invalid_song`, `invalid_setlist` or `invalid_template`) · `401` |
 
