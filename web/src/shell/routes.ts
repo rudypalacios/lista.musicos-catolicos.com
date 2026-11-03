@@ -1,7 +1,8 @@
 import type { App } from '../app.ts';
 import { visibleParts } from '../data/setlists.ts';
-import type { Route } from '../router.ts';
+import { paths, type Route } from '../router.ts';
 import { addView } from '../views/add.ts';
+import { checkMailView } from '../views/check-mail.ts';
 import { editView } from '../views/edit.ts';
 import { importView } from '../views/import.ts';
 import { installView } from '../views/install.ts';
@@ -50,6 +51,8 @@ export function routeView(data: App, route: Route, navigate: Navigate, account: 
                 template === undefined ? notice('Esta plantilla no existe (o se eliminó).') : templateView(data, navigate, template));
         case 'install':
             return Promise.resolve(installView());
+        case 'check-mail':
+            return Promise.resolve(checkMailView({ email: account.email ?? '', sent: route.sent, onContinue: () => navigate(paths.list()) }));
         case 'settings':
             return Promise.resolve(settingsView(account));
         case 'list':

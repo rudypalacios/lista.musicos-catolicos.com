@@ -581,6 +581,14 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    porque se guardan correos de otras personas. **Las migraciones `0017` y `0018` crean las tablas solas.** **Tu cuenta** queda marcada como confirmada (no recibes ningún correo). **Prueba después del deploy:** abre la app y entra como siempre; todo
    debe verse igual. (Cuando exista la pantalla «Olvidé mi contraseña» se probará el correo con tu buzón.)
 
+60. **Cuentas de varias personas, paso 3 (parte de la app): crear cuenta, confirmar el correo y recuperar la contraseña. Sigue cerrado al público.** Con `SIGNUP_OPEN` sin poner (como está), **la app se ve igual que hoy**: no aparece «Crear cuenta». Pero ya está
+   todo listo para abrirlo: **(1)** «Crear cuenta» en la bienvenida, en la raya del invitado y en Ajustes; **(2)** el formulario (correo, contraseña de 10 o más caracteres, y marcar que leíste cómo se usan tus datos, con el enlace a *Privacidad* del sitio
+   público); el teléfono resuelve una pequeña prueba (menos de un segundo) antes de enviar; **(3)** la pantalla «Te mandamos un enlace» y el correo con el enlace de confirmación (`/verificar/…`); mientras no lo abras, Ajustes dice «Tu correo todavía no está
+   confirmado» con **Volver a mandar el enlace**; **(4)** «Olvidé mi contraseña» en iniciar sesión, que manda el enlace para elegir otra (`/restablecer/…`, vence en 1 hora); **(5)** si la persona había probado sin cuenta, al crearla le pregunta **«Traerlos a mi cuenta»**,
+   **«Empezar desde cero»** o **Cancelar** (la cuenta queda creada y sigue como invitado). **Para probarlo antes de abrirlo a todos:** necesitas el buzón en `.env` (punto 59) y, **solo mientras pruebas**, `SIGNUP_OPEN=1` en el `.env` del servidor: crea una cuenta con otro
+   correo tuyo desde una ventana de incógnito, revisa que llegue el correo (mira también *correo no deseado*), abre el enlace, cierra sesión y prueba «Olvidé mi contraseña». **Después de probar, quita `SIGNUP_OPEN=1` (o déjalo si ya vas a abrir) y no lo abras al público hasta publicar el texto de privacidad en el sitio público.** El correo sale de `noreply@musicos-catolicos.com`: si
+   no llega, casi siempre falta algo de `SMTP_*` en `.env` (el error queda en el registro de errores del servidor).
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.

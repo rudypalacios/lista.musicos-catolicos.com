@@ -2,6 +2,7 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { createServer, type Server as NetServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { BrowserContext, Page } from 'playwright';
@@ -18,7 +19,16 @@ export interface Server {
     stop(): void;
 }
 
-export async function startServer(port: number): Promise<Server> {
+/** What the server of a test is started with */
+export interface ServerOptions {
+    /** Anyone can create an account (SIGNUP_OPEN=1) */
+    signupOpen?: boolean;
+    /** The port of a `startMailSink`: the server sends its emails there, over real SMTP */
+    mailPort?: number;
+}
+
+export async function startServer(port: number, options: ServerOptions = {}): Promise<Server> {
+    const base = `http://127.0.0.1:${port}`;
     const dir = mkdtempSync(join(tmpdir(), 'lista-e2e-'));
     const child: ChildProcess = spawn(
         'php',
@@ -31,11 +41,13 @@ export async function startServer(port: number): Promise<Server> {
                 DB_PATH: join(dir, 'e2e.sqlite'),
                 OWNER_EMAIL: EMAIL,
                 OWNER_PASSWORD: PASSWORD,
+                APP_URL: base,
+                ...(options.signupOpen === true ? { SIGNUP_OPEN: '1' } : {}),
+                ...(options.mailPort === undefined ? {} : { SMTP_HOST: '127.0.0.1', SMTP_PORT: String(options.mailPort), SMTP_SECURE: 'none' }),
             },
             stdio: 'ignore',
         },
     );
-    const base = `http://127.0.0.1:${port}`;
     for (let attempt = 0; attempt < 50; attempt++) {
         try {
             if ((await fetch(`${base}/api/health`)).ok) {
@@ -54,6 +66,79 @@ export async function startServer(port: number): Promise<Server> {
     }
     child.kill();
     throw new Error('The PHP server did not start');
+}
+
+/** The emails the server of a test sent: its own little SMTP server, so they travel the real way (PHPMailer, the protocol) */
+export interface MailSink {
+    /** Everything that arrived, oldest first: who it was for and the text */
+    messages: { to: string; text: string }[];
+    /** The link of the newest message to `to` that has `path` in it (`/verificar/`, `/restablecer/`), or null */
+    linkTo(to: string, path: string): string | null;
+    stop(): void;
+}
+
+export function startMailSink(port: number): Promise<MailSink> {
+    const messages: MailSink['messages'] = [];
+    const server: NetServer = createServer((socket) => {
+        socket.setEncoding('utf8');
+        let buffer = '';
+        let data = false;
+        let to = '';
+        let text: string[] = [];
+        const reply = (line: string): void => void socket.write(`${line}\r\n`);
+        reply('220 sink ESMTP');
+        socket.on('data', (chunk: string) => {
+            buffer += chunk;
+            for (let end = buffer.indexOf('\r\n'); end >= 0; end = buffer.indexOf('\r\n')) {
+                const line = buffer.slice(0, end);
+                buffer = buffer.slice(end + 2);
+                if (data) {
+                    if (line === '.') {
+                        data = false;
+                        messages.push({ to, text: text.join('\n') });
+                        text = [];
+                        reply('250 OK queued');
+                    } else {
+                        text.push(line);
+                    }
+                    continue;
+                }
+                const command = line.toUpperCase();
+                if (command.startsWith('RCPT')) {
+                    to = /<([^>]+)>/.exec(line)?.[1] ?? '';
+                    reply('250 OK');
+                } else if (command.startsWith('DATA')) {
+                    data = true;
+                    reply('354 go');
+                } else if (command.startsWith('QUIT')) {
+                    reply('221 bye');
+                    socket.end();
+                } else if (command.startsWith('EHLO') || command.startsWith('HELO')) {
+                    reply('250 sink');
+                } else {
+                    reply('250 OK');
+                }
+            }
+        });
+        socket.on('error', () => undefined);
+    });
+
+    return new Promise((resolve) => {
+        server.listen(port, '127.0.0.1', () => resolve({
+            messages,
+            linkTo: (to, path) => {
+                for (const message of [...messages].reverse()) {
+                    const found = message.to === to ? new RegExp(`https?://\\S+${path}[0-9a-f]{64}`).exec(message.text) : null;
+                    if (found !== null) {
+                        return found[0];
+                    }
+                }
+
+                return null;
+            },
+            stop: () => server.close(),
+        }));
+    });
 }
 
 export function reporter(): { pass(name: string): void; count(): number } {

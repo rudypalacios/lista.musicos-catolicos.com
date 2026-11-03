@@ -144,7 +144,7 @@ so no account can have it). A guest writes songs, lists and templates to the dev
 as the oldest so the account's own always wins) or `App.adopt` (drops it). Cancelling the question changes nothing and ends the session the sign-in made.
 The bar, the dot and Ajustes say there is no account (`DESIGN-LOCK.md`). Sign-up with email and Google come next (see `TODO.md`, "Open sign-up").
 
-## Accounts of other people (server side, step 3a of "Open sign-up")
+## Accounts of other people (step 3 of "Open sign-up": 3a the server, 3b the app)
 
 `POST /api/register` makes an account and opens its session; the address is confirmed by a link sent to it (`Auth/Accounts.php`, `Auth/EmailTokens.php`),
 and a forgotten password is chosen again by another (`/api/forgot`, `/api/reset`). Rules that matter: **sign-up is closed until `SIGNUP_OPEN=1` is in `.env`**
@@ -156,6 +156,14 @@ account; a new password ends every session; sign-up and forgot need a **proof of
 script, it does not tell a person from a program: the limits per address (`Security/RateLimiter.php`) and the confirmation of the address do the rest.
 Email goes through the site's mailbox over SMTP (`Mail/SmtpMailer.php`, PHPMailer); with no `SMTP_HOST` it is written to the error log (`LogMailer`).
 Every account is separate: records are keyed by (user, id) (migration 0016). The accounts that existed before confirmation (the owner's) count as confirmed.
+
+**The app (3b):** "Crear cuenta" is offered (welcome, the guest's line, Ajustes) only while `GET /api/signup` says open (`web/src/signup-open.ts` keeps the last answer on the
+device so the first screen does not wait). The sign-up form (`views/signup.ts`) checks what it can itself (`account.ts`), asks for a puzzle and solves it on the device (`pow.ts`: SHA-256
+written out, with the first blocks mixed once, in slices so the screen moves; no worker and nothing from another domain), then registers; the person lands on
+`/ajustes/correo` ("Te mandamos un enlace") already signed in. A guest who signs up is asked **bring it to my account / start from zero / cancel**
+(`shell/session.ts`, `adoptGuestWork`, the same choice as when signing in, with other words); cancelling ends the session just made and keeps them as a guest.
+The links of the emails open pages of their own that need no session and no data of the device (`/verificar/:token`, `/restablecer/:token`, `views/account-link.ts`, drawn
+by `main.ts` like the visitor's page). `tests/e2e/signup.ts` covers it end to end with a little SMTP server that receives the server's real emails.
 
 ## Sharing a list
 

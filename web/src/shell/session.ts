@@ -3,10 +3,13 @@ import type { App } from '../app.ts';
 import { describeGuestWork, hasGuestWork, isGuest } from '../guest.ts';
 import { h } from '../dom.ts';
 import { paths } from '../router.ts';
+import { knownSignupOpen, refreshSignupOpen } from '../signup-open.ts';
 import { showToast } from '../toast.ts';
 import { chooseDialog } from '../views/confirm-dialog.ts';
+import { forgotView } from '../views/forgot.ts';
 import type { InstallBanner } from '../views/install-banner.ts';
 import { signInView } from '../views/signin.ts';
+import { signUpView } from '../views/signup.ts';
 import { welcomeView } from '../views/welcome.ts';
 import type { Frame } from './frame.ts';
 import { splash, type Screen } from './screen.ts';
@@ -22,16 +25,35 @@ export interface SessionParts {
     showApp: () => void;
 }
 
-/** Who is using the app, and the ways in and out: the welcome, signing in, trying with no account, and signing out */
+/** Who is using the app, and the ways in and out: the welcome, signing in, signing up, trying with no account, and signing out */
 export interface Session {
     /** Opens the app for whoever this device belongs to, or asks who is there */
     begin: () => Promise<void>;
 }
 
+/** What the person with no account wrote is asked about when they sign in or sign up: the words differ, the choice is the same */
+type Moment = 'sign-in' | 'sign-up';
+
+/** What the person chose to do with what they wrote with no account */
+type GuestChoice = 'kept' | 'dropped' | 'cancelled';
+
+const WORDS: Record<Moment, { text: string; keep: string; drop: string }> = {
+    'sign-in': {
+        text: 'Los escribiste sin cuenta. Puedes sumarlos a tu cuenta (se agregan a lo que ya tienes) o descartarlos (se borran de este dispositivo y queda solo lo de tu cuenta).',
+        keep: 'Sumarlos a mi cuenta',
+        drop: 'Descartarlos',
+    },
+    'sign-up': {
+        text: 'Los escribiste antes de crear tu cuenta. Puedes traerlos a tu cuenta (los tendrás en todos tus dispositivos) o empezar desde cero (se borran de este dispositivo y tu cuenta empieza vacía).',
+        keep: 'Traerlos a mi cuenta',
+        drop: 'Empezar desde cero',
+    },
+};
+
 /**
- * The session: decides what the person sees first and what signing in or out does. A device that already holds someone's
- * songs opens from them at once, with no network (whether the session is still good is found out in the background); a
- * guest's opens the same way; only a device with nothing on it has to ask the server who is there.
+ * The session: decides what the person sees first and what signing in, signing up or out does. A device that already holds
+ * someone's songs opens from them at once, with no network (whether the session is still good is found out in the background);
+ * a guest's opens the same way; only a device with nothing on it has to ask the server who is there.
  */
 export function createSession(parts: SessionParts): Session {
     const { root, data, screen, frame, installBanner, showApp } = parts;
@@ -46,69 +68,112 @@ export function createSession(parts: SessionParts): Session {
                 void begin();
             },
             onNeedsSignIn: () => {
-                screen.show(signInView((signedIn) => {
-                    void data.adopt(signedIn).then(() => {
-                        enter(signedIn);
-                        data.resumed();
-                    });
-                }, 'Tu sesión terminó. Inicia sesión para seguir sincronizando; tus cantos siguen aquí.'));
+                showSignIn({
+                    message: 'Tu sesión terminó. Inicia sesión para seguir sincronizando; tus cantos siguen aquí.',
+                    onSignedIn: (signedIn) => {
+                        void data.adopt(signedIn).then(() => {
+                            enter(signedIn);
+                            data.resumed();
+                        });
+                    },
+                });
             },
+            onSignUp: () => undefined,
+            canSignUp: () => false,
         });
         showApp();
     };
 
     /**
      * Shows the app for a person with no account: their songs are on this device and nothing is synced. The bar's dot and
-     * its line say so and offer to sign in; signing in asks what to do with what was written (see `finishGuestSignIn`).
+     * its line say so and offer to create an account (when that can be done) or to sign in; both ask what to do with what
+     * was written (see `adoptGuestWork`).
      */
     const enterGuest = (): void => {
-        frame.mount({ email: null, onSignedOut: () => undefined, onNeedsSignIn: signInFromGuest });
+        frame.mount({
+            email: null,
+            onSignedOut: () => undefined,
+            onNeedsSignIn: signInFromGuest,
+            onSignUp: signUpFromGuest,
+            canSignUp: knownSignupOpen,
+        });
         showApp();
+        // The last answer was kept on this device; the line is painted again if the server says something else now
+        const before = knownSignupOpen();
+        void refreshSignupOpen().then((open) => {
+            if (open !== before && data.isGuest()) {
+                frame.repaint();
+            }
+        });
     };
 
-    const reportSignInFailure = (failure: unknown): void => {
-        showToast(failure instanceof Error ? failure.message : 'No se pudo iniciar sesión.');
+    const report = (failure: unknown): void => {
+        showToast(failure instanceof Error ? failure.message : 'No se pudo completar. Inténtalo de nuevo.');
+    };
+
+    /** The sign-in form, with "Olvidé mi contraseña" (which comes back here) and, if given, a way back */
+    const showSignIn = (options: { onSignedIn: (email: string) => void; message?: string; onCancel?: () => void }): void => {
+        screen.show(signInView({
+            ...options,
+            onForgot: () => screen.show(forgotView({ onBack: () => showSignIn(options) })),
+        }));
+    };
+
+    /**
+     * The person with no account has signed in or signed up, so there is a session. If they wrote anything, they choose:
+     * keep it (it joins the account), drop it, or cancel (nothing is decided for them: the session just made is ended and
+     * they go on as they were). With nothing written there is nothing to ask.
+     */
+    const adoptGuestWork = async (email: string, moment: Moment): Promise<GuestChoice> => {
+        const work = await data.guestWork();
+        if (!hasGuestWork(work)) {
+            await data.adopt(email);
+
+            return 'dropped';
+        }
+        const words = WORDS[moment];
+        const answer = await chooseDialog<'keep' | 'drop'>({
+            title: `Tienes ${describeGuestWork(work)} en este dispositivo`,
+            text: words.text,
+            cancel: 'Cancelar',
+            choices: [
+                { label: words.keep, value: 'keep', kind: 'primary' },
+                { label: words.drop, value: 'drop', kind: 'danger' },
+            ],
+        });
+        if (answer === null) {
+            await api.logout().catch(() => undefined);
+            if (moment === 'sign-up') {
+                showToast('Tu cuenta quedó creada. Inicia sesión cuando quieras.', 5000);
+            }
+            showApp();
+
+            return 'cancelled';
+        }
+        if (answer === 'keep') {
+            await data.adoptKeepingGuestWork(email);
+
+            return 'kept';
+        }
+        await data.adopt(email);
+
+        return 'dropped';
     };
 
     /** Shows the sign-in form over the app of a person with no account; "Volver" gives the app back */
     const signInFromGuest = (): void => {
-        screen.show(signInView(
-            (email) => void finishGuestSignIn(email).catch(reportSignInFailure),
-            '',
-            () => showApp(),
-        ));
+        showSignIn({
+            onSignedIn: (email) => void finishGuestSignIn(email).catch(report),
+            onCancel: () => showApp(),
+        });
     };
 
-    /**
-     * The person with no account signed in. If they wrote anything, they choose: add it to the account, or drop it (nothing is
-     * decided for them: cancelling keeps them where they were, signed out again). With nothing written there is nothing to ask.
-     */
     const finishGuestSignIn = async (email: string): Promise<void> => {
-        const work = await data.guestWork();
-        let keep = false;
-        if (hasGuestWork(work)) {
-            const answer = await chooseDialog<'keep' | 'drop'>({
-                title: `Tienes ${describeGuestWork(work)} en este dispositivo`,
-                text: 'Los escribiste sin cuenta. Puedes sumarlos a tu cuenta (se agregan a lo que ya tienes) o descartarlos (se borran de este dispositivo y queda solo lo de tu cuenta).',
-                cancel: 'Cancelar',
-                choices: [
-                    { label: 'Sumarlos a mi cuenta', value: 'keep', kind: 'primary' },
-                    { label: 'Descartarlos', value: 'drop', kind: 'danger' },
-                ],
-            });
-            if (answer === null) {
-                // Nothing was decided: the session the sign-in just made is not wanted, and the person goes on as they were
-                await api.logout().catch(() => undefined);
-                showApp();
-
-                return;
-            }
-            keep = answer === 'keep';
+        const choice = await adoptGuestWork(email, 'sign-in');
+        if (choice === 'cancelled') {
+            return;
         }
-        if (keep) {
-            await data.adoptKeepingGuestWork(email);
-        } else {
-            await data.adopt(email);
+        if (choice === 'dropped') {
             // The screen the person was on may show something that was just dropped: they start from the songs
             history.replaceState(null, '', paths.list());
         }
@@ -116,20 +181,66 @@ export function createSession(parts: SessionParts): Session {
         data.requestSync(0);
     };
 
-    /** What a device with nothing on it and no session shows: try the app, or sign in */
-    const showWelcome = (message?: string): void => {
+    /** The sign-up form over the app of a person with no account; "Volver" gives the app back */
+    const signUpFromGuest = (): void => {
+        screen.show(signUpView({
+            onCreated: (email, mailSent) => void finishSignUp(email, mailSent, true).catch(report),
+            onSignIn: signInFromGuest,
+            onCancel: () => showApp(),
+        }));
+    };
+
+    /** The account exists and its session is open: take what the device holds (if it was a guest's), and land on the page that says the link went out */
+    const finishSignUp = async (email: string, mailSent: boolean, wasGuest: boolean): Promise<void> => {
+        if (wasGuest) {
+            if ((await adoptGuestWork(email, 'sign-up')) === 'cancelled') {
+                return;
+            }
+        } else {
+            await data.adopt(email);
+        }
+        history.replaceState(null, '', paths.checkMail(mailSent));
+        enter(email);
+        data.requestSync(0);
+    };
+
+    /** What a device with nothing on it and no session shows: try the app, create an account, or sign in */
+    const showWelcome = (message?: string, signupOpen: boolean = knownSignupOpen()): void => {
+        const again = (): void => showWelcome(message, signupOpen);
         screen.show(welcomeView({
             onTry: () => {
                 void data.startGuest().then(enterGuest);
             },
             onSignIn: () => {
-                screen.show(signInView((email) => {
-                    void data.adopt(email).then(() => {
-                        enter(email);
-                        data.requestSync(0);
-                    });
-                }, '', () => showWelcome(message)));
+                showSignIn({
+                    onSignedIn: (email) => {
+                        void data.adopt(email).then(() => {
+                            enter(email);
+                            data.requestSync(0);
+                        });
+                    },
+                    onCancel: again,
+                });
             },
+            ...(signupOpen
+                ? {
+                    onSignUp: () => {
+                        screen.show(signUpView({
+                            onCreated: (email, mailSent) => void finishSignUp(email, mailSent, false).catch(report),
+                            onSignIn: () => showSignIn({
+                                onSignedIn: (signedIn) => {
+                                    void data.adopt(signedIn).then(() => {
+                                        enter(signedIn);
+                                        data.requestSync(0);
+                                    });
+                                },
+                                onCancel: again,
+                            }),
+                            onCancel: again,
+                        }));
+                    },
+                }
+                : {}),
             ...(message === undefined ? {} : { message }),
         }));
     };
@@ -179,7 +290,13 @@ export function createSession(parts: SessionParts): Session {
             data.requestSync(0);
         } catch (failure: unknown) {
             // No session on a device with nothing on it: the app is open to try; signing in needs a connection
-            showWelcome(failure instanceof ApiError && failure.isOffline ? 'Sin conexión: puedes probar la app; para iniciar sesión necesitas conexión.' : undefined);
+            const offline = failure instanceof ApiError && failure.isOffline;
+            // Whether "Crear cuenta" is offered: the server's answer, but the welcome does not wait more than a moment for it
+            const open = await Promise.race([
+                refreshSignupOpen(),
+                new Promise<boolean>((resolve) => setTimeout(() => resolve(knownSignupOpen()), 2000)),
+            ]);
+            showWelcome(offline ? 'Sin conexión: puedes probar la app; para iniciar sesión necesitas conexión.' : undefined, open);
         }
     };
 

@@ -23,6 +23,10 @@ export interface HeaderOptions {
     onSignOut: () => void;
     /** The session ended, or there is no account: lets the person sign in */
     onNeedsSignIn: () => void;
+    /** Opens the sign-up form (for a person with no account) */
+    onSignUp: () => void;
+    /** Whether anyone can create an account now: with no account the line offers "Crear cuenta" only when it will work */
+    canSignUp: () => boolean;
 }
 
 const ENTRIES: ReadonlyArray<{ section: 'songs' | 'lists' | 'settings'; label: string; path: string; glyph: IconName }> = [
@@ -50,7 +54,9 @@ export function createHeader(options: HeaderOptions): Header {
 
     const text = h('span', { class: 'sync' });
     const renew = h('button', { type: 'button', class: 'link', hidden: true }, 'Iniciar sesión');
-    renew.addEventListener('click', options.onNeedsSignIn);
+    /** With no account the line's button creates one, when that can be done; otherwise it signs in */
+    let offersSignUp = false;
+    renew.addEventListener('click', () => (offersSignUp ? options.onSignUp() : options.onNeedsSignIn()));
     const line = h('div', { class: 'sync-line', role: 'status', 'aria-live': 'polite', hidden: true }, text, renew);
     /** The line shows when the sync has something to say, and never while singing (the song has the room) */
     let speaks = false;
@@ -110,6 +116,8 @@ export function createHeader(options: HeaderOptions): Header {
             speaks = showsLine(tone);
             drawLine();
             renew.hidden = status.state !== 'signed-out' && !status.guest;
+            offersSignUp = status.guest && options.canSignUp();
+            renew.textContent = offersSignUp ? 'Crear cuenta' : 'Iniciar sesión';
         },
     };
 }

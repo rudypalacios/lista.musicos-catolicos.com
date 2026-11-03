@@ -75,6 +75,24 @@ describe('matchRoute', () => {
         }
     });
 
+    it('knows the links of the emails: 64 hex characters, a page of their own', () => {
+        const token = 'ab'.repeat(32);
+
+        assert.deepEqual(matchRoute(`/verificar/${token}`), { name: 'verify', token });
+        assert.deepEqual(matchRoute(`/restablecer/${token}/`), { name: 'reset', token });
+        assert.equal(matchRoute(`/verificar/${'ab'.repeat(31)}`).name, 'not-found');
+        assert.equal(matchRoute(`/restablecer/${'zz'.repeat(32)}`).name, 'not-found');
+    });
+
+    it('knows where a new account lands, which hangs from Ajustes', () => {
+        assert.deepEqual(matchRoute('/ajustes/correo'), { name: 'check-mail', sent: true });
+        assert.deepEqual(matchRoute('/ajustes/correo', '?enviado=0'), { name: 'check-mail', sent: false });
+        assert.equal(paths.checkMail(true), '/ajustes/correo');
+        assert.equal(paths.checkMail(false), '/ajustes/correo?enviado=0');
+        assert.equal(sectionOf(matchRoute('/ajustes/correo')), 'settings');
+        assert.deepEqual(parentOf(matchRoute('/ajustes/correo')), { path: '/ajustes', label: 'Ajustes' });
+    });
+
     it('knows the settings screen, which belongs to no tab', () => {
         assert.deepEqual(matchRoute('/ajustes'), { name: 'settings' });
         assert.deepEqual(matchRoute('/ajustes/'), { name: 'settings' });

@@ -146,6 +146,17 @@ final class AccountsApiTest extends TestCase
         $this->assertSame([], $this->mailer->sent);
     }
 
+    public function testTheAppCanAskWhetherSignUpIsOpen(): void
+    {
+        $this->assertSame(['open' => true], $this->body($this->call('GET', '/api/signup')));
+
+        $env = ['DB_DRIVER' => 'sqlite', 'DB_PATH' => ':memory:', 'APP_ENV' => 'production'];
+        $closed = Config::fromEnv($env, '/app');
+        $this->app = AppFactory::create($this->pdo, $closed, TestDatabase::MIGRATIONS, $this->mailer);
+
+        $this->assertSame(['open' => false], $this->body($this->call('GET', '/api/signup')));
+    }
+
     public function testThePasswordOfANewAccountWorksAtTheSignIn(): void
     {
         $this->signUp();

@@ -22,4 +22,8 @@ export interface Account {
     signOut: () => void;
     /** Signs in (for a person with no account: what they wrote here is asked about once they do) */
     signIn: () => void;
+    /** Opens the sign-up form (for a person with no account) */
+    signUp: () => void;
+    /** Whether anyone can create an account now */
+    canSignUp: () => boolean;
 }
