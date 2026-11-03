@@ -1,46 +1,23 @@
 import './styles.css';
 import './sheet.css';
-import { api, ApiError } from './api.ts';
-import { App, signOut } from './app.ts';
-import { h } from './dom.ts';
-import { visibleParts } from './data/setlists.ts';
-import { sectionsView } from './views/sections.ts';
-import { templateView } from './views/template.ts';
-import { templatesView } from './views/templates.ts';
-import { matchRoute, paths, type Route } from './router.ts';
-import { applyReadingColors } from './settings.ts';
-import { watchBottomChrome } from './bottom-chrome.ts';
-import { createPullToRefresh, pullAnswer } from './pull.ts';
-import { describeSync } from './sync-line.ts';
-import { showToast, type Toast } from './toast.ts';
-import { screenKeeper } from './wakelock.ts';
-import { showFatal, startUpdates } from './updates.ts';
-import { addView } from './views/add.ts';
-import { chooseDialog, confirmDialog } from './views/confirm-dialog.ts';
-import { describeGuestWork, hasGuestWork, isGuest } from './guest.ts';
-import { welcomeView } from './views/welcome.ts';
-import { createHeader, type Header } from './views/header.ts';
-import { editView } from './views/edit.ts';
-import { importView } from './views/import.ts';
+import { App } from './app.ts';
 import { watchInstallPrompt } from './install.ts';
+import { matchRoute } from './router.ts';
+import { applyReadingColors } from './settings.ts';
+import { createFrame } from './shell/frame.ts';
+import { runNavigation } from './shell/navigation.ts';
+import { createScreen } from './shell/screen.ts';
+import { createSession } from './shell/session.ts';
+import { showFatal, startUpdates } from './updates.ts';
+import { screenKeeper } from './wakelock.ts';
 import { createInstallBanner } from './views/install-banner.ts';
-import { installView } from './views/install.ts';
-import { listView } from './views/list.ts';
-import { listsView } from './views/lists.ts';
-import { performView } from './views/perform.ts';
-import { setlistView } from './views/setlist.ts';
-import { settingsView } from './views/settings.ts';
-import { signInView } from './views/signin.ts';
-import { dismissSheetOnBack } from './views/sheet.ts';
-import { askToLeave, leaveIsRisky, setLeaveGuard } from './leave-guard.ts';
-import type { Account, Navigate, View } from './views/types.ts';
 import { startShared } from './views/shared.ts';
-import { viewView } from './views/view.ts';
 
 /**
- * The app: a header, and the screen the address asks for. Everything the person has is on this
- * device first (IndexedDB) and synced when the network allows, so the shell, the songs and the
- * viewer all work with no connection.
+ * The entry point: picks what the page is (a visitor reading a shared list, or the app) and puts the parts together. The
+ * parts are in `shell/`: the screen the views are shown in, the frame around them (bar, menu), the navigation that maps the
+ * address to a view, and the session that decides who is in. Everything the person has is on this device first (IndexedDB)
+ * and synced when the network allows, so the shell, the songs and the viewer all work with no connection.
  */
 
 const root = document.getElementById('app');
@@ -49,440 +26,23 @@ if (root === null) {
 }
 const app: HTMLElement = root;
 
-let current: View | null = null;
-/** Who is signed in, for the account block of Ajustes; null for a person trying the app with no account */
-let signedInEmail: string | null = '';
-/** The bar and the menu, once the person is in */
-let header: Header | null = null;
-/** The "install the app" bar at the bottom, one for the whole page, until the app is installed */
-const installBanner = createInstallBanner();
-/** Signs out, asking first when something written here was never sent (set once the header exists) */
-let requestSignOut: () => void = () => undefined;
-/** Signs in, for a person with no account (set once they are in) */
-let requestSignIn: () => void = () => undefined;
-
-function show(view: View): void {
-    current?.dispose?.();
-    current = view;
-    const container = document.getElementById('view');
-    if (container === null) {
-        app.replaceChildren(view.element);
-    } else {
-        container.replaceChildren(view.element);
-        container.scrollTop = 0;
-    }
-}
-
-function notice(text: string): View {
-    return { element: h('div', { class: 'page' }, h('p', { class: 'card' }, text)) };
-}
-
-let savesWatched = false;
-
-/**
- * Everything is saved as it is typed, so there is no "save" button to tell the person it worked:
- * a toast does. It says where the change is ("en este dispositivo") and, once the server has it,
- * that it is synced, so the person knows when the only copy is the one on this device.
- */
-function watchSaves(data: App): void {
-    if (savesWatched) {
-        return;
-    }
-    savesWatched = true;
-    let last: Toast | null = null;
-    let waiting = false;
-    data.onSaved(() => {
-        last = showToast('Guardado en este dispositivo');
-        waiting = true;
-    });
-    data.onStatus((status) => {
-        if (waiting && status.state === 'idle' && status.pending === 0) {
-            waiting = false;
-            last?.update('Guardado y sincronizado');
-        }
-    });
-}
-
-/** The frame around every screen. Built once per sign-in. */
-function mountShell(data: App, email: string | null, onSignedOut: () => void, onNeedsSignIn: () => void): void {
-    requestSignOut = () => {
-        void signOut(data, (unsent) =>
-            confirmDialog({
-                title: '¿Salir de todos modos?',
-                text: unsent === 1
-                    ? 'Hay 1 canto escrito en este dispositivo que no se pudo enviar. Si sales ahora se perderá.'
-                    : `Hay ${unsent} cantos escritos en este dispositivo que no se pudieron enviar. Si sales ahora se perderán.`,
-                confirm: 'Salir',
-                danger: true,
-            }),
-        ).then((done) => {
-            if (done) {
-                onSignedOut();
-            }
-        });
-    };
-
-    const frame = createHeader({
-        email,
-        onSync: () => {
-            // With no account the dot says so; there is nothing to sync
-            void data.syncNow().then(() => showToast(data.status().guest ? 'Sin cuenta: tus cantos están solo en este dispositivo' : pullAnswer(data.status().state)));
-        },
-        onSignOut: () => requestSignOut(),
-        onNeedsSignIn,
-    });
-    header = frame;
-    signedInEmail = email;
-    const view = h('main', { id: 'view' });
-    // Pull down to sync now (not while singing: the stage has its own touches)
-    const pull = createPullToRefresh(view, {
-        enabled: () => matchRoute(location.pathname).name !== 'perform',
-        refresh: async () => {
-            await data.syncNow();
-
-            return data.status().state;
-        },
-    });
-    app.replaceChildren(h('div', { class: 'shell' }, ...frame.top, view, pull, installBanner.element), frame.menu);
-    watchBottomChrome([installBanner.element, frame.menu]);
-    watchSaves(data);
-
-    data.onStatus(frame.paint);
-    frame.paint(data.status());
-}
-
-/** Shows the bar and the menu that suit the screen; while singing a list they give their room to the song */
-function markSection(route: Route): void {
-    header?.setRoute(route);
-    installBanner.setAway(route.name === 'perform');
-}
-
-/** The header's sync line and sign-out, for the screen that puts the header away */
-function accountOf(data: App): Account {
-    return {
-        email: signedInEmail,
-        syncText: () => describeSync(data.status()).text,
-        onSync: (listener) => data.onStatus((status) => listener(describeSync(status).text)),
-        signOut: () => requestSignOut(),
-        signIn: () => requestSignIn(),
-    };
-}
-
-function routeView(data: App, route: Route, navigate: Navigate): Promise<View> {
-    switch (route.name) {
-        case 'lists':
-            return Promise.resolve(listsView(data, navigate));
-        case 'setlist':
-        case 'sections':
-        case 'add':
-        case 'perform':
-            return data.setlists.get(route.id).then((setlist) => {
-                if (setlist === undefined) {
-                    return notice('Este listado no existe (o se eliminó).');
-                }
-                if (route.name === 'setlist') {
-                    return setlistView(data, navigate, setlist);
-                }
-                if (route.name === 'sections') {
-                    return sectionsView(data, navigate, setlist);
-                }
-                if (route.name === 'perform') {
-                    return performView(data, navigate, setlist, route.n);
-                }
-                const part = visibleParts(setlist).find((candidate) => candidate.id === route.part);
-
-                return part === undefined ? notice('Esta sección no existe en el listado.') : addView(data, navigate, setlist, part);
-            });
-        case 'templates':
-            return Promise.resolve(templatesView(data, navigate));
-        case 'template':
-            return data.templates.get(route.id).then((template) =>
-                template === undefined ? notice('Esta plantilla no existe (o se eliminó).') : templateView(data, navigate, template));
-        case 'install':
-            return Promise.resolve(installView());
-        case 'settings':
-            return Promise.resolve(settingsView(accountOf(data)));
-        case 'list':
-            return Promise.resolve(listView(data, navigate));
-        case 'new':
-            return Promise.resolve(editView(data, navigate, undefined, route));
-        case 'import':
-            return Promise.resolve(importView(data, navigate));
-        case 'view':
-        case 'edit':
-            return data.get(route.id).then((song) => {
-                if (song === undefined) {
-                    return notice('Este canto no existe (o se eliminó).');
-                }
-
-                return route.name === 'view' ? viewView(data, navigate, song) : editView(data, navigate, song, route.back === undefined ? {} : { back: route.back });
-            });
-        default:
-            return Promise.resolve(notice('Esta página no existe.'));
-    }
-}
-
-/** Puts the screen back where it was, waiting for a view that fills in after it is shown */
-function restoreScroll(top: number): void {
-    const container = document.getElementById('view');
-    if (container === null || top <= 0) {
-        return;
-    }
-    let tries = 0;
-    const apply = (): void => {
-        container.scrollTop = top;
-        if (container.scrollTop < top && ++tries < 8) {
-            setTimeout(apply, 100);
-        }
-    };
-    apply();
-}
-
-function runRouter(data: App): void {
-    let token = 0;
-    /** How far each screen was scrolled when the person left it, so "back" returns to the same place */
-    const scrolls = new Map<string, number>();
-    /** The address of the screen being shown */
-    let shown = location.pathname;
-    const rememberScroll = (): void => {
-        const container = document.getElementById('view');
-        if (container !== null) {
-            scrolls.set(shown, container.scrollTop);
-        }
-    };
-    const render = (restore: boolean): void => {
-        const mine = ++token;
-        const route = matchRoute(location.pathname, location.search);
-        const path = location.pathname;
-        markSection(route);
-        void routeView(data, route, navigate).then((view) => {
-            if (mine === token) {
-                show(view);
-                shown = path;
-                if (restore) {
-                    restoreScroll(scrolls.get(path) ?? 0);
-                }
-            } else {
-                view.dispose?.();
-            }
-        });
-    };
-    const navigate: Navigate = (path, options) => {
-        rememberScroll();
-        if (options?.replace === true) {
-            history.replaceState(null, '', path);
+/** Builds the app around the device's data and starts it */
+function startApp(data: App): Promise<void> {
+    const screen = createScreen(app);
+    /** The "install the app" bar at the bottom, one for the whole page, until the app is installed */
+    const installBanner = createInstallBanner();
+    const frame = createFrame(app, data, installBanner);
+    /** What draws the current screen again; there from the first time the app is shown */
+    let redraw: (() => void) | null = null;
+    const showApp = (): void => {
+        if (redraw === null) {
+            redraw = runNavigation(data, screen, frame);
         } else {
-            history.pushState(null, '', path);
+            redraw();
         }
-        render(false);
     };
 
-    document.addEventListener('click', (event) => {
-        if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
-            return;
-        }
-        const anchor = (event.target as HTMLElement).closest<HTMLAnchorElement>('a[data-link]');
-        if (anchor !== null && anchor.origin === location.origin) {
-            event.preventDefault();
-            const path = anchor.pathname + anchor.search;
-            if (leaveIsRisky()) {
-                void askToLeave().then((leave) => leave && navigate(path));
-            } else {
-                navigate(path);
-            }
-        }
-    });
-    window.addEventListener('popstate', () => {
-        if (dismissSheetOnBack()) {
-            return;
-        }
-        if (leaveIsRisky()) {
-            // The address has already changed: put it back, ask, and only if the person leaves go back for real
-            history.pushState(null, '', shown);
-            void askToLeave().then((leave) => {
-                if (leave) {
-                    setLeaveGuard(null);
-                    history.back();
-                }
-            });
-
-            return;
-        }
-        rememberScroll();
-        render(true);
-    });
-    render(false);
-}
-
-let routerStarted = false;
-
-/** Shows the app for a signed-in person (or one whose songs this device holds, when offline) */
-function enter(data: App, email: string): void {
-    mountShell(
-        data,
-        email,
-        () => {
-            // Salir is in Ajustes: whoever signs in next starts from the songs, not from that screen
-            history.replaceState(null, '', paths.list());
-            void begin(data);
-        },
-        () => {
-            show(signInView((signedIn) => {
-                void data.adopt(signedIn).then(() => {
-                    enter(data, signedIn);
-                    data.resumed();
-                });
-            }, 'Tu sesión terminó. Inicia sesión para seguir sincronizando; tus cantos siguen aquí.'));
-        },
-    );
-    if (!routerStarted) {
-        routerStarted = true;
-        runRouter(data);
-    } else {
-        window.dispatchEvent(new PopStateEvent('popstate'));
-    }
-}
-
-/**
- * Shows the app for a person with no account: their songs are on this device and nothing is synced. The bar's dot and its
- * line say so and offer to sign in; signing in asks what to do with what was written (see `signInFromGuest`).
- */
-function enterGuest(data: App): void {
-    requestSignIn = () => signInFromGuest(data);
-    mountShell(data, null, () => undefined, () => signInFromGuest(data));
-    if (!routerStarted) {
-        routerStarted = true;
-        runRouter(data);
-    } else {
-        window.dispatchEvent(new PopStateEvent('popstate'));
-    }
-}
-
-function reportSignInFailure(failure: unknown): void {
-    showToast(failure instanceof Error ? failure.message : 'No se pudo iniciar sesión.');
-}
-
-/** Shows the sign-in form over the app of a person with no account; "Volver" gives the app back */
-function signInFromGuest(data: App): void {
-    show(signInView(
-        (email) => void finishGuestSignIn(data, email).catch(reportSignInFailure),
-        '',
-        () => window.dispatchEvent(new PopStateEvent('popstate')),
-    ));
-}
-
-/**
- * The person with no account signed in. If they wrote anything, they choose: add it to the account, or drop it (nothing is
- * decided for them: cancelling keeps them where they were, signed out again). With nothing written there is nothing to ask.
- */
-async function finishGuestSignIn(data: App, email: string): Promise<void> {
-    const work = await data.guestWork();
-    let keep = false;
-    if (hasGuestWork(work)) {
-        const answer = await chooseDialog<'keep' | 'drop'>({
-            title: `Tienes ${describeGuestWork(work)} en este dispositivo`,
-            text: 'Los escribiste sin cuenta. Puedes sumarlos a tu cuenta (se agregan a lo que ya tienes) o descartarlos (se borran de este dispositivo y queda solo lo de tu cuenta).',
-            cancel: 'Cancelar',
-            choices: [
-                { label: 'Sumarlos a mi cuenta', value: 'keep', kind: 'primary' },
-                { label: 'Descartarlos', value: 'drop', kind: 'danger' },
-            ],
-        });
-        if (answer === null) {
-            // Nothing was decided: the session the sign-in just made is not wanted, and the person goes on as they were
-            await api.logout().catch(() => undefined);
-            window.dispatchEvent(new PopStateEvent('popstate'));
-
-            return;
-        }
-        keep = answer === 'keep';
-    }
-    if (keep) {
-        await data.adoptKeepingGuestWork(email);
-    } else {
-        await data.adopt(email);
-        // The screen the person was on may show something that was just dropped: they start from the songs
-        history.replaceState(null, '', paths.list());
-    }
-    enter(data, email);
-    data.requestSync(0);
-}
-
-/** What a device with nothing on it and no session shows: try the app, or sign in */
-function showWelcome(data: App, message?: string): void {
-    show(welcomeView({
-        onTry: () => {
-            void data.startGuest().then(() => enterGuest(data));
-        },
-        onSignIn: () => {
-            show(signInView((email) => {
-                void data.adopt(email).then(() => {
-                    enter(data, email);
-                    data.requestSync(0);
-                });
-            }, '', () => showWelcome(data, message)));
-        },
-        ...(message === undefined ? {} : { message }),
-    }));
-}
-
-/**
- * Starts the app. When this device already holds someone's songs it opens from them at once,
- * with no network: whether the session is still good is found out in the background, and a
- * slow or missing connection never keeps the person from their songs. Only a device with nothing
- * on it has to ask the server who is there.
- */
-async function begin(data: App): Promise<void> {
-    const owner = await data.owner();
-    if (isGuest(owner)) {
-        // No account: nothing to ask the server, so it opens at once, online or not
-        await data.startGuest();
-        enterGuest(data);
-
-        return;
-    }
-    if (owner !== null) {
-        enter(data, owner);
-        void verifySession(data, owner);
-
-        return;
-    }
-
-    app.replaceChildren(
-        h('header', { class: 'bar' }, h('h1', {}, 'Listas')),
-        h('main', { id: 'view' }, splash('Conectando…')),
-        installBanner.element,
-    );
-    try {
-        const me = await api.me();
-        await data.adopt(me.email);
-        enter(data, me.email);
-        data.requestSync(0);
-    } catch (failure: unknown) {
-        // No session on a device with nothing on it: the app is open to try; signing in needs a connection
-        showWelcome(data, failure instanceof ApiError && failure.isOffline ? 'Sin conexión: puedes probar la app; para iniciar sesión necesitas conexión.' : undefined);
-    }
-}
-
-/** The person is already in; ask the server whether that is still true, and sync */
-async function verifySession(data: App, owner: string): Promise<void> {
-    try {
-        const me = await api.me();
-        if (me.email !== owner) {
-            // Another account signed in on this device elsewhere: its songs replace these
-            await data.adopt(me.email);
-            enter(data, me.email);
-        }
-        data.requestSync(0);
-    } catch {
-        // Offline, a stuck network, or the session ended: syncing reports which, in the header,
-        // and the songs on the device stay readable either way
-        data.requestSync(0);
-    }
-}
-
-function splash(text: string): HTMLElement {
-    return h('div', { class: 'splash', role: 'status' }, h('span', { class: 'spinner spinner--big', 'aria-hidden': 'true' }), h('p', {}, text));
+    return createSession({ root: app, data, screen, frame, installBanner, showApp }).begin();
 }
 
 // Whatever goes wrong while starting, say so instead of leaving a blank screen
@@ -525,7 +85,7 @@ if (visiting.name === 'shared') {
         .then((data) => {
             data.watchConnection();
 
-            return begin(data);
+            return startApp(data);
         })
         .catch((error: unknown) => showFatal(app, error));
 }

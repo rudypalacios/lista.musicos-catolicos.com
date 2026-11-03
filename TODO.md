@@ -184,6 +184,9 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       404, an address that keeps missing is slowed down (`MissThrottle`), and the answer can be kept a minute with an ETag. The visitor's page has no cookies, analytics or ads and asks for nothing from another
       origin (checked under the production policy). **Left for the owner:** publish the privacy text proposed in the PR in `musicos-catolicos` (Privacidad) and decide whether the lyrics switch stays on by default.
       **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 46.
+- [x] **`main.ts` split by concern** (`web/src/shell/`; no change in what the app does): it had grown to 530 lines that mixed the page's entry, the frame (bar, menu, toasts), the map of addresses to views, the address bar and the back button, and
+      the session (who is in, the welcome, signing in and out, trying with no account), all sharing module-level variables. Each is now a module that owns its state and receives what it needs (`createScreen`, `createFrame`, `runNavigation`,
+      `routeView`, `createSession`), and `main.ts` only puts them together. Behaviour is checked by the whole e2e suite, which is unchanged.
 - [x] **Try the app with no account** (`web/src/guest.ts`, `views/welcome.ts`, `App.startGuest` / `adoptKeepingGuestWork`; step 2 of open sign-up; the owner approved the mockup and the changes to the bar, the dot and Ajustes on 2026-11-03):
       a device with nothing on it and no session opens on a welcome ("Probar sin cuenta" / "Ya tengo cuenta"); a guest writes to the device, nothing is synced, the dot is an empty circle, a line under the bar says so and offers
       "Iniciar sesión", and Ajustes says "Sin cuenta". Signing in asks, only if something was written, to add it to the account, drop it or cancel (cancelling changes nothing). The Mass of the account always wins over the guest's.
