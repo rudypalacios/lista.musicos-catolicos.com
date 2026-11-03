@@ -6,7 +6,11 @@ namespace App\Auth;
 
 final class User
 {
-    public function __construct(public readonly string $id, public readonly string $email)
-    {
+    /** @param bool $verified whether the person proved the email is theirs (a link sent to it was opened) */
+    public function __construct(
+        public readonly string $id,
+        public readonly string $email,
+        public readonly bool $verified = true,
+    ) {
     }
 }

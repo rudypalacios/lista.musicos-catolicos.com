@@ -6,6 +6,7 @@
         "php": "^8.3",
         "ext-json": "*",
         "ext-pdo": "*",
+        "phpmailer/phpmailer": "^6.9",
         "slim/psr7": "^1.8",
         "slim/slim": "^4.15",
         "vlucas/phpdotenv": "^5.6"

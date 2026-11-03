@@ -4,22 +4,37 @@ declare(strict_types=1);
 
 namespace App\Http;
 
+use App\Auth\Accounts;
 use App\Auth\Authenticator;
+use App\Auth\EmailTokens;
 use App\Config;
 use App\Database\Migrator;
+use App\Http\Actions\ChallengeAction;
+use App\Http\Actions\ForgotPasswordAction;
 use App\Http\Actions\HealthAction;
 use App\Http\Actions\LoginAction;
 use App\Http\Actions\LogoutAction;
 use App\Http\Actions\MeAction;
 use App\Http\Actions\PullAction;
 use App\Http\Actions\PushAction;
+use App\Http\Actions\RegisterAction;
+use App\Http\Actions\ResendVerificationAction;
+use App\Http\Actions\ResetPasswordAction;
 use App\Http\Actions\ShareEnableAction;
 use App\Http\Actions\ShareRevokeAction;
 use App\Http\Actions\ShareStatusAction;
 use App\Http\Actions\SharedViewAction;
 use App\Http\Actions\SongShareAction;
+use App\Http\Actions\VerifyEmailAction;
 use App\Http\Middleware\JsonOnly;
 use App\Http\Middleware\RequireUser;
+use App\Mail\AccountMail;
+use App\Mail\LogMailer;
+use App\Mail\Mailer;
+use App\Mail\SmtpMailer;
+use App\Security\ProofOfWork;
+use App\Security\RateLimiter;
+use App\Security\Secrets;
 use App\Share\MissThrottle;
 use App\Share\ShareRepository;
 use App\Share\SongShareRepository;
@@ -46,9 +61,18 @@ final class AppFactory
     /**
      * @return App<ContainerInterface|null>
      */
-    public static function create(PDO $pdo, Config $config, string $migrationsDir): App
+    public static function create(PDO $pdo, Config $config, string $migrationsDir, ?Mailer $mailer = null): App
     {
         $authenticator = new Authenticator($pdo);
+        $mailer ??= $config->mail->canSend() ? new SmtpMailer($config->mail) : new LogMailer();
+        $accounts = new Accounts(
+            $pdo,
+            $authenticator,
+            new EmailTokens($pdo),
+            new AccountMail($mailer, $config->appUrl)
+        );
+        $proof = new ProofOfWork($pdo, new Secrets($pdo));
+        $limits = new RateLimiter($pdo);
         $migrator = new Migrator($pdo, $migrationsDir);
         $songs = new SongRepository($pdo);
         $setlists = new SetlistRepository($pdo);
@@ -71,11 +95,24 @@ final class AppFactory
             $feed,
             $shares,
             $songShares,
-            $misses
+            $misses,
+            $accounts,
+            $proof,
+            $limits,
+            $config
         ): void {
             $api->get('/health', new HealthAction($migrator));
             $api->post('/login', new LoginAction($authenticator));
             $api->post('/logout', new LogoutAction($authenticator));
+
+            // Accounts of other people: sign up, confirm the address, forget the password
+            $api->get('/challenge', new ChallengeAction($proof));
+            $api->post('/register', new RegisterAction($accounts, $proof, $limits, $config->signupOpen));
+            $api->post('/verify-email', new VerifyEmailAction($accounts));
+            $api->post('/verify-email/resend', new ResendVerificationAction($accounts, $limits))
+                ->add(new RequireUser($authenticator));
+            $api->post('/forgot', new ForgotPasswordAction($accounts, $proof, $limits));
+            $api->post('/reset', new ResetPasswordAction($accounts));
             $api->get('/me', new MeAction())->add(new RequireUser($authenticator));
             $api->get('/sync', new PullAction($feed))->add(new RequireUser($authenticator));
             $api->post('/sync', new PushAction($songs, $setlists, $templates))->add(new RequireUser($authenticator));

@@ -14,6 +14,8 @@ final class Config
 {
     public const DRIVER_MYSQL = 'mysql';
     public const DRIVER_SQLITE = 'sqlite';
+    /** Where the links in the emails point when APP_URL says nothing (never taken from the request: see AccountMail) */
+    public const PRODUCTION_URL = 'https://lista.musicos-catolicos.com';
 
     /**
      * @param self::DRIVER_* $dbDriver
@@ -27,6 +29,10 @@ final class Config
         public readonly ?string $ownerEmail,
         public readonly ?string $ownerPassword,
         public readonly ?string $ownerPasswordHash,
+        public readonly string $appUrl = self::PRODUCTION_URL,
+        public readonly MailConfig $mail = new MailConfig(),
+        /** Whether anyone can sign up. Off until the owner has published the privacy text and says so in .env (SIGNUP_OPEN=1) */
+        public readonly bool $signupOpen = false,
     ) {
     }
 
@@ -62,6 +68,9 @@ final class Config
             self::string($env, 'OWNER_EMAIL'),
             self::string($env, 'OWNER_PASSWORD'),
             self::string($env, 'OWNER_PASSWORD_HASH'),
+            rtrim(self::string($env, 'APP_URL') ?? self::PRODUCTION_URL, '/'),
+            MailConfig::fromEnv($env),
+            self::string($env, 'SIGNUP_OPEN') === '1',
         );
     }
 
@@ -73,7 +82,7 @@ final class Config
     /**
      * @param array<string, mixed> $env
      */
-    private static function string(array $env, string $key): ?string
+    public static function string(array $env, string $key): ?string
     {
         $value = $env[$key] ?? null;
 

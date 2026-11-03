@@ -573,6 +573,14 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    conexión y recarga (siguen); toca **Iniciar sesión** (en la raya o en Ajustes), entra con tu cuenta y prueba **Cancelar**, **Sumarlos** y **Descartarlos** en tres ventanas de incógnito distintas. **Ojo en el iPad:** Safari borra los
    datos de un sitio que no se usa en unos días: quien prueba sin cuenta y no vuelve en una semana puede perder lo que escribió (la app lo dice en Ajustes).
 
+59. **Cuentas de varias personas, paso 3 (parte del servidor): correo para confirmar y recuperar contraseñas. Todavía no se ve nada en la app y el registro sigue cerrado.** Este paso deja listo el servidor: crear una cuenta, mandar un
+   enlace para confirmar el correo, y otro para elegir una contraseña nueva. **Lo que te toca (una vez, en el servidor):** en el archivo `.env` del servidor (el del Administrador de archivos de cPanel; **no** se sube por el deploy) agrega, con el
+   buzón `noreply@musicos-catolicos.com` que ya creaste: `SMTP_HOST=` (en cPanel: *Cuentas de correo → Conectar dispositivos → Configuración de servidor saliente*, suele ser `mail.musicos-catolicos.com`), `SMTP_PORT=465`, `SMTP_SECURE=ssl`,
+   `SMTP_USERNAME=noreply@musicos-catolicos.com` y `SMTP_PASSWORD=` (la contraseña de ese buzón). Los nombres y ejemplos están en `.env.example`. **No lo mandes por el chat ni lo subas a GitHub.** Sin `SMTP_HOST` la app no manda nada
+   (escribe el mensaje en el registro de errores). **El registro de otras personas sigue cerrado** hasta que agregues `SIGNUP_OPEN=1` a ese `.env`: no lo hagas todavía, falta la parte de la app (pantallas) y publicar el texto de privacidad,
+   porque se guardan correos de otras personas. **Las migraciones `0017` y `0018` crean las tablas solas.** **Tu cuenta** queda marcada como confirmada (no recibes ningún correo). **Prueba después del deploy:** abre la app y entra como siempre; todo
+   debe verse igual. (Cuando exista la pantalla «Olvidé mi contraseña» se probará el correo con tu buzón.)
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.
