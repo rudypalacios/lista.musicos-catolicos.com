@@ -79,6 +79,8 @@ export function pullAnswer(state: SyncState): string {
             return 'La sesión terminó';
         case 'error':
             return 'No se pudo sincronizar';
+        case 'local':
+            return 'Sin cuenta: no hay nada que sincronizar';
         default:
             return 'Sincronizado';
     }

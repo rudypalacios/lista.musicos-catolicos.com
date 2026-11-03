@@ -564,6 +564,15 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    primer uso después del deploy** (en MySQL cambia la clave de tres tablas; no se pierde ni se mueve ningún dato). **No hay nada que ejecutar ni probar a mano más que abrir la app y ver que todo sigue igual:** tus cantos,
    tus listados, tus plantillas y tus enlaces compartidos. Si algo no aparece, avísame antes de tocar nada.
 
+58. **Cuentas de varias personas, paso 2: probar la app sin cuenta.** Un dispositivo **sin cantos y sin sesión** ya no abre en el formulario de entrar: abre en una **bienvenida** con dos botones, **«Probar sin cuenta»** y
+   **«Ya tengo cuenta»** (el formulario de siempre, con un «Volver»). Quien prueba escribe cantos, listados y plantillas que **se guardan solo en ese dispositivo** y **no se envían a ningún lado**: el punto de la barra es un
+   **círculo vacío**, una raya bajo la barra dice «Estás probando sin cuenta…» con **Iniciar sesión**, y en Ajustes la cuenta dice «Sin cuenta» con el mismo botón. Al iniciar sesión, **si había escrito algo**, la app pregunta:
+   **«Sumarlos a mi cuenta»** (se agregan a lo que ya hay; la plantilla Misa de la cuenta no se toca), **«Descartarlos»** (se borran de este dispositivo) o **«Cancelar»** (nada cambia y sigue sin cuenta); si no había escrito nada, entra
+   directo. **A tus dispositivos no les pasa nada:** los que ya tienen tu cuenta siguen igual, y al **Salir** el dispositivo vuelve a la bienvenida (antes al formulario). **Todavía no se puede crear una cuenta** (eso es el paso 3), así
+   que «Crear cuenta» no aparece. **Prueba (teléfono, tableta y compu):** abre la app en una ventana de incógnito: debe salir la bienvenida; toca **Probar sin cuenta**, crea un canto y un listado, recarga (siguen ahí) y apaga la
+   conexión y recarga (siguen); toca **Iniciar sesión** (en la raya o en Ajustes), entra con tu cuenta y prueba **Cancelar**, **Sumarlos** y **Descartarlos** en tres ventanas de incógnito distintas. **Ojo en el iPad:** Safari borra los
+   datos de un sitio que no se usa en unos días: quien prueba sin cuenta y no vuelve en una semana puede perder lo que escribió (la app lo dice en Ajustes).
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.

@@ -95,6 +95,19 @@ export class Templates {
     }
 
     /**
+     * Makes the Mass, if this device holds one, give way to any other version of it: stamped as the oldest, the account's
+     * Mass (or, if the account has none, this one) is what is left once the device signs in (see `App.adoptKeepingGuestWork`).
+     */
+    yieldMisa(): Promise<void> {
+        return this.serial(async () => {
+            const misa = await this.store.get('templates', MISA_ID);
+            if (misa !== undefined && misa.updatedAt !== 0) {
+                await this.store.save('templates', { ...misa, updatedAt: 0 });
+            }
+        });
+    }
+
+    /**
      * A template with the sections given (a copy, with the ones switched off dropped: a template lists what a list
      * starts with). @throws ValidationError (as a rejected promise)
      */

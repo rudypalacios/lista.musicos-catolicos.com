@@ -102,6 +102,8 @@ export function settingsView(account: Account): View {
 
     const signOut = h('button', { type: 'button', class: 'button button--danger' }, 'Salir');
     signOut.addEventListener('click', () => account.signOut());
+    const signIn = h('button', { type: 'button', class: 'button button--primary' }, 'Iniciar sesión');
+    signIn.addEventListener('click', () => account.signIn());
 
     const element = h(
         'div',
@@ -127,8 +129,12 @@ export function settingsView(account: Account): View {
         h('p', { class: 'muted help-link' }, link(paths.install(), 'Cómo instalar la app en el iPad o el teléfono')),
         h('section', { class: 'settings__account' },
             h('h3', {}, 'Cuenta'),
-            h('p', { class: 'muted' }, account.email),
-            signOut),
+            ...(account.email === null
+                ? [
+                    h('p', { class: 'muted' }, 'Sin cuenta. Tus cantos, listados y plantillas están solo en este dispositivo. Si borras los datos del navegador, se pierden.'),
+                    signIn,
+                ]
+                : [h('p', { class: 'muted' }, account.email), signOut])),
     );
 
     return { element };

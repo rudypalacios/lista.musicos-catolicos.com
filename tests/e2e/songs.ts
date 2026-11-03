@@ -738,6 +738,7 @@ try {
     await page.evaluate(() => window.dispatchEvent(new Event('online')));
     await synced(page);
     await signOutFromSettings(page);
+    await page.getByRole('button', { name: 'Ya tengo cuenta' }).click();
     await page.getByRole('heading', { name: 'Inicia sesión' }).waitFor();
     const left = await page.evaluate(() => indexedDB.databases().then((dbs) => dbs.length));
     assert.ok(left >= 0);

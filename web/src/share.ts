@@ -31,6 +31,10 @@ export function shareFailure(failure: { status: number; message: string } | null
     if (failure.status === 0) {
         return 'Compartir necesita conexión. Inténtalo cuando la tengas.';
     }
+    // No session: the person is trying the app with no account, or the session ended
+    if (failure.status === 401) {
+        return 'Para compartir necesitas iniciar sesión con tu cuenta.';
+    }
 
     return failure.message;
 }

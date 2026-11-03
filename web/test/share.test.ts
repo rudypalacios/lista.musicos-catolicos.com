@@ -28,6 +28,7 @@ describe('shareFailure', () => {
     it('says offline in its own words and passes the server\'s message on', () => {
         assert.match(shareFailure({ status: 0, message: 'Sin conexión.' }), /necesita conexión/);
         assert.equal(shareFailure({ status: 404, message: 'Este listado todavía no está en el servidor.' }), 'Este listado todavía no está en el servidor.');
+        assert.match(shareFailure({ status: 401, message: 'Inicia sesión para continuar.' }), /iniciar sesión con tu cuenta/);
         assert.match(shareFailure(null), /No se pudo compartir/);
     });
 });
