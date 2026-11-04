@@ -40,7 +40,7 @@ export async function startServer(port: number, options: ServerOptions = {}): Pr
                 OWNER_EMAIL: EMAIL,
                 OWNER_PASSWORD: PASSWORD,
                 APP_URL: base,
-                ...(options.mailPort === undefined ? {} : { SMTP_HOST: '127.0.0.1', SMTP_PORT: String(options.mailPort), SMTP_SECURE: 'none' }),
+                ...(options.mailPort === undefined ? {} : { MAIL_HOST: '127.0.0.1', MAIL_PORT: String(options.mailPort), MAIL_ENCRYPTION: 'none' }),
             },
             stdio: 'ignore',
         },

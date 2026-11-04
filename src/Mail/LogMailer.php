@@ -13,6 +13,7 @@ final class LogMailer implements Mailer
 {
     public function send(string $to, string $subject, string $text): void
     {
-        error_log("Mail not sent (no SMTP_HOST): to {$to}, subject \"{$subject}\"\n{$text}");
+        $why = 'no MAIL_HOST, or MAIL_DRIVER is not smtp';
+        error_log("Mail not sent ({$why}): to {$to}, subject \"{$subject}\"\n{$text}");
     }
 }

@@ -34,6 +34,9 @@ final class SmtpMailer implements Mailer
             $mail->Timeout = 10;
             $mail->CharSet = PHPMailer::CHARSET_UTF8;
             $mail->setFrom($this->config->from, $this->config->fromName);
+            if ($this->config->replyTo !== null) {
+                $mail->addReplyTo($this->config->replyTo);
+            }
             $mail->addAddress($to);
             $mail->Subject = $subject;
             $mail->Body = $text;

@@ -155,7 +155,7 @@ a link's code is 256 random bits, only its hash is kept, it works once and expir
 account; a new password ends every session; sign-up and forgot need a **proof of work** solved by the browser (`Security/ProofOfWork.php`: SHA-256 with
 18 zero bits, signed by the server with a secret it makes itself in `app_secrets`, spent once) because the policy forbids a third-party captcha. It prices a
 script, it does not tell a person from a program: the limits per address (`Security/RateLimiter.php`) and the confirmation of the address do the rest.
-Email goes through the site's mailbox over SMTP (`Mail/SmtpMailer.php`, PHPMailer); with no `SMTP_HOST` it is written to the error log (`LogMailer`).
+Email goes through the site's mailbox over SMTP (`Mail/SmtpMailer.php`, PHPMailer); its settings are the `MAIL_*` of the owner's other system (`MailConfig`); with no `MAIL_HOST` it is written to the error log (`LogMailer`).
 Every account is separate: records are keyed by (user, id) (migration 0016). The accounts that existed before confirmation (the owner's) count as confirmed.
 
 **The app (3b):** "Crear cuenta" is offered in the welcome, on the guest's line and in Ajustes. The sign-up form (`views/signup.ts`) checks what it can itself (`account.ts`), asks for a puzzle and solves it on the device (`pow.ts`: SHA-256
