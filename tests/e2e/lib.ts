@@ -21,8 +21,6 @@ export interface Server {
 
 /** What the server of a test is started with */
 export interface ServerOptions {
-    /** Anyone can create an account (SIGNUP_OPEN=1) */
-    signupOpen?: boolean;
     /** The port of a `startMailSink`: the server sends its emails there, over real SMTP */
     mailPort?: number;
 }
@@ -42,7 +40,6 @@ export async function startServer(port: number, options: ServerOptions = {}): Pr
                 OWNER_EMAIL: EMAIL,
                 OWNER_PASSWORD: PASSWORD,
                 APP_URL: base,
-                ...(options.signupOpen === true ? { SIGNUP_OPEN: '1' } : {}),
                 ...(options.mailPort === undefined ? {} : { SMTP_HOST: '127.0.0.1', SMTP_PORT: String(options.mailPort), SMTP_SECURE: 'none' }),
             },
             stdio: 'ignore',

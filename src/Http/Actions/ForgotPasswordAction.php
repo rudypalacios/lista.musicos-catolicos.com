@@ -13,9 +13,9 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
-  * POST /api/forgot {email, pow: {challenge, nonce}} → 200 {ok: true}, always: there is an account with that
-  * address or there is not, and the answer is the same, so the form cannot be used to find out who has one. If
-  * there is, the link to choose a new password is sent. 403 `invalid_proof` when the puzzle was not solved.
+ * POST /api/forgot {email, pow: {challenge, nonce}} → 200 {ok: true}, always: there is an account with that
+ * address or there is not, and the answer is the same, so the form cannot be used to find out who has one. If
+ * there is, the link to choose a new password is sent. 403 `invalid_proof` when the puzzle was not solved.
  *
  * The mail cannot be turned into a way to flood a mailbox: an address gets at most 3 an hour and a network address at
  * most 8 (past the limit the answer is the same and nothing is sent).

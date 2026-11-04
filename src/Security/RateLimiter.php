@@ -14,6 +14,9 @@ use PDO;
  */
 final class RateLimiter
 {
+    /** Nothing is counted for longer than an hour; what is older than a day is gone, whoever it was about */
+    private const KEEP_SECONDS = 86400;
+
     public function __construct(private readonly PDO $pdo)
     {
     }
@@ -21,14 +24,15 @@ final class RateLimiter
     /** Whether `subject` may do `kind` once more: fewer than `max` times in the last `windowSeconds` */
     public function allows(string $kind, string $subject, int $max, int $windowSeconds, int $now): bool
     {
+        // Old events of everyone go, not only of this subject: an address that never returns must not stay
         $this->pdo
-            ->prepare('DELETE FROM rate_events WHERE kind = ? AND subject = ? AND happened_at <= ?')
-            ->execute([$kind, $subject, ($now - $windowSeconds * 1000)]);
+            ->prepare('DELETE FROM rate_events WHERE happened_at <= ?')
+            ->execute([$now - self::KEEP_SECONDS * 1000]);
 
         $count = (int) Query::scalar(
             $this->pdo,
-            'SELECT COUNT(*) FROM rate_events WHERE kind = ? AND subject = ?',
-            [$kind, $subject]
+            'SELECT COUNT(*) FROM rate_events WHERE kind = ? AND subject = ? AND happened_at > ?',
+            [$kind, $subject, $now - $windowSeconds * 1000]
         );
 
         return $count < $max;

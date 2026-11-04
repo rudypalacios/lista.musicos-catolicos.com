@@ -24,6 +24,4 @@ export interface Account {
     signIn: () => void;
     /** Opens the sign-up form (for a person with no account) */
     signUp: () => void;
-    /** Whether anyone can create an account now */
-    canSignUp: () => boolean;
 }

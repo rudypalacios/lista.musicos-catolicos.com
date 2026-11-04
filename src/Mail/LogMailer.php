@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Mail;
 
 /**
-  * What stands in for the mail server when the app has none set (see `MailConfig`): the message goes to the error
-  * log, whole, so on a developer's machine the link can be copied from there. In production that means the .env
-  * still lacks the mailbox, and the log says so.
+ * What stands in for the mail server when the app has none set (see `MailConfig`): the message goes to the error
+ * log, whole, so on a developer's machine the link can be copied from there. In production that means the .env
+ * still lacks the mailbox, and the log says so.
  */
 final class LogMailer implements Mailer
 {

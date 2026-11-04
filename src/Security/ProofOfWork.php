@@ -8,11 +8,11 @@ use PDO;
 use PDOException;
 
 /**
-  * A speed bump for what a robot would do a thousand times: signing up, asking for a reset email. The server hands
-  * out a challenge; the browser has to find a number that, put after it, gives a SHA-256 that starts with a number
-  * of zero bits. That is some hundreds of thousands of tries (a second or less in a browser worker), nothing for a
-  * person and a cost for a script that wants thousands of accounts. It runs on the person's device and loads
-  * nothing from another domain, so the site's policy of asking nothing from anyone else holds.
+ * A speed bump for what a robot would do a thousand times: signing up, asking for a reset email. The server hands
+ * out a challenge; the browser has to find a number that, put after it, gives a SHA-256 that starts with a number
+ * of zero bits. That is some hundreds of thousands of tries (a second or less in a browser worker), nothing for a
+ * person and a cost for a script that wants thousands of accounts. It runs on the person's device and loads
+ * nothing from another domain, so the site's policy of asking nothing from anyone else holds.
  *
  * It is not a captcha: it does not tell a person from a program, it prices the program. It works together with the
  * limits per address and with the email that has to be confirmed.

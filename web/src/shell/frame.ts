@@ -21,8 +21,6 @@ export interface FrameOptions {
     onNeedsSignIn: () => void;
     /** A person with no account asks to create one */
     onSignUp: () => void;
-    /** Whether anyone can create an account now (asked again whenever the header paints) */
-    canSignUp: () => boolean;
 }
 
 /** The bar, the menu and the area under them that the screens fill */
@@ -33,8 +31,6 @@ export interface Frame {
     markSection: (route: Route) => void;
     /** The header's sync line and sign-out, for the screen that puts the header away (Ajustes, singing) */
     account: () => Account;
-    /** Paints the header again (something it says changed outside the sync: whether sign-up is open) */
-    repaint: () => void;
 }
 
 /**
@@ -80,7 +76,6 @@ export function createFrame(root: HTMLElement, data: App, installBanner: Install
                 onSignOut: () => requestSignOut(),
                 onNeedsSignIn: options.onNeedsSignIn,
                 onSignUp: options.onSignUp,
-                canSignUp: options.canSignUp,
             });
             header = frame;
             const view = h('main', { id: 'view' });
@@ -111,8 +106,6 @@ export function createFrame(root: HTMLElement, data: App, installBanner: Install
             signOut: () => requestSignOut(),
             signIn: () => current?.onNeedsSignIn(),
             signUp: () => current?.onSignUp(),
-            canSignUp: () => current?.canSignUp() ?? false,
         }),
-        repaint: () => header?.paint(data.status()),
     };
 }

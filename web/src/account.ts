@@ -7,8 +7,8 @@
 export const PASSWORD_MAX_BYTES = 72;
 export const PASSWORD_MIN = 10;
 
-/** Where the person reads what is done with their data (the public site's policy, which this app's terms are part of) */
-export const PRIVACY_URL = 'https://www.musicos-catolicos.com/privacidad/';
+/** Where the person reads what is done with their data: the section about this app in the public site's policy */
+export const PRIVACY_URL = 'https://www.musicos-catolicos.com/privacidad/#lista';
 
 /** Why the email is not accepted, or null when it is */
 export function emailProblem(email: string): string | null {

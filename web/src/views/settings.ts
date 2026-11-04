@@ -103,7 +103,7 @@ export function settingsView(account: Account): View {
 
     const signOut = h('button', { type: 'button', class: 'button button--danger' }, 'Salir');
     signOut.addEventListener('click', () => account.signOut());
-    const signIn = h('button', { type: 'button', class: account.canSignUp() ? 'button' : 'button button--primary' }, account.canSignUp() ? 'Ya tengo cuenta' : 'Iniciar sesión');
+    const signIn = h('button', { type: 'button', class: 'button' }, 'Ya tengo cuenta');
     signIn.addEventListener('click', () => account.signIn());
     const signUp = h('button', { type: 'button', class: 'button button--primary' }, 'Crear cuenta');
     signUp.addEventListener('click', () => account.signUp());
@@ -160,7 +160,7 @@ export function settingsView(account: Account): View {
             ...(account.email === null
                 ? [
                     h('p', { class: 'muted' }, 'Sin cuenta. Tus cantos, listados y plantillas están solo en este dispositivo. Si borras los datos del navegador, se pierden.'),
-                    ...(account.canSignUp() ? [signUp] : []),
+                    signUp,
                     signIn,
                 ]
                 : [h('p', { class: 'muted' }, account.email), unconfirmed, signOut])),

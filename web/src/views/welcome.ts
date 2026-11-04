@@ -6,8 +6,8 @@ export interface WelcomeOptions {
     onTry: () => void;
     /** Shows the sign-in form */
     onSignIn: () => void;
-    /** Shows the sign-up form; given only while anyone can create an account (the owner opens it) */
-    onSignUp?: () => void;
+    /** Shows the sign-up form */
+    onSignUp: () => void;
     /** Said above the buttons when there is something the person should know (no connection, for one) */
     message?: string;
 }
@@ -22,13 +22,13 @@ export function welcomeView(options: WelcomeOptions): View {
     const signIn = h('button', { type: 'button', class: 'button' }, 'Ya tengo cuenta');
     signIn.addEventListener('click', options.onSignIn);
     const signUp = h('button', { type: 'button', class: 'button' }, 'Crear cuenta');
-    signUp.addEventListener('click', () => options.onSignUp?.());
+    signUp.addEventListener('click', options.onSignUp);
 
     const element = h('div', { class: 'page welcome' },
         h('div', { class: 'card welcome__card' },
             h('p', {}, 'Prepara la música de la misa: arma un listado con tus cantos, cambia el tono de cada uno y léelo sin conexión.'),
             ...(options.message === undefined ? [] : [h('p', { class: 'muted', role: 'status' }, options.message)]),
-            h('div', { class: 'actions welcome__actions' }, tryIt, ...(options.onSignUp === undefined ? [] : [signUp]), signIn),
+            h('div', { class: 'actions welcome__actions' }, tryIt, signUp, signIn),
             h('p', { class: 'muted' }, 'Sin cuenta, lo que escribas se guarda solo en este dispositivo. Cuando inicies sesión, podrás llevarlo a tu cuenta.')));
 
     return { element };

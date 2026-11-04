@@ -3,7 +3,6 @@ import type { App } from '../app.ts';
 import { describeGuestWork, hasGuestWork, isGuest } from '../guest.ts';
 import { h } from '../dom.ts';
 import { paths } from '../router.ts';
-import { knownSignupOpen, refreshSignupOpen } from '../signup-open.ts';
 import { showToast } from '../toast.ts';
 import { chooseDialog } from '../views/confirm-dialog.ts';
 import { forgotView } from '../views/forgot.ts';
@@ -79,14 +78,13 @@ export function createSession(parts: SessionParts): Session {
                 });
             },
             onSignUp: () => undefined,
-            canSignUp: () => false,
         });
         showApp();
     };
 
     /**
      * Shows the app for a person with no account: their songs are on this device and nothing is synced. The bar's dot and
-     * its line say so and offer to create an account (when that can be done) or to sign in; both ask what to do with what
+     * its line say so and offer to create an account, and Ajustes also offers to sign in; both ask what to do with what
      * was written (see `adoptGuestWork`).
      */
     const enterGuest = (): void => {
@@ -95,16 +93,8 @@ export function createSession(parts: SessionParts): Session {
             onSignedOut: () => undefined,
             onNeedsSignIn: signInFromGuest,
             onSignUp: signUpFromGuest,
-            canSignUp: knownSignupOpen,
         });
         showApp();
-        // The last answer was kept on this device; the line is painted again if the server says something else now
-        const before = knownSignupOpen();
-        void refreshSignupOpen().then((open) => {
-            if (open !== before && data.isGuest()) {
-                frame.repaint();
-            }
-        });
     };
 
     const report = (failure: unknown): void => {
@@ -205,8 +195,8 @@ export function createSession(parts: SessionParts): Session {
     };
 
     /** What a device with nothing on it and no session shows: try the app, create an account, or sign in */
-    const showWelcome = (message?: string, signupOpen: boolean = knownSignupOpen()): void => {
-        const again = (): void => showWelcome(message, signupOpen);
+    const showWelcome = (message?: string): void => {
+        const again = (): void => showWelcome(message);
         screen.show(welcomeView({
             onTry: () => {
                 void data.startGuest().then(enterGuest);
@@ -222,25 +212,21 @@ export function createSession(parts: SessionParts): Session {
                     onCancel: again,
                 });
             },
-            ...(signupOpen
-                ? {
-                    onSignUp: () => {
-                        screen.show(signUpView({
-                            onCreated: (email, mailSent) => void finishSignUp(email, mailSent, false).catch(report),
-                            onSignIn: () => showSignIn({
-                                onSignedIn: (signedIn) => {
-                                    void data.adopt(signedIn).then(() => {
-                                        enter(signedIn);
-                                        data.requestSync(0);
-                                    });
-                                },
-                                onCancel: again,
-                            }),
-                            onCancel: again,
-                        }));
-                    },
-                }
-                : {}),
+            onSignUp: () => {
+                screen.show(signUpView({
+                    onCreated: (email, mailSent) => void finishSignUp(email, mailSent, false).catch(report),
+                    onSignIn: () => showSignIn({
+                        onSignedIn: (signedIn) => {
+                            void data.adopt(signedIn).then(() => {
+                                enter(signedIn);
+                                data.requestSync(0);
+                            });
+                        },
+                        onCancel: again,
+                    }),
+                    onCancel: again,
+                }));
+            },
             ...(message === undefined ? {} : { message }),
         }));
     };
@@ -291,12 +277,7 @@ export function createSession(parts: SessionParts): Session {
         } catch (failure: unknown) {
             // No session on a device with nothing on it: the app is open to try; signing in needs a connection
             const offline = failure instanceof ApiError && failure.isOffline;
-            // Whether "Crear cuenta" is offered: the server's answer, but the welcome does not wait more than a moment for it
-            const open = await Promise.race([
-                refreshSignupOpen(),
-                new Promise<boolean>((resolve) => setTimeout(() => resolve(knownSignupOpen()), 2000)),
-            ]);
-            showWelcome(offline ? 'Sin conexión: puedes probar la app; para iniciar sesión necesitas conexión.' : undefined, open);
+            showWelcome(offline ? 'Sin conexión: puedes probar la app; para iniciar sesión necesitas conexión.' : undefined);
         }
     };
 

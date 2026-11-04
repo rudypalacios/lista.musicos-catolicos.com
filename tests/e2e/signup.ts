@@ -15,8 +15,7 @@ const NEW_PASSWORD = 'otra clave todavia mas larga';
 
 const { pass, count } = reporter();
 const mail = await startMailSink(18302);
-const closed = await startServer(18301);
-const server = await startServer(18300, { signupOpen: true, mailPort: 18302 });
+const server = await startServer(18300, { mailPort: 18302 });
 const browser = await chromium.launch();
 
 /** A phone that opens the app for the first time */
@@ -53,15 +52,6 @@ const serverSongs = (page: Page): Promise<string[]> =>
     });
 
 try {
-    // ----- while sign-up is closed, nothing offers it -----
-    const shut = await freshPhone(closed.base);
-    await shut.getByRole('button', { name: 'Probar sin cuenta' }).waitFor();
-    assert.equal(await shut.getByRole('button', { name: 'Crear cuenta' }).count(), 0, 'no "Crear cuenta" on the welcome');
-    await shut.getByRole('button', { name: 'Probar sin cuenta' }).click();
-    await shut.locator('.sync-line').getByRole('button', { name: 'Iniciar sesión' }).waitFor();
-    assert.equal(await shut.locator('.sync-line').getByRole('button', { name: 'Crear cuenta' }).count(), 0, 'nor on the guest line');
-    pass('closed: the welcome and the guest line do not offer to create an account');
-
     // ----- creating an account from the welcome -----
     const page = await freshPhone(server.base);
     await page.getByRole('button', { name: 'Crear cuenta' }).click();
@@ -215,6 +205,5 @@ try {
 } finally {
     await browser.close();
     server.stop();
-    closed.stop();
     mail.stop();
 }

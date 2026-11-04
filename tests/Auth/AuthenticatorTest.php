@@ -78,6 +78,16 @@ final class AuthenticatorTest extends TestCase
         $this->assertNull($this->auth->authenticate($token));
     }
 
+    public function testASessionThatEndedIsNotKeptWhenAnotherOpens(): void
+    {
+        $this->auth->login('owner@example.com', 'correct horse', '1.1.1.1');
+        $this->pdo->exec("UPDATE sessions SET expires_at = '2000-01-01 00:00:00'");
+
+        $this->auth->login('owner@example.com', 'correct horse', '1.1.1.1');
+
+        $this->assertSame(1, (int) $this->pdo->query('SELECT COUNT(*) FROM sessions')->fetchColumn());
+    }
+
     public function testLogoutEndsTheSession(): void
     {
         $token = (string) $this->auth->login('owner@example.com', 'correct horse', '1.1.1.1');

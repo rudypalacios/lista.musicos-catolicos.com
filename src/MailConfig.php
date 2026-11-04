@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace App;
 
 /**
-  * How the app sends email: the mailbox of the site (SMTP) it signs in to, and the address the messages come from.
-  * With no host the app does not send: it writes the message to the error log instead (development, tests, and a
-  * server whose .env does not have the mailbox yet), so a missing setting never takes the sign-up down.
+ * How the app sends email: the mailbox of the site (SMTP) it signs in to, and the address the messages come from.
+ * With no host the app does not send: it writes the message to the error log instead (development, tests, and a
+ * server whose .env does not have the mailbox yet), so a missing setting never takes the sign-up down.
  */
 final class MailConfig
 {
     public const DEFAULT_FROM = 'noreply@musicos-catolicos.com';
 
     /**
-      * @param 'ssl'|'tls'|'' $secure "ssl" is SMTPS (port 465), "tls" is STARTTLS (port 587), "" is none (a local
-      * test server)
+     * @param 'ssl'|'tls'|'' $secure "ssl" is SMTPS (port 465), "tls" is STARTTLS (port 587), "" is none (a local
+     * test server)
      */
     public function __construct(
         public readonly ?string $host = null,

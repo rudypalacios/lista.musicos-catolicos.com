@@ -32,21 +32,19 @@ final class ConfigTest extends TestCase
         $this->assertFalse($config->isProduction());
     }
 
-    public function testSignUpIsClosedUnlessTheOwnerSaysOtherwiseAndTheMailboxHasSafeDefaults(): void
+    public function testTheLinksAndTheMailboxHaveSafeDefaults(): void
     {
         $default = Config::fromEnv(['DB_NAME' => 'lista'], '/app');
-        $open = Config::fromEnv(['DB_NAME' => 'lista', 'SIGNUP_OPEN' => '1', 'APP_URL' => 'https://x.test/'], '/app');
+        $own = Config::fromEnv(['DB_NAME' => 'lista', 'APP_URL' => 'https://x.test/'], '/app');
         $mail = Config::fromEnv(
             ['DB_NAME' => 'lista', 'SMTP_HOST' => 'mail.x.test', 'SMTP_USERNAME' => 'a@x.test', 'SMTP_SECURE' => 'tls'],
             '/app'
         )->mail;
 
-        $this->assertFalse($default->signupOpen);
         $this->assertSame(Config::PRODUCTION_URL, $default->appUrl);
         $this->assertFalse($default->mail->canSend());
         $this->assertSame('noreply@musicos-catolicos.com', $default->mail->from);
-        $this->assertTrue($open->signupOpen);
-        $this->assertSame('https://x.test', $open->appUrl);
+        $this->assertSame('https://x.test', $own->appUrl);
         $this->assertTrue($mail->canSend());
         $this->assertSame([587, 'tls'], [$mail->port, $mail->secure]);
     }
