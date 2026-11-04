@@ -25,6 +25,14 @@ export type Route =
     | { name: 'settings' }
     /** A list somebody shared, read with no account (`/c/:code`), or one of its songs (`/c/:code/:n`, from 1) */
     | { name: 'shared'; code: string; n?: number }
+    /** The link in the email that confirms an address (`/verificar/:token`): a page of its own, no app around it */
+    | { name: 'verify'; token: string }
+    /** The link in the email to choose a new password (`/restablecer/:token`): a page of its own, no app around it */
+    | { name: 'reset'; token: string }
+    /** How the app uses a person's data (`/privacidad`): a page of its own, no session needed, so the sign-up form can link to it */
+    | { name: 'privacy' }
+    /** Right after creating an account: the confirmation link was sent (`sent`) or could not be. Hangs from Ajustes */
+    | { name: 'check-mail'; sent: boolean }
     | { name: 'not-found' };
 
 const ID = '([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|[\\w-]{1,64})';
@@ -91,6 +99,22 @@ export function matchRoute(path: string, search = ''): Route {
         return { name: 'settings' };
     }
 
+    // The codes of the links in the emails: 256 bits as 64 hex characters (src/Auth/EmailTokens.php)
+    const verify = /^\/verificar\/([0-9a-f]{64})$/.exec(clean);
+    if (verify?.[1] !== undefined) {
+        return { name: 'verify', token: verify[1] };
+    }
+    const reset = /^\/restablecer\/([0-9a-f]{64})$/.exec(clean);
+    if (reset?.[1] !== undefined) {
+        return { name: 'reset', token: reset[1] };
+    }
+    if (clean === '/privacidad') {
+        return { name: 'privacy' };
+    }
+    if (clean === '/ajustes/correo') {
+        return { name: 'check-mail', sent: new URLSearchParams(search).get('enviado') !== '0' };
+    }
+
     const shared = /^\/c\/([0-9a-f]{32})(?:\/(\d{1,3}))?$/.exec(clean);
     if (shared?.[1] !== undefined) {
         return shared[2] === undefined ? { name: 'shared', code: shared[1] } : { name: 'shared', code: shared[1], n: Number(shared[2]) };
@@ -148,6 +172,10 @@ export const paths = {
     perform: (id: string, n: number): string => `/listados/${id}/cantar/${n}`,
     install: (): string => '/ayuda/instalar',
     settings: (): string => '/ajustes',
+    /** How the app uses a person's data */
+    privacy: (): string => '/privacidad',
+    /** Where a new account lands: was the confirmation link sent? */
+    checkMail: (sent: boolean): string => (sent ? '/ajustes/correo' : '/ajustes/correo?enviado=0'),
     /** What a visitor opens: a list somebody shared, or its `n`-th song (from 1) */
     shared: (code: string, n?: number): string => (n === undefined ? `/c/${code}` : `/c/${code}/${n}`),
 };
@@ -165,6 +193,7 @@ export function sectionOf(route: Route): 'songs' | 'lists' | 'settings' {
             return 'lists';
         case 'settings':
         case 'install':
+        case 'check-mail':
             return 'settings';
         default:
             return 'songs';
@@ -216,6 +245,7 @@ export function parentOf(route: Route): { path: string; label: string } | null {
         case 'template':
             return { path: paths.templates(), label: 'Plantillas' };
         case 'install':
+        case 'check-mail':
             return { path: paths.settings(), label: 'Ajustes' };
         default:
             return null;

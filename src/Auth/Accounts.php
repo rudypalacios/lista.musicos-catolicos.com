@@ -62,9 +62,9 @@ final class Accounts
     }
 
     /**
-       * Makes the account and opens its session. The person can use the app at once; the link that confirms the
-       * address is sent after, and if the mail server fails the account exists anyway (`mailSent` says so, and it
-       * can be sent again).
+     * Makes the account and opens its session. The person can use the app at once; the link that confirms the
+     * address is sent after, and if the mail server fails the account exists anyway (`mailSent` says so, and it
+     * can be sent again).
      *
      * @return array{userId: string, email: string, sessionToken: string, mailSent: bool}
      *
@@ -149,9 +149,9 @@ final class Accounts
     }
 
     /**
-      * Chooses the new password with the code of the link. Every session ends (whoever knew the old password, or
-      * had a session open, is out) and the address counts as confirmed: the link reached it. The password is
-      * checked before the code is spent, so a short one does not burn the link.
+     * Chooses the new password with the code of the link. Every session ends (whoever knew the old password, or
+     * had a session open, is out) and the address counts as confirmed: the link reached it. The password is
+     * checked before the code is spent, so a short one does not burn the link.
      *
      * @return string|null the account's email, or null when the link does not work
      *

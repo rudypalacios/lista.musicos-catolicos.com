@@ -63,6 +63,14 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 
 export interface Me {
     email: string;
+    /** Whether the address was confirmed (a link sent to it was opened) */
+    verified?: boolean;
+}
+
+/** The proof of work the server asks for before a sign-up or a reset (`src/Security/ProofOfWork.php`) */
+export interface Proof {
+    challenge: string;
+    nonce: string;
 }
 
 /** What a pull sends: the records as stored, plus the server's own counter, which the app does not keep */
@@ -121,6 +129,14 @@ export const api = {
     me: (): Promise<Me> => request<Me>('GET', '/api/me'),
     login: (email: string, password: string): Promise<Me> => request<Me>('POST', '/api/login', { email, password }),
     logout: (): Promise<unknown> => request('POST', '/api/logout', {}),
+    challenge: (): Promise<{ challenge: string; bits: number }> => request('GET', '/api/challenge'),
+    register: (email: string, password: string, pow: Proof): Promise<{ email: string; mailSent: boolean }> =>
+        request('POST', '/api/register', { email, password, pow }),
+    /** The link of the confirmation email, opened (needs no session: it is often opened in another browser) */
+    verifyEmail: (token: string): Promise<{ email: string }> => request('POST', '/api/verify-email', { token }),
+    resendVerification: (): Promise<{ mailSent: boolean }> => request('POST', '/api/verify-email/resend', {}),
+    forgot: (email: string, pow: Proof): Promise<unknown> => request('POST', '/api/forgot', { email, pow }),
+    resetPassword: (token: string, password: string): Promise<{ email: string }> => request('POST', '/api/reset', { token, password }),
     pull: (since: number): Promise<Pulled> =>
         request<PulledPage>('GET', `/api/sync?since=${since}`).then((page) => ({
             ...page,

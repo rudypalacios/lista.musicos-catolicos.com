@@ -19,6 +19,8 @@ export interface FrameOptions {
     onSignedOut: () => void;
     /** The session ended, or there is no account: show the way to sign in */
     onNeedsSignIn: () => void;
+    /** A person with no account asks to create one */
+    onSignUp: () => void;
 }
 
 /** The bar, the menu and the area under them that the screens fill */
@@ -40,14 +42,14 @@ export function createFrame(root: HTMLElement, data: App, installBanner: Install
     let header: Header | null = null;
     /** Who is in, for the account block of Ajustes; null for a person with no account */
     let email: string | null = '';
-    let onNeedsSignIn: () => void = () => undefined;
+    let current: FrameOptions | null = null;
     /** Signs out, asking first when something written here was never sent */
     let requestSignOut: () => void = () => undefined;
 
     return {
         mount: (options) => {
             email = options.email;
-            onNeedsSignIn = options.onNeedsSignIn;
+            current = options;
             requestSignOut = () => {
                 void signOut(data, (unsent) =>
                     confirmDialog({
@@ -73,6 +75,7 @@ export function createFrame(root: HTMLElement, data: App, installBanner: Install
                 },
                 onSignOut: () => requestSignOut(),
                 onNeedsSignIn: options.onNeedsSignIn,
+                onSignUp: options.onSignUp,
             });
             header = frame;
             const view = h('main', { id: 'view' });
@@ -101,7 +104,8 @@ export function createFrame(root: HTMLElement, data: App, installBanner: Install
             syncText: () => describeSync(data.status()).text,
             onSync: (listener) => data.onStatus((status) => listener(describeSync(status).text)),
             signOut: () => requestSignOut(),
-            signIn: () => onNeedsSignIn(),
+            signIn: () => current?.onNeedsSignIn(),
+            signUp: () => current?.onSignUp(),
         }),
     };
 }

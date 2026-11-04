@@ -31,8 +31,6 @@ final class Config
         public readonly ?string $ownerPasswordHash,
         public readonly string $appUrl = self::PRODUCTION_URL,
         public readonly MailConfig $mail = new MailConfig(),
-        /** Whether anyone can sign up. Off until the owner has published the privacy text and says so in .env (SIGNUP_OPEN=1) */
-        public readonly bool $signupOpen = false,
     ) {
     }
 
@@ -70,7 +68,6 @@ final class Config
             self::string($env, 'OWNER_PASSWORD_HASH'),
             rtrim(self::string($env, 'APP_URL') ?? self::PRODUCTION_URL, '/'),
             MailConfig::fromEnv($env),
-            self::string($env, 'SIGNUP_OPEN') === '1',
         );
     }
 

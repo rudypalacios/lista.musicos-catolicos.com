@@ -36,7 +36,9 @@ async function serverSongs(page: Page): Promise<string[]> {
 
 /** Opens the sign-in form from the guest's app and signs in as the account */
 async function signInFromTheApp(page: Page): Promise<void> {
-    await page.locator('.sync-line').getByRole('button', { name: 'Iniciar sesión' }).click();
+    // The guest's line offers to create an account; signing in is in Ajustes
+    await openSection(page, 'Ajustes');
+    await page.getByRole('button', { name: 'Ya tengo cuenta' }).click();
     await page.getByRole('heading', { name: 'Inicia sesión' }).waitFor();
     await page.getByLabel('Correo').fill(EMAIL);
     await page.getByLabel('Contraseña').fill(PASSWORD);
@@ -114,7 +116,8 @@ try {
     await openSection(page, 'Ajustes');
     await page.getByText('Sin cuenta. Tus cantos, listados y plantillas están solo en este dispositivo.').waitFor();
     assert.equal(await page.getByRole('button', { name: 'Salir' }).count(), 0, 'there is nothing to sign out of');
-    await page.getByRole('button', { name: 'Iniciar sesión' }).first().waitFor();
+    await page.getByRole('button', { name: 'Ya tengo cuenta' }).first().waitFor();
+    await page.getByRole('button', { name: 'Crear cuenta' }).first().waitFor();
     pass('Ajustes says there is no account and offers to sign in instead of "Salir"');
 
     // ----- signing in: cancelling the question changes nothing -----
@@ -123,6 +126,8 @@ try {
     const asking = page.getByRole('alertdialog');
     await asking.getByText('Tienes 1 canto y 1 listado en este dispositivo').waitFor();
     await asking.getByRole('button', { name: 'Cancelar' }).click();
+    // Back in the app on the screen it was on (Ajustes, where the sign-in began)
+    await openSection(page, 'Cantos');
     await page.getByRole('link', { name: 'Probando sin cuenta' }).waitFor();
     await line.getByText('Estás probando sin cuenta').waitFor();
     const me = await page.evaluate(async () => (await fetch('/api/me')).status);
@@ -130,15 +135,19 @@ try {
     pass('signing in asks what to do with what was written; "Cancelar" leaves the person as they were, with no session');
 
     // ----- "Volver" from the sign-in gives the app back -----
-    await page.locator('.sync-line').getByRole('button', { name: 'Iniciar sesión' }).click();
+    await openSection(page, 'Ajustes');
+    await page.getByRole('button', { name: 'Ya tengo cuenta' }).click();
     await page.getByRole('heading', { name: 'Inicia sesión' }).waitFor();
     await page.getByRole('button', { name: 'Volver' }).click();
+    await openSection(page, 'Cantos');
     await page.getByRole('link', { name: 'Probando sin cuenta' }).waitFor();
     pass('"Volver" from the sign-in gives the guest\'s app back');
 
     // ----- adding it to the account -----
     await signInFromTheApp(page);
     await page.getByRole('alertdialog').getByRole('button', { name: 'Sumarlos a mi cuenta' }).click();
+    // What was written is kept, and the person stays on the screen they were on (Ajustes)
+    await openSection(page, 'Cantos');
     await page.getByRole('heading', { name: 'Cantos' }).waitFor();
     await page.getByRole('link', { name: 'De mi cuenta' }).waitFor();
     await page.getByRole('link', { name: 'Probando sin cuenta' }).waitFor();
@@ -176,6 +185,7 @@ try {
     await clean.getByRole('button', { name: 'Probar sin cuenta' }).click();
     await clean.getByRole('heading', { name: 'Cantos' }).waitFor();
     await signInFromTheApp(clean);
+    await openSection(clean, 'Cantos');
     await clean.getByRole('link', { name: 'De mi cuenta' }).waitFor();
     assert.equal(await clean.getByRole('alertdialog').count(), 0, 'no question when there was nothing written');
     pass('signing in with nothing written goes straight in, with no question');

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Mail;
 
 /**
-  * The two messages an account sends: confirm the address, and choose a new password. The links point at the
-  * site's own address from the configuration, never at the host the request came with: a request can name any
-  * host, and a reset link that went to one would hand the code to whoever asked.
+ * The two messages an account sends: confirm the address, and choose a new password. The links point at the
+ * site's own address from the configuration, never at the host the request came with: a request can name any
+ * host, and a reset link that went to one would hand the code to whoever asked.
  */
 final class AccountMail
 {

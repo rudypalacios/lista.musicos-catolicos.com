@@ -98,8 +98,7 @@ final class AppFactory
             $misses,
             $accounts,
             $proof,
-            $limits,
-            $config
+            $limits
         ): void {
             $api->get('/health', new HealthAction($migrator));
             $api->post('/login', new LoginAction($authenticator));
@@ -107,7 +106,7 @@ final class AppFactory
 
             // Accounts of other people: sign up, confirm the address, forget the password
             $api->get('/challenge', new ChallengeAction($proof));
-            $api->post('/register', new RegisterAction($accounts, $proof, $limits, $config->signupOpen));
+            $api->post('/register', new RegisterAction($accounts, $proof, $limits));
             $api->post('/verify-email', new VerifyEmailAction($accounts));
             $api->post('/verify-email/resend', new ResendVerificationAction($accounts, $limits))
                 ->add(new RequireUser($authenticator));

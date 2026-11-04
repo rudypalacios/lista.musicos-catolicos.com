@@ -36,7 +36,7 @@ final class AccountsApiTest extends TestCase
         $this->mailer = new RecordingMailer();
         $env = [
             'DB_DRIVER' => 'sqlite', 'DB_PATH' => ':memory:', 'APP_ENV' => 'production',
-            'APP_URL' => self::SITE . '/', 'SIGNUP_OPEN' => '1',
+            'APP_URL' => self::SITE . '/',
         ];
         $config = Config::fromEnv($env, '/app');
         $this->app = AppFactory::create($this->pdo, $config, TestDatabase::MIGRATIONS, $this->mailer);
@@ -129,21 +129,6 @@ final class AccountsApiTest extends TestCase
         $this->assertSame(['email' => 'ana@example.com'], $this->body($confirmed));
         $this->assertTrue($this->body($this->call('GET', '/api/me', null, $cookies))['verified']);
         $this->assertSame(400, $this->call('POST', '/api/verify-email', ['token' => $token])->getStatusCode(), 'once');
-    }
-
-    public function testNobodyCanSignUpUntilTheOwnerOpensIt(): void
-    {
-        $env = ['DB_DRIVER' => 'sqlite', 'DB_PATH' => ':memory:', 'APP_ENV' => 'production'];
-        $closed = Config::fromEnv($env, '/app');
-        $this->app = AppFactory::create($this->pdo, $closed, TestDatabase::MIGRATIONS, $this->mailer);
-
-        $response = $this->call('POST', '/api/register', [
-            'email' => 'ana@example.com', 'password' => self::PASSWORD, 'pow' => $this->pow(),
-        ]);
-
-        $this->assertSame(403, $response->getStatusCode());
-        $this->assertSame('signup_closed', $this->body($response)['error']);
-        $this->assertSame([], $this->mailer->sent);
     }
 
     public function testThePasswordOfANewAccountWorksAtTheSignIn(): void

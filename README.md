@@ -63,7 +63,7 @@ All JSON, Spanish messages, `Cache-Control: no-store`. Requests that change data
 | `POST /api/logout` | `200 {ok}` and clears the cookie |
 | `GET /api/me` | `200 {email, verified}` · `401` |
 | `GET /api/challenge` | `200 {challenge, bits, expiresAt}`: a proof-of-work puzzle for sign-up and password reset (`src/Security/ProofOfWork.php`) |
-| `POST /api/register` `{email, password, pow: {challenge, nonce}}` | `201 {email, verified: false, mailSent}` and the session cookie · `400` (`invalid_email`, `weak_password`) · `403` (`invalid_proof`, `signup_closed`) · `409 email_taken` · `429` (6 an hour per address) |
+| `POST /api/register` `{email, password, pow: {challenge, nonce}}` | `201 {email, verified: false, mailSent}` and the session cookie · `400` (`invalid_email`, `weak_password`) · `403 invalid_proof` · `409 email_taken` · `429` (6 an hour per address) |
 | `POST /api/verify-email` `{token}` | `200 {email}` (no session needed) · `400 invalid_token` |
 | `POST /api/verify-email/resend` (session) | `200 {mailSent}` · `401` · `429` (3 an hour) |
 | `POST /api/forgot` `{email, pow}` | `200 {ok: true}` whether or not the address has an account · `400` · `403 invalid_proof` |

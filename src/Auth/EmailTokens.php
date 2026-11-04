@@ -7,9 +7,9 @@ namespace App\Auth;
 use PDO;
 
 /**
-  * The codes in the links sent by email. A code is 256 random bits; only its hash is kept (like a session's). It
-  * works once, for what it was made for, until it expires; asking for another of the same kind cancels the one
-  * before.
+ * The codes in the links sent by email. A code is 256 random bits; only its hash is kept (like a session's). It
+ * works once, for what it was made for, until it expires; asking for another of the same kind cancels the one
+ * before.
  */
 final class EmailTokens
 {

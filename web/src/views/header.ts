@@ -23,6 +23,8 @@ export interface HeaderOptions {
     onSignOut: () => void;
     /** The session ended, or there is no account: lets the person sign in */
     onNeedsSignIn: () => void;
+    /** Opens the sign-up form (for a person with no account) */
+    onSignUp: () => void;
 }
 
 const ENTRIES: ReadonlyArray<{ section: 'songs' | 'lists' | 'settings'; label: string; path: string; glyph: IconName }> = [
@@ -50,7 +52,9 @@ export function createHeader(options: HeaderOptions): Header {
 
     const text = h('span', { class: 'sync' });
     const renew = h('button', { type: 'button', class: 'link', hidden: true }, 'Iniciar sesión');
-    renew.addEventListener('click', options.onNeedsSignIn);
+    /** With no account the line's button creates one (signing in is in Ajustes and at the foot of the menu); once the session ended it signs in */
+    let isGuest = false;
+    renew.addEventListener('click', () => (isGuest ? options.onSignUp() : options.onNeedsSignIn()));
     const line = h('div', { class: 'sync-line', role: 'status', 'aria-live': 'polite', hidden: true }, text, renew);
     /** The line shows when the sync has something to say, and never while singing (the song has the room) */
     let speaks = false;
@@ -110,6 +114,8 @@ export function createHeader(options: HeaderOptions): Header {
             speaks = showsLine(tone);
             drawLine();
             renew.hidden = status.state !== 'signed-out' && !status.guest;
+            isGuest = status.guest;
+            renew.textContent = isGuest ? 'Crear cuenta' : 'Iniciar sesión';
         },
     };
 }

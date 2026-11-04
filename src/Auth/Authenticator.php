@@ -52,6 +52,8 @@ final class Authenticator
     /** Opens a session for the user and returns the token for the cookie (only its hash is kept) */
     public function startSession(string $userId): string
     {
+        // The sessions that ended are not kept: nothing about a person stays once their session is over
+        $this->pdo->prepare('DELETE FROM sessions WHERE expires_at < ?')->execute([gmdate('Y-m-d H:i:s')]);
         $token = bin2hex(random_bytes(32));
         $this->pdo
             ->prepare('INSERT INTO sessions (token_hash, user_id, created_at, expires_at) VALUES (?, ?, ?, ?)')
