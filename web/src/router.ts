@@ -29,6 +29,8 @@ export type Route =
     | { name: 'verify'; token: string }
     /** The link in the email to choose a new password (`/restablecer/:token`): a page of its own, no app around it */
     | { name: 'reset'; token: string }
+    /** How the app uses a person's data (`/privacidad`): a page of its own, no session needed, so the sign-up form can link to it */
+    | { name: 'privacy' }
     /** Right after creating an account: the confirmation link was sent (`sent`) or could not be. Hangs from Ajustes */
     | { name: 'check-mail'; sent: boolean }
     | { name: 'not-found' };
@@ -106,6 +108,9 @@ export function matchRoute(path: string, search = ''): Route {
     if (reset?.[1] !== undefined) {
         return { name: 'reset', token: reset[1] };
     }
+    if (clean === '/privacidad') {
+        return { name: 'privacy' };
+    }
     if (clean === '/ajustes/correo') {
         return { name: 'check-mail', sent: new URLSearchParams(search).get('enviado') !== '0' };
     }
@@ -167,6 +172,8 @@ export const paths = {
     perform: (id: string, n: number): string => `/listados/${id}/cantar/${n}`,
     install: (): string => '/ayuda/instalar',
     settings: (): string => '/ajustes',
+    /** How the app uses a person's data */
+    privacy: (): string => '/privacidad',
     /** Where a new account lands: was the confirmation link sent? */
     checkMail: (sent: boolean): string => (sent ? '/ajustes/correo' : '/ajustes/correo?enviado=0'),
     /** What a visitor opens: a list somebody shared, or its `n`-th song (from 1) */

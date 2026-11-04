@@ -71,6 +71,18 @@ try {
     assert.equal(mail.messages.length, 0, 'nothing was sent for a form that was wrong');
     pass('the form says what is wrong before asking anything of the server');
 
+    // "Leí cómo se usan mis datos" leads to the app's own text, which needs no session
+    const privacy = page.getByRole('link', { name: 'Privacidad' });
+    assert.equal(await privacy.getAttribute('href'), '/privacidad');
+    assert.equal(await privacy.getAttribute('target'), '_blank', 'it opens apart: the form is not lost');
+    const reading = await freshPhone(server.base + '/privacidad');
+    await reading.getByRole('heading', { name: 'Cómo se usan tus datos' }).waitFor();
+    await reading.getByRole('heading', { name: 'Si creas una cuenta' }).waitFor();
+    await reading.getByText('lista_session').waitFor();
+    await reading.getByText('Por ahora, para borrar tu cuenta escribe a').waitFor();
+    assert.equal(await reading.getByRole('button', { name: 'Crear cuenta' }).count(), 0, 'a page of text, with no app around it');
+    pass('the sign-up links to the text about the data, a page of the app that needs no session');
+
     await page.getByLabel('Correo').fill('ana@example.com');
     await page.getByLabel('Contraseña').fill(PASSWORD);
     await page.getByLabel('Leí cómo se usan mis datos').check();

@@ -12,6 +12,7 @@ import { showFatal, startUpdates } from './updates.ts';
 import { screenKeeper } from './wakelock.ts';
 import { createInstallBanner } from './views/install-banner.ts';
 import { startResetPassword, startVerifyEmail } from './views/account-link.ts';
+import { startPrivacy } from './views/privacy.ts';
 import { startShared } from './views/shared.ts';
 
 /**
@@ -65,6 +66,10 @@ if (visiting.name === 'shared') {
     // It is still this app: the same service worker keeps it (and the list the visitor opened) for reading with no connection
     startUpdates(false);
     startShared(app, visiting.code);
+} else if (visiting.name === 'privacy') {
+    // How the app uses the data of a person: a page of its own that needs no session and no data of the device
+    startUpdates(false);
+    startPrivacy(app);
 } else if (visiting.name === 'verify' || visiting.name === 'reset') {
     // The link of an email: a page of its own that needs no session and no data of this device
     startUpdates(false);

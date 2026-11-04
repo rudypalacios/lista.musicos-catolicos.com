@@ -155,6 +155,7 @@ export function settingsView(account: Account): View {
             { value: 'two', label: 'Siempre dos' },
         ], saveColumns),
         h('p', { class: 'muted help-link' }, link(paths.install(), 'Cómo instalar la app en el iPad o el teléfono')),
+        h('p', { class: 'muted help-link' }, h('a', { href: paths.privacy(), target: '_blank', rel: 'noopener' }, 'Cómo se usan tus datos')),
         h('section', { class: 'settings__account' },
             h('h3', {}, 'Cuenta'),
             ...(account.email === null

@@ -84,6 +84,12 @@ describe('matchRoute', () => {
         assert.equal(matchRoute(`/restablecer/${'zz'.repeat(32)}`).name, 'not-found');
     });
 
+    it('knows the page about how the data is used, which needs no session', () => {
+        assert.deepEqual(matchRoute('/privacidad'), { name: 'privacy' });
+        assert.deepEqual(matchRoute('/privacidad/'), { name: 'privacy' });
+        assert.equal(paths.privacy(), '/privacidad');
+    });
+
     it('knows where a new account lands, which hangs from Ajustes', () => {
         assert.deepEqual(matchRoute('/ajustes/correo'), { name: 'check-mail', sent: true });
         assert.deepEqual(matchRoute('/ajustes/correo', '?enviado=0'), { name: 'check-mail', sent: false });

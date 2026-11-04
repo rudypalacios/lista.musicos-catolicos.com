@@ -1,6 +1,7 @@
 import { ApiError, api } from '../api.ts';
-import { emailProblem, passwordProblem, PRIVACY_URL } from '../account.ts';
+import { emailProblem, passwordProblem } from '../account.ts';
 import { h } from '../dom.ts';
+import { paths } from '../router.ts';
 import { createProofStatus } from './proof.ts';
 import type { View } from './types.ts';
 
@@ -57,7 +58,7 @@ export function signUpView(options: SignUpOptions): View {
         password,
         h('p', { class: 'muted' }, 'Al menos 10 caracteres. Una frase larga es mejor que una palabra con símbolos.'),
         h('label', { class: 'choice__option', for: 'signup-consent' }, consent,
-            h('span', {}, 'Leí cómo se usan mis datos ', h('a', { href: PRIVACY_URL, target: '_blank', rel: 'noopener' }, 'Privacidad'), '.')),
+            h('span', {}, 'Leí cómo se usan mis datos ', h('a', { href: paths.privacy(), target: '_blank', rel: 'noopener' }, 'Privacidad'), '.')),
         error,
         proof.element,
         submit,

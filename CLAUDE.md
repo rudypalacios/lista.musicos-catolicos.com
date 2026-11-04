@@ -147,8 +147,9 @@ The bar, the dot and Ajustes say there is no account (`DESIGN-LOCK.md`). Sign-up
 ## Accounts of other people (step 3 of "Open sign-up": 3a the server, 3b the app)
 
 `POST /api/register` makes an account and opens its session; the address is confirmed by a link sent to it (`Auth/Accounts.php`, `Auth/EmailTokens.php`),
-and a forgotten password is chosen again by another (`/api/forgot`, `/api/reset`). Rules that matter: **sign-up is open to anyone** (the owner decided on 2026-11-04 not to keep a switch: the privacy text for
-the public site, section "Listas", is published together with it; the app stores other people's emails); the **links in the emails point at `APP_URL`**
+and a forgotten password is chosen again by another (`/api/forgot`, `/api/reset`). Rules that matter: **sign-up is open to anyone** (the owner decided on 2026-11-04 not to keep a switch); the app stores other people's emails, and what it says about
+that is its own page, `/privacidad` (`web/src/views/privacy.ts`), linked from the sign-up form and Ajustes: **when what is stored, for how long or who gets it changes, that text changes in the same PR**
+(its numbers are the server's). The public site's policy is not changed until the owner mixes the two systems; the **links in the emails point at `APP_URL`**
 (default the production address), never at the host of the request (a reset link that followed `Host` would hand the code to whoever asked);
 a link's code is 256 random bits, only its hash is kept, it works once and expires; `/api/forgot` answers the same whether or not the address has an
 account; a new password ends every session; sign-up and forgot need a **proof of work** solved by the browser (`Security/ProofOfWork.php`: SHA-256 with
