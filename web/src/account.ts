@@ -26,3 +26,8 @@ export function passwordProblem(password: string): string | null {
 
     return new TextEncoder().encode(password).length > PASSWORD_MAX_BYTES ? 'La contraseña es demasiado larga: usa menos de 72 caracteres.' : null;
 }
+
+/** Why the second copy of a new password is not accepted, or null when it matches (the person typed it twice to be sure of it) */
+export function confirmationProblem(password: string, again: string): string | null {
+    return password === again ? null : 'Las dos contraseñas no coinciden.';
+}

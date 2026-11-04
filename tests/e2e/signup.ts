@@ -38,7 +38,8 @@ async function createSong(page: Page, title: string): Promise<void> {
 /** Fills the sign-up form and sends it */
 async function signUp(page: Page, email: string, password = PASSWORD): Promise<void> {
     await page.getByLabel('Correo').fill(email);
-    await page.getByLabel('Contraseña').fill(password);
+    await page.getByLabel('Contraseña', { exact: true }).fill(password);
+    await page.getByLabel('Repite la contraseña', { exact: true }).fill(password);
     await page.getByLabel('Leí cómo se usan mis datos').check();
     await page.locator('#view').getByRole('button', { name: 'Crear cuenta' }).click();
 }
@@ -62,7 +63,8 @@ try {
         ['ana@example.com', PASSWORD, false, 'cómo se usan tus datos'],
     ] as const) {
         await page.getByLabel('Correo').fill(email);
-        await page.getByLabel('Contraseña').fill(password);
+        await page.getByLabel('Contraseña', { exact: true }).fill(password);
+        await page.getByLabel('Repite la contraseña', { exact: true }).fill(password);
         const box = page.getByLabel('Leí cómo se usan mis datos');
         await (consent ? box.check() : box.uncheck());
         await page.getByRole('button', { name: 'Crear cuenta' }).click();
@@ -84,7 +86,8 @@ try {
     pass('the sign-up links to the text about the data, a page of the app that needs no session');
 
     await page.getByLabel('Correo').fill('ana@example.com');
-    await page.getByLabel('Contraseña').fill(PASSWORD);
+    await page.getByLabel('Contraseña', { exact: true }).fill(PASSWORD);
+    await page.getByLabel('Repite la contraseña', { exact: true }).fill(PASSWORD);
     await page.getByLabel('Leí cómo se usan mis datos').check();
     await page.getByRole('button', { name: 'Crear cuenta' }).click();
     await page.getByRole('heading', { name: 'Te mandamos un enlace' }).waitFor();
@@ -134,24 +137,35 @@ try {
 
     const stranger = await freshPhone(resetLink);
     await stranger.getByRole('heading', { name: 'Elige una contraseña nueva' }).waitFor();
-    await stranger.getByLabel('Contraseña nueva').fill('corta');
+    await stranger.getByLabel('Contraseña nueva', { exact: true }).fill('corta');
+    await stranger.getByLabel('Repite la contraseña nueva', { exact: true }).fill('corta');
     await stranger.getByRole('button', { name: 'Guardar la contraseña' }).click();
     await stranger.getByRole('alert').getByText('al menos 10 caracteres').waitFor();
-    await stranger.getByLabel('Contraseña nueva').fill(NEW_PASSWORD);
+    await stranger.getByLabel('Contraseña nueva', { exact: true }).fill(NEW_PASSWORD);
+    // Typed twice: a slip in the second copy is told, and nothing is spent
+    await stranger.getByLabel('Repite la contraseña nueva', { exact: true }).fill(`${NEW_PASSWORD}x`);
+    await stranger.getByText('No coinciden').waitFor();
+    await stranger.getByRole('button', { name: 'Guardar la contraseña' }).click();
+    await stranger.getByRole('alert').getByText('Las dos contraseñas no coinciden').waitFor();
+    await stranger.getByLabel('Repite la contraseña nueva', { exact: true }).fill(NEW_PASSWORD);
+    // The eye shows what was typed
+    await stranger.getByRole('button', { name: 'Mostrar la contraseña' }).first().click();
+    assert.equal(await stranger.getByLabel('Contraseña nueva', { exact: true }).getAttribute('type'), 'text');
     await stranger.getByRole('button', { name: 'Guardar la contraseña' }).click();
     await stranger.getByRole('heading', { name: 'Contraseña cambiada' }).waitFor();
     await stranger.goto(resetLink);
-    await stranger.getByLabel('Contraseña nueva').fill(NEW_PASSWORD);
+    await stranger.getByLabel('Contraseña nueva', { exact: true }).fill(NEW_PASSWORD);
+    await stranger.getByLabel('Repite la contraseña nueva', { exact: true }).fill(NEW_PASSWORD);
     await stranger.getByRole('button', { name: 'Guardar la contraseña' }).click();
     await stranger.getByRole('heading', { name: 'Este enlace ya no sirve' }).waitFor();
     pass('the reset link chooses the new password (a short one does not spend it) and works once');
 
     await page.getByRole('button', { name: 'Volver' }).click();
     await page.getByLabel('Correo').fill('ana@example.com');
-    await page.getByLabel('Contraseña').fill(PASSWORD);
+    await page.getByLabel('Contraseña', { exact: true }).fill(PASSWORD);
     await page.getByRole('button', { name: 'Entrar' }).click();
     await page.getByRole('alert').getByText('Correo o contraseña incorrectos').waitFor();
-    await page.getByLabel('Contraseña').fill(NEW_PASSWORD);
+    await page.getByLabel('Contraseña', { exact: true }).fill(NEW_PASSWORD);
     await page.getByRole('button', { name: 'Entrar' }).click();
     await page.getByRole('heading', { name: 'Cantos' }).waitFor();
     pass('the old password no longer works and the new one signs in');

@@ -38,10 +38,11 @@ use App\Security\Secrets;
 use App\Share\MissThrottle;
 use App\Share\ShareRepository;
 use App\Share\SongShareRepository;
+use App\Sync\AccountQuota;
 use App\Sync\ChangeFeed;
 use App\Sync\SetlistRepository;
-use App\Sync\TemplateRepository;
 use App\Sync\SongRepository;
+use App\Sync\TemplateRepository;
 use PDO;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -77,6 +78,7 @@ final class AppFactory
         $songs = new SongRepository($pdo);
         $setlists = new SetlistRepository($pdo);
         $templates = new TemplateRepository($pdo);
+        $quota = new AccountQuota($pdo);
         $feed = new ChangeFeed($songs, $setlists, $templates);
         $shares = new ShareRepository($pdo);
         $songShares = new SongShareRepository($pdo);
@@ -92,6 +94,7 @@ final class AppFactory
             $songs,
             $setlists,
             $templates,
+            $quota,
             $feed,
             $shares,
             $songShares,
@@ -114,7 +117,8 @@ final class AppFactory
             $api->post('/reset', new ResetPasswordAction($accounts));
             $api->get('/me', new MeAction())->add(new RequireUser($authenticator));
             $api->get('/sync', new PullAction($feed))->add(new RequireUser($authenticator));
-            $api->post('/sync', new PushAction($songs, $setlists, $templates))->add(new RequireUser($authenticator));
+            $api->post('/sync', new PushAction($songs, $setlists, $templates, $quota))
+                ->add(new RequireUser($authenticator));
 
             // Sharing a list by a link (the person's side, with a session) and reading what a link shows (anyone's)
             $api->get('/lists/{id}/share', new ShareStatusAction($shares))->add(new RequireUser($authenticator));

@@ -2,6 +2,7 @@ import { ApiError, api } from '../api.ts';
 import { emailProblem, passwordProblem } from '../account.ts';
 import { h } from '../dom.ts';
 import { paths } from '../router.ts';
+import { passwordPair } from './password-field.ts';
 import { createProofStatus } from './proof.ts';
 import type { View } from './types.ts';
 
@@ -34,7 +35,7 @@ function failureText(failure: unknown): string {
  */
 export function signUpView(options: SignUpOptions): View {
     const email = h('input', { id: 'signup-email', name: 'email', type: 'email', autocomplete: 'username', required: true, inputmode: 'email' });
-    const password = h('input', { id: 'signup-password', name: 'password', type: 'password', autocomplete: 'new-password', required: true });
+    const pair = passwordPair('signup', { first: 'Contraseña', second: 'Repite la contraseña' });
     const consent = h('input', { id: 'signup-consent', type: 'checkbox' });
     const error = h('p', { class: 'error', role: 'alert' });
     const proof = createProofStatus();
@@ -54,9 +55,10 @@ export function signUpView(options: SignUpOptions): View {
         h('h2', {}, 'Crea tu cuenta'),
         h('label', { for: 'signup-email' }, 'Correo'),
         email,
-        h('label', { for: 'signup-password' }, 'Contraseña'),
-        password,
+        pair.elements[0] as HTMLElement,
+        pair.elements[1] as HTMLElement,
         h('p', { class: 'muted' }, 'Al menos 10 caracteres. Una frase larga es mejor que una palabra con símbolos.'),
+        ...pair.elements.slice(2),
         h('label', { class: 'choice__option', for: 'signup-consent' }, consent,
             h('span', {}, 'Leí cómo se usan mis datos ', h('a', { href: paths.privacy(), target: '_blank', rel: 'noopener' }, 'Privacidad'), '.')),
         error,
@@ -66,14 +68,14 @@ export function signUpView(options: SignUpOptions): View {
 
     form.addEventListener('submit', (event) => {
         event.preventDefault();
-        error.textContent = emailProblem(email.value) ?? passwordProblem(password.value)
+        error.textContent = emailProblem(email.value) ?? passwordProblem(pair.password.value) ?? pair.problem()
             ?? (consent.checked ? '' : 'Marca que leíste cómo se usan tus datos.');
         if (error.textContent !== '') {
             return;
         }
         submit.disabled = true;
         void proof.obtain()
-            .then((pow) => api.register(email.value.trim(), password.value, pow))
+            .then((pow) => api.register(email.value.trim(), pair.password.value, pow))
             .then((account) => options.onCreated(account.email, account.mailSent))
             .catch((failure: unknown) => {
                 error.textContent = failureText(failure);

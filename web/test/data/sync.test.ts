@@ -182,6 +182,20 @@ describe('SyncEngine', () => {
         assert.deepEqual(await phone.store.pending('songs'), []);
     });
 
+    it('hands on the reason of a refusal the person can act on, and none for a refusal that is a bug', async () => {
+        const phone = device(server, clock);
+        const song = await phone.library.create(draft('Uno'));
+        server.refuse.add(song.id);
+
+        assert.equal((await phone.engine.sync()).refusalReason, null);
+
+        server.refusalReason = 'Tu cuenta llegó al límite de espacio.';
+        const result = await phone.engine.sync();
+
+        assert.deepEqual(result.rejected, [song.id]);
+        assert.equal(result.refusalReason, 'Tu cuenta llegó al límite de espacio.');
+    });
+
     it('sends a refused batch song by song so one bad song blocks nobody', async () => {
         const phone = device(server, clock);
         const good1 = await phone.library.create(draft('Bueno 1'));

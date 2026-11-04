@@ -176,4 +176,6 @@ export const errorKinds: ErrorKinds = {
     isOffline: (error) => error instanceof ApiError && error.isOffline,
     isSignedOut: (error) => error instanceof ApiError && error.status === 401,
     isRefusal: (error) => error instanceof ApiError && error.status === 400,
+    // Only the account being full is something the person can act on; the other refusals are a bug to fix, not to explain
+    refusalReason: (error) => (error instanceof ApiError && error.code === 'over_quota' ? error.message : null),
 };

@@ -50,6 +50,9 @@ export class App {
     private readonly statusListeners = new Set<(status: Status) => void>();
     private readonly dataListeners = new Set<() => void>();
     private readonly savedListeners = new Set<() => void>();
+    private readonly noticeListeners = new Set<(text: string) => void>();
+    /** The reason already told to the person, so every sync of a full account does not repeat it */
+    private told: string | null = null;
 
     private constructor(store: LocalStore, durable: boolean) {
         this.store = store;
@@ -284,6 +287,7 @@ export class App {
         try {
             const result = await this.engine.sync();
             this.rejected = new Set(result.rejected);
+            this.tell(result.refusalReason);
             this.state = 'idle';
             // After hearing from the server: only now is a missing Misa really missing (see `ensureMisa`)
             await this.templates.ensureMisa();
@@ -318,6 +322,21 @@ export class App {
         this.savedListeners.add(listener);
 
         return () => this.savedListeners.delete(listener);
+    }
+
+    /** Called with a sentence the person should read when the server refuses something they can fix (the account is full) */
+    onNotice(listener: (text: string) => void): () => void {
+        this.noticeListeners.add(listener);
+
+        return () => this.noticeListeners.delete(listener);
+    }
+
+    /** Says a refusal's reason once, and again only after a sync in which nothing was refused for it */
+    private tell(reason: string | null): void {
+        if (reason !== null && reason !== this.told) {
+            this.noticeListeners.forEach((listener) => listener(reason));
+        }
+        this.told = reason;
     }
 
     /** After the session ended and the person signed in again */

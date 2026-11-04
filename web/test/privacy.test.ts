@@ -23,6 +23,12 @@ describe('the text about the data', () => {
         }
     });
 
+    it('says the ceiling of an account, the numbers of AccountQuota.php', () => {
+        for (const said of ['2.000 cantos', '1.000 listados', '50 plantillas', '5 MB']) {
+            assert.ok(everything.includes(said), said);
+        }
+    });
+
     it('says where to write and when it was revised', () => {
         assert.match(PRIVACY_EMAIL, /^[^@\s]+@[^@\s]+\.[^@\s]+$/);
         assert.match(PRIVACY_UPDATED, /^\d{1,2} de [a-z]+ de \d{4}$/);

@@ -443,6 +443,7 @@ Next, in this order (design agreed with the owner):
       is asked **bring what I have to my account / start from zero**, and on signing in to an account that exists **add it to my account / discard it** (the records have client UUIDs, so bringing them is just sending them).
       (4) **Google** (redirect flow on the server, no script of Google in the page) and the **merge by email**: only into an account whose email is verified; a password account never verified is claimed by Google, which drops its password and sessions
       (otherwise someone who registered a stranger's email with a password would get the stranger's data when the stranger signed in with Google).
+      (4b) **done:** a quota per account on the server (`AccountQuota`: 2,000 songs, 1,000 lists, 50 templates, 5 MB of text; a refusal is `over_quota`, HTTP 400, so the queue marks the record "rechazado" and the app says why in a toast); password fields have an eye and the ones that save a password ask twice (`views/password-field.ts`).
       (5) the privacy text for the public site (emails of other people are stored: the owner publishes it before opening sign-up), delete my account, export. **Before opening sign-up:** the owner publishes the privacy text.
 - [ ] Share the key a list has each song in when the lyrics are not shared: today the visitor of a list shared with no lyrics sees the order, the titles and the authors
       but no keys (the key comes from the chords, which the server does not read: the parser lives in the app).
@@ -454,6 +455,7 @@ Next, in this order (design agreed with the owner):
   lose edits to, or win over, another. The server pulls a clock more than 5 minutes ahead back.
 - `songs` has no index (SQLite and MySQL spell `CREATE INDEX IF NOT EXISTS` differently); it is
   fine for a personal library, add a MySQL-only migration if it ever is not.
+- An account is limited (`AccountQuota`) to 2,000 songs, 1,000 lists, 50 templates and 5 MB of text. A deletion leaves a row (so other devices learn of it) and nothing purges those rows yet; creating and deleting without end would fill the space with them.
 - A song is limited to 60,000 bytes of lyrics (the MySQL `TEXT` column).
 - A setlist is one record: if two devices edit the same list while apart, the later edit wins as a whole
   and the other is lost (a personal tool, where that is rare). Edit a list on one device at a time.

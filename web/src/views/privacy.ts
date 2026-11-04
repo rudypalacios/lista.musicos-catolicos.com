@@ -5,7 +5,8 @@ import { h } from '../dom.ts';
  * (what is stored, for how long, who it goes to), this text changes in the same pull request. The numbers are the ones of the
  * server: a session lasts 180 days (`Authenticator::SESSION_DAYS`), the confirmation link 2 days and the one for a new
  * password 1 hour (`Accounts`), failed sign-ins are counted for 15 minutes (`Authenticator`) and the other counters of
- * repeated requests are deleted after a day (`RateLimiter`).
+ * repeated requests are deleted after a day (`RateLimiter`). The ceiling of an account (2,000 songs, 1,000 lists, 50
+ * templates, 5 MB) is `AccountQuota`'s.
  */
 
 /** The day this text was last revised */
@@ -54,6 +55,7 @@ export const PRIVACY_SECTIONS: readonly Section[] = [
             ul: [
                 'Tus datos de cuenta: tu correo, tu contraseña (la guardamos solo transformada de forma irreversible: no podemos leerla ni recuperarla), la fecha en que creaste la cuenta y si confirmaste tu correo.',
                 'Tu biblioteca: tus cantos (título, autor, letra y acordes, etiquetas, tu tono), tus listados (nombre, secciones, qué cantos llevan y en qué tono, notas) y tus plantillas. Es tu biblioteca personal: nadie más la ve, salvo lo que tú compartas con un enlace. Se guarda en nuestro servidor para que la tengas en todos tus dispositivos y puedas recuperarla si pierdes uno.',
+                'Un límite de espacio por cuenta, para que el servidor alcance para todos: hasta 2.000 cantos, 1.000 listados y 50 plantillas, y unos 5 MB de texto en total. Si llegas al límite, la aplicación te lo dice; lo que escribas sigue en tu dispositivo y puedes liberar espacio borrando lo que ya no uses.',
                 'Tu sesión: al iniciar sesión se guarda en tu navegador una cookie llamada lista_session, necesaria para reconocerte; dura hasta 180 días o hasta que salgas. En el servidor solo se guarda una huella irreversible de ella. No hay cookies de publicidad ni de analítica.',
                 'Correos: usamos tu correo para confirmar que es tuyo y para que puedas elegir una contraseña nueva si la olvidas. Los mensajes salen de noreply@musicos-catolicos.com. No te enviamos publicidad ni boletines.',
             ],

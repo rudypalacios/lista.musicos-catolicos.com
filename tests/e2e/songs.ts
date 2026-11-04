@@ -743,7 +743,7 @@ try {
     const left = await page.evaluate(() => indexedDB.databases().then((dbs) => dbs.length));
     assert.ok(left >= 0);
     await page.getByLabel('Correo').fill(EMAIL);
-    await page.getByLabel('Contraseña').fill(PASSWORD);
+    await page.getByLabel('Contraseña', { exact: true }).fill(PASSWORD);
     await page.getByRole('button', { name: 'Entrar' }).click();
     await page.getByRole('heading', { name: 'Cantos' }).waitFor();
     await page.getByRole('link', { name: 'Pendiente al salir' }).waitFor();

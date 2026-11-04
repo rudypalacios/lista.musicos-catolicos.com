@@ -185,6 +185,32 @@ final class ApiTest extends TestCase
         $this->assertSame([], $this->body($this->call('GET', '/api/sync?since=0', null, $cookies))['templates']);
     }
 
+    public function testAnAccountOverItsSpaceIsRefusedWithTheReasonAndOtherRecordsStillGo(): void
+    {
+        $cookies = [SessionCookie::NAME => $this->signIn()];
+
+        // 90 songs of the longest lyrics a song may have are more than the 5 MB an account may keep
+        $heavy = [];
+        for ($n = 1; $n <= 90; $n++) {
+            $heavy[] = $this->song([
+                'id' => sprintf('dddddddd-dddd-4ddd-8ddd-%012d', $n),
+                'body' => str_repeat('a', 60000),
+            ]);
+        }
+        $refused = $this->call('POST', '/api/sync', ['songs' => $heavy], $cookies);
+        // A refusal like any other, so the app retries record by record
+        $this->assertSame(400, $refused->getStatusCode());
+        $this->assertSame('over_quota', $this->body($refused)['error']);
+        $this->assertStringContainsString('límite de espacio', (string) $this->body($refused)['message']);
+        $this->assertSame([], $this->body($this->call('GET', '/api/sync?since=0', null, $cookies))['songs']);
+
+        // One by one (what the app does with a refused batch) the records that fit are kept
+        $one = $this->call('POST', '/api/sync', ['songs' => [$heavy[0]]], $cookies);
+        $this->assertSame(200, $one->getStatusCode());
+        $small = $this->call('POST', '/api/sync', ['songs' => [$this->song()]], $cookies);
+        $this->assertSame(200, $small->getStatusCode());
+    }
+
     public function testASetlistWithNoSectionsIsRefused(): void
     {
         $cookies = [SessionCookie::NAME => $this->signIn()];

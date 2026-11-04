@@ -4274,3 +4274,39 @@ button.srow__tool:disabled {
 .privacy p {
     margin: 0.4rem 0;
 }
+
+/* A password with its eye (views/password-field.ts): the button sits inside the field's right edge, 44px like every touch target */
+.password-field {
+    position: relative;
+}
+
+.password-field input {
+    padding-right: 3rem;
+}
+
+.password-field__eye {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    padding: 0;
+    color: var(--muted);
+    background: transparent;
+    border: 0;
+}
+
+.password-field__match {
+    min-height: 1.25rem;
+    margin: 0.25rem 0 0;
+    font-size: 0.85rem;
+}
+
+.password-field__match--ok {
+    color: var(--ok);
+}
+
+.password-field__match--bad {
+    color: var(--danger);
+}

@@ -587,6 +587,11 @@ vez después del primer deploy, y otra vez antes de confiar en la app para una m
    revisa que llegue el correo (mira también *correo no deseado*), abre el enlace, cierra sesión y prueba «Olvidé mi contraseña». El correo sale de `noreply@musicos-catolicos.com`: si no llega, casi siempre falta algo de `SMTP_*` en `.env` (el error queda en el registro de errores del servidor). **Tu cuenta y tus dispositivos no cambian.**
    **Borrar una cuenta, por ahora, es por correo** (el texto lo dice): un «Eliminar mi cuenta» dentro de la app es lo siguiente.
 
+61. **Límite de espacio por cuenta, y contraseña con ojito.** Con el registro abierto, una sola cuenta podía llenar la base de datos del hosting. Desde este despliegue **cada cuenta puede guardar hasta 2.000 cantos, 1.000 listados, 50 plantillas y unos 5 MB de texto en total** (los números están en `src/Sync/AccountQuota.php`; el texto de `/privacidad` los dice).
+   **Tu cuenta no cambia** (con tus cantos queda muy por debajo). Si alguna cuenta llega al tope, el servidor rechaza solo lo que ya no cabe y la app lo avisa con un mensaje («Tu cuenta llegó al límite de espacio…» o «Llegaste al límite de 2.000 cantos…»); lo escrito **sigue en el dispositivo** y aparece como «rechazado» en la raya de arriba hasta que se libere espacio. Borrar o acortar algo siempre se permite.
+   **Contraseñas:** en *Crear cuenta* y en *Elegir una contraseña nueva* se escribe **dos veces** (debajo dice «Coinciden» / «No coinciden»), y todos los campos de contraseña (también *Iniciar sesión*) tienen un **ojito** para ver lo escrito. **No hay nada que hacer en el servidor.**
+   **Prueba después del despliegue:** abre *Crear cuenta* en una ventana de incógnito, escribe dos contraseñas distintas y mira que lo diga; toca el ojito en cada campo.
+
 **Primera apertura después de actualizar a la fase 2.** La base guardada en el dispositivo cambia de
 versión: la app vuelve a bajar todo del servidor una vez (tarda un momento, los cantos no se pierden).
 Si en esa pantalla se queda esperando, cierra las demás pestañas o ventanas de la app y recarga.

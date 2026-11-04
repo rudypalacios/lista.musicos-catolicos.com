@@ -4,12 +4,20 @@ import type { Collection, Pulled, Pushed, Records, Remote, Setlist, Song, Templa
 /** What the fake remote throws; the engine recognises them through FAKE_ERRORS */
 export class FakeNetworkError extends Error {}
 export class FakeSignedOut extends Error {}
-export class FakeRefusal extends Error {}
+export class FakeRefusal extends Error {
+    readonly reason: string | null;
+
+    constructor(message: string, reason: string | null = null) {
+        super(message);
+        this.reason = reason;
+    }
+}
 
 export const FAKE_ERRORS: ErrorKinds = {
     isOffline: (error) => error instanceof FakeNetworkError,
     isSignedOut: (error) => error instanceof FakeSignedOut,
     isRefusal: (error) => error instanceof FakeRefusal,
+    refusalReason: (error) => (error instanceof FakeRefusal ? error.reason : null),
 };
 
 /**
@@ -29,6 +37,8 @@ export class FakeServer {
     signedIn = true;
     /** Ids the server refuses (HTTP 400), however they are sent */
     refuse = new Set<string>();
+    /** What the person is told about the refusals above (a full account), or null for a refusal with nothing to say */
+    refusalReason: string | null = null;
     pageSize = 200;
     /** Runs while a push is on its way, to simulate an edit made meanwhile */
     duringPush: (() => Promise<void>) | null = null;
@@ -66,7 +76,7 @@ export class FakeServer {
         this.guard();
         this.pushes.push(records.length);
         if (records.some((record) => this.refuse.has(record.id))) {
-            throw new FakeRefusal('400');
+            throw new FakeRefusal('400', this.refusalReason);
         }
         if (this.duringPush !== null) {
             const hook = this.duringPush;

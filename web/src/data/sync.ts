@@ -8,6 +8,8 @@ export interface SyncResult {
     pulled: number;
     /** Records the server refused (they stay on the device, marked, and do not block the rest) */
     rejected: string[];
+    /** Why the server refused, in words for the person, when the reason is one they can act on (the account is full); else null */
+    refusalReason: string | null;
 }
 
 /** What stopped a sync, for the caller to tell apart */
@@ -28,6 +30,8 @@ export interface ErrorKinds {
     isSignedOut(error: unknown): boolean;
     /** The server refused the content of a record (HTTP 400) */
     isRefusal(error: unknown): boolean;
+    /** The words for the person when a refusal is one they can do something about (the account is full), else null */
+    refusalReason(error: unknown): string | null;
 }
 
 /**
@@ -53,7 +57,7 @@ export class SyncEngine {
     }
 
     async sync(): Promise<SyncResult> {
-        const result: SyncResult = { pushed: 0, pulled: 0, rejected: [] };
+        const result: SyncResult = { pushed: 0, pulled: 0, rejected: [], refusalReason: null };
         try {
             await this.push(result);
             await this.pull(result);
@@ -97,6 +101,7 @@ export class SyncEngine {
                             throw single;
                         }
                         result.rejected.push(record.id);
+                        result.refusalReason ??= this.errors.refusalReason(single);
                     }
                 }
             }

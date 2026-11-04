@@ -20,6 +20,8 @@ export function watchSaves(data: App): void {
         last = showToast('Guardado en este dispositivo');
         waiting = true;
     });
+    // The account is full: what was written stays on the device, and the person is told what to do about it
+    data.onNotice((text) => showToast(text, 9000, true));
     data.onStatus((status) => {
         if (waiting && status.state === 'idle' && status.pending === 0) {
             waiting = false;

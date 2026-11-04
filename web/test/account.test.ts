@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { emailProblem, passwordProblem } from '../src/account.ts';
+import { confirmationProblem, emailProblem, passwordProblem } from '../src/account.ts';
 
 describe('emailProblem', () => {
     it('asks for the shape of an address, nothing the server would have to refuse for a reason the person cannot see', () => {
@@ -28,5 +28,14 @@ describe('passwordProblem', () => {
         assert.equal(passwordProblem('a'.repeat(72)), null);
         assert.match(passwordProblem('a'.repeat(73)) ?? '', /demasiado larga/);
         assert.match(passwordProblem('ñ'.repeat(37)) ?? '', /demasiado larga/, '37 letters of 2 bytes are 74');
+    });
+});
+
+describe('confirmationProblem', () => {
+    it('wants the second copy to be exactly the first, letter by letter', () => {
+        assert.equal(confirmationProblem('una frase larga', 'una frase larga'), null);
+        assert.equal(confirmationProblem('una frase larga', 'una frase larg'), 'Las dos contraseñas no coinciden.');
+        assert.equal(confirmationProblem('Abcdefghij1', 'abcdefghij1'), 'Las dos contraseñas no coinciden.');
+        assert.equal(confirmationProblem('abc def', 'abc  def'), 'Las dos contraseñas no coinciden.', 'spaces count');
     });
 });

@@ -1,5 +1,6 @@
 import { ApiError, api } from '../api.ts';
 import { passwordProblem } from '../account.ts';
+import { passwordPair } from './password-field.ts';
 import { h } from '../dom.ts';
 
 /** The page a link of an email opens: it needs no session and is often opened in another browser than the one that signed up */
@@ -30,26 +31,27 @@ export function startVerifyEmail(root: HTMLElement, token: string): void {
 
 /** `/restablecer/:token`: the form to choose the new password; every session of the account ends when it is chosen */
 export function startResetPassword(root: HTMLElement, token: string): void {
-    const password = h('input', { id: 'reset-password', name: 'password', type: 'password', autocomplete: 'new-password', required: true });
+    const pair = passwordPair('reset', { first: 'Contraseña nueva', second: 'Repite la contraseña nueva' });
     const error = h('p', { class: 'error', role: 'alert' });
     const submit = h('button', { type: 'submit', class: 'primary' }, 'Guardar la contraseña');
     const form = h('form', { novalidate: true, class: 'welcome__card' },
         h('h2', {}, 'Elige una contraseña nueva'),
-        h('label', { for: 'reset-password' }, 'Contraseña nueva'),
-        password,
+        pair.elements[0] as HTMLElement,
+        pair.elements[1] as HTMLElement,
         h('p', { class: 'muted' }, 'Al menos 10 caracteres. Una frase larga es mejor que una palabra con símbolos.'),
+        ...pair.elements.slice(2),
         error,
         submit);
     frame(root, form);
 
     form.addEventListener('submit', (event) => {
         event.preventDefault();
-        error.textContent = passwordProblem(password.value) ?? '';
+        error.textContent = passwordProblem(pair.password.value) ?? pair.problem() ?? '';
         if (error.textContent !== '') {
             return;
         }
         submit.disabled = true;
-        api.resetPassword(token, password.value)
+        api.resetPassword(token, pair.password.value)
             .then(() => frame(root,
                 h('h2', {}, 'Contraseña cambiada'),
                 h('p', {}, 'Ya puedes iniciar sesión con la contraseña nueva. Las sesiones que tenías abiertas se cerraron.'),
@@ -69,5 +71,5 @@ export function startResetPassword(root: HTMLElement, token: string): void {
                 submit.disabled = false;
             });
     });
-    queueMicrotask(() => password.focus());
+    queueMicrotask(() => pair.password.focus());
 }

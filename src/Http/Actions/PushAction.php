@@ -7,9 +7,11 @@ namespace App\Http\Actions;
 use App\Auth\User;
 use App\Http\Json;
 use App\Http\Middleware\RequireUser;
+use App\Sync\AccountQuota;
 use App\Sync\InvalidSetlist;
 use App\Sync\InvalidSong;
 use App\Sync\InvalidTemplate;
+use App\Sync\OverQuota;
 use App\Sync\SetlistChange;
 use App\Sync\SetlistRepository;
 use App\Sync\SongChange;
@@ -29,7 +31,9 @@ use Psr\Http\Message\ServerRequestInterface;
  * lists must be present.
  *
  * All or nothing as far as validation goes: one invalid record answers 400 and stores none, so
- * a client never has to guess which half of a batch arrived.
+ * a client never has to guess which half of a batch arrived. The same for the account's ceiling (AccountQuota):
+ * a batch that would make it hold more than it may answers 400 `over_quota` and stores none; the app then sends the
+ * records one by one, so only those that do not fit are refused.
  */
 final class PushAction
 {
@@ -41,6 +45,7 @@ final class PushAction
         private readonly SongRepository $songs,
         private readonly SetlistRepository $setlists,
         private readonly TemplateRepository $templates,
+        private readonly AccountQuota $quota,
     ) {
     }
 
@@ -94,6 +99,12 @@ final class PushAction
             }
         } catch (InvalidTemplate $e) {
             return Json::error($response, 400, 'invalid_template', $e->getMessage());
+        }
+
+        try {
+            $this->quota->assertRoom($user->id, $songChanges, $setlistChanges, $templateChanges);
+        } catch (OverQuota $e) {
+            return Json::error($response, 400, 'over_quota', $e->getMessage());
         }
 
         $applied = [];

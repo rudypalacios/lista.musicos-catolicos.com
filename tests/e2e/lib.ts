@@ -156,7 +156,7 @@ export async function signIn(page: Page, base: string): Promise<void> {
     await page.getByRole('button', { name: 'Ya tengo cuenta' }).click();
     await page.getByRole('heading', { name: 'Inicia sesión' }).waitFor();
     await page.getByLabel('Correo').fill(EMAIL);
-    await page.getByLabel('Contraseña').fill(PASSWORD);
+    await page.getByLabel('Contraseña', { exact: true }).fill(PASSWORD);
     await page.getByRole('button', { name: 'Entrar' }).click();
     await page.getByRole('heading', { name: 'Cantos' }).waitFor();
 }

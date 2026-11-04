@@ -31,12 +31,12 @@ try {
     pass('the shell opens on the welcome, and "Ya tengo cuenta" asks to sign in');
 
     await page.getByLabel('Correo').fill(EMAIL);
-    await page.getByLabel('Contraseña').fill('wrong');
+    await page.getByLabel('Contraseña', { exact: true }).fill('wrong');
     await page.getByRole('button', { name: 'Entrar' }).click();
     await page.getByText('Correo o contraseña incorrectos.').waitFor();
     pass('a wrong password shows the Spanish error');
 
-    await page.getByLabel('Contraseña').fill(PASSWORD);
+    await page.getByLabel('Contraseña', { exact: true }).fill(PASSWORD);
     await page.getByRole('button', { name: 'Entrar' }).click();
     await page.getByRole('heading', { name: 'Cantos' }).waitFor();
     pass('the right password signs in');
