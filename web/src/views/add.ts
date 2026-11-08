@@ -259,6 +259,7 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Pa
         if (key !== null) {
             head.append(h('span', { class: 'chip' }, transpose(key, 0, readNotation())));
         }
+        head.append(...draftTag(song));
         const problem = h('p', { class: 'error', role: 'alert' });
         const add = h('button', { type: 'button', class: 'button button--primary' }, `Agregar a ${part.name}`);
         add.addEventListener('click', () => {

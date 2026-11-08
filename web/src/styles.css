@@ -909,6 +909,12 @@ input[type='search'] {
     margin-left: 0;
 }
 
+/* In the singing bar and its folded strip the name gives way before the tag does */
+.perform__song > .pill,
+.perform__strip > .pill {
+    flex: none;
+}
+
 .pill--warn {
     color: var(--warn);
     background: var(--changed-soft);

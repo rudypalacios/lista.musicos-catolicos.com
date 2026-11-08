@@ -160,7 +160,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             const to = end ? itemsOfPart(setlist.items, item.part).length - 1 : 0;
             void app.setlists.reorderItem(setlist.id, item.id, to).catch((failure: unknown) => fail(failure, 'No se pudo mover el canto.'));
         };
-        const heading = sheetHead(name, section);
+        const heading = sheetHead(name, song === undefined ? section : [section, ...(song.status === 'draft' ? [' · ', ...draftTag(song)] : [])]);
         if (songView === 'move') {
             // The submenu: every way to move the song inside its section, one touch from the list of what is done to it
             songSheet.body.replaceChildren(

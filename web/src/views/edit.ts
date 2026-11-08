@@ -78,9 +78,9 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         });
     }
 
-    // The state: a draft is marked "Borrador" in every list until it is published (a new song starts published)
+    // The state: a draft is marked "Borrador" in every list until it is published (a new song starts as a draft, to be checked first)
     const draftBox = h('input', { id: 'song-draft', type: 'checkbox' });
-    draftBox.checked = existing?.status === 'draft';
+    draftBox.checked = existing === undefined || existing.status === 'draft';
     const draftField = h('div', { class: 'draft-field' },
         h('label', { class: 'choice__option', for: 'song-draft' }, draftBox, h('span', {}, 'Borrador')),
         h('p', { class: 'muted draft-field__hint' }, 'Se marca como borrador en los listados hasta que lo publiques.'));

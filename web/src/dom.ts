@@ -39,6 +39,13 @@ export function draftTag(song: { readonly status: 'draft' | 'published' }): HTML
     return song.status === 'draft' ? [h('span', { class: 'pill pill--have pill--draft' }, 'Borrador')] : [];
 }
 
+/** "Autor · Borrador" for the second line of a song's head or sheet: the author, and the tag when it is a draft */
+export function authorLine(song: { readonly author: string; readonly status: 'draft' | 'published' }): Array<Node | string> {
+    const tag = draftTag(song);
+
+    return [...(song.author === '' ? [] : [song.author]), ...(song.author !== '' && tag.length > 0 ? [' · '] : []), ...tag];
+}
+
 /** The lines of a song shown in a row to tell it from another with the same title, one row each */
 export function snippetBlock(lines: readonly string[]): HTMLElement {
     return h('span', { class: 'song-item__snippet' }, ...lines.map((line) => h('span', {}, line)));

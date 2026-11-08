@@ -22,9 +22,9 @@ async function createSong(page: Page, title: string, draft: boolean): Promise<vo
     await page.getByLabel('Título').fill(title);
     await page.getByLabel('Autor (opcional)').fill('Kairoi');
     await page.locator('textarea').first().fill(BODY);
-    assert.equal(await page.getByLabel('Borrador').isChecked(), false, 'a new song starts published');
-    if (draft) {
-        await page.getByLabel('Borrador').check();
+    assert.equal(await page.getByLabel('Borrador').isChecked(), true, 'a new song starts as a draft');
+    if (!draft) {
+        await page.getByLabel('Borrador').uncheck();
     }
     await page.getByRole('button', { name: 'Guardar' }).first().click();
     // Saved when the song opens: only then back to the list
@@ -71,6 +71,17 @@ try {
     assert.equal(await wide.locator('.item').filter({ hasText: 'Junto a ti Jesús' }).locator('.item__sub').textContent(), 'Kairoi · Tono Do · Borrador');
     pass('inside a list, the draft says "Borrador" in the line of its author and key');
 
+    // Singing: the bar and the list of songs carry it too
+    await wide.getByRole('link', { name: 'Cantar' }).click();
+    await wide.locator('.perform__song').waitFor();
+    assert.equal(await wide.locator('.perform__song .pill--draft').innerText(), 'Borrador');
+    await wide.getByRole('button', { name: /Ir a otro canto/ }).click();
+    await wide.locator('.perform__song-choice').first().waitFor();
+    assert.equal(await wide.locator('.perform__song-choice .pill--draft').count(), 1);
+    await wide.keyboard.press('Escape');
+    await wide.getByRole('link', { name: 'Volver al listado' }).click();
+    pass('singing: the bar and the list of songs say "Borrador" beside the name');
+
     // The state reaches the server
     await synced(wide);
     const onServer = await wide.evaluate(async () => {
@@ -87,6 +98,7 @@ try {
     // The song page's bar on a wide screen: key, Guardar and the hint level with, and at the left of, the "⋯"
     await openSection(wide, 'Cantos');
     await wide.getByRole('link', { name: /Junto a ti Jesús/ }).click();
+    assert.equal(await wide.locator('.song-head .by').innerText(), 'Kairoi · Borrador', 'the head of the song says it');
     await wide.getByRole('button', { name: 'Subir un semitono' }).click();
     const box = async (page: Page, locator: ReturnType<Page['locator']>) => {
         const found = await locator.boundingBox();

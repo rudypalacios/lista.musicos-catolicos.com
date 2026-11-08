@@ -256,7 +256,7 @@ try {
     await page.getByRole('heading', { name: 'Abrimos la puerta' }).waitFor();
     // The bar says "Song • Key"; the head of the song (title, author, key) is not repeated under it
     assert.equal(await page.locator('.perform__song-key').innerText(), 'Do');
-    assert.equal(await page.locator('.perform__song').innerText().then((text) => text.replace(/\s+/g, ' ')), 'Abrimos la puerta Do');
+    assert.equal(await page.locator('.perform__song').innerText().then((text) => text.replace(/\s+/g, ' ')), 'Abrimos la puerta Do Borrador');
     assert.equal(await page.locator('.song-head h2, .song-head .by, .song-head .chip').count(), 0, 'no title, author or key in the body');
     await noTypedIcons(page, 'singing');
     await openTools(page);

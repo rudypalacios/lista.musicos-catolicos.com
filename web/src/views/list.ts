@@ -2,7 +2,7 @@ import type { App } from '../app.ts';
 import { parse, songKey } from '../chordpro/parser.ts';
 import { transpose } from '../chordpro/chord.ts';
 import type { Song } from '../data/types.ts';
-import { draftTag, h, snippetBlock } from '../dom.ts';
+import { authorLine, draftTag, h, snippetBlock } from '../dom.ts';
 import { icon } from '../icons.ts';
 import { readNotation } from '../prefs.ts';
 import { paths } from '../router.ts';
@@ -65,7 +65,7 @@ export function listView(app: App, navigate: Navigate): View {
         }
         sheet.body.replaceChildren(
             sheetList(
-                sheetHead(song.title, song.author, sheetShare('canto', () => {
+                sheetHead(song.title, authorLine(song), sheetShare('canto', () => {
                     error.textContent = '';
                     sheet.close(() => shareSheet.open({ id: song.id, title: song.title, kind: 'song' }));
                 })),

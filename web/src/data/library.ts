@@ -16,7 +16,7 @@ export interface SongDraft {
     body: string;
     /** Left out: a new song has none and an edit keeps the ones it has */
     tags?: readonly string[];
-    /** Left out: a new song is published and an edit keeps the state it has */
+    /** Left out: a new song is a draft (it is checked before it is published) and an edit keeps the state it has */
     status?: SongStatus;
 }
 
@@ -54,7 +54,7 @@ export class Library {
     }
 
     async create(draft: SongDraft): Promise<Song> {
-        const song: Song = { ...clean(draft), tags: cleanTags(draft.tags ?? []), myShift: 0, status: draft.status ?? 'published', id: this.newId(), updatedAt: this.now(), deletedAt: null };
+        const song: Song = { ...clean(draft), tags: cleanTags(draft.tags ?? []), myShift: 0, status: draft.status ?? 'draft', id: this.newId(), updatedAt: this.now(), deletedAt: null };
         await this.store.save('songs', song);
 
         return song;

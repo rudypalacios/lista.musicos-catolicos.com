@@ -101,7 +101,7 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 14.
 - [x] **The state of a song: draft or published** (`Song.status`, migration `0019`, synced; the owner asked on 2026-11-08 and unlocked the song rows of Cantos, of the picker and of a list in `DESIGN-LOCK.md`):
       a draft carries a grey "Borrador" pill after its author and key wherever it is listed (`draftTag` in `web/src/dom.ts`); publishing only takes it away, there is no "Publicado" tag. The editor has a
-      "Borrador" box under the tags (a new song starts published; every song that existed is published). Not marked yet: the song page's own head, singing and the shared page (a link shows nothing of it).
+      "Borrador" box under the tags (a new song, imported ones too, starts as a draft so it is checked first; every song that existed is published). It is also in the head of the song page, in the "⋯" sheets of a song, in the picker's preview and in singing (its bar, its strip and the list of songs; the owner asked for "everywhere" on 2026-11-08). Not marked: the shared page (a link shows nothing of it).
       **Also, on the same day:** from 900px the key and Guardar of the song page ride in its bar, just left of the "⋯" (`.song-tools` in `styles.css`; a phone is as it was). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 61.
 - [x] The key of a song in a list (PR 1 of 3, the owner's design: `maquetas del tono`): in Cantar's "⋯" sheet, **Tono**
       (`views/tone-control.ts`): − / + move the key **for today only** (kept on the device in `today-keys.ts`, never synced,

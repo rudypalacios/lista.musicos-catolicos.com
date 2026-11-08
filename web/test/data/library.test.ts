@@ -20,7 +20,7 @@ describe('Library', () => {
         const song = await library.create({ title: '  Caminamos con alegría ', author: ' Anónimo ', body: '[C]Caminamos' });
 
         assert.deepEqual(song, {
-            id: 'id-0', title: 'Caminamos con alegría', author: 'Anónimo', body: '[C]Caminamos', tags: [], myShift: 0, status: 'published', updatedAt: 1000, deletedAt: null,
+            id: 'id-0', title: 'Caminamos con alegría', author: 'Anónimo', body: '[C]Caminamos', tags: [], myShift: 0, status: 'draft', updatedAt: 1000, deletedAt: null,
         });
         assert.deepEqual(await store.pending('songs'), [song]);
     });
@@ -107,9 +107,9 @@ describe('Library', () => {
     describe('the state', () => {
         const draft = { title: 'Uno', author: '', body: '[C]a' };
 
-        it('is published unless the new song says it is a draft', async () => {
-            assert.equal((await library.create(draft)).status, 'published');
-            assert.equal((await library.create({ ...draft, status: 'draft' })).status, 'draft');
+        it('is a draft unless the new song says it is published', async () => {
+            assert.equal((await library.create(draft)).status, 'draft');
+            assert.equal((await library.create({ ...draft, status: 'published' })).status, 'published');
         });
 
         it('is kept by an edit that does not say it, and changed by one that does (and queued)', async () => {

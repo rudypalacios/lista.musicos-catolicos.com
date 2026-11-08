@@ -1,6 +1,6 @@
 import type { App } from '../app.ts';
 import type { Song } from '../data/types.ts';
-import { h } from '../dom.ts';
+import { authorLine, h } from '../dom.ts';
 import { icon } from '../icons.ts';
 import { readKeepAwake, readNotation } from '../prefs.ts';
 import { paths } from '../router.ts';
@@ -141,7 +141,7 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
     // "Compartir canto", from the button at the right of the title: a link anyone can read, with its own sheet that comes after this one
     const shareSheet = createShareSheet();
     sheet.body.replaceChildren(
-        sheetList(sheetHead(song.title, song.author, sheetShare('canto', () => {
+        sheetList(sheetHead(song.title, authorLine(song), sheetShare('canto', () => {
             sheet.close(() => shareSheet.open({ id: song.id, title: song.title, kind: 'song' }));
         }))),
         h('h3', {}, 'Letra'),
