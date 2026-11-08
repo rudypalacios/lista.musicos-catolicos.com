@@ -12,7 +12,7 @@ import { dragOffset, isSwipe, swipeAxis, type Axis } from '../swipe.ts';
 import { describeAwake, screenKeeper } from '../wakelock.ts';
 import { createReader, type Reader } from './reader.ts';
 import { createSheet, sheetList, spaced } from './sheet.ts';
-import { createToneControl, type ToneControl } from './tone-control.ts';
+import { createToneControl, type ToneControl, type ToneControlOptions } from './tone-control.ts';
 import type { Navigate, View } from './types.ts';
 
 /** How long (ms) the song takes to leave the screen once the finger lets go */
@@ -84,7 +84,9 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     const jumpButton = h('button', { type: 'button', class: 'perform__jump', 'aria-label': `Ir a otro canto. Canto ${position} de ${order.length}` },
         h('span', { class: 'perform__count' }, countText), icon('chevron-down', 16));
     const moreButton = h('button', { type: 'button', class: 'perform__more', 'aria-label': 'Más herramientas' }, icon('more', 22));
-    const full = h('div', { class: 'perform__full' }, back, heading, jumpButton, moreButton);
+    // On a wide screen the key (− / + and Guardar) rides in the bar too, before the position button; filled below
+    const toneSlot = h('div', { class: 'perform__tone' });
+    const full = h('div', { class: 'perform__full' }, back, heading, toneSlot, jumpButton, moreButton);
     const stripKey = h('span', { class: 'perform__strip-key' });
     const strip = h('button', { type: 'button', class: 'perform__strip', 'aria-label': 'Mostrar la barra' },
         h('strong', {}, title), stripKey, ...(song === undefined ? [] : draftTag(song)), h('span', { class: 'perform__strip-count' }, countText));
@@ -97,6 +99,7 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     let stage: HTMLElement;
     let tools: HTMLElement | null = null;
     let tone: ToneControl | null = null;
+    let barTone: ToneControl | null = null;
     let dispose: () => void = () => undefined;
     if (song === undefined) {
         stage = h(
@@ -139,6 +142,7 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
                 barKey.hidden = key === null;
                 markStrip();
                 tone?.refresh();
+                barTone?.refresh();
             },
         });
         const own = reader;
@@ -179,8 +183,11 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
                 return;
             }
             showToast(said, 3500, true);
+            // What was saved is the new "saved" key: both controls (the sheet's and the bar's) say so
+            tone?.refresh();
+            barTone?.refresh();
         };
-        tone = createToneControl({
+        const toneOptions: ToneControlOptions = {
             reader: own,
             saved: () => saved,
             savedName: 'Listado',
@@ -192,7 +199,10 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
                 { label: 'Como mi tono', save: saveTo({ list: false, mine: true }, 'Tono guardado como tu tono') },
                 { label: 'En el listado y como mi tono', save: saveTo({ list: true, mine: true }, 'Tono guardado en este listado y como tu tono') },
             ],
-        });
+        };
+        tone = createToneControl(toneOptions);
+        barTone = createToneControl({ ...toneOptions, compact: true, separateStep: true });
+        toneSlot.append(barTone.step, barTone.element);
         tools = own.toolbar;
         stage = own.stage;
         dispose = own.dispose;

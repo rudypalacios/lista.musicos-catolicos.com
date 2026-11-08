@@ -6,6 +6,7 @@ import { readKeepAwake, readNotation } from '../prefs.ts';
 import { paths } from '../router.ts';
 import { writeKeyToSong } from '../transpose-song.ts';
 import { screenKeeper } from '../wakelock.ts';
+import { songHeading, type SongHeading } from '../song-heading.ts';
 import { planSheet } from '../print/plan.ts';
 import type { PrintVersion } from '../print/layout.ts';
 import { printPlans } from '../print/print.ts';
@@ -51,16 +52,24 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
     /** The key on screen, which is the one that prints */
     let shown = shift;
     let tone: ToneControl | undefined;
+    /** What this page last told the bar: the next page is built before this one is disposed, and must not be cleared by it */
+    let ownHeading: SongHeading | null = null;
     const reader = createReader(song, {
         sizeScope: 'songs',
         shift,
         // The key is in the key control: a pill with the same words in the head of the song would say it twice
         keyPill: false,
+        // The bar says the name, the key and "Borrador": no head under it
+        titleInBar: true,
         onShift: (t) => {
             shown = t;
             writeTransposition(t, mine);
         },
-        onKey: () => tone?.refresh(),
+        onKey: (key) => {
+            tone?.refresh();
+            ownHeading = { title: song.title, key, draft: song.status === 'draft' };
+            songHeading.set(ownHeading);
+        },
     });
     writeTransposition(shift, mine);
     const error = h('p', { class: 'error', role: 'alert', hidden: true });
@@ -181,6 +190,9 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
     return {
         element: h('div', { class: 'viewer' }, tools, error, reader.stage, sheet.element, addToList.element, shareSheet.element),
         dispose: () => {
+            if (songHeading.get() === ownHeading) {
+                songHeading.set(null);
+            }
             releaseScreen();
             sheet.release();
             addToList.release();

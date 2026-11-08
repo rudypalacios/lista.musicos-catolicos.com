@@ -26,6 +26,8 @@ export interface ReaderOptions {
     keyPill?: boolean;
     /** Draw the title and the author at the head of the song (default). Singing says them in its bar and leaves the room to the lyrics. */
     songHead?: boolean;
+    /** The bar says the title and whether it is a draft (the song page): the head is left out, and the title stays for a screen reader. The author is in the "⋯" sheet. */
+    titleInBar?: boolean;
 }
 
 /** Columns button: auto → two → one → auto */
@@ -76,8 +78,10 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
     const keyChip = h('span', { class: 'chip' });
     const head = h('header', { class: 'song-head' });
     if (options.songHead !== false) {
-        head.append(h('h2', {}, song.title));
-        const byline = authorLine(song);
+        if (options.titleInBar !== true) {
+            head.append(h('h2', {}, song.title));
+        }
+        const byline = options.titleInBar === true ? [] : authorLine(song);
         if (byline.length > 0) {
             head.append(h('p', { class: 'by' }, ...byline));
         }
@@ -95,7 +99,7 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
     }
     // Without the visible head the title is still the heading of the screen, for a screen reader
     const content = h('div', { class: 'viewer-content', id: 'song-content' },
-        ...(options.songHead === false ? [h('h2', { class: 'sr-only' }, song.title)] : []),
+        ...(options.songHead === false || options.titleInBar === true ? [h('h2', { class: 'sr-only' }, song.title)] : []),
         ...(head.childElementCount > 0 ? [head] : []), sheet);
     const stage = h('div', { class: 'stage', id: 'stage' }, content);
 

@@ -20,6 +20,19 @@ interface Golden {
     transpositions: { chord: string; shifts: number[]; latin: string[]; english: string[] }[];
 }
 
+/**
+ * The one place the app differs from the site on purpose (the owner, 2026-11-08): Cb, Db, Fb, Gb and Ab are shown as
+ * B, C#, E, F# and G#, Eb as D#, and E#, B# and A# as F, C and Bb (in Latin Si, Do#, Mi, Fa#, Sol#, Fa, Do, Sib), as a root or as a bass. Everything else must stay the site's.
+ */
+const SPELLED: Readonly<Record<string, string>> = {
+    Cb: 'B', Db: 'C#', Fb: 'E', Gb: 'F#', Ab: 'G#', Eb: 'D#', 'E#': 'F', 'B#': 'C', 'A#': 'Bb',
+    Dob: 'Si', Reb: 'Do#', Fab: 'Mi', Solb: 'Fa#', Lab: 'Sol#', Mib: 'Re#', 'Mi#': 'Fa', 'Si#': 'Do', 'La#': 'Sib',
+};
+const appSpelling = (name: string): string => name.replace(/(^|[/(])(Cb|Db|Fb|Gb|Ab|Eb|E#|B#|A#|Dob|Reb|Fab|Solb|Lab|Mib|Mi#|Si#|La#)/g, (_all, lead: string, note: string) => lead + (SPELLED[note] ?? note));
+
+/** What is not a stored (English) chord, like a chord typed in Latin, comes back from `transpose` untouched */
+const spelled = (chord: string, expected: string): string => (/^\(?\s*[A-G]/.test(chord) ? appSpelling(expected) : expected);
+
 const golden = JSON.parse(
     readFileSync(new URL('../fixtures/golden.json', import.meta.url), 'utf8'),
 ) as Golden;
@@ -61,11 +74,36 @@ describe('golden fixtures: chords', () => {
     for (const row of golden.transpositions) {
         it(`transposes ${JSON.stringify(row.chord)} as song.js does`, () => {
             row.shifts.forEach((shift, index) => {
-                assert.equal(transpose(row.chord, shift, 'latin'), row.latin[index], `latin, ${shift}`);
-                assert.equal(transpose(row.chord, shift, 'english'), row.english[index], `english, ${shift}`);
+                assert.equal(transpose(row.chord, shift, 'latin'), spelled(row.chord, row.latin[index] ?? ''), `latin, ${shift}`);
+                assert.equal(transpose(row.chord, shift, 'english'), spelled(row.chord, row.english[index] ?? ''), `english, ${shift}`);
             });
         });
     }
+});
+
+describe('the app spells Cb Db Fb Gb Ab as B C# E F# G#', () => {
+    it('as a root or a bass, in both notations, with the quality kept', () => {
+        assert.equal(transpose('Db', 0, 'english'), 'C#');
+        assert.equal(transpose('Db', 0, 'latin'), 'Do#');
+        assert.equal(transpose('Gbm7', 0, 'latin'), 'Fa#m7');
+        assert.equal(transpose('Cb', 0, 'english'), 'B');
+        assert.equal(transpose('Fb/Cb', 0, 'latin'), 'Mi/Si');
+        assert.equal(transpose('Abm7', 0, 'latin'), 'Sol#m7');
+        assert.equal(transpose('C/Ab', 0, 'english'), 'C/G#');
+        assert.equal(transpose('(Gb)', 0, 'english'), '(F#)');
+    });
+
+    it('spells Eb as D# and E# B# A# as F C Bb, and leaves C# D# F# G# Bb as they are', () => {
+        assert.deepEqual(['C#', 'D#', 'E#', 'F#', 'G#', 'A#', 'B#'].map((root) => transpose(root, 0, 'english')), ['C#', 'D#', 'F', 'F#', 'G#', 'Bb', 'C']);
+        assert.deepEqual(['E#m', 'A#7', 'B#/E#'].map((chord) => transpose(chord, 0, 'latin')), ['Fam', 'Sib7', 'Do/Fa']);
+        assert.equal(transpose('Bb', 0, 'english'), 'Bb');
+        assert.equal(transpose('Ebm7/Bb', 0, 'latin'), 'Re#m7/Sib');
+    });
+
+    it('transposing lands on C# D# F# G# Bb', () => {
+        assert.deepEqual([1, 3, 6, 8, 10].map((shift) => transpose('C', shift, 'english')), ['C#', 'D#', 'F#', 'G#', 'Bb']);
+        assert.equal(transpose('F', 3, 'latin'), 'Sol#');
+    });
 });
 
 describe('golden fixtures: syllables', () => {
