@@ -1,6 +1,6 @@
 import type { LocalStore } from './store.ts';
 import { cleanTags, sameTag } from './tags.ts';
-import { LIMITS, type Song } from './types.ts';
+import { LIMITS, type Song, type SongStatus } from './types.ts';
 
 /** A song the person wrote that cannot be saved; the message is Spanish and can be shown as is */
 export class ValidationError extends Error {
@@ -16,6 +16,8 @@ export interface SongDraft {
     body: string;
     /** Left out: a new song has none and an edit keeps the ones it has */
     tags?: readonly string[];
+    /** Left out: a new song is a draft (it is checked before it is published) and an edit keeps the state it has */
+    status?: SongStatus;
 }
 
 /**
@@ -52,7 +54,7 @@ export class Library {
     }
 
     async create(draft: SongDraft): Promise<Song> {
-        const song: Song = { ...clean(draft), tags: cleanTags(draft.tags ?? []), myShift: 0, id: this.newId(), updatedAt: this.now(), deletedAt: null };
+        const song: Song = { ...clean(draft), tags: cleanTags(draft.tags ?? []), myShift: 0, status: draft.status ?? 'draft', id: this.newId(), updatedAt: this.now(), deletedAt: null };
         await this.store.save('songs', song);
 
         return song;
@@ -68,6 +70,7 @@ export class Library {
             ...current,
             ...clean(draft),
             tags: draft.tags === undefined ? current.tags : cleanTags(draft.tags),
+            status: draft.status ?? current.status,
             updatedAt: this.stamp(current),
         };
         await this.store.save('songs', song);
@@ -161,12 +164,13 @@ export class Library {
     }
 }
 
-/** A song saved before "mi tono" or the tags has none: the guard gives it the value they start with */
+/** A song saved before "mi tono", the tags or the state has none: the guard gives it the value they start with */
 function withDefaults(song: Song): Song {
     const myShift = Number.isInteger(song.myShift) ? song.myShift : 0;
     const tags = Array.isArray(song.tags) ? song.tags : [];
+    const status = song.status === 'draft' ? 'draft' : 'published';
 
-    return myShift === song.myShift && tags === song.tags ? song : { ...song, myShift, tags };
+    return myShift === song.myShift && tags === song.tags && status === song.status ? song : { ...song, myShift, tags, status };
 }
 
 function clean(draft: SongDraft): Pick<SongDraft, 'title' | 'author' | 'body'> {

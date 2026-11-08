@@ -1,7 +1,7 @@
 import type { App } from '../app.ts';
 import { inListOrder, partName } from '../data/setlists.ts';
 import type { Setlist, SetlistItem, Song } from '../data/types.ts';
-import { h, link } from '../dom.ts';
+import { draftTag, h, link } from '../dom.ts';
 import { icon } from '../icons.ts';
 import { nextFold, type FoldState } from '../fold.ts';
 import { readKeepAwake } from '../prefs.ts';
@@ -80,14 +80,14 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     const barKey = h('span', { class: 'perform__song-key' });
     barKey.hidden = true;
     const heading = h('span', { class: 'perform__title' }, h('small', { class: 'perform__part' }, sectionName(setlist, item)),
-        h('strong', { class: 'perform__song' }, h('span', { class: 'perform__song-name' }, title), barKey));
+        h('strong', { class: 'perform__song' }, h('span', { class: 'perform__song-name' }, title), barKey, ...(song === undefined ? [] : draftTag(song))));
     const jumpButton = h('button', { type: 'button', class: 'perform__jump', 'aria-label': `Ir a otro canto. Canto ${position} de ${order.length}` },
         h('span', { class: 'perform__count' }, countText), icon('chevron-down', 16));
     const moreButton = h('button', { type: 'button', class: 'perform__more', 'aria-label': 'Más herramientas' }, icon('more', 22));
     const full = h('div', { class: 'perform__full' }, back, heading, jumpButton, moreButton);
     const stripKey = h('span', { class: 'perform__strip-key' });
     const strip = h('button', { type: 'button', class: 'perform__strip', 'aria-label': 'Mostrar la barra' },
-        h('strong', {}, title), stripKey, h('span', { class: 'perform__strip-count' }, countText));
+        h('strong', {}, title), stripKey, ...(song === undefined ? [] : draftTag(song)), h('span', { class: 'perform__strip-count' }, countText));
     strip.inert = true;
     const progress = h('div', { class: 'perform__progress', 'aria-hidden': 'true' });
     const error = h('p', { class: 'error', role: 'alert' });
@@ -222,11 +222,12 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     const songList = h('ul', { class: 'perform__songs' });
     let current: HTMLElement | null = null;
     const jumpSheet = createSheet('Cantos del listado', async () => {
-        const known = new Map((await app.list()).map((candidate) => [candidate.id, candidate.title]));
+        const known = new Map((await app.list()).map((candidate) => [candidate.id, candidate]));
         songList.replaceChildren(...order.map((entry, index) => {
             const choice = h('button', { type: 'button', class: 'perform__song-choice' },
                 h('span', { class: 'perform__song-number' }, String(index + 1)),
-                h('span', {}, h('small', {}, sectionName(setlist, entry)), known.get(entry.songId) ?? 'Canto eliminado'));
+                h('span', {}, h('small', {}, sectionName(setlist, entry)), known.get(entry.songId)?.title ?? 'Canto eliminado',
+                    ...(known.get(entry.songId) === undefined ? [] : draftTag(known.get(entry.songId) as Song))));
             if (index + 1 === position) {
                 choice.setAttribute('aria-current', 'true');
                 current = choice;

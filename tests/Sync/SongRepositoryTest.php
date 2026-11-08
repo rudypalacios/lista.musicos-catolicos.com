@@ -35,9 +35,10 @@ final class SongRepositoryTest extends TestCase
         bool $deleted = false,
         string $id = self::SONG,
         ?int $myShift = null,
-        ?array $tags = null
+        ?array $tags = null,
+        ?string $status = null
     ): SongChange {
-        return new SongChange($id, $title, 'Autor', "[G]Letra de $title", $at, $deleted, $myShift, $tags);
+        return new SongChange($id, $title, 'Autor', "[G]Letra de $title", $at, $deleted, $myShift, $tags, $status);
     }
 
     public function testANewSongIsStoredAndNumbered(): void
@@ -110,6 +111,24 @@ final class SongRepositoryTest extends TestCase
         $row = $this->songs->changedSince(self::ME, 0, 10)[0];
         $this->assertSame('Uno editado', $row['title']);
         $this->assertSame(['Entrada'], $row['tags']);
+    }
+
+    public function testASongIsPublishedUnlessDraftAndAnOldClientKeepsTheState(): void
+    {
+        $this->songs->apply(self::ME, $this->change('Uno', 1000));
+        $this->assertSame('published', $this->songs->changedSince(self::ME, 0, 10)[0]['status'], 'none said');
+
+        $this->songs->apply(self::ME, $this->change('Uno', 2000, false, self::SONG, null, null, 'draft'));
+        $this->assertSame('draft', $this->songs->changedSince(self::ME, 0, 10)[0]['status']);
+
+        $this->songs->apply(self::ME, $this->change('Uno editado', 3000));
+        $row = $this->songs->changedSince(self::ME, 0, 10)[0];
+        $this->assertSame('Uno editado', $row['title']);
+        $this->assertSame('draft', $row['status'], 'an older client that sends none keeps the stored one');
+
+        $published = $this->change('Uno editado', 4000, false, self::SONG, null, null, 'published');
+        $this->songs->apply(self::ME, $published);
+        $this->assertSame('published', $this->songs->changedSince(self::ME, 0, 10)[0]['status']);
     }
 
     public function testAKeyOfZeroClearsIt(): void

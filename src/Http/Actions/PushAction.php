@@ -20,7 +20,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * POST /api/sync {songs?: [{id, title, author, body, myShift?, updatedAt, deleted}],
+ * POST /api/sync {songs?: [{id, title, author, body, myShift?, tags?, status?, updatedAt, deleted}],
  * setlists?: [{id, title, eventDate, notes, starred?, items, parts, updatedAt, deleted}],
  * templates?: [{id, name, parts, updatedAt, deleted}]} → 200 {applied: [id…], ignored: [id…]}.
  * Each record is whole, with the client's own timestamp

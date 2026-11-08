@@ -4,7 +4,7 @@ import { transpose } from '../chordpro/chord.ts';
 import { partName } from '../data/setlists.ts';
 import { hasTag, tagOf, untaggedUses, withTag } from '../data/tags.ts';
 import { LIMITS, type PartDef, type Setlist, type Song } from '../data/types.ts';
-import { h, link, setSheet, snippetBlock } from '../dom.ts';
+import { draftTag, h, link, setSheet, snippetBlock } from '../dom.ts';
 import { sheetHtml } from '../chordpro/sheet.ts';
 import { icon } from '../icons.ts';
 import { readNotation } from '../prefs.ts';
@@ -190,6 +190,7 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Pa
         const detail = [
             ...(song.author === '' ? [] : [song.author]),
             ...(key === null ? [] : [h('span', { class: 'lrow__key' }, transpose(key, 0, readNotation()))]),
+            ...draftTag(song),
             // Searching is not the moment to warn: the notice comes when the song is added (below)
             ...(placed.get(song.id)?.has(part.name) === true ? [h('span', { class: 'lrow__here' }, 'Ya está aquí')] : []),
         ].flatMap((piece, index) => (index === 0 ? [piece] : [' · ', piece]));
@@ -258,6 +259,7 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Pa
         if (key !== null) {
             head.append(h('span', { class: 'chip' }, transpose(key, 0, readNotation())));
         }
+        head.append(...draftTag(song));
         const problem = h('p', { class: 'error', role: 'alert' });
         const add = h('button', { type: 'button', class: 'button button--primary' }, `Agregar a ${part.name}`);
         add.addEventListener('click', () => {

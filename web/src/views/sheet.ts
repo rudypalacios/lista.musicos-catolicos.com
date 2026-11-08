@@ -209,9 +209,9 @@ export function sheetAction(name: IconName, label: string, run: () => void, opti
  * The title of a sheet or menu, with a line under it if it needs one: the first row of its `sheetList`. `tool` is a button
  * at its right (`sheetShare`), level with the title.
  */
-export function sheetHead(title: string, sub?: string, tool?: HTMLElement): HTMLElement {
+export function sheetHead(title: string, sub?: string | readonly (Node | string)[], tool?: HTMLElement): HTMLElement {
     return h('div', { class: 'sheet-head' },
-        h('div', { class: 'sheet-head__text' }, h('h4', { class: 'sheet__title' }, title), ...(sub === undefined || sub === '' ? [] : [h('p', { class: 'sheet__sub' }, sub)])),
+        h('div', { class: 'sheet-head__text' }, h('h4', { class: 'sheet__title' }, title), ...(sub === undefined || sub === '' || sub.length === 0 ? [] : [h('p', { class: 'sheet__sub' }, ...(typeof sub === 'string' ? [sub] : sub))])),
         ...(tool === undefined ? [] : [tool]));
 }
 

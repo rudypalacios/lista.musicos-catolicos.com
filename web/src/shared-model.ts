@@ -86,7 +86,7 @@ export function keyOf(song: SharedSong, shift: number, notation: Notation): stri
 
 /** The song as the app's printing wants it (the visitor keeps nothing: the rest is empty) */
 export function asSong(song: SharedSong, updatedAt: number): Song {
-    return { id: song.id, title: song.title, author: song.author, body: song.body ?? '', tags: [], myShift: 0, updatedAt, deletedAt: null };
+    return { id: song.id, title: song.title, author: song.author, body: song.body ?? '', tags: [], myShift: 0, status: 'published', updatedAt, deletedAt: null };
 }
 
 export function countLabel(count: number): string {

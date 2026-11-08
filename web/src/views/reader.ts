@@ -2,7 +2,7 @@ import { transpose, type Notation } from '../chordpro/chord.ts';
 import { parse, songKey } from '../chordpro/parser.ts';
 import { sheetHtml } from '../chordpro/sheet.ts';
 import type { Song } from '../data/types.ts';
-import { h, setSheet } from '../dom.ts';
+import { authorLine, h, setSheet } from '../dom.ts';
 import { icon } from '../icons.ts';
 import { clearFit, DEFAULT_LIMITS, fitToStage, isWide, type ColumnMode } from '../fit.ts';
 import { readColumns, readFit, readLyricSize, readNotation, saveColumns, saveFit, saveLyricSize, saveNotation, type SizeScope } from '../prefs.ts';
@@ -77,8 +77,9 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
     const head = h('header', { class: 'song-head' });
     if (options.songHead !== false) {
         head.append(h('h2', {}, song.title));
-        if (song.author !== '') {
-            head.append(h('p', { class: 'by' }, song.author));
+        const byline = authorLine(song);
+        if (byline.length > 0) {
+            head.append(h('p', { class: 'by' }, ...byline));
         }
     }
     const meta = h('div', { class: 'meta' }, ...(options.keyPill === false ? [] : [keyChip]));
