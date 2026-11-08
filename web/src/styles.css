@@ -2529,8 +2529,8 @@ body {
 }
 
 /*
- * The key in the singing bar, from 900px only (under it the key is in the "⋯" sheet, as always): − key +, then Guardar
- * and its hint while there is a change, before the position button. The menu of Guardar hangs under the bar.
+ * The key in the singing bar, from 900px only (under it the key is in the "⋯" sheet, as always): "Solo hoy" and Guardar
+ * while there is a change, then − key +, before the position button. The menu of Guardar hangs under the bar.
  */
 .perform__tone {
     display: none;
@@ -2550,8 +2550,21 @@ body {
         display: contents;
     }
 
+    /*
+     * "Solo hoy", Guardar, then − key +: what appears and hides while the key changes is at the left, and the step stays
+     * against the position button, so nothing at its right moves when the key is changed or saved.
+     */
     .perform__tone .tone-control__hint {
+        order: 0;
         white-space: nowrap;
+    }
+
+    .perform__tone .tone-control__split {
+        order: 1;
+    }
+
+    .perform__tone .tone-control__step {
+        order: 2;
     }
 
     .perform__tone .tone-control__refs {

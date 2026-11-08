@@ -79,9 +79,20 @@ try {
     const toneStep = await wide.locator('.perform__tone .tone-control__step').boundingBox();
     const jump = await wide.getByRole('button', { name: /Ir a otro canto/ }).boundingBox();
     assert.ok(toneStep !== null && jump !== null && toneStep.x + toneStep.width <= jump.x, 'the key is in the bar, left of the position button');
+    const stepBefore = await wide.locator('.perform__tone .tone-control__step').boundingBox();
+    const jumpBefore = await wide.getByRole('button', { name: /Ir a otro canto/ }).boundingBox();
     await wide.locator('.perform__tone').getByRole('button', { name: 'Subir un semitono' }).click();
     const barSave = wide.locator('.perform__tone .tone-control__save');
     await barSave.waitFor();
+    // Order "Solo hoy", Guardar, − key +; and nothing of the step or the position button moves when they appear
+    const hintBox = await wide.locator('.perform__tone .tone-control__hint').boundingBox();
+    const saveBox = await barSave.boundingBox();
+    const stepAfter = await wide.locator('.perform__tone .tone-control__step').boundingBox();
+    const jumpAfter = await wide.getByRole('button', { name: /Ir a otro canto/ }).boundingBox();
+    assert.ok(hintBox !== null && saveBox !== null && stepAfter !== null && stepBefore !== null && jumpBefore !== null && jumpAfter !== null);
+    assert.ok(hintBox.x + hintBox.width <= saveBox.x && saveBox.x + saveBox.width <= stepAfter.x, 'order: Solo hoy, Guardar, then the step');
+    assert.equal(Math.round(stepAfter.x), Math.round(stepBefore.x), 'the step does not move when Guardar appears');
+    assert.equal(Math.round(jumpAfter.x), Math.round(jumpBefore.x), 'the position button does not move either');
     await wide.locator('.perform__tone .tone-control__more').click();
     assert.equal(await wide.locator('.perform__tone .tone-control__menu').isVisible(), true, 'the menu of Guardar hangs under the bar');
     await wide.locator('.perform__tone .tone-control__more').click();
