@@ -22,12 +22,13 @@ interface Golden {
 
 /**
  * The one place the app differs from the site on purpose (the owner, 2026-11-08): Cb, Db, Fb, Gb and Ab are shown as
- * B, C#, E, F# and G# (Si, Do#, Mi, Fa#, Sol#), as a root or as a bass. Everything else must stay the site's.
+ * B, C#, E, F# and G#, and E#, B# and A# as F, C and Bb (in Latin Si, Do#, Mi, Fa#, Sol#, Fa, Do, Sib), as a root or as a bass. Everything else must stay the site's.
  */
 const SPELLED: Readonly<Record<string, string>> = {
-    Cb: 'B', Db: 'C#', Fb: 'E', Gb: 'F#', Ab: 'G#', Dob: 'Si', Reb: 'Do#', Fab: 'Mi', Solb: 'Fa#', Lab: 'Sol#',
+    Cb: 'B', Db: 'C#', Fb: 'E', Gb: 'F#', Ab: 'G#', 'E#': 'F', 'B#': 'C', 'A#': 'Bb',
+    Dob: 'Si', Reb: 'Do#', Fab: 'Mi', Solb: 'Fa#', Lab: 'Sol#', 'Mi#': 'Fa', 'Si#': 'Do', 'La#': 'Sib',
 };
-const appSpelling = (name: string): string => name.replace(/(^|[/(])(Cb|Db|Fb|Gb|Ab|Dob|Reb|Fab|Solb|Lab)/g, (_all, lead: string, note: string) => lead + (SPELLED[note] ?? note));
+const appSpelling = (name: string): string => name.replace(/(^|[/(])(Cb|Db|Fb|Gb|Ab|E#|B#|A#|Dob|Reb|Fab|Solb|Lab|Mi#|Si#|La#)/g, (_all, lead: string, note: string) => lead + (SPELLED[note] ?? note));
 
 /** What is not a stored (English) chord, like a chord typed in Latin, comes back from `transpose` untouched */
 const spelled = (chord: string, expected: string): string => (/^\(?\s*[A-G]/.test(chord) ? appSpelling(expected) : expected);
@@ -92,10 +93,15 @@ describe('the app spells Cb Db Fb Gb Ab as B C# E F# G#', () => {
         assert.equal(transpose('(Gb)', 0, 'english'), '(F#)');
     });
 
-    it('leaves Eb and Bb as they are, and transposing spells C# Eb F# G# Bb', () => {
+    it('spells E# B# A# as F C Bb, and leaves C# D# F# G# Eb Bb as they are', () => {
+        assert.deepEqual(['C#', 'D#', 'E#', 'F#', 'G#', 'A#', 'B#'].map((root) => transpose(root, 0, 'english')), ['C#', 'D#', 'F', 'F#', 'G#', 'Bb', 'C']);
+        assert.deepEqual(['E#m', 'A#7', 'B#/E#'].map((chord) => transpose(chord, 0, 'latin')), ['Fam', 'Sib7', 'Do/Fa']);
         for (const flat of ['Eb', 'Bb']) {
             assert.equal(transpose(flat, 0, 'english'), flat);
         }
+    });
+
+    it('transposing lands on C# Eb F# G# Bb', () => {
         assert.deepEqual([1, 3, 6, 8, 10].map((shift) => transpose('C', shift, 'english')), ['C#', 'Eb', 'F#', 'G#', 'Bb']);
         assert.equal(transpose('F', 3, 'latin'), 'Sol#');
     });
