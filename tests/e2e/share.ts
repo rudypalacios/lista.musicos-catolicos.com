@@ -108,7 +108,7 @@ try {
     assert.equal(await visitor.getByRole('button', { name: 'Subir medio tono' }).isVisible(), false, 'the tools are folded');
     await visitor.getByRole('button', { name: 'Herramientas' }).click();
     await visitor.getByRole('button', { name: 'Subir medio tono' }).click();
-    assert.equal(await chord.textContent(), 'Mib');
+    assert.equal(await chord.textContent(), 'Re#');
     await visitor.getByRole('button', { name: /Volver al tono del listado/ }).click();
     assert.equal(await chord.textContent(), 'Re');
     await visitor.getByRole('button', { name: 'Letra más grande' }).click();
