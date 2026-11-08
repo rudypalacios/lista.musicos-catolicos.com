@@ -8,8 +8,8 @@ describe('transposeBody', () => {
         assert.equal(transposeBody('[F]Abrimos la [Bb]puerta\n[C7]Amén', -1), '[E]Abrimos la [A]puerta\n[B7]Amén');
     });
 
-    it('moves the bass note, chords in parentheses and chords typed in Latin (stored in English, black keys as flats like the site)', () => {
-        assert.equal(transposeBody('[D/F#]a [(G)]b [Sol]c [Lam7]d', 2), '[E/Ab]a [(A)]b [A]c [Bm7]d');
+    it('moves the bass note, chords in parentheses and chords typed in Latin (stored in English, black keys as flats like the site, except Ab, which is G#)', () => {
+        assert.equal(transposeBody('[D/F#]a [(G)]b [Sol]c [Lam7]d', 2), '[E/G#]a [(A)]b [A]c [Bm7]d');
     });
 
     it('moves the key directive, whatever notation it is written in', () => {

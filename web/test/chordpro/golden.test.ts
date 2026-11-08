@@ -20,6 +20,12 @@ interface Golden {
     transpositions: { chord: string; shifts: number[]; latin: string[]; english: string[] }[];
 }
 
+/**
+ * The one place the app differs from the site on purpose (the owner, 2026-11-08): it shows G# (Sol#) where the site
+ * writes Ab (Lab), as a root or as a bass. Everything else must stay the site's.
+ */
+const appSpelling = (name: string): string => name.replace(/(^|[/(])Ab/g, '$1G#').replace(/(^|[/(])Lab/g, '$1Sol#');
+
 const golden = JSON.parse(
     readFileSync(new URL('../fixtures/golden.json', import.meta.url), 'utf8'),
 ) as Golden;
@@ -61,11 +67,29 @@ describe('golden fixtures: chords', () => {
     for (const row of golden.transpositions) {
         it(`transposes ${JSON.stringify(row.chord)} as song.js does`, () => {
             row.shifts.forEach((shift, index) => {
-                assert.equal(transpose(row.chord, shift, 'latin'), row.latin[index], `latin, ${shift}`);
-                assert.equal(transpose(row.chord, shift, 'english'), row.english[index], `english, ${shift}`);
+                assert.equal(transpose(row.chord, shift, 'latin'), appSpelling(row.latin[index] ?? ''), `latin, ${shift}`);
+                assert.equal(transpose(row.chord, shift, 'english'), appSpelling(row.english[index] ?? ''), `english, ${shift}`);
             });
         });
     }
+});
+
+describe('the app shows G# where the site writes Ab', () => {
+    it('as a root, at any shift, in both notations (Abm and a bass included)', () => {
+        assert.equal(transpose('Ab', 0, 'english'), 'G#');
+        assert.equal(transpose('Ab', 0, 'latin'), 'Sol#');
+        assert.equal(transpose('Abm7', 0, 'latin'), 'Sol#m7');
+        assert.equal(transpose('C/Ab', 0, 'latin'), 'Do/Sol#');
+        assert.equal(transpose('G', 1, 'english'), 'G#');
+        assert.equal(transpose('F', 3, 'latin'), 'Sol#');
+        assert.equal(transpose('(Ab)', 0, 'english'), '(G#)');
+    });
+
+    it('leaves the other flats as the site writes them', () => {
+        assert.equal(transpose('Bb', 0, 'english'), 'Bb');
+        assert.equal(transpose('C', 3, 'english'), 'Eb');
+        assert.equal(transpose('Db', 0, 'latin'), 'Reb');
+    });
 });
 
 describe('golden fixtures: syllables', () => {

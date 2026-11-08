@@ -572,8 +572,8 @@ try {
     await page.locator('.sheet-layer').getByRole('button', { name: 'Subir un semitono' }).click();
     await page.locator('.sheet-layer').getByRole('button', { name: 'Guardar', exact: true }).click();
     await closeSheet(page);
-    await page.waitForFunction(() => document.querySelector('#song-sheet .ch')?.textContent === 'Lab');
-    assert.deepEqual(await chords(page), ['Lab', 'Mib']);
+    await page.waitForFunction(() => document.querySelector('#song-sheet .ch')?.textContent === 'Sol#');
+    assert.deepEqual(await chords(page), ['Sol#', 'Mib']);
     const afterShift = await serverWhen(page, (data) =>
         data.setlists[0]?.items.find((item) => item.part === 'comunion' && item.note === '')?.transpose === 1);
     assert.equal(afterShift.setlists[0]?.items.length, 3);
@@ -602,7 +602,7 @@ try {
     await openTools(page);
     await page.getByRole('button', { name: /Volver al tono del listado/ }).click();
     await page.locator('.sheet-layer .tone-control__hint').waitFor({ state: 'hidden' });
-    assert.deepEqual(await chords(page), ['Lab', 'Mib']);
+    assert.deepEqual(await chords(page), ['Sol#', 'Mib']);
     await closeSheet(page);
     await page.getByRole('link', { name: 'Volver al listado' }).click();
     await page.locator('section.slot').first().waitFor();
@@ -644,7 +644,7 @@ try {
     await page.locator('.sheet-layer').getByRole('button', { name: 'Guardar', exact: true }).click();
     await serverWhen(page, (data) => data.songs.find((song) => song.title === 'Gloria sencilla')?.myShift === 0);
     await page.getByRole('button', { name: /Volver al tono del listado/ }).click();
-    assert.deepEqual(await chords(page), ['Lab', 'Mib']);
+    assert.deepEqual(await chords(page), ['Sol#', 'Mib']);
     await closeSheet(page);
     pass('"mi tono" is saved from the list too, apart from the key of the list or together with it, and it syncs');
 
@@ -665,7 +665,7 @@ try {
     await page.getByRole('button', { name: 'Guardar' }).click();
     await page.getByRole('heading', { name: 'Gloria sencilla' }).waitFor();
     assert.match(page.url(), /\/cantar\/2$/, 'it comes back to the song being sung');
-    assert.deepEqual(await chords(page), ['Lab', 'Mib'], 'what is sung did not change: the key of the list moved the other way');
+    assert.deepEqual(await chords(page), ['Sol#', 'Mib'], 'what is sung did not change: the key of the list moved the other way');
     await serverWhen(page, (data) => {
         const gloria = data.songs.find((song) => song.title === 'Gloria sencilla');
 
@@ -684,7 +684,7 @@ try {
     await ipad.setOffline(true);
     await page.reload();
     await page.getByRole('heading', { name: 'Gloria sencilla' }).waitFor();
-    assert.deepEqual(await chords(page), ['Lab', 'Mib']);
+    assert.deepEqual(await chords(page), ['Sol#', 'Mib']);
     await jumpTo(page, 1);
     await page.getByRole('heading', { name: 'Abrimos la puerta' }).waitFor();
     assert.deepEqual(await chords(page), ['Re', 'La']);

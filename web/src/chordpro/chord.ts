@@ -34,6 +34,11 @@ const OPTIONAL_PATTERN = /^\([ \t\n\v\f\r]*([^()]+?)[ \t\n\v\f\r]*\)$/;
 
 /** Chromatic scale for transposing: flats for the black keys, as the site does */
 const SCALE = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'] as const;
+/**
+ * Where the app differs from the public site (the owner asked, 2026-11-08; the site still writes Ab): a note is shown
+ * under this spelling instead. Only for what the app draws; what is stored is never rewritten.
+ */
+const PREFERRED_SPELLING: Readonly<Record<string, string>> = { Ab: 'G#' };
 const SEMITONE: Readonly<Record<string, number>> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
 
 /**
@@ -100,6 +105,9 @@ function note(letter: string, accidental: string, shift: number, notation: Notat
         const index = (SEMITONE[letter] ?? 0) + (accidental === '#' ? 1 : accidental === 'b' ? -1 : 0) + shift;
         name = SCALE[((index % 12) + 12) % 12] ?? letter;
     }
+
+    // The owner's rule (2026-11-08): the app never shows Ab, it shows G# (Sol#), in either notation and at any shift
+    name = PREFERRED_SPELLING[name] ?? name;
 
     return notation === 'latin' ? (LATIN[name.charAt(0)] ?? '') + name.slice(1) : name;
 }

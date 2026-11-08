@@ -247,10 +247,10 @@ try {
     await page.locator('.tone-control__option', { hasText: 'En el canto original' }).click();
     await page.getByRole('button', { name: 'Guardar', exact: true }).click();
     await page.locator('.toast', { hasText: 'Tono guardado en el canto original' }).waitFor();
-    await sungAs(['Do#', 'Lab']);
+    await sungAs(['Do#', 'Sol#']);
     assert.ok(!page.url().includes('t='), 'the key on screen is now the written one: nothing in the address');
     await page.reload();
-    await sungAs(['Do#', 'Lab']);
+    await sungAs(['Do#', 'Sol#']);
     await page.getByRole('button', { name: 'Bajar un semitono' }).click();
     await page.getByRole('button', { name: 'Otros sitios donde guardar' }).click();
     await page.locator('.tone-control__option', { hasText: 'En el canto original' }).click();
