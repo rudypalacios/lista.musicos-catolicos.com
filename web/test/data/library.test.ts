@@ -20,7 +20,7 @@ describe('Library', () => {
         const song = await library.create({ title: '  Caminamos con alegría ', author: ' Anónimo ', body: '[C]Caminamos' });
 
         assert.deepEqual(song, {
-            id: 'id-0', title: 'Caminamos con alegría', author: 'Anónimo', body: '[C]Caminamos', tags: [], myShift: 0, updatedAt: 1000, deletedAt: null,
+            id: 'id-0', title: 'Caminamos con alegría', author: 'Anónimo', body: '[C]Caminamos', tags: [], myShift: 0, status: 'published', updatedAt: 1000, deletedAt: null,
         });
         assert.deepEqual(await store.pending('songs'), [song]);
     });
@@ -101,6 +101,36 @@ describe('Library', () => {
 
             assert.deepEqual((await library.get('old'))?.tags, []);
             assert.deepEqual((await library.list())[0]?.tags, []);
+        });
+    });
+
+    describe('the state', () => {
+        const draft = { title: 'Uno', author: '', body: '[C]a' };
+
+        it('is published unless the new song says it is a draft', async () => {
+            assert.equal((await library.create(draft)).status, 'published');
+            assert.equal((await library.create({ ...draft, status: 'draft' })).status, 'draft');
+        });
+
+        it('is kept by an edit that does not say it, and changed by one that does (and queued)', async () => {
+            const song = await library.create({ ...draft, status: 'draft' });
+            now = 2000;
+
+            const edited = await library.update(song.id, { ...draft, title: 'Dos' });
+            assert.equal(edited.status, 'draft', 'an edit that leaves it out keeps it');
+
+            now = 3000;
+            const published = await library.update(song.id, { ...draft, title: 'Dos', status: 'published' });
+            assert.equal(published.status, 'published');
+            assert.equal((await library.get(song.id))?.status, 'published');
+            assert.equal((await store.pending('songs')).at(-1)?.status, 'published');
+        });
+
+        it('reads as published on a song saved before it existed', async () => {
+            await store.save('songs', { id: 'old', title: 'Viejo', author: '', body: '', myShift: 0, updatedAt: 1, deletedAt: null } as never);
+
+            assert.equal((await library.get('old'))?.status, 'published');
+            assert.equal((await library.list())[0]?.status, 'published');
         });
     });
 

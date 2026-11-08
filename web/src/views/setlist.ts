@@ -4,7 +4,7 @@ import { parse, songKey } from '../chordpro/parser.ts';
 import { LIMITS, type PartDef, type Setlist, type SetlistItem, type Song } from '../data/types.ts';
 import { inListOrder, itemsOfPart, moveOptions, partName, positionInList, strayItems, visibleParts } from '../data/setlists.ts';
 import { attachLongPressDrag, dragHintPending, markDragHintSeen, type LongPressDrag } from '../drag-reorder.ts';
-import { h } from '../dom.ts';
+import { draftTag, h } from '../dom.ts';
 import { icon, type IconName } from '../icons.ts';
 import { planSheet } from '../print/plan.ts';
 import type { PrintVersion } from '../print/layout.ts';
@@ -331,6 +331,10 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
                 if (key.today) {
                     sub.push(h('span', { class: 'item__today' }, 'hoy'));
                 }
+            }
+            // Still a draft: said beside the key, in grey, until it is published
+            if (song.status === 'draft') {
+                sub.push(...(sub.length > 0 ? [' · '] : []), ...draftTag(song));
             }
             if (sub.length > 0) {
                 lines.push(h('span', { class: 'item__sub' }, ...sub));

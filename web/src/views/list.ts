@@ -2,7 +2,7 @@ import type { App } from '../app.ts';
 import { parse, songKey } from '../chordpro/parser.ts';
 import { transpose } from '../chordpro/chord.ts';
 import type { Song } from '../data/types.ts';
-import { h, snippetBlock } from '../dom.ts';
+import { draftTag, h, snippetBlock } from '../dom.ts';
 import { icon } from '../icons.ts';
 import { readNotation } from '../prefs.ts';
 import { paths } from '../router.ts';
@@ -103,6 +103,7 @@ export function listView(app: App, navigate: Navigate): View {
         const detail = [
             ...(song.author === '' ? [] : [song.author]),
             ...(key === null ? [] : [h('span', { class: 'lrow__key' }, transpose(key, 0, readNotation()))]),
+            ...draftTag(song),
         ].flatMap((part, index) => (index === 0 ? [part] : [' · ', part]));
 
         return h('li', { class: 'lrow' },

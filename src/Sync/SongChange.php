@@ -24,6 +24,9 @@ final class SongChange
     /** Tags on a song, and the characters of one */
     public const MAX_TAGS = 8;
     public const MAX_TAG = 30;
+    /** The states of a song: a draft is marked in the lists until it is published */
+    public const STATUS_DRAFT = 'draft';
+    public const STATUS_PUBLISHED = 'published';
 
     public function __construct(
         public readonly string $id,
@@ -40,6 +43,8 @@ final class SongChange
          * @var list<string>|null
          */
         public readonly ?array $tags = null,
+        /** `draft` or `published`; `null` means the client did not say (an older one): keep what is stored */
+        public readonly ?string $status = null,
     ) {
     }
 
@@ -79,6 +84,7 @@ final class SongChange
             $deleted,
             self::shift($data['myShift'] ?? null),
             self::tags($data['tags'] ?? null),
+            self::status($data['status'] ?? null),
         );
     }
 
@@ -117,6 +123,21 @@ final class SongChange
         }
 
         return $tags;
+    }
+
+    /**
+     * @throws InvalidSong
+     */
+    private static function status(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+        if ($value !== self::STATUS_DRAFT && $value !== self::STATUS_PUBLISHED) {
+            throw new InvalidSong('El estado del canto no es válido.');
+        }
+
+        return $value;
     }
 
     /**

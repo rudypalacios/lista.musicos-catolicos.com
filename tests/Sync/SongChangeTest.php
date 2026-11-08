@@ -53,6 +53,14 @@ final class SongChangeTest extends TestCase
         $this->assertSame('[]', SongChange::fromArray($this->data(), self::NOW)->tagsJson());
     }
 
+    public function testTheStateIsDraftOrPublishedAndAnOldClientSendsNone(): void
+    {
+        $this->assertNull(SongChange::fromArray($this->data(), self::NOW)->status, 'not sent: keep what is stored');
+        $this->assertSame('draft', SongChange::fromArray($this->data(['status' => 'draft']), self::NOW)->status);
+        $published = SongChange::fromArray($this->data(['status' => 'published']), self::NOW);
+        $this->assertSame('published', $published->status);
+    }
+
     public function testEightTagsAreAllowedAndNineAreNot(): void
     {
         $tags = static fn (int $n): array => array_map(static fn (int $i): string => 'T' . $i, range(1, $n));
@@ -92,6 +100,8 @@ final class SongChangeTest extends TestCase
             'shift beyond an octave, down' => [['myShift' => -12], 'tono'],
             'shift as text' => [['myShift' => '2'], 'tono'],
             'shift as a decimal' => [['myShift' => 2.5], 'tono'],
+            'a state that does not exist' => [['status' => 'archived'], 'estado'],
+            'a state that is not text' => [['status' => true], 'estado'],
             'tags not a list' => [['tags' => 'Entrada'], 'etiquetas'],
             'tags as an object' => [['tags' => ['a' => 'Entrada']], 'etiquetas'],
             'a tag that is not text' => [['tags' => [3]], 'etiqueta'],

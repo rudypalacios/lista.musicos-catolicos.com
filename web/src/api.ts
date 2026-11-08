@@ -82,8 +82,8 @@ interface PulledPage {
     hasMore: boolean;
 }
 
-const pickSong = ({ id, title, author, body, tags, myShift, updatedAt, deletedAt }: Song): Song => ({
-    id, title, author, body, tags: Array.isArray(tags) ? tags : [], myShift, updatedAt, deletedAt,
+const pickSong = ({ id, title, author, body, tags, myShift, status, updatedAt, deletedAt }: Song): Song => ({
+    id, title, author, body, tags: Array.isArray(tags) ? tags : [], myShift, status: status === 'draft' ? 'draft' : 'published', updatedAt, deletedAt,
 });
 
 const pickSetlist = ({ id, title, eventDate, notes, starred, items, parts, updatedAt, deletedAt }: Setlist): Setlist => ({

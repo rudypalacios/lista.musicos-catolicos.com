@@ -31,6 +31,14 @@ export function setSheet(target: HTMLElement, html: string): void {
     target.innerHTML = html;
 }
 
+/**
+ * The grey "Borrador" tag a song carries wherever it is listed until it is published; a published song carries
+ * nothing (there is no "Publicado" tag). Returned as a list so a caller can spread it into its pieces.
+ */
+export function draftTag(song: { readonly status: 'draft' | 'published' }): HTMLElement[] {
+    return song.status === 'draft' ? [h('span', { class: 'pill pill--have pill--draft' }, 'Borrador')] : [];
+}
+
 /** The lines of a song shown in a row to tell it from another with the same title, one row each */
 export function snippetBlock(lines: readonly string[]): HTMLElement {
     return h('span', { class: 'song-item__snippet' }, ...lines.map((line) => h('span', {}, line)));

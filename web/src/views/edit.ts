@@ -78,6 +78,13 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         });
     }
 
+    // The state: a draft is marked "Borrador" in every list until it is published (a new song starts published)
+    const draftBox = h('input', { id: 'song-draft', type: 'checkbox' });
+    draftBox.checked = existing?.status === 'draft';
+    const draftField = h('div', { class: 'draft-field' },
+        h('label', { class: 'choice__option', for: 'song-draft' }, draftBox, h('span', {}, 'Borrador')),
+        h('p', { class: 'muted draft-field__hint' }, 'Se marca como borrador en los listados hasta que lo publiques.'));
+
     const error = h('p', { class: 'error', role: 'alert' });
     const titleError = h('p', { class: 'error field-error', id: 'title-error', role: 'alert' });
     title.setAttribute('aria-describedby', 'title-error');
@@ -267,6 +274,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         toneRow,
         converted,
         tagField.element,
+        draftField,
         h(
             'details',
             { class: 'help' },
@@ -333,7 +341,9 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         }
         save.disabled = true;
         body.value = capitaliseChords(body.value);
-        const draft: SongDraft = { title: title.value, author: author.value, body: body.value, tags: tagField.value() };
+        const draft: SongDraft = {
+            title: title.value, author: author.value, body: body.value, tags: tagField.value(), status: draftBox.checked ? 'draft' : 'published',
+        };
         const saved = existing === undefined ? app.create(draft) : saveEdit(app, existing, draft);
         saved
             .then((song) => {

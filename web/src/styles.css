@@ -634,6 +634,61 @@ ul.notes {
     margin-top: 0.4rem;
 }
 
+/*
+ * From 900px the key and Guardar ride in the same bar, just left of the "⋯" (the lyrics size stays at the other end).
+ * The three wrappers dissolve so each tool becomes an item of the bar itself; the menu of Guardar and the line with the
+ * keys ("Original Do · Mío Do") wrap under it, as they did. Under 900px nothing of this applies: it is the phone's bar.
+ */
+@media (min-width: 900px) {
+    .song-tools {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.4rem 0.5rem;
+    }
+
+    .song-tools__row,
+    .song-tools .tone-control,
+    .song-tools .tone-control__row {
+        display: contents;
+    }
+
+    .song-tools__row > .toolbar {
+        order: 0;
+        margin-right: auto;
+    }
+
+    .song-tools .tone-control__step {
+        order: 1;
+    }
+
+    .song-tools .tone-control__split {
+        order: 2;
+    }
+
+    .song-tools .tone-control__hint {
+        order: 3;
+        white-space: nowrap;
+    }
+
+    .song-tools__more {
+        order: 4;
+        margin-left: 0;
+    }
+
+    .song-tools .tone-control__menu {
+        order: 5;
+        flex: 0 0 min(100%, 22rem);
+        margin: 0 0 0 auto;
+    }
+
+    .song-tools .tone-control__refs {
+        order: 6;
+        flex: 0 0 100%;
+        margin: 0;
+    }
+}
+
 .toolbar {
     display: flex;
     flex-wrap: wrap;
@@ -847,6 +902,11 @@ input[type='search'] {
     font-size: 0.75rem;
     font-weight: 700;
     vertical-align: 0.1em;
+}
+
+/* "Borrador" beside the key of a song, in every list: the grey of .pill--have, with no margin of its own (the row's " · " spaces it) */
+.pill--draft {
+    margin-left: 0;
 }
 
 .pill--warn {
@@ -3376,6 +3436,16 @@ button.srow__tool:disabled {
 /* The tags of a song, below its lyrics: what it has (a touch removes one), a field, and the ones already in use */
 .tag-field {
     margin-top: 1.25rem;
+}
+
+/* The state of the song, under its tags: a box and a word, the explanation quiet under it */
+.draft-field {
+    margin-top: 1rem;
+}
+
+.draft-field__hint {
+    margin: 0 0 0 1.85rem;
+    font-size: 0.85rem;
 }
 
 .tag-field__have,

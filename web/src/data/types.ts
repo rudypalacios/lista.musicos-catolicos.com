@@ -1,3 +1,6 @@
+/** A song is a `draft` (still being written: the lists mark it "Borrador") until it is `published` */
+export type SongStatus = 'draft' | 'published';
+
 /** A song as the app keeps it, and as the sync API sends it (src/Sync/SongChange.php) */
 export interface Song {
     readonly id: string;
@@ -13,6 +16,8 @@ export interface Song {
     readonly tags: readonly string[];
     /** "Mi tono": the key the person sings it in, in semitones from the written one (−11…11; 0 is the same as none) */
     readonly myShift: number;
+    /** Draft or published; a song stored before the state existed reads as published (`withDefaults`) */
+    readonly status: SongStatus;
     /** When this version was written, by the clock of the device that wrote it (epoch ms) */
     readonly updatedAt: number;
     /** When it was deleted, or null. A deleted song stays as a tombstone so the deletion syncs */

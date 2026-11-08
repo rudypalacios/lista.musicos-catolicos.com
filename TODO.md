@@ -42,8 +42,10 @@ something the owner has could break without it:
 - `withShift` (`data/library.ts`) and the `Number.isInteger(song.myShift)` guard in `Setlists.addItem`: songs saved
   on a device before "mi tono" have no `myShift` until they change; without the default the song page and the key
   of a new item would be `NaN`.
-- `myShift` / `starred` optional on the server (`SongChange`, `SetlistChange`, the `COALESCE` in both repositories):
+- `myShift` / `starred` / `status` optional on the server (`SongChange`, `SetlistChange`, the `COALESCE` in both repositories):
   a record queued or saved on a device before those fields is pushed without them, and must keep what is stored.
+- `withDefaults` (`data/library.ts`) reads a song stored before the state (`Song.status`) as published, and `pickSong`
+  (`api.ts`) does the same for a record the server sent without it.
 - `songs` / `setlists` each optional in `PushAction` (at least one): an app from before the lists pushes songs only.
 - The upgrade of the on-device database (`data/idb-store.ts`, versions 1 → 3: cursor reset). Version 3 also drops the
   lists of the device (the sections, phase 6 PR 1): remove the whole upgrade once every device has opened the new version.
@@ -97,6 +99,10 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       the lines that matched, also on Cantos). No highlight of the matched words on purpose: showing the matching
       line does the job with no offset mapping across accents. Not added: searching inside the key or chords.
       **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 14.
+- [x] **The state of a song: draft or published** (`Song.status`, migration `0019`, synced; the owner asked on 2026-11-08 and unlocked the song rows of Cantos, of the picker and of a list in `DESIGN-LOCK.md`):
+      a draft carries a grey "Borrador" pill after its author and key wherever it is listed (`draftTag` in `web/src/dom.ts`); publishing only takes it away, there is no "Publicado" tag. The editor has a
+      "Borrador" box under the tags (a new song starts published; every song that existed is published). Not marked yet: the song page's own head, singing and the shared page (a link shows nothing of it).
+      **Also, on the same day:** from 900px the key and Guardar of the song page ride in its bar, just left of the "⋯" (`.song-tools` in `styles.css`; a phone is as it was). **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 61.
 - [x] The key of a song in a list (PR 1 of 3, the owner's design: `maquetas del tono`): in Cantar's "⋯" sheet, **Tono**
       (`views/tone-control.ts`): − / + move the key **for today only** (kept on the device in `today-keys.ts`, never synced,
       expiring at 5 in the morning, surviving a reload) and **Guardar** leaves it in the list; "Listado Fa" goes back to the
