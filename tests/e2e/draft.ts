@@ -109,13 +109,13 @@ try {
     // The song page's bar on a wide screen: key, Guardar and the hint level with, and at the left of, the "⋯"
     await openSection(wide, 'Cantos');
     await wide.getByRole('link', { name: /Junto a ti Jesús/ }).click();
-    // The bar names the song as singing does (the way back small above, then "Canción • Tono  Borrador"); the head keeps the author
+    // The bar names the song as singing does (the way back small above, then "Canción • Tono  Borrador"); the page has no head of its own
     const bar = wide.locator('.bar__back--song');
     assert.equal((await bar.locator('small').innerText()).toLowerCase(), 'cantos');
     assert.equal(await bar.locator('.bar__song-name').innerText(), 'Junto a ti Jesús');
     assert.equal(await bar.locator('.bar__song-key').textContent(), 'Tono Do');
     assert.equal(await bar.locator('.pill--draft').innerText(), 'Borrador');
-    assert.equal(await wide.locator('.song-head .by').innerText(), 'Kairoi');
+    assert.equal(await wide.locator('.song-head .by').count(), 0, 'no author line under the bar either');
     assert.equal(await wide.locator('.song-head h2').count(), 0, 'the title is not said twice');
     await wide.getByRole('button', { name: 'Subir un semitono' }).click();
     assert.equal(await bar.locator('.bar__song-key').textContent(), 'Tono Do#', 'the bar follows the key on screen');

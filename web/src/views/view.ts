@@ -59,7 +59,7 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
         shift,
         // The key is in the key control: a pill with the same words in the head of the song would say it twice
         keyPill: false,
-        // The bar says the name, the key and "Borrador": the head keeps the author
+        // The bar says the name, the key and "Borrador": no head under it
         titleInBar: true,
         onShift: (t) => {
             shown = t;
