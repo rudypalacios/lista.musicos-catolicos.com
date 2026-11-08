@@ -1,7 +1,8 @@
 import type { Status } from '../app.ts';
-import { h, link } from '../dom.ts';
+import { draftTag, h, link } from '../dom.ts';
 import { icon, type IconName } from '../icons.ts';
 import { parentOf, paths, sectionOf, titleOf, type Route } from '../router.ts';
+import { songHeading, type SongHeading } from '../song-heading.ts';
 import { describeSync, showsLine } from '../sync-line.ts';
 
 export interface Header {
@@ -50,6 +51,37 @@ export function createHeader(options: HeaderOptions): Header {
     dot.addEventListener('click', options.onSync);
     const bar = h('header', { class: 'bar bar--shell' }, title, back, dot);
 
+    /**
+     * The page of a song names itself in the bar, as singing does: the way back's name small above ("CANTOS"), and under it
+     * "Canción • Tono  Borrador". Any other screen is a single "← parent".
+     */
+    let parent: { path: string; label: string } | null = null;
+    let onSong = false;
+    const drawBack = (): void => {
+        if (parent === null) {
+            return;
+        }
+        back.href = parent.path;
+        const heading: SongHeading | null = onSong ? songHeading.get() : null;
+        // The arrow is drawn; the name says where it goes ("Volver a Listados")
+        if (heading === null) {
+            back.replaceChildren(icon('arrow-left', 18), parent.label);
+            back.classList.remove('bar__back--song');
+        } else {
+            back.replaceChildren(
+                icon('arrow-left', 18),
+                h('span', { class: 'bar__stack' },
+                    h('small', {}, parent.label),
+                    h('strong', { class: 'bar__song' },
+                        h('span', { class: 'bar__song-name' }, heading.title),
+                        ...(heading.key === null ? [] : [h('span', { class: 'bar__song-key' }, h('span', { class: 'sr-only' }, 'Tono '), heading.key)]),
+                        ...draftTag({ status: heading.draft ? 'draft' : 'published' }))));
+            back.classList.add('bar__back--song');
+        }
+        back.setAttribute('aria-label', parent.label.startsWith('Volver') ? parent.label : `Volver a ${parent.label}`);
+    };
+    songHeading.subscribe(drawBack);
+
     const text = h('span', { class: 'sync' });
     const renew = h('button', { type: 'button', class: 'link', hidden: true }, 'Iniciar sesión');
     /** With no account the line's button creates one (signing in is in Ajustes and at the foot of the menu); once the session ended it signs in */
@@ -81,7 +113,8 @@ export function createHeader(options: HeaderOptions): Header {
         menu,
         setRoute: (route) => {
             const singing = route.name === 'perform';
-            const parent = parentOf(route);
+            parent = parentOf(route);
+            onSong = route.name === 'view';
             bar.hidden = singing;
             menu.hidden = singing;
             away = singing;
@@ -89,12 +122,7 @@ export function createHeader(options: HeaderOptions): Header {
             title.hidden = parent !== null;
             title.textContent = titleOf(route);
             back.hidden = parent === null;
-            if (parent !== null) {
-                back.href = parent.path;
-                // The arrow is drawn; the name says where it goes ("Volver a Listados")
-                back.replaceChildren(icon('arrow-left', 18), parent.label);
-                back.setAttribute('aria-label', parent.label.startsWith('Volver') ? parent.label : `Volver a ${parent.label}`);
-            }
+            drawBack();
             const section = sectionOf(route);
             for (const { entry, element } of entries) {
                 if (entry.section === section) {

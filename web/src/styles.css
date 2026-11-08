@@ -1341,6 +1341,70 @@ input[type='search'] {
     font-size: 1.15rem;
 }
 
+/*
+ * The page of a song in the bar, as singing says its song: the way back's name small above, then "Song • Key  Borrador".
+ * The name gives way (with an ellipsis) before the key and the tag do; the dot is drawn, not typed.
+ */
+.bar__back--song {
+    min-width: 0;
+}
+
+.bar__stack {
+    display: block;
+    min-width: 0;
+    line-height: 1.15;
+}
+
+.bar__stack small,
+.bar__stack strong {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bar__stack small {
+    color: var(--muted);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.bar__stack .bar__song {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    color: var(--text);
+}
+
+.bar__song-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bar__song-key {
+    flex: none;
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.bar__song-key::before {
+    content: '';
+    display: inline-block;
+    width: 0.3rem;
+    height: 0.3rem;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+    background: var(--muted);
+    border-radius: 50%;
+}
+
+.bar__stack .pill {
+    flex: none;
+}
+
 /* The way back to the screen this one hangs from: the one way, in the one place */
 .bar__back {
     display: inline-flex;
@@ -2462,6 +2526,51 @@ body {
 
 .perform__more {
     position: relative;
+}
+
+/*
+ * The key in the singing bar, from 900px only (under it the key is in the "⋯" sheet, as always): − key +, then Guardar
+ * and its hint while there is a change, before the position button. The menu of Guardar hangs under the bar.
+ */
+.perform__tone {
+    display: none;
+}
+
+@media (min-width: 900px) {
+    .perform__tone {
+        display: flex;
+        flex: none;
+        align-items: center;
+        gap: 0.5rem;
+        margin-right: 0.25rem;
+    }
+
+    .perform__tone .tone-control,
+    .perform__tone .tone-control__row {
+        display: contents;
+    }
+
+    .perform__tone .tone-control__hint {
+        white-space: nowrap;
+    }
+
+    .perform__tone .tone-control__refs {
+        display: none;
+    }
+
+    .perform__tone .tone-control__menu {
+        position: absolute;
+        top: 100%;
+        right: 0.4rem;
+        z-index: 5;
+        width: min(22rem, 100%);
+        margin: 0;
+    }
+
+    /* The bar clips what hangs from it; while the menu is open it must not */
+    .perform__chrome:has(.perform__tone .tone-control__menu:not([hidden])) {
+        overflow: visible;
+    }
 }
 
 .perform__title {

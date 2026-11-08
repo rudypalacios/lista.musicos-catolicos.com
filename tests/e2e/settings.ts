@@ -207,7 +207,7 @@ try {
     assert.ok((await page.locator('.perform__chrome').boundingBox())!.height < 60, 'the bar is one row');
     await page.getByRole('button', { name: 'Más herramientas' }).click();
     assert.equal(await page.getByRole('button', { name: 'Ajustar' }).isVisible(), true);
-    assert.equal(await page.getByRole('button', { name: 'Subir un semitono' }).isVisible(), true);
+    assert.equal(await page.locator('.sheet-layer').getByRole('button', { name: 'Subir un semitono' }).isVisible(), true);
     assert.equal(await page.getByRole('link', { name: 'Ajustes' }).count(), 0, 'no Ajustes in the sheet: the menu is on the list');
     assert.equal(await page.getByRole('button', { name: 'Salir' }).count(), 0, 'no Salir in the sheet: the account is in Ajustes');
     await page.keyboard.press('Escape');
@@ -236,9 +236,9 @@ try {
 
     // The key is changed from the sheet, and the strip shows it
     await page.getByRole('button', { name: 'Más herramientas' }).click();
-    await page.getByRole('button', { name: 'Subir un semitono' }).click();
+    await page.locator('.sheet-layer').getByRole('button', { name: 'Subir un semitono' }).click();
     await page.locator('.perform__strip-key', { hasText: 'Do#' }).waitFor();
-    await page.getByRole('button', { name: 'Bajar un semitono' }).click();
+    await page.locator('.sheet-layer').getByRole('button', { name: 'Bajar un semitono' }).click();
     await page.locator('.perform__strip-key', { hasText: /^Do$/ }).waitFor();
     pass('the key is changed from the sheet and the strip keeps it in view');
 

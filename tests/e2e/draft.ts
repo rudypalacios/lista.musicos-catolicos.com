@@ -75,6 +75,17 @@ try {
     await wide.getByRole('link', { name: 'Cantar' }).click();
     await wide.locator('.perform__song').waitFor();
     assert.equal(await wide.locator('.perform__song .pill--draft').innerText(), 'Borrador');
+    // On a wide screen the key is in the bar too, left of the position button
+    const toneStep = await wide.locator('.perform__tone .tone-control__step').boundingBox();
+    const jump = await wide.getByRole('button', { name: /Ir a otro canto/ }).boundingBox();
+    assert.ok(toneStep !== null && jump !== null && toneStep.x + toneStep.width <= jump.x, 'the key is in the bar, left of the position button');
+    await wide.locator('.perform__tone').getByRole('button', { name: 'Subir un semitono' }).click();
+    const barSave = wide.locator('.perform__tone .tone-control__save');
+    await barSave.waitFor();
+    await wide.locator('.perform__tone .tone-control__more').click();
+    assert.equal(await wide.locator('.perform__tone .tone-control__menu').isVisible(), true, 'the menu of Guardar hangs under the bar');
+    await wide.locator('.perform__tone .tone-control__more').click();
+    await wide.locator('.perform__tone').getByRole('button', { name: 'Bajar un semitono' }).click();
     await wide.getByRole('button', { name: /Ir a otro canto/ }).click();
     await wide.locator('.perform__song-choice').first().waitFor();
     assert.equal(await wide.locator('.perform__song-choice .pill--draft').count(), 1);
@@ -98,7 +109,18 @@ try {
     // The song page's bar on a wide screen: key, Guardar and the hint level with, and at the left of, the "⋯"
     await openSection(wide, 'Cantos');
     await wide.getByRole('link', { name: /Junto a ti Jesús/ }).click();
-    assert.equal(await wide.locator('.song-head .by').innerText(), 'Kairoi · Borrador', 'the head of the song says it');
+    // The bar names the song as singing does (the way back small above, then "Canción • Tono  Borrador"); the head keeps the author
+    const bar = wide.locator('.bar__back--song');
+    assert.equal((await bar.locator('small').innerText()).toLowerCase(), 'cantos');
+    assert.equal(await bar.locator('.bar__song-name').innerText(), 'Junto a ti Jesús');
+    assert.equal(await bar.locator('.bar__song-key').textContent(), 'Tono Do');
+    assert.equal(await bar.locator('.pill--draft').innerText(), 'Borrador');
+    assert.equal(await wide.locator('.song-head .by').innerText(), 'Kairoi');
+    assert.equal(await wide.locator('.song-head h2').count(), 0, 'the title is not said twice');
+    await wide.getByRole('button', { name: 'Subir un semitono' }).click();
+    assert.equal(await bar.locator('.bar__song-key').textContent(), 'Tono Do#', 'the bar follows the key on screen');
+    await wide.getByRole('button', { name: 'Bajar un semitono' }).click();
+    pass('the page of a song names itself in the bar: name, key and "Borrador"');
     await wide.getByRole('button', { name: 'Subir un semitono' }).click();
     const box = async (page: Page, locator: ReturnType<Page['locator']>) => {
         const found = await locator.boundingBox();

@@ -261,13 +261,13 @@ try {
     await noTypedIcons(page, 'singing');
     await openTools(page);
     await noTypedIcons(page, 'the sheet of singing');
-    await page.getByRole('button', { name: 'Subir un semitono' }).click();
-    await page.getByRole('button', { name: 'Subir un semitono' }).click();
-    await page.locator('.tone-control__hint').waitFor();
+    await page.locator('.sheet-layer').getByRole('button', { name: 'Subir un semitono' }).click();
+    await page.locator('.sheet-layer').getByRole('button', { name: 'Subir un semitono' }).click();
+    await page.locator('.sheet-layer .tone-control__hint').waitFor();
     await noTypedIcons(page, 'the key control with a change');
     await page.getByRole('button', { name: 'Guardar', exact: true }).click();
     await page.locator('.toast', { hasText: 'Tono guardado en este listado' }).waitFor();
-    await page.locator('.tone-control__hint').waitFor({ state: 'hidden' });
+    await page.locator('.sheet-layer .tone-control__hint').waitFor({ state: 'hidden' });
     await closeSheet(page);
     await page.getByRole('link', { name: 'Volver al listado' }).click();
     await entrada.locator('.item__key.is-changed', { hasText: 'Re' }).waitFor();
@@ -569,8 +569,8 @@ try {
     pass('the lyric size chosen stays for the next song');
 
     await openTools(page);
-    await page.getByRole('button', { name: 'Subir un semitono' }).click();
-    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+    await page.locator('.sheet-layer').getByRole('button', { name: 'Subir un semitono' }).click();
+    await page.locator('.sheet-layer').getByRole('button', { name: 'Guardar', exact: true }).click();
     await closeSheet(page);
     await page.waitForFunction(() => document.querySelector('#song-sheet .ch')?.textContent === 'Lab');
     assert.deepEqual(await chords(page), ['Lab', 'Mib']);
@@ -582,8 +582,8 @@ try {
 
     // A change that is not saved is only for today: it is shown, it survives a reload, and the list keeps its key
     await openTools(page);
-    await page.getByRole('button', { name: 'Subir un semitono' }).click();
-    await page.getByRole('button', { name: 'Subir un semitono' }).click();
+    await page.locator('.sheet-layer').getByRole('button', { name: 'Subir un semitono' }).click();
+    await page.locator('.sheet-layer').getByRole('button', { name: 'Subir un semitono' }).click();
     await page.locator('.perform__strip-key.is-today').waitFor();
     assert.deepEqual(await chords(page), ['Sib', 'Fa']);
     await closeSheet(page);
@@ -601,7 +601,7 @@ try {
     assert.deepEqual(await chords(page), ['Sib', 'Fa'], 'the key of today is there when the song is opened from the list');
     await openTools(page);
     await page.getByRole('button', { name: /Volver al tono del listado/ }).click();
-    await page.locator('.tone-control__hint').waitFor({ state: 'hidden' });
+    await page.locator('.sheet-layer .tone-control__hint').waitFor({ state: 'hidden' });
     assert.deepEqual(await chords(page), ['Lab', 'Mib']);
     await closeSheet(page);
     await page.getByRole('link', { name: 'Volver al listado' }).click();
@@ -612,36 +612,36 @@ try {
     await page.getByRole('link', { name: 'Cantar' }).click();
     await jumpTo(page, 2);
     await openTools(page);
-    await page.getByRole('button', { name: 'Subir un semitono' }).click();
-    await page.getByRole('button', { name: 'Otros sitios donde guardar' }).click();
-    assert.deepEqual(await page.locator('.tone-control__option').allTextContents(), ['Solo hoy', 'En este listado', 'Como mi tono', 'En el listado y como mi tono']);
-    assert.equal(await page.locator('.tone-control__option.is-current').innerText(), 'En este listado', 'it starts marked on the list');
+    await page.locator('.sheet-layer').getByRole('button', { name: 'Subir un semitono' }).click();
+    await page.locator('.sheet-layer').getByRole('button', { name: 'Otros sitios donde guardar' }).click();
+    assert.deepEqual(await page.locator('.sheet-layer .tone-control__option').allTextContents(), ['Solo hoy', 'En este listado', 'Como mi tono', 'En el listado y como mi tono']);
+    assert.equal(await page.locator('.sheet-layer .tone-control__option.is-current').innerText(), 'En este listado', 'it starts marked on the list');
     // "Guardar" does what is marked. "Solo hoy": nothing is written, with the menu open or closed
-    await page.getByRole('button', { name: 'Solo hoy', exact: true }).click();
-    assert.equal(await page.locator('.tone-control__menu').isVisible(), false, 'marking closes the menu');
-    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+    await page.locator('.sheet-layer').getByRole('button', { name: 'Solo hoy', exact: true }).click();
+    assert.equal(await page.locator('.sheet-layer .tone-control__menu').isVisible(), false, 'marking closes the menu');
+    await page.locator('.sheet-layer').getByRole('button', { name: 'Guardar', exact: true }).click();
     await page.locator('.toast', { hasText: 'Queda solo para hoy' }).waitFor();
-    assert.equal(await page.locator('.tone-control__hint').isVisible(), true, 'the key is still only for today');
+    assert.equal(await page.locator('.sheet-layer .tone-control__hint').isVisible(), true, 'the key is still only for today');
     assert.equal(await page.locator('.item__today').count() + await page.locator('.toast', { hasText: 'Tono guardado' }).count(), 0, 'nothing was saved');
-    await page.getByRole('button', { name: 'Otros sitios donde guardar' }).click();
-    assert.equal(await page.locator('.tone-control__option.is-current').innerText(), 'Solo hoy', 'the mark stays on "Solo hoy"');
+    await page.locator('.sheet-layer').getByRole('button', { name: 'Otros sitios donde guardar' }).click();
+    assert.equal(await page.locator('.sheet-layer .tone-control__option.is-current').innerText(), 'Solo hoy', 'the mark stays on "Solo hoy"');
     await page.getByRole('button', { name: 'En el listado y como mi tono' }).click();
-    assert.equal(await page.locator('.tone-control__hint').isVisible(), true, 'marking an option saves nothing yet');
-    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+    assert.equal(await page.locator('.sheet-layer .tone-control__hint').isVisible(), true, 'marking an option saves nothing yet');
+    await page.locator('.sheet-layer').getByRole('button', { name: 'Guardar', exact: true }).click();
     await page.locator('.toast', { hasText: 'Tono guardado en este listado y como tu tono' }).waitFor();
-    await page.locator('.tone-control__hint').waitFor({ state: 'hidden' });
-    await page.getByText('Mío', { exact: false }).first().waitFor();
+    await page.locator('.sheet-layer .tone-control__hint').waitFor({ state: 'hidden' });
+    await page.locator('.sheet-layer').getByText('Mío', { exact: false }).first().waitFor();
     const both = await serverWhen(page, (data) =>
         data.songs.find((song) => song.title === 'Gloria sencilla')?.myShift === 2
         && (data.setlists[0]?.items.some((item) => item.part === 'comunion' && item.transpose === 2) ?? false));
     assert.equal(both.songs.find((song) => song.title === 'Gloria sencilla')?.body, SONGS[1]?.[1], 'the text of the song is not touched');
-    await page.getByRole('button', { name: 'Bajar un semitono' }).click();
-    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+    await page.locator('.sheet-layer').getByRole('button', { name: 'Bajar un semitono' }).click();
+    await page.locator('.sheet-layer').getByRole('button', { name: 'Guardar', exact: true }).click();
     await page.locator('.toast', { hasText: 'Tono guardado en este listado' }).waitFor();
-    await page.getByRole('button', { name: 'Bajar un semitono' }).click();
-    await page.getByRole('button', { name: 'Otros sitios donde guardar' }).click();
-    await page.getByRole('button', { name: 'Como mi tono', exact: true }).click();
-    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+    await page.locator('.sheet-layer').getByRole('button', { name: 'Bajar un semitono' }).click();
+    await page.locator('.sheet-layer').getByRole('button', { name: 'Otros sitios donde guardar' }).click();
+    await page.locator('.sheet-layer').getByRole('button', { name: 'Como mi tono', exact: true }).click();
+    await page.locator('.sheet-layer').getByRole('button', { name: 'Guardar', exact: true }).click();
     await serverWhen(page, (data) => data.songs.find((song) => song.title === 'Gloria sencilla')?.myShift === 0);
     await page.getByRole('button', { name: /Volver al tono del listado/ }).click();
     assert.deepEqual(await chords(page), ['Lab', 'Mib']);
@@ -691,8 +691,8 @@ try {
     pass('offline: a reload of the singing screen still shows the songs, in the keys of the list');
 
     await openTools(page);
-    await page.getByRole('button', { name: 'Bajar un semitono' }).click();
-    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+    await page.locator('.sheet-layer').getByRole('button', { name: 'Bajar un semitono' }).click();
+    await page.locator('.sheet-layer').getByRole('button', { name: 'Guardar', exact: true }).click();
     await closeSheet(page);
     await page.getByRole('link', { name: 'Volver al listado' }).click();
     await page.locator('section.slot').first().waitFor();
