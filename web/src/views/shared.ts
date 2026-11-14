@@ -8,6 +8,7 @@ import { printPlans } from '../print/print.ts';
 import { matchRoute, paths } from '../router.ts';
 import { asSong, bySection, copyNote, countLabel, keyOf, readingOrder, updatedLabel, type Row, type SharedList } from '../shared-model.ts';
 import { openCopies } from '../shared-store.ts';
+import { nextFold, type FoldState } from '../fold.ts';
 import { dragOffset, isSwipe, swipeAxis, type Axis } from '../swipe.ts';
 import { createReader, type Reader } from './reader.ts';
 
@@ -209,6 +210,7 @@ export function startShared(root: HTMLElement, code: string): void {
         const chordsSwitch = h('button', { type: 'button', class: 'pub-tools__switch', role: 'switch', 'aria-checked': String(chordsShown) },
             h('span', {}, 'Acordes'), h('span', { class: chordsShown ? 'switch is-on' : 'switch', 'aria-hidden': 'true' }));
         const keyText = h('b', {});
+        const stripKey = h('span', { class: 'pub-strip__key' });
         const keyButton = h('button', { type: 'button', class: 'pub-tool pub-key' }, h('small', {}, 'Tono'), keyText);
         const down = h('button', { type: 'button', class: 'pub-tool', 'aria-label': 'Bajar medio tono' }, '−');
         const up = h('button', { type: 'button', class: 'pub-tool', 'aria-label': 'Subir medio tono' }, '+');
@@ -221,6 +223,8 @@ export function startShared(root: HTMLElement, code: string): void {
             const name = made.keyName(made.shift());
             const changed = !same(made.shift(), listKey);
             keyText.textContent = name ?? '';
+            stripKey.textContent = chordsShown ? name ?? '' : '';
+            stripKey.classList.toggle('is-changed', changed);
             // A song with no chords has no key to move
             for (const control of [keyButton, down, up]) {
                 control.hidden = name === null || !chordsShown;
@@ -350,7 +354,33 @@ export function startShared(root: HTMLElement, code: string): void {
             }
         }, { passive: true });
 
-        show(h('div', { class: 'pub-song' }, bar, tools, stage));
+        // --- the bar folds to a thin strip (the title, the key, the position) while the lyrics scroll down, as when singing a list ---
+        const strip = h('button', { type: 'button', class: 'pub-strip', 'aria-label': 'Mostrar la barra' },
+            h('strong', {}, row.song.title), stripKey, ...(single ? [] : [h('span', { class: 'pub-strip__count' }, `${row.n}/${rows.length}`)]));
+        strip.inert = true;
+        const chrome = h('div', { class: 'pub-chrome' }, bar, strip);
+        let barFold: FoldState = { folded: false, anchor: 0 };
+        const setFolded = (folded: boolean): void => {
+            chrome.classList.toggle('is-folded', folded);
+            bar.inert = folded;
+            strip.inert = !folded;
+            if (folded) {
+                setTools(false);
+            }
+        };
+        stage.addEventListener('scroll', () => {
+            const next = nextFold(barFold, stage.scrollTop);
+            if (next.folded !== barFold.folded) {
+                setFolded(next.folded);
+            }
+            barFold = next;
+        }, { passive: true });
+        strip.addEventListener('click', () => {
+            setFolded(false);
+            barFold = { folded: false, anchor: stage.scrollTop };
+        });
+
+        show(h('div', { class: 'pub-song' }, stage, chrome, tools));
         // After `show`, which clears what belonged to the screen before
         navigate = { previous: () => go(row.n - 1), next: () => go(row.n + 1) };
         dispose = () => reader.dispose();

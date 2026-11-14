@@ -121,6 +121,31 @@ try {
     await visitor.getByRole('button', { name: 'Subir medio tono' }).waitFor({ state: 'hidden' });
     pass('visitor: a song opens in the list\'s key with the tools folded under the bar; the key moves and comes back, the lyrics grow, printing offers its two sheets');
 
+    // The bar folds to a strip (title, key, position) while the lyrics scroll down and comes back on scroll up or a tap, as when singing a list
+    await visitor.evaluate(() => {
+        (document.querySelector('.viewer-content') as HTMLElement).style.minHeight = '3000px';
+    });
+    const chrome = visitor.locator('.pub-chrome');
+    const heightOf = async (): Promise<number> => (await chrome.boundingBox())?.height ?? 0;
+    const scrollStage = async (top: number): Promise<void> => {
+        await visitor.evaluate((value) => {
+            (document.querySelector('.pub-song .stage') as HTMLElement).scrollTop = value;
+        }, top);
+        await visitor.waitForTimeout(450);
+    };
+    const unfolded = await heightOf();
+    await scrollStage(400);
+    assert.ok((await chrome.getAttribute('class'))?.includes('is-folded'), 'scrolling down folds the bar');
+    assert.ok(await heightOf() < unfolded, 'the folded bar is thinner');
+    assert.match((await visitor.locator('.pub-strip').textContent()) ?? '', /Caminamos con alegría.*Re.*1\/2/, 'the strip says the song, its key and the position');
+    await scrollStage(100);
+    assert.equal((await chrome.getAttribute('class'))?.includes('is-folded'), false, 'scrolling up brings the bar back');
+    await scrollStage(400);
+    await visitor.locator('.pub-strip').click();
+    assert.equal((await chrome.getAttribute('class'))?.includes('is-folded'), false, 'a tap on the strip brings the bar back');
+    await scrollStage(0);
+    pass('visitor: the bar folds to a strip while the lyrics scroll down and unfolds on scroll up or a tap');
+
     // "Acordes": the last row of the tools; off leaves the lyrics alone, on this device, and it survives a reload
     await visitor.getByRole('button', { name: 'Herramientas' }).click();
     const chordsSwitch = visitor.getByRole('switch', { name: 'Acordes' });
@@ -130,7 +155,7 @@ try {
     await chordsSwitch.click();
     assert.equal(await chordsSwitch.getAttribute('aria-checked'), 'false');
     assert.equal(await visitor.locator('.song-sheet .ch').first().isVisible(), false, 'no chord is drawn');
-    assert.equal(await visitor.getByText('Caminamos con').first().isVisible(), true, 'the lyrics stay');
+    assert.equal(await visitor.locator('.song-sheet').getByText('Caminamos con').first().isVisible(), true, 'the lyrics stay');
     assert.equal(await visitor.getByRole('button', { name: 'Subir medio tono' }).isVisible(), false, 'no chords, no key to move');
     await visitor.reload();
     await visitor.locator('.song-sheet').waitFor();
@@ -145,12 +170,12 @@ try {
     await visitor.locator('.song-sheet').waitFor();
     assert.equal(await visitor.locator('.song-sheet .ch').first().textContent(), 'Re', 'what the visitor changed was only theirs, for now');
     await visitor.getByRole('button', { name: 'Canto siguiente' }).click();
-    await visitor.getByText('Pan de vida').first().waitFor();
+    await visitor.locator('.pub-bar__text b', { hasText: 'Pan de vida' }).waitFor();
     assert.equal(await visitor.locator('.pub-bar__text b').textContent(), 'Pan de vida');
     await visitor.keyboard.press('ArrowLeft');
     await visitor.locator('.pub-bar__text b', { hasText: 'Caminamos con alegría' }).waitFor();
     await visitor.goBack();
-    await visitor.getByText('Pan de vida').first().waitFor();
+    await visitor.locator('.pub-bar__text b', { hasText: 'Pan de vida' }).waitFor();
     pass('visitor: the addresses are real: reload and back work, ‹ › and the arrow keys change the song');
 
     assert.deepEqual([...hosts], [new URL(server.base).host], 'the page asked for nothing from another origin');

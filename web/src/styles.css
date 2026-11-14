@@ -2808,6 +2808,8 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
     .perform__chrome,
+    .pub-chrome,
+    .pub-strip,
     .perform__full,
     .perform__strip,
     .sheet,
@@ -4141,7 +4143,79 @@ button.srow__tool:disabled {
 }
 
 .pub-song .stage {
-    padding: 0.5rem 1rem 1.75rem;
+    padding: 3.25rem 1rem 1.75rem;
+}
+
+/* The bar floats over the lyrics (so folding it never moves them) and folds to a strip while they scroll down, as when singing a list */
+.pub-chrome {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 4;
+    height: 2.75rem;
+    overflow: hidden;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    transition: height 200ms ease-out;
+}
+
+.pub-chrome.is-folded {
+    height: 1.75rem;
+}
+
+.pub-chrome .pub-bar,
+.pub-strip {
+    position: absolute;
+    inset: 0;
+    transition: opacity 150ms;
+}
+
+.pub-chrome.is-folded .pub-bar,
+.pub-strip[inert] {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.pub-strip {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    height: 1.75rem;
+    min-height: 0;
+    padding: 0 0.75rem;
+    color: var(--muted);
+    background: none;
+    border: 0;
+    font: inherit;
+    font-size: 0.85rem;
+    text-align: left;
+    cursor: pointer;
+}
+
+.pub-strip strong {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--text);
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pub-strip__key {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.pub-strip__key.is-changed {
+    color: var(--warn);
+}
+
+.pub-strip__count {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
 }
 
 .pub-bar {
