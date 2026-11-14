@@ -11,6 +11,7 @@ import { openCopies } from '../shared-store.ts';
 import { nextFold, type FoldState } from '../fold.ts';
 import { dragOffset, isSwipe, swipeAxis, type Axis } from '../swipe.ts';
 import { createReader, type Reader } from './reader.ts';
+import { createSheet, dismissSheetOnBack } from './sheet.ts';
 
 /**
  * A list (or one song) somebody shared, as a visitor reads it: no account, no menu, nothing to edit or save. It is the same app (the same
@@ -211,6 +212,7 @@ export function startShared(root: HTMLElement, code: string): void {
             h('span', {}, 'Acordes'), h('span', { class: chordsShown ? 'switch is-on' : 'switch', 'aria-hidden': 'true' }));
         const keyText = h('b', {});
         const stripKey = h('span', { class: 'pub-strip__key' });
+        const barKey = h('span', { class: 'perform__song-key' });
         const keyButton = h('button', { type: 'button', class: 'pub-tool pub-key' }, h('small', {}, 'Tono'), keyText);
         const down = h('button', { type: 'button', class: 'pub-tool', 'aria-label': 'Bajar medio tono' }, '−');
         const up = h('button', { type: 'button', class: 'pub-tool', 'aria-label': 'Subir medio tono' }, '+');
@@ -225,6 +227,9 @@ export function startShared(root: HTMLElement, code: string): void {
             keyText.textContent = name ?? '';
             stripKey.textContent = chordsShown ? name ?? '' : '';
             stripKey.classList.toggle('is-changed', changed);
+            barKey.textContent = chordsShown ? name ?? '' : '';
+            barKey.hidden = barKey.textContent === '';
+            barKey.classList.toggle('is-today', changed);
             // A song with no chords has no key to move
             for (const control of [keyButton, down, up]) {
                 control.hidden = name === null || !chordsShown;
@@ -265,13 +270,7 @@ export function startShared(root: HTMLElement, code: string): void {
             history.pushState(null, '', paths.shared(code, n));
             render();
         };
-        const before = h('button', { type: 'button', class: 'pub-bar__button', 'aria-label': 'Canto anterior' }, icon('chevron-left', 22));
-        const after = h('button', { type: 'button', class: 'pub-bar__button', 'aria-label': 'Canto siguiente' }, icon('chevron-right', 22));
-        before.disabled = row.n === 1;
-        after.disabled = row.n === rows.length;
-        before.addEventListener('click', () => go(row.n - 1));
-        after.addEventListener('click', () => go(row.n + 1));
-        const toolsButton = h('button', { type: 'button', class: 'pub-bar__button pub-bar__tools', 'aria-label': 'Herramientas', 'aria-expanded': 'false', 'aria-controls': 'pub-tools' }, icon('tools', 22));
+        const toolsButton = h('button', { type: 'button', class: 'perform__more pub-bar__tools', 'aria-label': 'Herramientas', 'aria-expanded': 'false', 'aria-controls': 'pub-tools' }, icon('more', 22));
         const fold = h('button', { type: 'button', class: 'pub-tools__tab', 'aria-label': 'Plegar las herramientas' }, h('span', { class: 'pub-fold__grip' }, icon('chevron-up', 16)));
         const tools = h('div', { class: 'pub-tools', id: 'pub-tools', hidden: true, role: 'toolbar', 'aria-label': 'Herramientas de la letra' },
             h('div', { class: 'pub-tools__group' }, down, keyButton, up),
@@ -285,11 +284,31 @@ export function startShared(root: HTMLElement, code: string): void {
         fold.addEventListener('click', () => setTools(false));
         // A link to one song has no list to go back to and no neighbours: just the song, its author and the tools
         const single = data.kind === 'song';
+        // The same bar as when singing a list: the way back, the section and "Song • Key", the position that opens the songs, and "⋯" for the tools
+        const jumpButton = h('button', { type: 'button', class: 'perform__jump', 'aria-label': `Ir a otro canto. Canto ${row.n} de ${rows.length}` },
+            h('span', {}, `${row.n}/${rows.length}`), icon('chevron-down', 16));
         const bar = h('div', { class: 'pub-bar' },
             ...(single ? [] : [h('a', { class: 'pub-bar__button', href: paths.shared(code), 'data-link': true, 'aria-label': `Volver al listado: ${data.title}` }, icon('arrow-left', 22))]),
-            h('span', { class: 'pub-bar__text' }, h('b', {}, row.song.title),
-                h('small', {}, single ? (row.song.author === '' ? 'Canto compartido' : row.song.author) : `${row.part.name} · ${row.n} de ${rows.length}`)),
-            ...(single ? [] : [before, after]), toolsButton);
+            h('span', { class: 'pub-bar__text' },
+                h('small', { class: single ? '' : 'is-part' }, single ? (row.song.author === '' ? 'Canto compartido' : row.song.author) : row.part.name),
+                h('span', { class: 'pub-bar__line' }, h('b', {}, row.song.title), barKey)),
+            ...(single ? [] : [jumpButton]), toolsButton);
+
+        // --- the position button: the songs of the list, to jump to one ---
+        const jumpSheet = createSheet('Cantos del listado');
+        const songList = h('ul', { class: 'perform__songs' }, ...rows.map((entry) => {
+            const choice = h('button', { type: 'button', class: 'perform__song-choice' },
+                h('span', { class: 'perform__song-number' }, String(entry.n)),
+                h('span', {}, h('small', {}, entry.part.name), entry.song.title));
+            if (entry.n === row.n) {
+                choice.setAttribute('aria-current', 'true');
+            }
+            choice.addEventListener('click', () => jumpSheet.close(() => go(entry.n)));
+
+            return h('li', {}, choice);
+        }));
+        jumpSheet.body.append(h('h3', {}, 'Cantos del listado'), songList);
+        jumpButton.addEventListener('click', jumpSheet.open);
 
         // --- the song follows the finger from the first sideways move, as when singing a list ---
         const stage = reader.stage;
@@ -380,10 +399,17 @@ export function startShared(root: HTMLElement, code: string): void {
             barFold = { folded: false, anchor: stage.scrollTop };
         });
 
-        show(h('div', { class: 'pub-song' }, stage, chrome, tools));
+        show(h('div', { class: 'pub-song' }, stage, chrome, tools, jumpSheet.element));
         // After `show`, which clears what belonged to the screen before
-        navigate = { previous: () => go(row.n - 1), next: () => go(row.n + 1) };
-        dispose = () => reader.dispose();
+        // The arrow keys leave the song alone while the list of songs is open
+        navigate = {
+            previous: () => !jumpSheet.isOpen() && go(row.n - 1),
+            next: () => !jumpSheet.isOpen() && go(row.n + 1),
+        };
+        dispose = () => {
+            reader.dispose();
+            jumpSheet.release();
+        };
     };
 
     /** The page the address asks for: the list, or one of its songs when the lyrics are shared */
@@ -455,7 +481,12 @@ export function startShared(root: HTMLElement, code: string): void {
             render();
         }
     });
-    window.addEventListener('popstate', render);
+    window.addEventListener('popstate', () => {
+        // The back button first closes a sheet that is open (and runs what its choice asked for), as everywhere in the app
+        if (!dismissSheetOnBack()) {
+            render();
+        }
+    });
     // On a computer the arrow keys change the song, as they do when singing
     document.addEventListener('keydown', (event) => {
         if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.altKey || event.ctrlKey || event.metaKey) {

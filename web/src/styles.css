@@ -4146,6 +4146,11 @@ button.srow__tool:disabled {
     padding: 3.25rem 1rem 1.75rem;
 }
 
+/* A sheet opened over the song (the songs of the list) covers the small tab of the foot too */
+.pub-song .sheet-layer {
+    z-index: 30;
+}
+
 /* The bar floats over the lyrics (so folding it never moves them) and folds to a strip while they scroll down, as when singing a list */
 .pub-chrome {
     position: absolute;
@@ -4257,7 +4262,20 @@ button.srow__tool:disabled {
     line-height: 1.15;
 }
 
+.pub-bar__line {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.pub-bar__text small.is-part {
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
 .pub-bar__text b {
+    min-width: 0;
     overflow: hidden;
     font-family: var(--font-display);
     font-size: 0.95rem;

@@ -169,7 +169,13 @@ try {
     await visitor.reload();
     await visitor.locator('.song-sheet').waitFor();
     assert.equal(await visitor.locator('.song-sheet .ch').first().textContent(), 'Re', 'what the visitor changed was only theirs, for now');
-    await visitor.getByRole('button', { name: 'Canto siguiente' }).click();
+    // The bar is the singing one: the section above "Song", the position that opens the songs of the list, and "⋯" for the tools
+    assert.equal(await visitor.locator('.pub-bar__text small').textContent(), 'Canto de entrada');
+    assert.equal(await visitor.locator('.perform__more').getAttribute('aria-label'), 'Herramientas');
+    await visitor.getByRole('button', { name: /Ir a otro canto/ }).click();
+    await visitor.getByRole('dialog', { name: 'Cantos del listado' }).getByText('Pan de vida').waitFor();
+    assert.equal(await visitor.locator('.perform__song-choice[aria-current="true"]').count(), 1, 'the song being read is marked');
+    await visitor.getByRole('dialog', { name: 'Cantos del listado' }).getByText('Pan de vida').click();
     await visitor.locator('.pub-bar__text b', { hasText: 'Pan de vida' }).waitFor();
     assert.equal(await visitor.locator('.pub-bar__text b').textContent(), 'Pan de vida');
     await visitor.keyboard.press('ArrowLeft');
@@ -276,7 +282,7 @@ try {
     await visitor.locator('.song-sheet').waitFor();
     assert.equal(await visitor.locator('.pub-bar__text b').textContent(), 'Caminamos con alegría');
     assert.equal(await visitor.locator('.pub-bar__text small').textContent(), 'Ana Pérez');
-    assert.equal(await visitor.getByRole('button', { name: 'Canto siguiente' }).count(), 0, 'one song has no neighbours');
+    assert.equal(await visitor.getByRole('button', { name: /Ir a otro canto/ }).count(), 0, 'one song has no other songs to go to');
     assert.equal(await visitor.locator('a[aria-label^="Volver al listado"]').count(), 0, 'and no list to go back to');
     assert.equal(await visitor.locator('.song-sheet .ch').first().textContent(), 'Do', 'in the song\'s own key');
     assert.equal(await visitor.getByText('Pan de vida').count(), 0, 'no other song comes with it');
