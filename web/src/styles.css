@@ -2212,7 +2212,7 @@ button.lrow__see {
 /* ===== Singing: the slide between songs, no stretching ===== */
 /*
  * A swipe sideways is ours (next song, previous song): the browser must not also pull the page
- * (the rubber-band or stretch at the edge, a sideways scroll). Zooming with two fingers stays.
+ * (the rubber-band or stretch at the edge, a sideways scroll). Two fingers change the lyrics size, below.
  */
 html,
 body {
@@ -2221,7 +2221,15 @@ body {
 
 .perform .stage {
     overscroll-behavior-x: none;
-    touch-action: pan-y pinch-zoom;
+}
+
+/* Two fingers on the lyrics change their size (`pinch.ts`), not the page's zoom */
+.stage {
+    touch-action: pan-x pan-y;
+}
+
+.perform .stage {
+    touch-action: pan-y;
 }
 
 .slide-in-next {
