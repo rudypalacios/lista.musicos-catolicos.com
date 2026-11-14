@@ -4244,6 +4244,22 @@ button.srow__tool:disabled {
     display: none;
 }
 
+/* "Acordes": a row of its own at the end of the tools, the same switch as the one of the share sheet */
+.pub-tools__switch {
+    display: flex;
+    flex: 1 0 100%;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 2.75rem;
+    padding: 0 0.75rem;
+    color: var(--text);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 0.7rem;
+    font: 600 0.95rem var(--font-body);
+    cursor: pointer;
+}
+
 /* Fit and columns are the song's own and the visitor does not need them here: only the notation is kept */
 .pub-tools__notation .group + .group {
     display: none;

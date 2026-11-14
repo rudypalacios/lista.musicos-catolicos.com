@@ -42,6 +42,17 @@ export function saveFit(on: boolean): void {
     write(FIT, on ? 'si' : 'no');
 }
 
+const CHORDS = 'lista:acordes';
+
+/** Whether the chords are drawn over the lyrics (a visitor of a shared list can turn them off): on unless the person said no */
+export function readChords(): boolean {
+    return read(CHORDS) !== 'no';
+}
+
+export function saveChords(on: boolean): void {
+    write(CHORDS, on ? 'si' : 'no');
+}
+
 const COLUMNS = 'lista:columnas';
 
 /** Columns on a wide screen: "auto" (as the song needs), one, or two */
