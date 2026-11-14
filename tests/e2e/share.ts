@@ -121,6 +121,26 @@ try {
     await visitor.getByRole('button', { name: 'Subir medio tono' }).waitFor({ state: 'hidden' });
     pass('visitor: a song opens in the list\'s key with the tools folded under the bar; the key moves and comes back, the lyrics grow, printing offers its two sheets');
 
+    // "Acordes": the last row of the tools; off leaves the lyrics alone, on this device, and it survives a reload
+    await visitor.getByRole('button', { name: 'Herramientas' }).click();
+    const chordsSwitch = visitor.getByRole('switch', { name: 'Acordes' });
+    assert.equal(await chordsSwitch.getAttribute('aria-checked'), 'true', 'the chords are shown unless the visitor says no');
+    assert.equal(await visitor.locator('.pub-tools > *:last-child').getAttribute('class'), 'pub-tools__tab', 'the fold tab stays last');
+    assert.equal(await visitor.locator('.pub-tools > *:nth-last-child(2)').getAttribute('role'), 'switch', 'the switch is the last row of the tools');
+    await chordsSwitch.click();
+    assert.equal(await chordsSwitch.getAttribute('aria-checked'), 'false');
+    assert.equal(await visitor.locator('.song-sheet .ch').first().isVisible(), false, 'no chord is drawn');
+    assert.equal(await visitor.getByText('Caminamos con').first().isVisible(), true, 'the lyrics stay');
+    assert.equal(await visitor.getByRole('button', { name: 'Subir medio tono' }).isVisible(), false, 'no chords, no key to move');
+    await visitor.reload();
+    await visitor.locator('.song-sheet').waitFor();
+    assert.equal(await visitor.locator('.song-sheet .ch').first().isVisible(), false, 'the choice is remembered on this device');
+    await visitor.getByRole('button', { name: 'Herramientas' }).click();
+    await visitor.getByRole('switch', { name: 'Acordes' }).click();
+    assert.equal(await visitor.locator('.song-sheet .ch').first().textContent(), 'Re', 'on again: the chords are back in the list\'s key');
+    await visitor.getByRole('button', { name: 'Plegar las herramientas' }).click();
+    pass('visitor: the "Acordes" switch at the end of the tools hides and shows the chords, it is remembered on the device, and the key control goes with them');
+
     await visitor.reload();
     await visitor.locator('.song-sheet').waitFor();
     assert.equal(await visitor.locator('.song-sheet .ch').first().textContent(), 'Re', 'what the visitor changed was only theirs, for now');

@@ -28,6 +28,8 @@ export interface ReaderOptions {
     songHead?: boolean;
     /** The bar says the title and whether it is a draft (the song page): the head is left out, and the title stays for a screen reader. The author is in the "⋯" sheet. */
     titleInBar?: boolean;
+    /** Draw the chords over the lyrics (default). `false` starts with the lyrics alone; `setChords` changes it later. */
+    chords?: boolean;
 }
 
 /** Columns button: auto → two → one → auto */
@@ -41,6 +43,8 @@ export interface Reader {
     size: HTMLElement;
     /** Notation, fit and columns, for a screen that keeps them in a sheet; it works the same when taken out of `toolbar` */
     display: HTMLElement;
+    /** Shows or hides the chords (the lyrics alone) and fits the song again; the caller keeps the choice */
+    setChords: (shown: boolean) => void;
     /** The key on screen, in semitones from the song's own */
     shift: () => number;
     /** Puts the song in another key, as if the person had pressed − / +: it calls `onShift` when it changes */
@@ -69,6 +73,7 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
     // (in the same place: the library and the lists keep their own)
     let size = Math.min(SIZE_MAX, Math.max(SIZE_MIN, readLyricSize(options.sizeScope)));
     let columns = readColumns();
+    let chordsShown = options.chords !== false;
 
     // --- the song ---
     const sheet = h('div', { class: 'song-sheet', id: 'song-sheet' });
@@ -175,6 +180,7 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
         fitButton.setAttribute('aria-pressed', String(fit));
         columnsButton.textContent = COLUMNS_LABEL[columns];
         columnsButton.setAttribute('aria-label', `${COLUMNS_LABEL[columns]}. Cambiar`);
+        sheet.classList.toggle('is-lyrics-only', !chordsShown);
         refit();
     };
 
@@ -227,6 +233,10 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
         toolbar,
         size: sizeGroup,
         display: extra,
+        setChords: (shown) => {
+            chordsShown = shown;
+            update();
+        },
         shift: () => t,
         setShift: (next) => {
             const before = t;

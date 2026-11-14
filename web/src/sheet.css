@@ -106,6 +106,16 @@
     white-space: nowrap;
 }
 
+/* The lyrics alone (a visitor turned the chords off): no chord, no line of only chords, and no underline that pointed at one */
+.song-sheet.is-lyrics-only .ch,
+.song-sheet.is-lyrics-only .line--chords {
+    display: none;
+}
+
+.song-sheet.is-lyrics-only .syl {
+    text-decoration: none;
+}
+
 /* The syllable the chord falls on */
 .song-sheet .syl {
     text-decoration: underline;

@@ -1,7 +1,7 @@
 import { ApiError, readShared } from '../api.ts';
 import { h, setSheet } from '../dom.ts';
 import { icon } from '../icons.ts';
-import { readNotation } from '../prefs.ts';
+import { readChords, readNotation, saveChords } from '../prefs.ts';
 import { planSheet } from '../print/plan.ts';
 import type { PrintVersion } from '../print/layout.ts';
 import { printPlans } from '../print/print.ts';
@@ -204,6 +204,10 @@ export function startShared(root: HTMLElement, code: string): void {
     const songPage = (data: SharedList, row: Row, rows: readonly Row[]): void => {
         const song = asSong(row.song, data.updatedAt);
         const listKey = row.item.transpose;
+        // "Acordes": the visitor's own choice, kept on this device like the size and the notation. With no chords there is no key to move.
+        let chordsShown = readChords();
+        const chordsSwitch = h('button', { type: 'button', class: 'pub-tools__switch', role: 'switch', 'aria-checked': String(chordsShown) },
+            h('span', {}, 'Acordes'), h('span', { class: chordsShown ? 'switch is-on' : 'switch', 'aria-hidden': 'true' }));
         const keyText = h('b', {});
         const keyButton = h('button', { type: 'button', class: 'pub-tool pub-key' }, h('small', {}, 'Tono'), keyText);
         const down = h('button', { type: 'button', class: 'pub-tool', 'aria-label': 'Bajar medio tono' }, '−');
@@ -219,18 +223,30 @@ export function startShared(root: HTMLElement, code: string): void {
             keyText.textContent = name ?? '';
             // A song with no chords has no key to move
             for (const control of [keyButton, down, up]) {
-                control.hidden = name === null;
+                control.hidden = name === null || !chordsShown;
             }
             // Moved off the list's key: yellow and a way back, so it is clear the chords are not the list's
             keyButton.classList.toggle('is-changed', changed);
             keyButton.setAttribute('aria-label', changed ? `Tono ${name ?? ''}. Volver al tono del listado` : `Tono ${name ?? ''}`);
         };
-        const reader = createReader(song, { sizeScope: 'setlist', shift: listKey, keyPill: false, onShift: () => paint(), onKey: () => paint() });
+        const reader = createReader(song, { sizeScope: 'setlist', shift: listKey, keyPill: false, chords: chordsShown, onShift: () => paint(), onKey: () => paint() });
         made = reader;
         down.addEventListener('click', () => reader.setShift(reader.shift() - 1));
         up.addEventListener('click', () => reader.setShift(reader.shift() + 1));
         keyButton.addEventListener('click', () => reader.setShift(listKey));
         paint();
+
+        const paintChords = (): void => {
+            chordsSwitch.setAttribute('aria-checked', String(chordsShown));
+            chordsSwitch.querySelector('.switch')?.classList.toggle('is-on', chordsShown);
+            paint();
+        };
+        chordsSwitch.addEventListener('click', () => {
+            chordsShown = !chordsShown;
+            saveChords(chordsShown);
+            reader.setChords(chordsShown);
+            paintChords();
+        });
 
         const print = (version: PrintVersion): void => {
             printPlans([planSheet(song, { version, shift: reader.shift(), notation: readNotation(), part: row.part.name })]).catch(() => undefined);
@@ -256,7 +272,7 @@ export function startShared(root: HTMLElement, code: string): void {
         const tools = h('div', { class: 'pub-tools', id: 'pub-tools', hidden: true, role: 'toolbar', 'aria-label': 'Herramientas de la letra' },
             h('div', { class: 'pub-tools__group' }, down, keyButton, up),
             h('div', { class: 'pub-tools__group' }, h('div', { class: 'toolbar' }, reader.size), h('div', { class: 'toolbar pub-tools__notation' }, reader.display), printMenu(print)),
-            fold);
+            chordsSwitch, fold);
         const setTools = (shown: boolean): void => {
             tools.hidden = !shown;
             toolsButton.setAttribute('aria-expanded', String(shown));
