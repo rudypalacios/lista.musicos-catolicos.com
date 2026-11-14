@@ -5,6 +5,7 @@ import type { Song } from '../data/types.ts';
 import { authorLine, h, setSheet } from '../dom.ts';
 import { icon } from '../icons.ts';
 import { clearFit, DEFAULT_LIMITS, fitToStage, isWide, type ColumnMode } from '../fit.ts';
+import { watchPinch } from '../pinch.ts';
 import { readColumns, readFit, readLyricSize, readNotation, saveColumns, saveFit, saveLyricSize, saveNotation, type SizeScope } from '../prefs.ts';
 
 const SIZE_MIN = -2;
@@ -217,6 +218,17 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
         });
     }
 
+    // Two fingers on the lyrics change the size like A− / A+ (open: bigger, close: smaller), wherever a song is read
+    const stopPinch = watchPinch(stage, {
+        current: () => size,
+        clamp: (next) => Math.min(SIZE_MAX, Math.max(SIZE_MIN, next)),
+        apply: (next) => {
+            size = next;
+            saveLyricSize(options.sizeScope, size);
+            update();
+        },
+    });
+
     // The screen changes size (rotating the tablet, a keyboard, a split view): fit again
     let frame = 0;
     const observer = new ResizeObserver(() => {
@@ -249,6 +261,7 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
         keyName: (shift) => (original === null ? null : transpose(original, shift, notation)),
         stage,
         dispose: () => {
+            stopPinch();
             observer.disconnect();
             cancelAnimationFrame(frame);
         },
