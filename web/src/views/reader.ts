@@ -8,9 +8,10 @@ import { clearFit, DEFAULT_LIMITS, fitToStage, isWide, type ColumnMode } from '.
 import { watchPinch } from '../pinch.ts';
 import { readColumns, readFit, readLyricSize, readNotation, saveColumns, saveFit, saveLyricSize, saveNotation, type SizeScope } from '../prefs.ts';
 
-/** Steps of 2px below the size: 5 of them take the 19px of a song to the 10px floor (a pinch and A− go as far) */
-const SIZE_MIN = -5;
-const SIZE_MAX = 4;
+/** The size is moved 1px at a time (the pinch and A− / A+), so the lyrics can be made to fill the room left; never under 10px */
+const SIZE_MIN = -12;
+const SIZE_MAX = 10;
+const FLOOR = 10;
 
 export interface ReaderOptions {
     /** Whose lyric size this is: the library's songs or the lists being sung (each is kept apart) */
@@ -140,7 +141,7 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
             content.style.removeProperty('--lyric-step');
             // A− / A+ nudge the size the fit chose; bigger than the fit no longer fits, so it scrolls
             if (size !== 0) {
-                content.style.setProperty('--lyric-size', `${Math.max(10, fitted + size * 2)}px`);
+                content.style.setProperty('--lyric-size', `${Math.max(FLOOR, fitted + size)}px`);
             }
             const overflowing = size > 0;
             content.classList.toggle('is-scroll', overflowing || layout === 'scroll');
@@ -222,6 +223,8 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
     // Two fingers on the lyrics change the size like A− / A+ (open: bigger, close: smaller), wherever a song is read
     const stopPinch = watchPinch(stage, {
         current: () => size,
+        // The letters grow in proportion to how far the fingers open: 1px of lyrics per step
+        fontPx: () => Number.parseFloat(getComputedStyle(content).fontSize) || 19,
         clamp: (next) => Math.min(SIZE_MAX, Math.max(SIZE_MIN, next)),
         apply: (next) => {
             size = next;

@@ -748,7 +748,7 @@ ul.notes {
 .viewer-content {
     --lyric-size: 19px;
     /* Never under 10px, as in the fitted size (reader.ts): the steps of A− and the pinch stop being readable below it */
-    font-size: max(10px, calc(var(--lyric-size) + var(--lyric-step, 0) * 2px));
+    font-size: max(10px, calc(var(--lyric-size) + var(--lyric-step, 0) * 1px));
 }
 
 .viewer-content h2 {
