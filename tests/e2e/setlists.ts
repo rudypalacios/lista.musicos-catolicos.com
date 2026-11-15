@@ -552,8 +552,9 @@ try {
 
     await openTools(page);
     await page.getByRole('button', { name: 'Letra más grande' }).click();
-    assert.equal(await page.evaluate(() => localStorage.getItem('lista:tamano-listado')), '1');
-    assert.equal(await page.evaluate(() => localStorage.getItem('lista:tamano-cantos')), null, 'the library keeps its own size');
+    // The size is the song's own on this device (one entry per song that was changed), not the list's or the library's
+    const sizes = (): Promise<number[]> => page.evaluate(() => Object.values(JSON.parse(localStorage.getItem('lista:tamano-por-canto') ?? '{}') as Record<string, number>).sort());
+    assert.deepEqual(await sizes(), [1]);
     await closeSheet(page);
     await page.keyboard.press('ArrowRight');
     await page.getByRole('heading', { name: 'Pan de vida' }).waitFor();
@@ -562,7 +563,8 @@ try {
     const nextSize = await page.evaluate(() => getComputedStyle(document.querySelector('#song-content') as Element).fontSize);
     await page.getByRole('button', { name: 'Letra más pequeña' }).click();
     const smallerSize = await page.evaluate(() => getComputedStyle(document.querySelector('#song-content') as Element).fontSize);
-    assert.notEqual(nextSize, smallerSize, 'the next song opened with the size the last one was left at');
+    assert.notEqual(nextSize, smallerSize, 'A− changes the next song');
+    assert.deepEqual(await sizes(), [-1, 1], 'the next song kept its own size: it did not take the one the last was left at');
     await closeSheet(page);
     await page.keyboard.press('ArrowLeft');
     await page.getByRole('heading', { name: 'Gloria sencilla' }).waitFor();

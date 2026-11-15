@@ -54,7 +54,6 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
     /** What this page last told the bar: the next page is built before this one is disposed, and must not be cleared by it */
     let ownHeading: SongHeading | null = null;
     const reader = createReader(song, {
-        sizeScope: 'songs',
         shift,
         // The key is in the key control: a pill with the same words in the head of the song would say it twice
         keyPill: false,

@@ -78,23 +78,43 @@ export function saveLyricColor(id: string): void {
 }
 
 /**
- * Where the lyric size (A− / A+) is chosen: the songs of the library and the lists being sung each
- * keep their own, so enlarging the letters on a stand for the list does not change how a song reads
- * when it is opened from the library, and the other way round.
+ * The lyric size (A− / A+ and the pinch) is each song's own on this device (the owner's decision, 2026-11-15): the
+ * letters a phone needs are not the ones a tablet on a stand needs, but a song reads the same wherever it is
+ * opened on one device (the library, any list, a shared link). One entry per song, and only the songs that were
+ * changed: 0 steps is no entry.
  */
-export type SizeScope = 'songs' | 'setlist';
+const LYRIC_SIZES = 'lista:tamano-por-canto';
 
-const LYRIC_SIZE: Readonly<Record<SizeScope, string>> = { songs: 'lista:tamano-cantos', setlist: 'lista:tamano-listado' };
+/** The sizes stored, by song id, in steps (1px each); anything that is not a whole number is left out */
+export function parseLyricSizes(raw: string | null): Record<string, number> {
+    if (raw === null) {
+        return {};
+    }
+    try {
+        const stored: unknown = JSON.parse(raw);
+        if (typeof stored !== 'object' || stored === null || Array.isArray(stored)) {
+            return {};
+        }
 
-/** How many A− / A+ steps the lyrics are away from their size (0 when never changed); the caller clamps it */
-export function readLyricSize(scope: SizeScope): number {
-    const value = Number.parseInt(read(LYRIC_SIZE[scope]) ?? '', 10);
-
-    return Number.isFinite(value) ? value : 0;
+        return Object.fromEntries(Object.entries(stored).filter(([, steps]) => Number.isInteger(steps) && steps !== 0));
+    } catch {
+        return {};
+    }
 }
 
-export function saveLyricSize(scope: SizeScope, steps: number): void {
-    write(LYRIC_SIZE[scope], String(steps));
+/** How many steps (1px each) the song's lyrics are away from their size (0 when never changed); the caller clamps it */
+export function readLyricSize(songId: string): number {
+    return parseLyricSizes(read(LYRIC_SIZES))[songId] ?? 0;
+}
+
+export function saveLyricSize(songId: string, steps: number): void {
+    const sizes = parseLyricSizes(read(LYRIC_SIZES));
+    if (steps === 0) {
+        delete sizes[songId];
+    } else {
+        sizes[songId] = steps;
+    }
+    write(LYRIC_SIZES, JSON.stringify(sizes));
 }
 
 const KEEP_AWAKE = 'lista:pantalla-encendida';

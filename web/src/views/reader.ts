@@ -6,7 +6,7 @@ import { authorLine, h, setSheet } from '../dom.ts';
 import { icon } from '../icons.ts';
 import { clearFit, DEFAULT_LIMITS, fitToStage, isWide, type ColumnMode } from '../fit.ts';
 import { watchPinch } from '../pinch.ts';
-import { readColumns, readFit, readLyricSize, readNotation, saveColumns, saveFit, saveLyricSize, saveNotation, type SizeScope } from '../prefs.ts';
+import { readColumns, readFit, readLyricSize, readNotation, saveColumns, saveFit, saveLyricSize, saveNotation } from '../prefs.ts';
 
 /** The size is moved 1px at a time (the pinch and A− / A+), so the lyrics can be made to fill the room left; never under 10px */
 const SIZE_MIN = -12;
@@ -14,8 +14,6 @@ const SIZE_MAX = 10;
 const FLOOR = 10;
 
 export interface ReaderOptions {
-    /** Whose lyric size this is: the library's songs or the lists being sung (each is kept apart) */
-    sizeScope: SizeScope;
     /** The key to start in, in semitones from the song's own (−11…11) */
     shift: number;
     /** The person changed the key; `shift` is the new one. Where it is kept is up to the caller. */
@@ -72,9 +70,8 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
     let t = options.shift;
     let notation: Notation = readNotation();
     let fit = readFit();
-    // The size is the device's, not the song's: the next song opens as big as this one was left
-    // (in the same place: the library and the lists keep their own)
-    let size = Math.min(SIZE_MAX, Math.max(SIZE_MIN, readLyricSize(options.sizeScope)));
+    // The size is the song's own on this device (prefs.ts): it reads the same wherever it is opened
+    let size = Math.min(SIZE_MAX, Math.max(SIZE_MIN, readLyricSize(song.id)));
     let columns = readColumns();
     let chordsShown = options.chords !== false;
 
@@ -197,7 +194,7 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
             saveNotation(notation);
         } else if (button.dataset['size'] !== undefined) {
             size = Math.min(SIZE_MAX, Math.max(SIZE_MIN, size + parseInt(button.dataset['size'], 10)));
-            saveLyricSize(options.sizeScope, size);
+            saveLyricSize(song.id, size);
         } else if (button.dataset['fit'] !== undefined) {
             fit = !fit;
             saveFit(fit);
@@ -228,7 +225,7 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
         clamp: (next) => Math.min(SIZE_MAX, Math.max(SIZE_MIN, next)),
         apply: (next) => {
             size = next;
-            saveLyricSize(options.sizeScope, size);
+            saveLyricSize(song.id, size);
             update();
         },
     });
