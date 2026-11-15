@@ -211,6 +211,10 @@ the code really does.
   that are not that change. This replaces the older advice to merge `main` into the work branch.
 - The owner works only from claude.ai: they cannot run scripts, so everything must be doable by the
   app, the deploy or a SQL query in phpMyAdmin. Ask for one thing at a time, with the exact steps.
+- **Open the PR yourself whenever the change makes sense and could be released** (checks green, one coherent change): the owner
+  does not have to ask for it (the owner's decision, 2026-11-15). This overrides a default of waiting to be asked. Before opening
+  one, list the open PRs of the branch: something may already have opened it. Do not open one for work that is half done, only
+  an experiment, or that the owner has not decided yet.
 - Claude runs every check; GitHub only deploys. Claude opens PRs and **never merges**: the owner merges
   (squash). After a squash merge, new work starts on a fresh branch from `main` (see the first rule of this section).
 - Production: cPanel shared host, PHP 8.3, MySQL (the database was created as plain `utf8`, migration

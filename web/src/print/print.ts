@@ -51,8 +51,32 @@ async function fontsReady(): Promise<void> {
     await Promise.race([loading, new Promise((resolve) => setTimeout(resolve, 2000))]);
 }
 
-/** Fills #print-root with the pages and opens the browser's print dialog (AirPrint on an iPad) */
-export async function printPlans(plans: readonly SheetPlan[]): Promise<void> {
+/**
+ * Browsers name the PDF they save after the page's title, so while the print dialog is open the title is
+ * `name` (the song's or the list's), and it goes back once printing ends.
+ */
+function titledAs(name: string): void {
+    const before = document.title;
+    let restored = false;
+    const restore = (): void => {
+        if (!restored) {
+            restored = true;
+            document.title = before;
+            window.removeEventListener('afterprint', restore);
+        }
+    };
+    document.title = name;
+    window.addEventListener('afterprint', restore);
+    // Some browsers never say it ended (a dialog that is closed without printing): do not keep the name for good
+    setTimeout(restore, 60_000);
+}
+
+/**
+ * Fills #print-root with the pages and opens the browser's print dialog (AirPrint on an iPad).
+ *
+ * @param name what the saved PDF is called: the title of the list, or of the song
+ */
+export async function printPlans(plans: readonly SheetPlan[], name?: string): Promise<void> {
     let root = document.getElementById(ROOT_ID);
     if (root === null) {
         root = h('div', { id: ROOT_ID, 'aria-hidden': 'true' });
@@ -60,5 +84,8 @@ export async function printPlans(plans: readonly SheetPlan[]): Promise<void> {
     }
     root.replaceChildren(...printPages(plans));
     await fontsReady();
+    if (name !== undefined && name.trim() !== '') {
+        titledAs(name.trim());
+    }
     window.print();
 }

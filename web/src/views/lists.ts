@@ -1,8 +1,10 @@
 import type { App } from '../app.ts';
-import type { Setlist } from '../data/types.ts';
+import type { Setlist, Song } from '../data/types.ts';
 import { splitStarred } from '../data/setlists.ts';
 import { h } from '../dom.ts';
 import { icon, type IconName } from '../icons.ts';
+import { printList } from '../print/jobs.ts';
+import type { PrintVersion } from '../print/layout.ts';
 import { paths } from '../router.ts';
 import { filterSetlists } from '../search.ts';
 import { showToast } from '../toast.ts';
@@ -49,6 +51,8 @@ export function listsView(app: App, navigate: Navigate): View {
 
     // --- "⋯" of a row: what is done to that list from here ---
     let lists: Setlist[] = [];
+    /** The songs of the library, to print a list from here; kept up to date with the lists so printing starts at the tap */
+    let songs: ReadonlyMap<string, Song> = new Map();
     /** The list whose "⋯" is open */
     let target: string | null = null;
     // The screen scrolls inside the app, so the sheet covers the window, not the page
@@ -70,6 +74,12 @@ export function listsView(app: App, navigate: Navigate): View {
             return;
         }
         const count = list.items.length;
+        const print = (version: PrintVersion): void => {
+            error.textContent = '';
+            // Straight from the tap (a browser may refuse to print from anything later), then the sheet goes
+            printList(list, songs, version).catch((failure: unknown) => fail(failure, 'No se pudo preparar la impresión.'));
+            sheet.close();
+        };
         sheet.body.replaceChildren(
             sheetList(
                 sheetHead(list.title, count === 1 ? '1 canto' : `${count} cantos`, sheetShare('listado', () => {
@@ -94,6 +104,7 @@ export function listsView(app: App, navigate: Navigate): View {
                             .catch((failure: unknown) => fail(failure, 'No se pudo duplicar el listado.'));
                     });
                 }, { hint: 'Una copia sin fecha, con los mismos cantos y tonos' }),
+                ...(count > 0 ? [sheetAction('printer', 'Imprimir con acordes', () => print('chords')), sheetAction('printer', 'Imprimir solo la letra', () => print('lyrics'))] : []),
                 // Last and set apart, so it is not touched by mistake next to the others
                 sheetAction('trash', 'Eliminar listado', () => {
                     error.textContent = '';
@@ -167,8 +178,9 @@ export function listsView(app: App, navigate: Navigate): View {
         }
     };
     const load = (): void => {
-        void app.setlists.list().then((all) => {
+        void Promise.all([app.setlists.list(), app.list()]).then(([all, library]) => {
             lists = all;
+            songs = new Map(library.map((song) => [song.id, song]));
             draw();
             if (sheet.isOpen()) {
                 fill();

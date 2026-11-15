@@ -446,7 +446,7 @@ try {
     await second.getByRole('button', { name: 'Más opciones: Editado en la otra tablet' }).click();
     assert.deepEqual(
         await second.locator('.sheet-layer.is-open .sheet-action').allTextContents(),
-        ['Editar letra y acordes', 'Eliminar canto'],
+        ['Editar letra y acordes', 'Imprimir con acordes', 'Imprimir solo la letra', 'Eliminar canto'],
         'the sheet of a song: edit it, and last, delete it (sharing is the button at the right of its title)',
     );
     await shareButtonAndTitleGap(second, 'Compartir canto');

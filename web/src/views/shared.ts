@@ -8,7 +8,7 @@ import { printPlans } from '../print/print.ts';
 import { matchRoute, paths } from '../router.ts';
 import { asSong, bySection, copyNote, countLabel, keyOf, readingOrder, updatedLabel, type Row, type SharedList } from '../shared-model.ts';
 import { openCopies } from '../shared-store.ts';
-import { nextFold, type FoldState } from '../fold.ts';
+import { barFoldPoint, nextFold, type FoldState } from '../fold.ts';
 import { dragOffset, isSwipe, swipeAxis, type Axis } from '../swipe.ts';
 import { createReader, type Reader } from './reader.ts';
 import { createSheet, dismissSheetOnBack } from './sheet.ts';
@@ -169,7 +169,7 @@ export function startShared(root: HTMLElement, code: string): void {
         const print = (version: PrintVersion): void => {
             printPlans(rows.map((row) => planSheet(asSong(row.song, data.updatedAt), {
                 version, shift: row.item.transpose, notation, part: row.part.name,
-            }))).catch(() => undefined);
+            })), data.title).catch(() => undefined);
         };
         const body = h('div', { class: 'pub-list' });
         for (const group of bySection(rows)) {
@@ -258,7 +258,7 @@ export function startShared(root: HTMLElement, code: string): void {
         });
 
         const print = (version: PrintVersion): void => {
-            printPlans([planSheet(song, { version, shift: reader.shift(), notation: readNotation(), part: row.part.name })]).catch(() => undefined);
+            printPlans([planSheet(song, { version, shift: reader.shift(), notation: readNotation(), part: row.part.name })], song.title).catch(() => undefined);
         };
 
         // --- the bar: back to the list, where this song is, the neighbours and the tools ---
@@ -388,7 +388,7 @@ export function startShared(root: HTMLElement, code: string): void {
             }
         };
         stage.addEventListener('scroll', () => {
-            const next = nextFold(barFold, stage.scrollTop);
+            const next = nextFold(barFold, stage.scrollTop, barFoldPoint());
             if (next.folded !== barFold.folded) {
                 setFolded(next.folded);
             }

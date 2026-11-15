@@ -12,7 +12,7 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { chromium, enforcePolicy, openSongMenu, reporter, signIn, startServer, synced } from './lib.ts';
-import type { Page } from 'playwright';
+import type { Locator, Page } from 'playwright';
 
 const server = await startServer(18088);
 const { pass, count } = reporter();
@@ -124,8 +124,11 @@ try {
     // window.print() opens a dialog: count the calls instead, and print the page ourselves
     await context.addInitScript(() => {
         (window as unknown as { printed: number }).printed = 0;
+        // What the PDF would be called: browsers use the title of the page while the dialog is open
+        (window as unknown as { printTitles: string[] }).printTitles = [];
         window.print = () => {
             (window as unknown as { printed: number }).printed++;
+            (window as unknown as { printTitles: string[] }).printTitles.push(document.title);
         };
     });
     const page = await context.newPage();
@@ -202,6 +205,42 @@ try {
     assert.ok(listed[0]?.join(' ').includes(SAMPLES[0]?.title ?? '?'));
     assert.ok(listed[1]?.join(' ').includes(SAMPLES[2]?.title ?? '?'));
     pass('a setlist prints one song per page, in the order of the Mass');
+
+    // ----- printing from every menu: the sheet it is on, the key it shows, a PDF called as the list or the song -----
+    const lastTitle = (): Promise<string | undefined> => page.evaluate(() => (window as unknown as { printTitles: string[] }).printTitles.at(-1));
+    const printFrom = async (button: string | Locator, option: 'Imprimir con acordes' | 'Imprimir solo la letra'): Promise<void> => {
+        const before = await page.evaluate(() => (window as unknown as { printed: number }).printed);
+        await (typeof button === 'string' ? page.getByRole('button', { name: button, exact: true }) : button).click();
+        await page.locator('.sheet-layer.is-open').getByRole('button', { name: option }).click();
+        await waitForPrint(page, before);
+    };
+    const inList = SAMPLES[2];
+    assert.ok(inList !== undefined);
+
+    await page.goto(`${server.base}/`);
+    await page.getByRole('heading', { name: 'Cantos' }).waitFor();
+    await printFrom(`Más opciones: ${SAMPLES[0]?.title}`, 'Imprimir con acordes');
+    assert.deepEqual(await page.locator('#print-root .page-title').allTextContents(), [SAMPLES[0]?.title]);
+    assert.equal(await lastTitle(), SAMPLES[0]?.title, 'the PDF of a song is called as the song');
+    pass('a song prints from the "⋯" of its row on Cantos, and the PDF is called as the song');
+
+    await page.goto(`${server.base}/listados`);
+    // Two lists carry that name (one per seed): the row of the one with the samples
+    await printFrom(page.locator(`[data-more="${sheetCases.setlist}"]`), 'Imprimir con acordes');
+    assert.deepEqual(await page.locator('#print-root .page-title').allTextContents(), [SAMPLES[0]?.title, inList.title, SAMPLES[1]?.title]);
+    assert.equal(await lastTitle(), 'Misa de prueba', 'the PDF of a list is called as the list');
+    pass('a list prints from the "⋯" of its row on Listados, and the PDF is called as the list');
+
+    await page.goto(`${server.base}/listados/${sheetCases.setlist}`);
+    await page.getByRole('heading', { name: 'Ofertorio', exact: true }).waitFor();
+    await printFrom(`Más opciones: ${inList.title}`, 'Imprimir con acordes');
+    assert.deepEqual(await page.locator('#print-root .page-title').allTextContents(), [inList.title], 'only that song');
+    assert.equal(await page.locator('#print-root .page-head__sub').textContent(), 'Autor · Ofertorio');
+    assert.equal(await page.locator('#print-root .ch').first().textContent(), 'La', 'in the key it has in the list (G, two semitones up)');
+    assert.equal(await lastTitle(), inList.title);
+    await printFrom('Más opciones del listado', 'Imprimir solo la letra');
+    assert.equal(await lastTitle(), 'Misa de prueba');
+    pass('inside a list, a song prints in the key the list gives it and the list prints as the list');
 
     // ----- the cascade against Chromium's printer -----
     // Every sample on its own printout; each must fit the way PrintLayout said
