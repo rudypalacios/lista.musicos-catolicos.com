@@ -3,6 +3,8 @@ import { inListOrder, partName } from '../data/setlists.ts';
 import type { Setlist, SetlistItem, Song } from '../data/types.ts';
 import { draftTag, h, link } from '../dom.ts';
 import { icon } from '../icons.ts';
+import { printSong } from '../print/jobs.ts';
+import type { PrintVersion } from '../print/layout.ts';
 import { barFoldPoint, nextFold, type FoldState } from '../fold.ts';
 import { readKeepAwake } from '../prefs.ts';
 import { todayKeys } from '../today-keys.ts';
@@ -11,7 +13,7 @@ import { paths } from '../router.ts';
 import { dragOffset, isSwipe, swipeAxis, type Axis } from '../swipe.ts';
 import { describeAwake, screenKeeper } from '../wakelock.ts';
 import { createReader, type Reader } from './reader.ts';
-import { createSheet, sheetList, spaced } from './sheet.ts';
+import { createSheet, sheetAction, sheetList, spaced } from './sheet.ts';
 import { createToneControl, type ToneControl, type ToneControlOptions } from './tone-control.ts';
 import type { Navigate, View } from './types.ts';
 
@@ -100,6 +102,8 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     let tools: HTMLElement | null = null;
     let tone: ToneControl | null = null;
     let barTone: ToneControl | null = null;
+    /** The key on screen now, in semitones from the song's own (today's included) */
+    let shiftNow: () => number = () => item.transpose;
     let dispose: () => void = () => undefined;
     if (song === undefined) {
         stage = h(
@@ -146,6 +150,7 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
             },
         });
         const own = reader;
+        shiftNow = () => own.shift();
         markStrip();
         /** The person's own key for this song ("mi tono"); the list's is `saved` */
         let mine = song.myShift;
@@ -215,7 +220,17 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
         const edit = h('button', { type: 'button', class: 'sheet-action' }, icon('pencil', 20),
             h('span', { class: 'sheet-action__text' }, 'Editar letra y acordes', h('small', {}, 'Se cambia en todos los listados donde está')));
         edit.addEventListener('click', () => toolsSheet.close(() => navigate(paths.edit(song.id, paths.perform(setlist.id, position)))));
-        toolsSheet.body.append(h('h3', {}, 'Tono'), tone.element, h('h3', {}, 'Letra'), tools, spaced(sheetList(edit)));
+        // The key on screen, today's included; straight from the tap (a browser may refuse to print from anything later), then the sheet goes
+        const print = (version: PrintVersion): void => {
+            printSong(song, version, shiftNow(), partName(setlist, item.part))
+                .catch(() => showToast('No se pudo preparar la impresión.', 4000, true));
+            toolsSheet.close();
+        };
+        toolsSheet.body.append(h('h3', {}, 'Tono'), tone.element, h('h3', {}, 'Letra'), tools, spaced(sheetList(
+            edit,
+            sheetAction('printer', 'Imprimir con acordes', () => print('chords')),
+            sheetAction('printer', 'Imprimir solo la letra', () => print('lyrics')),
+        )));
     }
     // The screen stays on while a song is on screen, unless the person turned that off in Ajustes. Nothing
     // on screen says so any more: only a failure is worth a word.

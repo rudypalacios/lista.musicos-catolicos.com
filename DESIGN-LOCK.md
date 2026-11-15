@@ -22,30 +22,4 @@ why, and wait. When the owner unlocks something, change it and update this file 
 
 **Singing folds its bar to the strip 2px before the first line of the lyrics would slide under it (`barFoldPoint` in `web/src/fold.ts`; the page of a shared list folds its bar the same way), so a section's name tag is never half hidden behind the bar (the owner asked on 2026-11-15).**
 
-**The "Borrador" pill goes wherever the song is named with its author or key, singing included (its bar, folded strip and list of songs; the owner asked on 2026-11-08).** Everything not in the table is not locked, but it keeps the same look and the standards below. **On the page of a song the bar names the song as singing does** (the way back's name small above, then "Canción • Tono  Borrador"; `song-heading.ts`; there is no head under the bar: the author is in the "⋯" sheet), and **the singing bar carries the key (− / + and Guardar) from 900px** (the owner asked on 2026-11-08). **The bar of the song page** (the key, the lyrics size, "⋯") is not locked: from 900px the key and Guardar ride in it, just left of the "⋯", and under 900px it is as it was (the owner asked on 2026-11-08).
-
-**On a wide screen (from 900px) the "⋯" sheets** (a list's, a song's inside a list, the rows of the two lists and of the templates, the song page's) **open as a menu beside their button** instead of a sheet from the bottom (the owner asked on 2026-11-02): below the button, hanging from its right edge, or above it when there is no room, nothing dimmed. **Under 900px they are the sheet from the bottom, unchanged.** `createSheet(…, { anchored: true })` in `web/src/views/sheet.ts`.
-
-## Standards that hold everywhere
-
-- **It looks the same on every device.** No icon, mark or symbol drawn by the device's font (a
-  `▪` or `♪` typed as text varies by device and OS; neither do `←`, `▾`, `＋`, `−`, `✓`, `✕`, `★` or `→`): shapes are
-  drawn with CSS or SVG, as in `web/src/icons.ts`. A new icon is added there, never typed.
-- **"More options" is one icon: three dots one above the other, drawn (SVG, `more` in `web/src/icons.ts`)** on every
-  screen (the bar of singing, the head of a list, the rows of the lists and of the songs). It is never typed as a character.
-- **Spacing is in `rem`**, in the steps the app already uses; do not introduce pixel values.
-- **Touch targets of at least 44px** for what is pressed.
-- **A sheet or a menu is ONE list with no bullets** (`sheetHead` and `sheetList` in `web/src/views/sheet.ts`, `.sheet-list` in the styles; the owner asked on 2026-11-02): the title (and its second line) is the first `<li>` and each option another, **in the same `<ul>`**, so the space and the line between any two rows is the same: each row at least 44px, a small padding of the `li`'s own (**the title has 1rem under it, before its line**: the owner asked on 2026-11-02), **a line between rows (also after the title), none after the last**, nothing added at the edges (the sheet and the floating menu already have their padding), the icon and the words centred; an option with a second line ("Un enlace para que cualquiera lo lea") keeps it inside the same row. "Eliminar…" is the last row of the same list, in red, with no extra gap. **"Compartir" is never a row: it is a button at the right of the title** (`sheetShare` in `sheet.ts`, 44px, a drawn icon) in every menu of a song or of a list: the song page, the "⋯" of a row of Cantos, the "⋯" of a row of Listados and the "⋯" inside a list (the owner asked on 2026-11-02). Its sheet is the same as it was.
-- **A song looks the same wherever it is listed** (Cantos, the picker of a part, inside a list): the title, under it "Autor · key", the key in blue
-  (amber inside a list when it is not the song's own), and, **only while the song is a draft, a grey "Borrador" pill after the key** (`draftTag`; there is no "Publicado" tag: publishing only takes it away; the owner asked on 2026-11-08). The picker also shows the first lines of the lyrics under it, to tell songs apart.
-- **One way to do each thing in one place:** one "back", one name per screen.
-- **Never a blank screen, never a silent wait** (`CLAUDE.md`).
-
-## What counts as a change
-
-Locked: moving, adding or removing an element, renaming a label, changing an icon, a colour, a size
-or a spacing, changing the order of things, changing what a touch does.
-
-Not a change: a bug fix that leaves the screen looking and behaving as described here, and work
-under the surface (tests, performance, the data, the API) that does not alter what is shown. When in
-doubt, ask.
+**Printing is in every menu that holds a song or a list (the owner asked on 2026-11-15):** "Imprimir con acordes" and "Imprimir solo la letra", after "Editar" and before the red row, in the "⋯" of a row of Cantos (the song's own key, the one the row shows), the "⋯" of a row of Listados (only when the list has songs; every song in the key it is seen in), the "⋯" of a song inside a list (that song, in the key the list shows for it, today's included) and the sheet behind "⋯" while singing (the key on screen); they were already in the song page's sheet and the list's. The PDF is called as the song or as the list (`web/src/print/jobs.ts`).

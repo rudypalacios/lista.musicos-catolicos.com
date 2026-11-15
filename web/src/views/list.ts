@@ -4,6 +4,8 @@ import { transpose } from '../chordpro/chord.ts';
 import type { Song } from '../data/types.ts';
 import { authorLine, draftTag, h, snippetBlock } from '../dom.ts';
 import { icon } from '../icons.ts';
+import { printSong } from '../print/jobs.ts';
+import type { PrintVersion } from '../print/layout.ts';
 import { readNotation } from '../prefs.ts';
 import { paths } from '../router.ts';
 import { filterSongs, foundInLyricsOnly, songSnippet } from '../search.ts';
@@ -63,6 +65,12 @@ export function listView(app: App, navigate: Navigate): View {
 
             return;
         }
+        const print = (version: PrintVersion): void => {
+            error.textContent = '';
+            // The key the row shows (the song's own); straight from the tap, then the sheet goes
+            printSong(song, version, 0).catch((failure: unknown) => fail(failure, 'No se pudo preparar la impresión.'));
+            sheet.close();
+        };
         sheet.body.replaceChildren(
             sheetList(
                 sheetHead(song.title, authorLine(song), sheetShare('canto', () => {
@@ -73,6 +81,8 @@ export function listView(app: App, navigate: Navigate): View {
                     error.textContent = '';
                     sheet.close(() => navigate(paths.edit(song.id)));
                 }),
+                sheetAction('printer', 'Imprimir con acordes', () => print('chords')),
+                sheetAction('printer', 'Imprimir solo la letra', () => print('lyrics')),
                 // Last and set apart, so it is not touched by mistake next to the others
                 sheetAction('trash', 'Eliminar canto', () => {
                     error.textContent = '';

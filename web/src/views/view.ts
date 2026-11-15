@@ -7,9 +7,8 @@ import { paths } from '../router.ts';
 import { writeKeyToSong } from '../transpose-song.ts';
 import { screenKeeper } from '../wakelock.ts';
 import { songHeading, type SongHeading } from '../song-heading.ts';
-import { planSheet } from '../print/plan.ts';
 import type { PrintVersion } from '../print/layout.ts';
-import { printPlans } from '../print/print.ts';
+import { printSong } from '../print/jobs.ts';
 import { createAddToList } from './add-to-list.ts';
 import { deleteSongAfterAsking } from './delete-song.ts';
 import { createReader } from './reader.ts';
@@ -130,7 +129,7 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
     const print = (version: PrintVersion): void => {
         error.hidden = true;
         // Straight from the tap (a browser may refuse to print from anything later), then the sheet goes
-        printPlans([planSheet(song, { version, shift: shown, notation: readNotation() })])
+        printSong(song, version, shown)
             .catch(() => fail('No se pudo preparar la impresión.'));
         sheet.close();
     };

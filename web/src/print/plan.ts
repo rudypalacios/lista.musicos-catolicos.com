@@ -1,6 +1,7 @@
 import { transpose, type Notation } from '../chordpro/chord.ts';
 import { parse, songKey, type Sheet } from '../chordpro/parser.ts';
-import type { Song } from '../data/types.ts';
+import { inListOrder, partName } from '../data/setlists.ts';
+import type { Setlist, SetlistItem, Song } from '../data/types.ts';
 import { printLayout, type PrintLayoutName, type PrintVersion } from './layout.ts';
 
 /** A line of the musical data under the title ("Tono" Sol) */
@@ -78,4 +79,26 @@ function text(value: string | undefined): string | null {
     const trimmed = value?.trim() ?? '';
 
     return trimmed === '' ? null : trimmed;
+}
+
+/**
+ * The pages of a whole list, in the order of the list, each in the key it is sung in (`shiftOf`: the
+ * saved one, or the key of today if the person changed it). A song the device does not hold is left out.
+ */
+export function listPlans(
+    list: Pick<Setlist, 'parts' | 'items'>,
+    songs: ReadonlyMap<string, Song>,
+    options: { version: PrintVersion; notation: Notation; shiftOf: (item: SetlistItem) => number },
+): SheetPlan[] {
+    return inListOrder(list).flatMap((item) => {
+        const song = songs.get(item.songId);
+        const part = partName(list, item.part);
+
+        return song === undefined ? [] : [planSheet(song, {
+            version: options.version,
+            shift: options.shiftOf(item),
+            notation: options.notation,
+            ...(part !== undefined ? { part } : {}),
+        })];
+    });
 }

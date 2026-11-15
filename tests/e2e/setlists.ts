@@ -737,7 +737,7 @@ try {
 
     await page.getByRole('button', { name: 'Más opciones: Domingo, editado en la tablet' }).click();
     assert.deepEqual(await page.locator('.sheet-layer.is-open .sheet-action').allTextContents(), [
-        'Destacar', 'Duplicar listadoUna copia sin fecha, con los mismos cantos y tonos', 'Eliminar listado',
+        'Destacar', 'Duplicar listadoUna copia sin fecha, con los mismos cantos y tonos', 'Imprimir con acordes', 'Imprimir solo la letra', 'Eliminar listado',
     ]);
     await page.locator('.sheet-layer.is-open').getByRole('button', { name: 'Compartir listado', exact: true }).waitFor();
     await page.getByRole('button', { name: 'Destacar', exact: true }).click();

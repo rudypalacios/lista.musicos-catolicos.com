@@ -6,9 +6,8 @@ import { inListOrder, itemsOfPart, moveOptions, partName, positionInList, strayI
 import { attachLongPressDrag, dragHintPending, markDragHintSeen, type LongPressDrag } from '../drag-reorder.ts';
 import { draftTag, h } from '../dom.ts';
 import { icon, type IconName } from '../icons.ts';
-import { planSheet } from '../print/plan.ts';
+import { printList, printSong } from '../print/jobs.ts';
 import type { PrintVersion } from '../print/layout.ts';
-import { printPlans } from '../print/print.ts';
 import { readNotation } from '../prefs.ts';
 import { paths } from '../router.ts';
 import { showToast, showUndoToast } from '../toast.ts';
@@ -99,15 +98,14 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
 
     const print = (version: PrintVersion): void => {
         // Straight from the tap (a browser may refuse to print from anything later), then the sheet goes
-        printPlans(
-            inListOrder(setlist).flatMap((item) => {
-                const song = songs.get(item.songId);
-                const part = partName(setlist, item.part);
-
-                return song === undefined ? [] : [planSheet(song, { version, shift: item.transpose, notation: readNotation(), ...(part !== undefined ? { part } : {}) })];
-            }),
-        ).catch(() => fail(undefined, 'No se pudo preparar la impresión.'));
+        printList(setlist, songs, version).catch(() => fail(undefined, 'No se pudo preparar la impresión.'));
         listSheet.close();
+    };
+    /** One song of the list, in the key it is seen in here (a key of today over the saved one) */
+    const printItem = (item: SetlistItem, song: Song, version: PrintVersion): void => {
+        printSong(song, version, todayKeys.get(setlist.id, item.id) ?? item.transpose, partName(setlist, item.part))
+            .catch(() => fail(undefined, 'No se pudo preparar la impresión.'));
+        songSheet.close();
     };
     const fillListSheet = (): void => {
         const rows = setlist.items.length;
@@ -187,6 +185,8 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
                         }, { hint: 'Ahí se cambia el tono' }),
                         // Straight to the editor; saving or cancelling comes back to this list
                         action('pencil', 'Editar', () => songSheet.close(() => navigate(paths.edit(song.id, paths.setlist(setlist.id)))), { hint: 'Letra y acordes' }),
+                        action('printer', 'Imprimir con acordes', () => printItem(item, song, 'chords')),
+                        action('printer', 'Imprimir solo la letra', () => printItem(item, song, 'lyrics')),
                     ]),
                     // One entry for every move; a part with one song has nowhere to move it
                     ...(can.up || can.down ? [action('move', 'Mover', () => showSongView('move'), { hint: 'Subir, bajar, al inicio o al final' })] : []),
