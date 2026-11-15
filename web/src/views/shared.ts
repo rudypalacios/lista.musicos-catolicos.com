@@ -8,7 +8,7 @@ import { printPlans } from '../print/print.ts';
 import { matchRoute, paths } from '../router.ts';
 import { asSong, bySection, copyNote, countLabel, keyOf, readingOrder, updatedLabel, type Row, type SharedList } from '../shared-model.ts';
 import { openCopies } from '../shared-store.ts';
-import { nextFold, type FoldState } from '../fold.ts';
+import { barFoldPoint, nextFold, type FoldState } from '../fold.ts';
 import { dragOffset, isSwipe, swipeAxis, type Axis } from '../swipe.ts';
 import { createReader, type Reader } from './reader.ts';
 import { createSheet, dismissSheetOnBack } from './sheet.ts';
@@ -388,7 +388,7 @@ export function startShared(root: HTMLElement, code: string): void {
             }
         };
         stage.addEventListener('scroll', () => {
-            const next = nextFold(barFold, stage.scrollTop);
+            const next = nextFold(barFold, stage.scrollTop, barFoldPoint());
             if (next.folded !== barFold.folded) {
                 setFolded(next.folded);
             }

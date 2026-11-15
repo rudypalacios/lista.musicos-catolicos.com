@@ -20,7 +20,7 @@ why, and wait. When the owner unlocks something, change it and update this file 
 
 **Two fingers on the lyrics change their size (open: bigger, close: smaller; `web/src/pinch.ts`, wired in `createReader`, so it holds wherever a song is read: song page, singing, shared list; the owner asked on 2026-11-14).** It moves the same steps as A− / A+ and keeps the same saved size.
 
-**Singing folds its bar to the strip 2px before the first line of the lyrics would slide under it (`foldBefore` in `web/src/fold.ts`), so a section's name tag is never half hidden behind the bar (the owner asked on 2026-11-15).**
+**Singing folds its bar to the strip 2px before the first line of the lyrics would slide under it (`barFoldPoint` in `web/src/fold.ts`; the page of a shared list folds its bar the same way), so a section's name tag is never half hidden behind the bar (the owner asked on 2026-11-15).**
 
 **The "Borrador" pill goes wherever the song is named with its author or key, singing included (its bar, folded strip and list of songs; the owner asked on 2026-11-08).** Everything not in the table is not locked, but it keeps the same look and the standards below. **On the page of a song the bar names the song as singing does** (the way back's name small above, then "Canción • Tono  Borrador"; `song-heading.ts`; there is no head under the bar: the author is in the "⋯" sheet), and **the singing bar carries the key (− / + and Guardar) from 900px** (the owner asked on 2026-11-08). **The bar of the song page** (the key, the lyrics size, "⋯") is not locked: from 900px the key and Guardar ride in it, just left of the "⋯", and under 900px it is as it was (the owner asked on 2026-11-08).
 

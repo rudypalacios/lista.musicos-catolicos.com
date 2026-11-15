@@ -24,6 +24,16 @@ export function foldBefore(gap: number): number {
     return Math.max(1, gap - FOLD_LEAD);
 }
 
+/** The room (rem) between a floating bar and the first line of the lyrics: the stage's padding less the bar's height, the same in singing and on the page of a shared list */
+export const BAR_GAP_REM = 0.5;
+
+/** Where (px of scroll) a floating bar folds in the browser's current text size: the one place both screens ask */
+export function barFoldPoint(): number {
+    const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+
+    return foldBefore(BAR_GAP_REM * rem);
+}
+
 export interface FoldState {
     folded: boolean;
     /** The scroll position the next move is measured from */
