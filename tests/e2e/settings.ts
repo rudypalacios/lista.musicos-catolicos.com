@@ -247,10 +247,10 @@ try {
         page.locator('.viewer-content').evaluate((el) => parseFloat((el as HTMLElement).style.getPropertyValue('--lyric-size')));
     const fitted = await sizeOf();
     await page.getByRole('button', { name: 'Letra más grande' }).click();
-    assert.equal(await sizeOf(), fitted + 2);
+    assert.equal(await sizeOf(), fitted + 1);
     await page.getByRole('button', { name: 'Letra más pequeña' }).click();
     await page.getByRole('button', { name: 'Letra más pequeña' }).click();
-    assert.equal(await sizeOf(), fitted - 2);
+    assert.equal(await sizeOf(), fitted - 1);
     await page.getByRole('button', { name: 'Letra más grande' }).click();
     assert.equal(await sizeOf(), fitted);
     pass('A− and A+ work with the fit on: they nudge the size the fit chose');
