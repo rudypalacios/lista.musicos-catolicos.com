@@ -8,7 +8,8 @@ import { clearFit, DEFAULT_LIMITS, fitToStage, isWide, type ColumnMode } from '.
 import { watchPinch } from '../pinch.ts';
 import { readColumns, readFit, readLyricSize, readNotation, saveColumns, saveFit, saveLyricSize, saveNotation, type SizeScope } from '../prefs.ts';
 
-const SIZE_MIN = -2;
+/** Steps of 2px below the size: 5 of them take the 19px of a song to the 10px floor (a pinch and A− go as far) */
+const SIZE_MIN = -5;
 const SIZE_MAX = 4;
 
 export interface ReaderOptions {
