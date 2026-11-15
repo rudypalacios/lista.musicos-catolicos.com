@@ -4,7 +4,7 @@
  * lines wrap between words only. Keep the two in step; the markup is made by sheet.ts.
  *
  * The size comes from the element that holds the song (--lyric-size, set by "ajustar a la
- * pantalla" or left at its default, plus --lyric-step for the A− / A+ buttons).
+ * pantalla" or left at its default, plus --lyric-step, in px, for the A− / A+ buttons and the pinch).
  */
 .song-sheet {
     display: flex;

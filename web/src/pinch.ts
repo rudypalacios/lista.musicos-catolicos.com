@@ -3,17 +3,18 @@
  * is pure (tested without a touch screen); `watchPinch` does the touching.
  */
 
-/** The fingers have to change their distance by this factor for the size to move one step (A− / A+) */
-export const PINCH_STEP_RATIO = 1.25;
-
-/** How many steps a pinch is worth: the fingers went from `from` to `to` px apart (positive = opened = bigger) */
-export function pinchSteps(from: number, to: number): number {
-    if (!(from > 0) || !(to > 0)) {
+/**
+ * How many steps (1px of lyrics each) a pinch is worth: the fingers went from `from` to `to` px apart
+ * (positive = opened = bigger), and the letters, `fontPx` big, grow in the same proportion: the pinch
+ * follows the fingers smoothly instead of jumping from one size to the next.
+ */
+export function pinchSteps(from: number, to: number, fontPx: number): number {
+    if (!(from > 0) || !(to > 0) || !(fontPx > 0)) {
         return 0;
     }
 
     // `+ 0` turns the -0 that Math.round gives for a small closing into a plain 0
-    return Math.round(Math.log(to / from) / Math.log(PINCH_STEP_RATIO)) + 0;
+    return Math.round(fontPx * (to / from - 1)) + 0;
 }
 
 function distance(a: Touch, b: Touch): number {
@@ -25,6 +26,8 @@ export interface PinchHandlers {
     current: () => number;
     /** The size the pinch is at now: called only when it changes, as the fingers move */
     apply: (size: number) => void;
+    /** How big the letters are (px) when the pinch starts */
+    fontPx: () => number;
     /** Keeps the size inside what the caller allows */
     clamp: (size: number) => number;
 }
@@ -34,6 +37,7 @@ export function watchPinch(target: HTMLElement, handlers: PinchHandlers): () => 
     let from = 0;
     let base = 0;
     let last = 0;
+    let fontPx = 0;
     const onStart = (event: TouchEvent): void => {
         const [a, b] = [event.touches[0], event.touches[1]];
         if (event.touches.length !== 2 || a === undefined || b === undefined) {
@@ -43,6 +47,7 @@ export function watchPinch(target: HTMLElement, handlers: PinchHandlers): () => 
         }
         from = distance(a, b);
         base = handlers.current();
+        fontPx = handlers.fontPx();
         last = base;
     };
     const onMove = (event: TouchEvent): void => {
@@ -52,7 +57,7 @@ export function watchPinch(target: HTMLElement, handlers: PinchHandlers): () => 
         }
         // The browser must not also zoom the page or scroll the song under the fingers
         event.preventDefault();
-        const next = handlers.clamp(base + pinchSteps(from, distance(a, b)));
+        const next = handlers.clamp(base + pinchSteps(from, distance(a, b), fontPx));
         if (next !== last) {
             last = next;
             handlers.apply(next);
