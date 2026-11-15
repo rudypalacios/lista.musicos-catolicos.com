@@ -10,6 +10,20 @@ export const FOLD_MOVE = 12;
 /** Not before the lyrics are this far (px) from the top: a bar folding at the first touch is jumpy */
 export const FOLD_AFTER = 60;
 
+/**
+ * Singing folds the bar this many px before the first line of the lyrics would slide under it,
+ * so the head of a section (its name tag) is never half hidden behind the bar
+ */
+export const FOLD_LEAD = 2;
+
+/**
+ * Where the singing bar must fold: the room between the bar and the first line (px), less the lead.
+ * Never below 1, so a song resting at the top does not fold.
+ */
+export function foldBefore(gap: number): number {
+    return Math.max(1, gap - FOLD_LEAD);
+}
+
 export interface FoldState {
     folded: boolean;
     /** The scroll position the next move is measured from */
@@ -19,10 +33,12 @@ export interface FoldState {
 /**
  * @param state what was decided at the last significant move
  * @param top the lyrics' scroll position now
+ * @param after the scroll position from which it may fold (default `FOLD_AFTER`); a smaller one
+ *   also shortens the move that counts, so folding is not held back past it
  */
-export function nextFold(state: FoldState, top: number): FoldState {
+export function nextFold(state: FoldState, top: number, after: number = FOLD_AFTER): FoldState {
     const moved = top - state.anchor;
-    if (moved > FOLD_MOVE && top > FOLD_AFTER) {
+    if (moved > Math.min(FOLD_MOVE, after) && top > after) {
         return { folded: true, anchor: top };
     }
     if (moved < -FOLD_MOVE || top <= 0) {

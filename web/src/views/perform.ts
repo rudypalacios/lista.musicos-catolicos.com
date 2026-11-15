@@ -3,7 +3,7 @@ import { inListOrder, partName } from '../data/setlists.ts';
 import type { Setlist, SetlistItem, Song } from '../data/types.ts';
 import { draftTag, h, link } from '../dom.ts';
 import { icon } from '../icons.ts';
-import { nextFold, type FoldState } from '../fold.ts';
+import { foldBefore, nextFold, type FoldState } from '../fold.ts';
 import { readKeepAwake } from '../prefs.ts';
 import { todayKeys } from '../today-keys.ts';
 import { showToast } from '../toast.ts';
@@ -338,11 +338,13 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
         full.inert = folded;
         strip.inert = !folded;
     };
+    // The first line rests 0.5rem under the bar (`.perform .stage` padding): fold just before it slides under
+    const foldAt = (): number => foldBefore(0.5 * (Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16));
     stage.addEventListener('scroll', () => {
         const top = stage.scrollTop;
         const room = stage.scrollHeight - stage.clientHeight;
         progress.style.transform = `scaleX(${room > 0 ? Math.min(top / room, 1) : 0})`;
-        const next = nextFold(fold, top);
+        const next = nextFold(fold, top, foldAt());
         if (next.folded !== fold.folded) {
             setFolded(next.folded);
         }

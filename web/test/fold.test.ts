@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { nextFold, type FoldState } from '../src/fold.ts';
+import { foldBefore, nextFold, type FoldState } from '../src/fold.ts';
 
 const open: FoldState = { folded: false, anchor: 0 };
 
@@ -26,5 +26,26 @@ describe('nextFold', () => {
 
     it('opens at the very top whatever the anchor', () => {
         assert.deepEqual(nextFold({ folded: true, anchor: 5 }, 0), { folded: false, anchor: 0 });
+    });
+});
+
+describe('foldBefore', () => {
+    it('is the gap to the first line less the 2px lead', () => {
+        assert.equal(foldBefore(8), 6);
+    });
+
+    it('never goes below 1, so a song resting at the top stays open', () => {
+        assert.equal(foldBefore(2), 1);
+        assert.equal(foldBefore(0), 1);
+    });
+});
+
+describe('nextFold with an early fold point', () => {
+    it('folds as soon as the lyrics pass it, without waiting for the usual move', () => {
+        assert.deepEqual(nextFold(open, 7, 6), { folded: true, anchor: 7 });
+    });
+
+    it('stays open until then', () => {
+        assert.deepEqual(nextFold(open, 5, 6), open);
     });
 });
