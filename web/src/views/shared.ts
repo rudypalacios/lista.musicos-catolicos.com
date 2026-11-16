@@ -238,7 +238,7 @@ export function startShared(root: HTMLElement, code: string): void {
             keyButton.classList.toggle('is-changed', changed);
             keyButton.setAttribute('aria-label', changed ? `Tono ${name ?? ''}. Volver al tono del listado` : `Tono ${name ?? ''}`);
         };
-        const reader = createReader(song, { sizeScope: 'setlist', shift: listKey, keyPill: false, chords: chordsShown, onShift: () => paint(), onKey: () => paint() });
+        const reader = createReader(song, { shift: listKey, keyPill: false, chords: chordsShown, onShift: () => paint(), onKey: () => paint() });
         made = reader;
         down.addEventListener('click', () => reader.setShift(reader.shift() - 1));
         up.addEventListener('click', () => reader.setShift(reader.shift() + 1));

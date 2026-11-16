@@ -127,7 +127,6 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
             barKey.classList.toggle('is-today', changed);
         };
         reader = createReader(song, {
-            sizeScope: 'setlist',
             songHead: false,
             keyPill: false,
             shift: today ?? saved,
