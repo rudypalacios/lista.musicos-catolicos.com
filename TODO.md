@@ -75,6 +75,12 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
 
 ## Small things to do when convenient
 
+- [x] **Verse numbers instead of "Verso N" labels** (`sheet.css`, end of file; the owner chose version E of the mockup on 2026-11-21 and asked for it everywhere a
+      processed song is shown: the song page, the editor preview, the import review, a shared list, singing). Each stanza is numbered (1., 2.…) as on paper and the label
+      is not drawn; a label that is not "Verso N" still is. The number hangs in the sheet's own left padding (`--verse-gutter`, 1.5em; 1.9em from 900px, where the chorus rule
+      moves to the title's edge, as the PDF) and not in the page's margin as on the public site: the screens here have a 1rem gutter and the stage clips what hangs outside.
+      Copying a song still writes "Verso N" (`copy-sheet.ts`), so the stanzas stay apart in the pasted text. The public site does the same (musicos-catolicos PR). **Owner's check:**
+      singing on the tablet (the lyrics lose about 1.5em of width, which "ajustar a la pantalla" gives back by a smaller size).
 - [x] **Duplicate a song, copy it with chords above, align pasted sheets by letter width** (`Library.duplicate`, `copy-sheet.ts`, `importer.ts` `columnModel`; the owner's request, 2026-11-21).
       "Duplicar canto" is in the menu of a row of Cantos and in the "⋯" of a song (a copy titled "Copia de …", opened at once). Copying a selection of a song on screen puts
       the chords on a line above the words (only what was selected); it pastes back into the editor as the same song. A sheet pasted from Word, Docs or a PDF viewer has its chords

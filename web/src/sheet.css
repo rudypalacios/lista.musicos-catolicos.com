@@ -128,3 +128,66 @@
 .song-sheet {
     color: var(--lyric-color, inherit);
 }
+
+/*
+ * Verse numbers on screen, as on paper (print.css) and on the public site: a stanza is numbered (1., 2.…) instead of
+ * carrying a "Verso N" label. The number hangs at the left of the lyrics, on the row of the words of the stanza's first
+ * sung line (under its chords), so every line of the stanza starts in one column. A label that is not "Verso N"
+ * (Verso final) is still shown. The room for the number is the sheet's own left padding (--verse-gutter), in em so it
+ * follows the size of the lyrics; the screens of this app have a gutter of only 1rem, and "fit to the screen" and the
+ * singing stage clip what hangs outside it, so the number is kept inside the sheet instead of in the page's margin.
+ * Wide screens: more room, and the chorus's rule at the left edge of the sheet (the title's edge), as in the PDF.
+ */
+@media screen {
+    .song-sheet {
+        --verse-gutter: 1.5em;
+        counter-reset: verse;
+        padding-left: var(--verse-gutter);
+    }
+
+    .song-section__label--verse {
+        display: none;
+    }
+
+    .song-section--verse .line--first {
+        counter-increment: verse;
+    }
+
+    .song-section--verse .line--first.line--plain,
+    .song-section--verse .line--first > .w:first-child > .seg:first-child > .lyr {
+        position: relative;
+    }
+
+    .song-section--verse .line--first.line--plain::before,
+    .song-section--verse .line--first > .w:first-child > .seg:first-child > .lyr::before {
+        content: counter(verse) ".";
+        position: absolute;
+        top: 0;
+        right: 100%;
+        padding-right: 0.35em;
+        font-style: normal;
+        font-weight: 700;
+        line-height: inherit;
+    }
+
+    /* The sample in Ajustes keeps the padding it had (it has no stanzas to number) */
+    .settings__sample {
+        --verse-gutter: 1rem;
+    }
+}
+
+@media screen and (min-width: 900px) {
+    .song-sheet {
+        --verse-gutter: 1.9em;
+    }
+
+    .song-section--chorus {
+        margin-left: calc(var(--verse-gutter) * -1);
+        padding-left: calc(var(--verse-gutter) - 3px);
+    }
+
+    .song-section--verse .line--first.line--plain::before,
+    .song-section--verse .line--first > .w:first-child > .seg:first-child > .lyr::before {
+        padding-right: 0.5em;
+    }
+}
