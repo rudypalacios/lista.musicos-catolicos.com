@@ -3,7 +3,7 @@ import { beforeEach, describe, it } from 'node:test';
 import { ValidationError } from '../../src/data/library.ts';
 import { MemoryStore } from '../../src/data/memory-store.ts';
 import {
-    copyTitle, defaultTitle, inListOrder, itemsOfPart, moveOptions, partIndex, partName, partsOf, positionInList, recentFirst, reordered, Setlists,
+    copyTitle, defaultTitle, inListOrder, itemsOfPart, moveOptions, movedToPart, partIndex, partName, partsOf, positionInList, recentFirst, reordered, Setlists,
     splitStarred, strayItems, visibleParts,
 } from '../../src/data/setlists.ts';
 import { LIMITS, type PartDef, type Setlist, type SetlistItem } from '../../src/data/types.ts';
@@ -31,6 +31,18 @@ describe('Setlists', () => {
     const itemsOf = async (id: string): Promise<SetlistItem[]> => [...((await lists.get(id))?.items ?? [])];
     const transposeOf = async (id: string, itemId: string): Promise<number | undefined> =>
         (await itemsOf(id)).find((item) => item.id === itemId)?.transpose;
+
+    describe('moving an item to another section', () => {
+        it('moves it in the list, which refuses a section it does not have', async () => {
+            const list = await lists.create({ title: 'Misa' });
+            await lists.addItem(list.id, 'entrada', 's1');
+            const itemId = (await itemsOf(list.id))[0]?.id ?? '';
+
+            await lists.moveItemToPart(list.id, itemId, 'comunion');
+            assert.equal((await itemsOf(list.id))[0]?.part, 'comunion');
+            await assert.rejects(lists.moveItemToPart(list.id, itemId, 'nope'), /no existe/);
+        });
+    });
 
     describe('creating with songs', () => {
         it('makes the list and its items in one write, each song in "mi tono"', async () => {
@@ -763,6 +775,25 @@ describe('reading a list', () => {
 
         assert.deepEqual(moveOptions(two, 'b'), { up: true, down: false, toStart: false, toEnd: false });
         assert.deepEqual(moveOptions(two, 'a'), { up: false, down: true, toStart: false, toEnd: false });
+    });
+
+    describe('moving an item to another section', () => {
+        const items = [item('a', 'comunion'), item('x', 'entrada'), item('b', 'comunion'), item('y', 'salida')];
+        const ids = (list: SetlistItem[]): string[] => list.map((i) => i.id);
+
+        it('puts it at the end of that section, keeping its key and note, and leaves the others in order', () => {
+            const moved = movedToPart([{ ...items[0] as SetlistItem, transpose: 3, note: 'lento' }, ...items.slice(1)], 'a', 'entrada');
+
+            assert.deepEqual(moved.filter((i) => i.part === 'entrada').map((i) => i.id), ['x', 'a']);
+            assert.deepEqual(moved.filter((i) => i.part === 'comunion').map((i) => i.id), ['b']);
+            assert.deepEqual(moved.find((i) => i.id === 'a'), { ...items[0], transpose: 3, note: 'lento', part: 'entrada' });
+        });
+
+        it('goes anywhere in the list when the section is empty, and changes nothing for the same section or a missing item', () => {
+            assert.equal(movedToPart(items, 'a', 'ofertorio').find((i) => i.id === 'a')?.part, 'ofertorio');
+            assert.deepEqual(ids(movedToPart(items, 'a', 'comunion')), ids(items));
+            assert.deepEqual(ids(movedToPart(items, 'zzz', 'entrada')), ids(items));
+        });
     });
 
     describe('putting an item at a place among those of its section', () => {

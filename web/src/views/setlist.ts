@@ -158,6 +158,15 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             const to = end ? itemsOfPart(setlist.items, item.part).length - 1 : 0;
             void app.setlists.reorderItem(setlist.id, item.id, to).catch((failure: unknown) => fail(failure, 'No se pudo mover el canto.'));
         };
+        // The other sections the song can go to (at the end of one)
+        const elsewhere = visibleParts(setlist).filter((part) => part.id !== item.part);
+        const toSection = (part: PartDef): void => {
+            songSheet.close(() => {
+                void app.setlists.moveItemToPart(setlist.id, item.id, part.id)
+                    .then(() => showToast(`«${name}» pasó a ${part.name}`, 4000, true))
+                    .catch((failure: unknown) => fail(failure, 'No se pudo mover el canto.'));
+            });
+        };
         const heading = sheetHead(name, song === undefined ? section : [section, ...(song.status === 'draft' ? [' · ', ...draftTag(song)] : [])]);
         if (songView === 'move') {
             // The submenu: every way to move the song inside its section, one touch from the list of what is done to it
@@ -171,6 +180,8 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
                     // Only when they say more than the arrows (more than two songs in the section)
                     ...(can.toStart ? [action('to-top', 'Al inicio de esta sección', () => toEnd(false), { key: 'start' })] : []),
                     ...(can.toEnd ? [action('to-bottom', 'Al final de esta sección', () => toEnd(true), { key: 'end' })] : []),
+                    // Moving to another section is not a step: it leaves this one, so the sheet closes
+                    ...elsewhere.map((part) => action('arrow-right', `Pasar a ${part.name}`, () => toSection(part), { hint: 'Al final de esa sección' })),
                 ),
                 h('p', { class: 'sheet__sub' }, 'También: mantén pulsado el canto en el listado y arrástralo.'),
             );
@@ -189,7 +200,9 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
                         action('printer', 'Imprimir solo la letra', () => printItem(item, song, 'lyrics')),
                     ]),
                     // One entry for every move; a part with one song has nowhere to move it
-                    ...(can.up || can.down ? [action('move', 'Mover', () => showSongView('move'), { hint: 'Subir, bajar, al inicio o al final' })] : []),
+                    ...(can.up || can.down || elsewhere.length > 0
+                        ? [action('move', 'Mover', () => showSongView('move'), { hint: elsewhere.length > 0 ? 'Subir, bajar o pasar a otra sección' : 'Subir, bajar, al inicio o al final' })]
+                        : []),
                     action('x', 'Quitar del listado', () => {
                         const index = setlist.items.findIndex((candidate) => candidate.id === item.id);
                         songSheet.close(() => {
@@ -210,7 +223,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             kept?.focus();
         }
         // Nothing left to move (a section that lost songs on another device): back to the main list
-        if (songView === 'move' && !can.up && !can.down) {
+        if (songView === 'move' && !can.up && !can.down && elsewhere.length === 0) {
             songView = 'main';
             fillSongSheet();
         }

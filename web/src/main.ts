@@ -1,6 +1,7 @@
 import './styles.css';
 import './sheet.css';
 import { App } from './app.ts';
+import { installSheetCopy } from './copy-sheet.ts';
 import { watchInstallPrompt } from './install.ts';
 import { matchRoute } from './router.ts';
 import { applyReadingColors } from './settings.ts';
@@ -58,6 +59,9 @@ window.addEventListener('unhandledrejection', (event) => {
         showFatal(app, event.reason);
     }
 });
+
+// Copying a song puts the chords above the words, on every page that shows one (the app, a shared list)
+installSheetCopy();
 
 const visiting = matchRoute(location.pathname);
 if (visiting.name === 'shared') {

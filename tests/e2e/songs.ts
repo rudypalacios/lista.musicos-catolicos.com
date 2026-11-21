@@ -311,8 +311,8 @@ try {
     await openSongMenu(page);
     assert.deepEqual(
         await page.locator('.sheet-layer.is-open .sheet-action').allTextContents(),
-        ['Agregar a un listado', 'Imprimir con acordes', 'Imprimir solo la letra', 'Editar letra y acordes', 'Eliminar canto'],
-        'the sheet of the song page: add to a list, print, edit and, last, delete (sharing is the button at the right of its title)',
+        ['Agregar a un listado', 'Imprimir con acordes', 'Imprimir solo la letra', 'Editar letra y acordes', 'Duplicar cantoUna copia con la misma letra y acordes, para cambiarla sin tocar este canto', 'Eliminar canto'],
+        'the sheet of the song page: add to a list, print, edit, duplicate and, last, delete (sharing is the button at the right of its title)',
     );
     await shareButtonAndTitleGap(page, 'Compartir canto');
     assert.equal(await page.evaluate(() => {
@@ -446,7 +446,7 @@ try {
     await second.getByRole('button', { name: 'Más opciones: Editado en la otra tablet' }).click();
     assert.deepEqual(
         await second.locator('.sheet-layer.is-open .sheet-action').allTextContents(),
-        ['Editar letra y acordes', 'Imprimir con acordes', 'Imprimir solo la letra', 'Eliminar canto'],
+        ['Editar letra y acordes', 'Duplicar cantoUna copia con la misma letra y acordes, para cambiarla sin tocar este canto', 'Imprimir con acordes', 'Imprimir solo la letra', 'Eliminar canto'],
         'the sheet of a song: edit it, and last, delete it (sharing is the button at the right of its title)',
     );
     await shareButtonAndTitleGap(second, 'Compartir canto');

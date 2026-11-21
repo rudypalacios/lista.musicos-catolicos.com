@@ -10,7 +10,7 @@
  * Pure (items in, text out), so it is tested without a PDF or a browser: the browser gives it a
  * canvas to measure letters with, the tests a table.
  */
-import { firstLength } from '../chordpro/syllable.ts';
+import { syllableStarts } from '../chordpro/syllable-starts.ts';
 import { isChordLine } from '../importer.ts';
 
 /** One piece of text on a page: what pdf.js calls a text item, in points, y growing upwards */
@@ -21,6 +21,8 @@ export interface TextItem {
     width: number;
     height: number;
 }
+
+export { syllableStarts };
 
 /** The width of one character at a font size, in any unit (only ratios matter) */
 export type Measure = (char: string, size: number) => number;
@@ -250,32 +252,6 @@ function chordsOver(chords: Line, lyric: Line): string {
     }
 
     return line;
-}
-
-/**
- * Where a chord can sit in a line of lyrics: the start of every syllable of every word, and of
- * everything else that is not a space ("1.", "(BIS)"). Indexes in the text, in order.
- */
-export function syllableStarts(text: string): number[] {
-    const starts = new Set<number>();
-    for (const part of text.matchAll(/\S+/g)) {
-        const base = part.index ?? 0;
-        starts.add(base);
-        for (const word of part[0].matchAll(/\p{L}+/gu)) {
-            const from = base + (word.index ?? 0);
-            let at = 0;
-            while (at < word[0].length) {
-                starts.add(from + at);
-                const length = firstLength(word[0].slice(at));
-                if (length <= 0) {
-                    break;
-                }
-                at += length;
-            }
-        }
-    }
-
-    return [...starts].sort((a, b) => a - b);
 }
 
 function averageWidth(line: Line): number {

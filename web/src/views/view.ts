@@ -161,6 +161,18 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
             sheetAction('pencil', 'Editar letra y acordes', () => {
                 sheet.close(() => navigate(paths.edit(song.id)));
             }),
+                sheetAction('copy', 'Duplicar canto', () => {
+                    error.hidden = true;
+                    sheet.close(() => {
+                        app
+                            .duplicate(song.id)
+                            .then((copy) => {
+                                navigate(paths.view(copy.id));
+                                showToast(`Copiado de «${song.title}»`, 4000, true);
+                            })
+                            .catch((failure: unknown) => fail(failure instanceof Error ? failure.message : 'No se pudo duplicar el canto.'));
+                    });
+                }, { hint: 'Una copia con la misma letra y acordes, para cambiarla sin tocar este canto' }),
             // Last and set apart, so it is not touched by mistake next to printing
             sheetAction('trash', 'Eliminar canto', () => {
                 error.hidden = true;
