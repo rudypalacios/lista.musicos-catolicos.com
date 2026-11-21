@@ -302,14 +302,27 @@ try {
 
     await slot(page, 'Canto de entrada').getByRole('button', { name: 'Más opciones: Abrimos la puerta' }).click();
     await page.locator('.sheet-layer.is-open').waitFor();
-    assert.equal(await page.getByRole('button', { name: /^Mover/ }).count(), 0, 'a song alone in its part has no move');
+    // Alone in its part it cannot go up or down, but it can go to another section: "Mover" lists them
+    await page.getByRole('button', { name: /^Mover/ }).click();
+    assert.equal(await page.getByRole('button', { name: /^(Subir|Bajar) en esta sección/ }).count(), 0, 'no steps for a song alone in its part');
+    await page.getByRole('button', { name: 'Pasar a Canto de comunión' }).click();
+    await page.getByText(/pasó a Canto de comunión/).waitFor();
+    await slot(page, 'Canto de comunión').getByRole('button', { name: 'Más opciones: Abrimos la puerta' }).waitFor();
+    assert.equal(await slot(page, 'Canto de entrada').getByRole('button', { name: /Más opciones/ }).count(), 0, 'it left its section');
+    await slot(page, 'Canto de comunión').getByRole('button', { name: 'Más opciones: Abrimos la puerta' }).click();
+    await page.getByRole('button', { name: /^Mover/ }).click();
+    await page.getByRole('button', { name: 'Pasar a Canto de entrada' }).click();
+    await slot(page, 'Canto de entrada').getByRole('button', { name: 'Más opciones: Abrimos la puerta' }).waitFor();
+    pass('"Mover" also lists the other sections: a song passes to the end of one, and back');
+    await slot(page, 'Canto de entrada').getByRole('button', { name: 'Más opciones: Abrimos la puerta' }).click();
+    await page.locator('.sheet-layer.is-open').waitFor();
     await page.getByRole('button', { name: /Cantar desde aquí/ }).waitFor();
     await page.getByRole('button', { name: /^Editar/ }).click();
     await page.getByRole('heading', { name: 'Editar canto' }).waitFor();
     assert.match(page.url(), /\/cantos\/[^/]+\/editar\?volver=%2Flistados%2F/);
     await page.getByRole('link', { name: 'Cancelar' }).click();
     await slot(page, 'Canto de entrada').waitFor();
-    pass('a song alone in its part has no move to offer, only singing from it, editing it (and coming back to the list) and removing it');
+    pass('a song alone in its part has no steps to offer, only singing from it, editing it (and coming back to the list) and removing it');
 
     // ----- the sections of the list: switch one off, see it go, switch it on, see it come back in its place -----
     const sectionNames = (): Promise<string[]> => page.locator('section.slot h3').allTextContents();
@@ -414,7 +427,7 @@ try {
     assert.equal(stored?.title, 'Domingo de prueba');
     assert.match(stored?.eventDate ?? '', /^\d{4}-\d{2}-\d{2}$/, 'the day set when the list was made is kept, though it is not shown');
     assert.deepEqual(stored?.items.map((item) => [item.part, item.transpose, item.note]), [
-        ['entrada', 2, ''], ['comunion', 0, ''], ['comunion', 0, ''],
+        ['comunion', 0, ''], ['comunion', 0, ''], ['entrada', 2, ''], // the moved song went to the end of the array and back: order among sections does not show
     ]);
     pass('title, order and keys reach the server, and the day the list was made for is kept');
 

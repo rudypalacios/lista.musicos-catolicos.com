@@ -102,6 +102,23 @@ export function reordered(items: readonly SetlistItem[], itemId: string, to: num
     return [...others.slice(0, at), moved, ...others.slice(at)];
 }
 
+/**
+ * The items with one moved to the end of another section (the song keeps its key and note). An item that is gone, or already
+ * in that section, changes nothing.
+ */
+export function movedToPart(items: readonly SetlistItem[], itemId: string, part: string): SetlistItem[] {
+    const moved = items.find((candidate) => candidate.id === itemId);
+    if (moved === undefined || moved.part === part) {
+        return [...items];
+    }
+    const others = items.filter((candidate) => candidate.id !== itemId);
+    const there = itemsOfPart(others, part);
+    const last = there[there.length - 1];
+    const at = last === undefined ? others.length : others.indexOf(last) + 1;
+
+    return [...others.slice(0, at), { ...moved, part }, ...others.slice(at)];
+}
+
 /** 1-based place of the item in the order of the list, which is how singing names a song; 0 if it is not there */
 export function positionInList(list: Pick<Setlist, 'parts' | 'items'>, itemId: string): number {
     return inListOrder(list).findIndex((item) => item.id === itemId) + 1;
@@ -387,6 +404,17 @@ export class Setlists {
     /** Puts the item at place `to` among the items of its own section (see `reordered`): a drag, or "al inicio" / "al final" */
     reorderItem(id: string, itemId: string, to: number): Promise<Setlist> {
         return this.editItems(id, (items) => reordered(items, itemId, to));
+    }
+
+    /** Moves the item to the end of another section of the list. @throws ValidationError (as a rejected promise) when it has no such section */
+    moveItemToPart(id: string, itemId: string, part: string): Promise<Setlist> {
+        return this.edit(id, (list) => {
+            if (!visibleParts(list).some((candidate) => candidate.id === part)) {
+                throw new ValidationError('Esa sección no existe en el listado.');
+            }
+
+            return { items: movedToPart(list.items, itemId, part) };
+        });
     }
 
     /** Moves the item one place up (−1) or down (1) among the items of its own part */
