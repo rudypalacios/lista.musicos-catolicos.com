@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { chordOf, convertPastedSheet, importChordsOverLyrics, importMany, isChordLine } from '../src/importer.ts';
+import { attentionOf, chordOf, convertPastedSheet, importChordsOverLyrics, importMany, isChordLine } from '../src/importer.ts';
+import { SPACE_WIDTH, textWidth } from '../src/chordpro/glyph-width.ts';
 import { isVerseLabel, parse } from '../src/chordpro/parser.ts';
 import { MASS_PARTS, plain } from '../src/mass.ts';
 
@@ -462,5 +463,85 @@ describe('mass parts', () => {
         it('leaves chords with no words under them alone', () => {
             assert.equal(convertPastedSheet('C   Am\nF   G'), null);
         });
+    });
+});
+
+describe('importChordsOverLyrics: a sheet written in a proportional font', () => {
+    /** The expected result, and the sheet as a word processor pastes it: chords lined up by eye with spaces, in Arial */
+    const EXPECTED = [
+        '[D]Ya no eres [G]pan y [D]vino,',
+        'ahora que eres [G]cuerpo y [D]sangre, vives en [A]mí',
+        'de ro[G]dillas yo caigo al contem[D]plar tu bondad,',
+        '[E]cómo no te voy a ado[A]rar',
+    ].join('\n');
+
+    /** Writes `chordPro` as such a sheet: the chord line is built with the spaces that put each chord over its letter */
+    function asProportionalSheet(chordPro: string): string {
+        return chordPro.split('\n').map((line) => {
+            let words = '';
+            let chords = '';
+            for (const part of line.split(/(\[[^\]]+\])/)) {
+                const chord = /^\[([^\]]+)\]$/.exec(part)?.[1];
+                if (chord === undefined) {
+                    words += part;
+                    continue;
+                }
+                const gap = Math.round((textWidth(words) - textWidth(chords)) / SPACE_WIDTH);
+                chords += ' '.repeat(Math.max(chords === '' ? 0 : 1, gap)) + chord;
+            }
+
+            return `${chords}\n${words}`;
+        }).join('\n');
+    }
+
+    it('puts each chord over its syllable, not farther along the line', () => {
+        const sheet = asProportionalSheet(EXPECTED);
+
+        assert.equal(importChordsOverLyrics(sheet).body, EXPECTED);
+        assert.equal(convertPastedSheet(sheet)?.body, EXPECTED);
+    });
+
+    it('does the same with the spaces another sans-serif font gives (a sheet made in DejaVu Sans, wider than Arial)', () => {
+        const sheet = "D                G       D\nYa no eres pan y vino,\n                         G            D                         A\nahora que eres cuerpo y sangre, vives en mí\n        G                                     D\nde rodillas yo caigo al contemplar tu bondad,\nE                                A\ncómo no te voy a adorar";
+
+        assert.equal(importChordsOverLyrics(sheet).body, EXPECTED);
+    });
+
+    it('reads where the words start when a verse number hangs in the margin', () => {
+        const sheet = asProportionalSheet('1. Ya no eres [G]pan y [D]vino,\n    ahora que eres [G]cuerpo y [D]sangre, vives en [A]mí');
+
+        assert.equal(
+            importChordsOverLyrics(sheet).body,
+            '{c: Verso 1}\nYa no eres [G]pan y [D]vino,\nahora que eres [G]cuerpo y [D]sangre, vives en [A]mí',
+        );
+    });
+
+    it('says how it read the chords, as a report that needs no attention', () => {
+        const { warnings } = importChordsOverLyrics(asProportionalSheet(EXPECTED));
+
+        assert.equal(warnings.length, 1);
+        assert.match(warnings[0] ?? '', /ancho variable/);
+        assert.deepEqual(attentionOf(warnings), []);
+    });
+
+    it('leaves a monospaced sheet alone: chords at the exact columns of the same words', () => {
+        const monospaced = EXPECTED.split('\n').map((line) => {
+            let words = '';
+            let chords = '';
+            for (const part of line.split(/(\[[^\]]+\])/)) {
+                const chord = /^\[([^\]]+)\]$/.exec(part)?.[1];
+                if (chord === undefined) {
+                    words += part;
+                } else {
+                    chords += ' '.repeat(Math.max(chords === '' ? 0 : 1, words.length - chords.length)) + chord;
+                }
+            }
+
+            return `${chords}\n${words}`;
+        }).join('\n');
+        const { body, warnings } = importChordsOverLyrics(monospaced);
+
+        assert.equal(body, EXPECTED);
+        assert.ok(!warnings.some((warning) => /ancho variable/.test(warning)));
     });
 });

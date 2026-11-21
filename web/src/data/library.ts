@@ -1,3 +1,4 @@
+import { copyOf } from './copy-of.ts';
 import type { LocalStore } from './store.ts';
 import { cleanTags, sameTag } from './tags.ts';
 import { LIMITS, type Song, type SongStatus } from './types.ts';
@@ -58,6 +59,22 @@ export class Library {
         await this.store.save('songs', song);
 
         return song;
+    }
+
+    /**
+     * A copy of a song, titled "Copia de …": the same author, lyrics, tags and state, and the key the person sings it in.
+     * It is a song of its own (new id): editing either leaves the other alone, and no list uses the copy until it is added.
+     * @throws Error when the song does not exist
+     */
+    async duplicate(id: string): Promise<Song> {
+        const source = await this.get(id);
+        if (source === undefined) {
+            throw new Error('La canción ya no existe.');
+        }
+        const copy: Song = { ...source, title: copyOf(source.title, LIMITS.title), id: this.newId(), updatedAt: this.now(), deletedAt: null };
+        await this.store.save('songs', copy);
+
+        return copy;
     }
 
     /** @throws ValidationError, or Error when the song does not exist */

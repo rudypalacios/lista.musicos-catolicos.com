@@ -25,6 +25,36 @@ describe('Library', () => {
         assert.deepEqual(await store.pending('songs'), [song]);
     });
 
+    describe('duplicate', () => {
+        it('makes a song of its own, titled "Copia de …", with the lyrics, tags, state and key of the original', async () => {
+            const song = await library.create({ title: 'Pan de vida', author: 'Anónimo', body: '[C]Pan', tags: ['Comunión'], status: 'published' });
+            await library.setMyShift(song.id, 2);
+            now = 2_000;
+            const copy = await library.duplicate(song.id);
+
+            assert.notEqual(copy.id, song.id);
+            assert.equal(copy.title, 'Copia de Pan de vida');
+            assert.deepEqual({ ...copy, id: '', title: '', updatedAt: 0 }, { ...(await library.get(song.id))!, id: '', title: '', updatedAt: 0 });
+            assert.equal(copy.updatedAt, 2_000);
+            assert.equal((await library.list()).length, 2);
+            assert.ok((await store.pending('songs')).some((pending) => pending.id === copy.id), 'queued for the server');
+        });
+
+        it('keeps one prefix on a copy of a copy, and cuts a long title to what a song may have', async () => {
+            const copy = await library.duplicate((await library.create({ title: 'Uno', author: '', body: 'a' })).id);
+            assert.equal((await library.duplicate(copy.id)).title, 'Copia de Uno');
+            const long = await library.create({ title: 'ñ'.repeat(LIMITS.title), author: '', body: 'a' });
+            assert.equal(Array.from((await library.duplicate(long.id)).title).length, LIMITS.title);
+        });
+
+        it('refuses a song that is gone', async () => {
+            const song = await library.create({ title: 'Uno', author: '', body: 'a' });
+            await library.remove(song.id);
+
+            await assert.rejects(library.duplicate(song.id), /ya no existe/);
+        });
+    });
+
     describe('tags', () => {
         const draft = { title: 'Uno', author: '', body: '[C]a' };
 

@@ -75,6 +75,13 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
 
 ## Small things to do when convenient
 
+- [x] **Duplicate a song, copy it with chords above, align pasted sheets by letter width** (`Library.duplicate`, `copy-sheet.ts`, `importer.ts` `columnModel`; the owner's request, 2026-11-21).
+      "Duplicar canto" is in the menu of a row of Cantos and in the "⋯" of a song (a copy titled "Copia de …", opened at once). Copying a selection of a song on screen puts
+      the chords on a line above the words (only what was selected); it pastes back into the editor as the same song. A sheet pasted from Word, Docs or a PDF viewer has its chords
+      lined up with spaces in a proportional font: when half or more of its chord lines run past the end of their lyric the importer measures both lines with Arial's letter widths
+      (`chordpro/glyph-width.ts`) and puts each chord on the nearest syllable; a monospaced sheet is read by columns as before. **Not done:** copying from a *saved PDF* in a
+      PDF viewer gives whatever order the viewer extracts (a chord, a piece of words, the next chord…: the print puts each word's chord and words together in the PDF); fixing it
+      would mean drawing the printed sheet as two rows (chords, words), a change to the print layout of the public site. The OCR of a photo still reads some lone `G` as `C` (see `ocr/words.ts`).
 - [ ] Tune the fit limits (`DEFAULT_LIMITS`, `COMFORTABLE_SIZE`, `TWO_COLUMNS_GAIN` in `web/src/fit.ts`) after seeing it on the devices.
 - [x] **Reading colours: lyrics and chords as one pair** (`settings.ts`, `views/settings.ts`; the owner approved the mockup): the "Color de la letra" list became four cards
       with a sample each (Clásico, Blanco y rojo, Ámbar y celeste, Verde y rosa), applied as `--lyric-color` / `--chord-color` through the CSSOM (the page's policy refuses

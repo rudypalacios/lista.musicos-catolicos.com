@@ -1,4 +1,5 @@
 import { massSections } from '../mass.ts';
+import { copyOf } from './copy-of.ts';
 import { ValidationError } from './library.ts';
 import { addedTo, cleanParts } from './parts.ts';
 import type { LocalStore } from './store.ts';
@@ -13,8 +14,6 @@ export const MISA_ID = '00000000-0000-4000-8000-00000000a115';
 
 /** What a list made with no template starts with: one section where everything goes */
 export const BLANK_NAME = 'Listado';
-
-const COPY_PREFIX = 'Copia de ';
 
 /** The sections of a blank list: one, with an id of its own */
 export function blankSections(newId: () => string = () => crypto.randomUUID()): PartDef[] {
@@ -34,11 +33,9 @@ export function lastUsedFirst(templates: readonly Template[], lastId: string | n
     return last === undefined ? sorted : [last, ...sorted.filter((template) => template !== last)];
 }
 
-/** The name of a copy: "Copia de" and the name it comes from, cut to the longest name a template may have */
+/** The name of a copy of a template (see `copyOf`), cut to the longest name a template may have */
 export function copyName(name: string): string {
-    const full = name.startsWith(COPY_PREFIX) ? name : `${COPY_PREFIX}${name}`;
-
-    return Array.from(full).slice(0, LIMITS.templateName).join('').trim();
+    return copyOf(name, LIMITS.templateName);
 }
 
 /**

@@ -17,6 +17,8 @@
  * that (musicos-catolicos is the reference for it); only this importer reads sloppy input.
  */
 import { english } from './chordpro/chord.ts';
+import { SPACE_WIDTH, textWidth } from './chordpro/glyph-width.ts';
+import { syllableStarts } from './chordpro/syllable-starts.ts';
 import { MASS_PARTS, plain } from './mass.ts';
 
 export interface Imported {
@@ -53,13 +55,16 @@ interface Row {
 /** What the importer says about chords it wrote in the standard form: a report, not a problem (keep in step with its message) */
 const NORMALISED_REPORT = /^\d+ acordes? escritos? con otra notación/;
 
+/** What it says when it lined the chords up by the width of the letters: also a report (keep in step with its message) */
+const ALIGNED_REPORT = /^Los acordes estaban alineados con letra de ancho variable/;
+
 /**
  * What a person must look at in what the importer said, in a word each ("Sin acordes", "Dos columnas"…), each once.
  * The report of chords written in the standard form is not among them: it is on almost every sheet and says nothing is wrong.
  */
 export function attentionOf(warnings: readonly string[]): string[] {
     const labels = warnings
-        .filter((warning) => !NORMALISED_REPORT.test(warning))
+        .filter((warning) => !NORMALISED_REPORT.test(warning) && !ALIGNED_REPORT.test(warning))
         .map((warning) => {
             if (warning.startsWith('No encontré acordes')) {
                 return 'Sin acordes';
@@ -88,6 +93,7 @@ export function importChordsOverLyrics(source: string): Imported {
     const header = takeHeader(rows);
     const lines: string[] = [];
     let normalised = 0;
+    const model = columnModel(rows);
 
     const blank = (): void => {
         const last = lines[lines.length - 1];
@@ -121,8 +127,12 @@ export function importChordsOverLyrics(source: string): Imported {
             lyricRow = row;
         }
 
-        let text = lyricRow?.text ?? '';
+        const original = lyricRow?.text ?? '';
+        let text = original;
         let offset = 0;
+        // What was cut from the start of the lyric line (a verse number, an indent), and where the words begin on the page
+        let cut = 0;
+        let hanging: number | null = null;
         const label = chordRow === null && lyricRow !== null ? labelOf(text) : null;
         if (label !== null) {
             // A label on its own line names the lines that follow
@@ -137,20 +147,27 @@ export function importChordsOverLyrics(source: string): Imported {
             lines.push(`{c: Verso ${verse[2]}}`);
             // The number hangs in the margin: the chords above are aligned to where the words
             // start on the page, which the other lines of the verse show (they are indented)
-            offset = hangingIndent(rows, i, verse[0].length) ?? verse[0].length;
-            text = text.slice(verse[0].length);
+            hanging = hangingIndent(rows, i, verse[0].length);
+            offset = hanging ?? verse[0].length;
+            cut = verse[0].length;
+            text = text.slice(cut);
         }
 
         // The indent came from the page, not from the words ("    a un mundo…" under "1. Un pueblo…")
         const indent = text.length - text.trimStart().length;
         text = text.slice(indent);
         offset += indent;
+        cut += indent;
+        const origin: Origin = {
+            column: offset,
+            x: hanging !== null ? (hanging + indent) * SPACE_WIDTH : textWidth(original.slice(0, cut)),
+        };
 
         if (chordRow === null) {
             lines.push(text);
             continue;
         }
-        const placed = place(chordRow.text, text, offset, lyricRow === null);
+        const placed = place(chordRow.text, text, origin, lyricRow === null, model);
         normalised += placed.normalised;
         warnings.push(...placed.warnings.map((message) => `${message} (acordes “${chordRow?.text.trim()}”)`));
         lines.push(placed.line);
@@ -166,6 +183,12 @@ export function importChordsOverLyrics(source: string): Imported {
     if (header.capo !== null) {
         lines.unshift(`{capo: ${header.capo}}`);
         warnings.push(`Entendí “(C${header.capo})” del encabezado como cejilla en el traste ${header.capo}.`);
+    }
+    if (model === 'widths' && lines.some((line) => line.includes('['))) {
+        warnings.push(
+            'Los acordes estaban alineados con letra de ancho variable (como en Word o en un PDF): '
+            + 'los coloqué según el ancho de las letras. Revisa que cada uno quede sobre su sílaba.',
+        );
     }
     if (normalised > 0) {
         warnings.push(
@@ -355,14 +378,62 @@ function labelOf(text: string): string | null {
 }
 
 /**
- * Puts each chord of `chords` inside `lyric` at the column it was over. `offset` is how many
- * characters were cut from the start of the lyric line (a verse number), which the chord line
- * is still aligned to.
+ * How the columns of a pasted sheet are read:
+ *
+ * - `columns`: one character is one column (a monospaced font, a text file, an editor): a chord goes at the column it was over.
+ * - `widths`: the sheet was written in a proportional font (Word, Docs, a PDF) and its chords lined up by eye with spaces,
+ *   which are half a letter wide: the same column is farther along the lyric line, and more so the farther along the line.
+ *   Each line is measured with the widths of the letters (`glyph-width.ts`) and the chord goes over the syllable it was over.
  */
-function place(chords: string, lyric: string, offset: number, chordsOnly: boolean) {
+type ColumnModel = 'columns' | 'widths';
+
+/** Where the words of a lyric line begin on the page: in columns, and as a width */
+interface Origin {
+    column: number;
+    x: number;
+}
+
+/** A lyric line shorter than this says nothing about the font: a chord past its end is as likely a chord after the words */
+const MIN_EVIDENCE = 12;
+
+/** A chord is past the end of its line when it starts this many columns after it: at least 2, or a tenth of the line */
+const pastTheEnd = (length: number): number => length + Math.max(2, length * 0.1);
+
+/**
+ * Tells a sheet written in a proportional font from a monospaced one. Read one character per column, the chords of a
+ * proportional sheet run past the end of their lines (a space is narrower than a letter, so the chord line is longer than
+ * the words under it); in a monospaced sheet a chord stays over its words, or just after them. The sheet is proportional
+ * when half or more of its chord lines run past the end of a lyric of some length, and that is shown by two lines, or by
+ * one that runs well past (a single chord after the words is how a monospaced sheet ends a line).
+ */
+function columnModel(rows: readonly Row[]): ColumnModel {
+    let votes = 0;
+    let past = 0;
+    let wellPast = 0;
+    rows.forEach((row, index) => {
+        const lyric = rows[index + 1];
+        if (row.kind !== 'chords' || lyric?.kind !== 'text' || lyric.text.length < MIN_EVIDENCE || labelOf(lyric.text) !== null) {
+            return;
+        }
+        votes++;
+        const last = (([...row.text.matchAll(/\S+/g)].pop()?.index) ?? 0);
+        if (last >= pastTheEnd(lyric.text.length)) {
+            past++;
+            wellPast += last >= lyric.text.length * 1.3 ? 1 : 0;
+        }
+    });
+
+    return past > 0 && past * 2 >= votes && (past >= 2 || wellPast > 0) ? 'widths' : 'columns';
+}
+
+/**
+ * Puts each chord of `chords` inside `lyric` where it was over. `origin` is where the words of `lyric` begin on the page
+ * (a verse number or an indent was cut before them), which the chord line is still aligned to.
+ */
+function place(chords: string, lyric: string, origin: Origin, chordsOnly: boolean, model: ColumnModel) {
     const warnings: string[] = [];
     let normalised = 0;
-    const found: { column: number; chord: string }[] = [];
+    const found: { column: number; x: number; chord: string }[] = [];
     for (const match of chords.matchAll(/\S+/g)) {
         const chord = chordOf(match[0]);
         if (chord === null) {
@@ -373,7 +444,7 @@ function place(chords: string, lyric: string, offset: number, chordsOnly: boolea
         if (chord !== written) {
             normalised++;
         }
-        found.push({ column: match.index ?? 0, chord });
+        found.push({ column: match.index ?? 0, x: textWidth(chords.slice(0, match.index ?? 0)), chord });
     }
 
     if (chordsOnly) {
@@ -383,18 +454,44 @@ function place(chords: string, lyric: string, offset: number, chordsOnly: boolea
     // Every position is read on the lyric as it was written; inserting from the last chord to the
     // first keeps the earlier columns right
     const length = lyric.length;
-    const spots = found.map(({ column, chord }, order) => ({ at: snap(lyric, Math.max(0, column - offset)), chord, order }));
+    const at = model === 'widths' ? widthSpots(lyric, origin, found) : found.map(({ column }) => snap(lyric, Math.max(0, column - origin.column)));
+    const spots = found.map(({ chord }, order) => ({ at: at[order] ?? length, chord, order }));
     const tail = spots.filter((spot) => spot.at >= length).map((spot) => `[${spot.chord}]`);
     let line = lyric;
     const inside = spots.filter((spot) => spot.at < length).sort((a, b) => b.at - a.at || b.order - a.order);
-    for (const { at, chord } of inside) {
-        line = `${line.slice(0, at)}[${chord}]${line.slice(at)}`;
+    for (const { at: index, chord } of inside) {
+        line = `${line.slice(0, index)}[${chord}]${line.slice(index)}`;
     }
     if (tail.length > 0) {
         line += tail.join(' ');
     }
 
     return { line, normalised, warnings };
+}
+
+/**
+ * Where each chord goes in a line written in a proportional font: the start of the syllable whose left edge is nearest to
+ * the chord's (the person lined them up by eye, so a chord can sit a little either side of it), or the end of the line
+ * when it is past the last letter. Edges are measured with the widths of the letters, from where the words begin.
+ */
+function widthSpots(lyric: string, origin: Origin, chords: readonly { x: number }[]): number[] {
+    const starts = syllableStarts(lyric);
+    const edges = starts.map((start) => origin.x + textWidth(lyric.slice(0, start)));
+    const end = origin.x + textWidth(lyric);
+
+    return chords.map(({ x }) => {
+        if (x >= end || starts.length === 0) {
+            return lyric.length;
+        }
+        let best = 0;
+        for (let i = 1; i < starts.length; i++) {
+            if (Math.abs((edges[i] ?? 0) - x) < Math.abs((edges[best] ?? 0) - x)) {
+                best = i;
+            }
+        }
+
+        return starts[best] ?? lyric.length;
+    });
 }
 
 /** The index a chord over column `at` goes to: over a gap between words, the next word's start */

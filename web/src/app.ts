@@ -185,6 +185,11 @@ export class App {
         return this.afterWrite(await this.library.create(draft));
     }
 
+    /** A copy of a song, as "Copia de …" (see `Library.duplicate`) */
+    async duplicate(id: string): Promise<Song> {
+        return this.afterWrite(await this.library.duplicate(id));
+    }
+
     /** Replaces the tags of a song (what it is for: "Entrada", "Cuaresma"…) */
     async setTags(id: string, tags: readonly string[]): Promise<Song> {
         return this.afterWrite(await this.library.setTags(id, tags));

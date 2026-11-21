@@ -10,6 +10,7 @@ import { readNotation } from '../prefs.ts';
 import { paths } from '../router.ts';
 import { filterSongs, foundInLyricsOnly, songSnippet } from '../search.ts';
 import { deleteSongAfterAsking } from './delete-song.ts';
+import { showToast } from '../toast.ts';
 import { createShareSheet } from './share-sheet.ts';
 import { createSheet, sheetAction, sheetHead, sheetList, sheetShare } from './sheet.ts';
 import type { Navigate, View } from './types.ts';
@@ -81,6 +82,18 @@ export function listView(app: App, navigate: Navigate): View {
                     error.textContent = '';
                     sheet.close(() => navigate(paths.edit(song.id)));
                 }),
+                sheetAction('copy', 'Duplicar canto', () => {
+                    error.textContent = '';
+                    sheet.close(() => {
+                        app
+                            .duplicate(song.id)
+                            .then((copy) => {
+                                navigate(paths.view(copy.id));
+                                showToast(`Copiado de «${song.title}»`, 4000, true);
+                            })
+                            .catch((failure: unknown) => fail(failure, 'No se pudo duplicar el canto.'));
+                    });
+                }, { hint: 'Una copia con la misma letra y acordes, para cambiarla sin tocar este canto' }),
                 sheetAction('printer', 'Imprimir con acordes', () => print('chords')),
                 sheetAction('printer', 'Imprimir solo la letra', () => print('lyrics')),
                 // Last and set apart, so it is not touched by mistake next to the others

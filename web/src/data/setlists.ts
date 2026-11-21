@@ -1,6 +1,7 @@
 import { isValidDate, shortDate, today } from '../dates.ts';
 import { massSections } from '../mass.ts';
 import { addedTo, cleanParts, movedIn, renamedIn, switchedIn, withoutPart } from './parts.ts';
+import { copyOf } from './copy-of.ts';
 import { ValidationError } from './library.ts';
 import type { LocalStore } from './store.ts';
 import { nearestShift } from '../keys.ts';
@@ -111,16 +112,9 @@ export function defaultTitle(eventDate: string, templateName = 'Misa'): string {
     return `${templateName} del ${shortDate(eventDate)}`;
 }
 
-const COPY_PREFIX = 'Copia de ';
-
-/**
- * The title of a copy: "Copia de" and the name it comes from. A copy of a copy keeps the one prefix, and the
- * result is cut to the longest title a list may have, so a long name never makes the copy fail.
- */
+/** The title of a copy of a list (see `copyOf`), cut to the longest title a list may have */
 export function copyTitle(title: string): string {
-    const full = title.startsWith(COPY_PREFIX) ? title : `${COPY_PREFIX}${title}`;
-
-    return Array.from(full).slice(0, LIMITS.title).join('').trim();
+    return copyOf(title, LIMITS.title);
 }
 
 /**
