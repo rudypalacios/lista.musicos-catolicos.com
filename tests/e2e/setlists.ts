@@ -302,18 +302,19 @@ try {
 
     await slot(page, 'Canto de entrada').getByRole('button', { name: 'Más opciones: Abrimos la puerta' }).click();
     await page.locator('.sheet-layer.is-open').waitFor();
-    // Alone in its part it cannot go up or down, but it can go to another section: "Mover" lists them
-    await page.getByRole('button', { name: /^Mover/ }).click();
-    assert.equal(await page.getByRole('button', { name: /^(Subir|Bajar) en esta sección/ }).count(), 0, 'no steps for a song alone in its part');
-    await page.getByRole('button', { name: 'Pasar a Canto de comunión' }).click();
+    // Alone in its part it cannot go up or down (no "Mover"), but it can go to another section: "Enviar a…" lists only their names
+    assert.equal(await page.getByRole('button', { name: /^Mover/ }).count(), 0, 'no steps for a song alone in its part');
+    await page.getByRole('button', { name: /^Enviar a/ }).click();
+    assert.equal(await page.getByRole('button', { name: /Pasar a/ }).count(), 0, 'only the names of the sections');
+    await page.getByRole('button', { name: 'Canto de comunión', exact: true }).click();
     await page.getByText(/pasó a Canto de comunión/).waitFor();
     await slot(page, 'Canto de comunión').getByRole('button', { name: 'Más opciones: Abrimos la puerta' }).waitFor();
     assert.equal(await slot(page, 'Canto de entrada').getByRole('button', { name: /Más opciones/ }).count(), 0, 'it left its section');
     await slot(page, 'Canto de comunión').getByRole('button', { name: 'Más opciones: Abrimos la puerta' }).click();
-    await page.getByRole('button', { name: /^Mover/ }).click();
-    await page.getByRole('button', { name: 'Pasar a Canto de entrada' }).click();
+    await page.getByRole('button', { name: /^Enviar a/ }).click();
+    await page.getByRole('button', { name: 'Canto de entrada', exact: true }).click();
     await slot(page, 'Canto de entrada').getByRole('button', { name: 'Más opciones: Abrimos la puerta' }).waitFor();
-    pass('"Mover" also lists the other sections: a song passes to the end of one, and back');
+    pass('"Enviar a…" lists the other sections by name: a song passes to the end of one, and back');
     await slot(page, 'Canto de entrada').getByRole('button', { name: 'Más opciones: Abrimos la puerta' }).click();
     await page.locator('.sheet-layer.is-open').waitFor();
     await page.getByRole('button', { name: /Cantar desde aquí/ }).waitFor();
