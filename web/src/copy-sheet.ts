@@ -105,10 +105,12 @@ function shown(element: Element): boolean {
 export function blocksOf(root: ParentNode, range: Range): CopiedBlock[] {
     const blocks: CopiedBlock[] = [];
     for (const element of root.querySelectorAll('.song-section__label, .line')) {
-        if (!range.intersectsNode(element) || !shown(element)) {
+        const label = element.classList.contains('song-section__label');
+        // A label is copied though the page does not draw it ("Verso 1" is shown as a number): the copy keeps the stanzas apart
+        if (!range.intersectsNode(element) || (!label && !shown(element))) {
             continue;
         }
-        if (element.classList.contains('song-section__label')) {
+        if (label) {
             blocks.push({ label: selectedText(element, range).trim() });
             continue;
         }
