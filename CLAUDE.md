@@ -209,6 +209,9 @@ the code really does.
   `main` (`git fetch origin main && git checkout -B <branch> origin/main`) without bringing its old history; if that is not
   possible, tell the owner before going on. Never merge an old branch back in: with squash merges it fills the PR with commits
   that are not that change. This replaces the older advice to merge `main` into the work branch.
+- **One PR groups several changes (the owner's rule, 2026-11-21).** Do not open a PR per change: while a branch's PR is open, every
+  new change of the session goes into the same branch and the same PR, and the PR text is updated. A new PR is opened only when the
+  one before has been merged (next rule), or when the change is a different thing the owner would release on its own.
 - **A merged branch gets no more commits (the owner's rule, 2026-11-21).** Once a branch's PR is merged, commit nothing more on it
   and push nothing more to it: every follow-up, however small (a fix, a change the owner asked for in the same conversation),
   goes on a **new branch cut from the current `main`** with a **new PR**. Check whether the PR is merged **before every push**, not
