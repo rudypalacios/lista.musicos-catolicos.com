@@ -209,6 +209,11 @@ the code really does.
   `main` (`git fetch origin main && git checkout -B <branch> origin/main`) without bringing its old history; if that is not
   possible, tell the owner before going on. Never merge an old branch back in: with squash merges it fills the PR with commits
   that are not that change. This replaces the older advice to merge `main` into the work branch.
+- **A merged branch gets no more commits (the owner's rule, 2026-11-21).** Once a branch's PR is merged, commit nothing more on it
+  and push nothing more to it: every follow-up, however small (a fix, a change the owner asked for in the same conversation),
+  goes on a **new branch cut from the current `main`** with a **new PR**. Check whether the PR is merged **before every push**, not
+  only before the first: the owner may merge while the work goes on, and what is pushed after the merge never reaches `main`.
+  If the environment fixes the branch name, it is reused only by restarting it on `main` as above; otherwise take a new name.
 - The owner works only from claude.ai: they cannot run scripts, so everything must be doable by the
   app, the deploy or a SQL query in phpMyAdmin. Ask for one thing at a time, with the exact steps.
 - **Open the PR yourself whenever the change makes sense and could be released** (checks green, one coherent change): the owner

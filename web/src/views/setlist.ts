@@ -132,11 +132,11 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
     /** The item whose "⋯" is open */
     let target: string | null = null;
     /** What its sheet shows: what is done to the song, or the submenu of moves */
-    let songView: 'main' | 'move' = 'main';
-    const showSongView = (view: 'main' | 'move'): void => {
+    let songView: 'main' | 'move' | 'send' = 'main';
+    const showSongView = (view: 'main' | 'move' | 'send'): void => {
         songView = view;
         fillSongSheet();
-        songSheet.body.querySelector<HTMLElement>(view === 'move' ? '[data-key]' : 'button')?.focus();
+        songSheet.body.querySelector<HTMLElement>(view === 'main' ? 'button' : '[data-key], [data-section]')?.focus();
     };
     const fillSongSheet = (focus?: 'up' | 'down' | 'start' | 'end'): void => {
         const item = setlist.items.find((candidate) => candidate.id === target);
@@ -168,7 +168,21 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             });
         };
         const heading = sheetHead(name, song === undefined ? section : [section, ...(song.status === 'draft' ? [' · ', ...draftTag(song)] : [])]);
-        if (songView === 'move') {
+        if (songView === 'send') {
+            // Only the names of the sections: one touch sends the song to the end of that one
+            songSheet.body.replaceChildren(
+                sheetList(
+                    heading,
+                    sheetAction('chevron-left', 'Volver', () => showSongView('main')),
+                    ...elsewhere.map((part) => {
+                        const choice = action('arrow-right', part.name, () => toSection(part));
+                        choice.setAttribute('data-section', part.id);
+
+                        return choice;
+                    }),
+                ),
+            );
+        } else if (songView === 'move') {
             // The submenu: every way to move the song inside its section, one touch from the list of what is done to it
             songSheet.body.replaceChildren(
                 sheetList(
@@ -180,8 +194,6 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
                     // Only when they say more than the arrows (more than two songs in the section)
                     ...(can.toStart ? [action('to-top', 'Al inicio de esta sección', () => toEnd(false), { key: 'start' })] : []),
                     ...(can.toEnd ? [action('to-bottom', 'Al final de esta sección', () => toEnd(true), { key: 'end' })] : []),
-                    // Moving to another section is not a step: it leaves this one, so the sheet closes
-                    ...elsewhere.map((part) => action('arrow-right', `Pasar a ${part.name}`, () => toSection(part), { hint: 'Al final de esa sección' })),
                 ),
                 h('p', { class: 'sheet__sub' }, 'También: mantén pulsado el canto en el listado y arrástralo.'),
             );
@@ -200,9 +212,9 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
                         action('printer', 'Imprimir solo la letra', () => printItem(item, song, 'lyrics')),
                     ]),
                     // One entry for every move; a part with one song has nowhere to move it
-                    ...(can.up || can.down || elsewhere.length > 0
-                        ? [action('move', 'Mover', () => showSongView('move'), { hint: elsewhere.length > 0 ? 'Subir, bajar o pasar a otra sección' : 'Subir, bajar, al inicio o al final' })]
-                        : []),
+                    ...(can.up || can.down ? [action('move', 'Mover', () => showSongView('move'), { hint: 'Subir, bajar, al inicio o al final' })] : []),
+                    // To another section of the list: its own menu, with only the names
+                    ...(elsewhere.length > 0 ? [action('arrow-right', 'Enviar a…', () => showSongView('send'), { hint: 'Otra sección del listado' })] : []),
                     action('x', 'Quitar del listado', () => {
                         const index = setlist.items.findIndex((candidate) => candidate.id === item.id);
                         songSheet.close(() => {
@@ -223,7 +235,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             kept?.focus();
         }
         // Nothing left to move (a section that lost songs on another device): back to the main list
-        if (songView === 'move' && !can.up && !can.down && elsewhere.length === 0) {
+        if ((songView === 'move' && !can.up && !can.down) || (songView === 'send' && elsewhere.length === 0)) {
             songView = 'main';
             fillSongSheet();
         }
