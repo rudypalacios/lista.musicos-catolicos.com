@@ -62,7 +62,7 @@ export const PRIVACY_SECTIONS: readonly Section[] = [
     {
         id: 'compartir',
         title: 'Compartir con un enlace',
-        blocks: [{ p: 'Si compartes un listado o un canto, cualquiera que tenga el enlace puede verlo, sin cuenta y solo para leer. Muestra solo el título, el orden de los cantos, el tono de cada uno y, si tú lo eliges, la letra y los acordes; nunca tu correo, tus notas ni tus otros listados. Puedes dejar de compartir cuando quieras y el enlace deja de funcionar para siempre.' }, { p: 'Quien abre un enlace no necesita cuenta: la página no usa cookies, no tiene analítica ni anuncios y no carga nada de otros sitios; guarda en su dispositivo una copia del listado (para leerlo sin conexión) y sus preferencias de lectura.' }, { p: 'Las letras y los acordes pertenecen a sus autores: lo que compartas es para uso personal, así que compártelo solo si tienes permiso.' }],
+        blocks: [{ p: 'Si compartes un listado o un canto, cualquiera que tenga el enlace puede verlo, sin cuenta y solo para leer. Muestra solo el título, el orden de los cantos (y cuáles van juntos en una misma página), el tono de cada uno y, si tú lo eliges, la letra y los acordes; nunca tu correo, tus notas ni tus otros listados. Puedes dejar de compartir cuando quieras y el enlace deja de funcionar para siempre.' }, { p: 'Quien abre un enlace no necesita cuenta: la página no usa cookies, no tiene analítica ni anuncios y no carga nada de otros sitios; guarda en su dispositivo una copia del listado (para leerlo sin conexión) y sus preferencias de lectura.' }, { p: 'Las letras y los acordes pertenecen a sus autores: lo que compartas es para uso personal, así que compártelo solo si tienes permiso.' }],
     },
     {
         id: 'servidor',

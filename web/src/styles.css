@@ -2551,8 +2551,8 @@ body {
 }
 
 /*
- * The key in the singing bar, from 900px only (under it the key is in the "⋯" sheet, as always): "Solo hoy" and Guardar
- * while there is a change, then − key +, before the position button. The menu of Guardar hangs under the bar.
+ * The key in the singing bar, from 900px only (under it the key is in the "⋯" sheet, as always): − key + of the selected
+ * song, before the position button. "Solo hoy" and Guardar are in the dock at the foot, so the bar never changes.
  */
 .perform__tone {
     display: none;
@@ -2566,46 +2566,205 @@ body {
         gap: 0.5rem;
         margin-right: 0.25rem;
     }
+}
 
-    .perform__tone .tone-control,
-    .perform__tone .tone-control__row {
-        display: contents;
-    }
+/* A tag ("Borrador") that sits among the flex items of its line */
+.perform__tag {
+    display: contents;
+}
 
-    /*
-     * "Solo hoy", Guardar, then − key +: what appears and hides while the key changes is at the left, and the step stays
-     * against the position button, so nothing at its right moves when the key is changed or saved.
-     */
-    .perform__tone .tone-control__hint {
-        order: 0;
-        white-space: nowrap;
-    }
+/* ----- the squares: a page is one song, or two the person divided ----- */
+.perform__panes {
+    flex: 1;
+    display: flex;
+    min-width: 0;
+    min-height: 0;
+}
 
-    .perform__tone .tone-control__split {
-        order: 1;
-    }
+.perform__pane {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    min-width: 0;
+    min-height: 0;
+}
 
-    .perform__tone .tone-control__step {
-        order: 2;
-    }
+.perform__pane > .stage {
+    flex: 1;
+    min-height: 0;
+}
 
-    .perform__tone .tone-control__refs {
-        display: none;
-    }
+/* A divided page keeps the bar open: the squares start under it, and each band is the head of its song */
+.perform__panes.is-split {
+    padding-top: var(--perform-bar);
+}
 
-    .perform__tone .tone-control__menu {
-        position: absolute;
-        top: 100%;
-        right: 0.4rem;
-        z-index: 5;
-        width: min(22rem, 100%);
-        margin: 0;
-    }
+.perform .perform__panes.is-split .stage {
+    padding-top: 0.5rem;
+}
 
-    /* The bar clips what hangs from it; while the menu is open it must not */
-    .perform__chrome:has(.perform__tone .tone-control__menu:not([hidden])) {
-        overflow: visible;
-    }
+.perform__panes[data-layout='row'] {
+    flex-direction: row;
+}
+
+.perform__panes[data-layout='column'] {
+    flex-direction: column;
+}
+
+.perform__panes.is-split[data-layout='row'] > .perform__pane + .perform__pane {
+    border-left: 1px solid var(--border);
+}
+
+.perform__panes.is-split[data-layout='column'] > .perform__pane + .perform__pane {
+    border-top: 1px solid var(--border);
+}
+
+/* The selected square: its band tinted and a line round it */
+.perform__pane.is-focus::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 2px solid var(--accent);
+    pointer-events: none;
+}
+
+.perform__band {
+    display: none;
+    flex: none;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0.35rem 0.75rem;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    line-height: 1.15;
+}
+
+.perform__panes.is-split .perform__band {
+    display: flex;
+}
+
+.perform__pane.is-focus .perform__band {
+    background: var(--accent-soft);
+    border-bottom-color: var(--accent);
+}
+
+/* One line: the section gives way first (with an ellipsis), then the song; the key never does */
+.perform__band small {
+    flex: 0 1 auto;
+    max-width: 36%;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 0.62rem;
+    letter-spacing: 0.04em;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.perform__band strong {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 0.9rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.perform__band-key {
+    flex: none;
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.perform__band-key.is-today {
+    color: var(--warn);
+}
+
+/* ----- the dock: one row at the foot while the selected song's key is only for today ----- */
+.perform__dock {
+    position: relative;
+    z-index: 3;
+    flex: none;
+    background: var(--bg);
+    border-top: 2px solid var(--warn);
+}
+
+.perform__dock-body {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 3.25rem;
+    padding: 0.25rem 0.5rem calc(0.25rem + env(safe-area-inset-bottom, 0px)) 1rem;
+}
+
+.perform__dock-key {
+    flex: none;
+    color: var(--warn);
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.perform__dock-hoy {
+    flex: none;
+    padding: 0 0.45rem;
+    color: var(--warn);
+    border: 1px solid var(--warn);
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.perform__dock-who {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 0.85rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.perform__dock-gap {
+    flex: 1 1 auto;
+}
+
+.perform__dock-who + .perform__dock-gap {
+    display: none;
+}
+
+.perform__dock-undo {
+    flex: none;
+    min-height: 2.75rem;
+    padding: 0 0.9rem;
+    color: var(--text);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 0.6rem;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* Guardar and its arrow are the key control's; its hint and lines are said by the dock itself */
+.perform__dock .tone-control,
+.perform__dock .tone-control__row {
+    display: contents;
+}
+
+.perform__dock .tone-control__hint,
+.perform__dock .tone-control__refs {
+    display: none;
+}
+
+.perform__dock .tone-control__menu {
+    position: absolute;
+    right: 0.5rem;
+    bottom: 100%;
+    z-index: 5;
+    width: min(22rem, calc(100% - 1rem));
+    margin: 0 0 0.25rem;
 }
 
 .perform__title {
@@ -4179,6 +4338,15 @@ button.srow__tool:disabled {
 
 .pub-song .stage {
     padding: 3.25rem 1rem 1.75rem;
+}
+
+/* A divided page (two squares): they start under the bar, which stays open, and each has its band */
+.pub-song .perform__panes.is-split {
+    padding-top: 2.75rem;
+}
+
+.pub-song .perform__panes.is-split .stage {
+    padding: 0.5rem 1rem 1.75rem;
 }
 
 /* A sheet opened over the song (the songs of the list) covers the small tab of the foot too */

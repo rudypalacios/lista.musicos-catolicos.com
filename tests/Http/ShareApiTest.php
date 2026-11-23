@@ -116,10 +116,11 @@ final class ShareApiTest extends TestCase
      *
      * @param array<string, string> $cookies
      */
-    private function seed(array $cookies, bool $withDeletedSong = false): void
+    private function seed(array $cookies, bool $withDeletedSong = false, bool $divided = false): void
     {
         $items = [
-            $this->item(1, 'entrada', self::SONG_ONE, 2, 'privado'),
+            $this->item(1, 'entrada', self::SONG_ONE, 2, 'privado')
+                + ($divided ? ['withNext' => self::ITEM . '2'] : []),
             $this->item(2, 'comunion', self::SONG_TWO, 0),
             $this->item(3, 'salida', self::SONG_ONE, 0),
         ];
@@ -194,6 +195,18 @@ final class ShareApiTest extends TestCase
         $this->assertSame('[C]Caminamos', $view['songs'][0]['body']);
         // The latest change in the list or in its songs
         $this->assertSame(1_700_000_005_000, $view['updatedAt']);
+    }
+
+    public function testADividedPageTravelsWithTheLinkAndNothingElseAboutIt(): void
+    {
+        $cookies = $this->owner();
+        $this->seed($cookies, false, true);
+        $code = $this->share($cookies);
+
+        $view = $this->body($this->read($code));
+
+        $this->assertSame(self::ITEM . '2', $view['items'][0]['withNext'], 'it shares its page with the next one');
+        $this->assertArrayNotHasKey('withNext', $view['items'][1], 'a song not divided carries nothing');
     }
 
     public function testNothingPersonalLeavesInTheAnswer(): void

@@ -10,6 +10,8 @@ import { asSong, bySection, copyNote, countLabel, keyOf, readingOrder, updatedLa
 import { openCopies } from '../shared-store.ts';
 import { barFoldPoint, nextFold, type FoldState } from '../fold.ts';
 import { dragOffset, isSwipe, swipeAxis, type Axis } from '../swipe.ts';
+import type { Song } from '../data/types.ts';
+import { pageIndexOf, pagesOf, positionText, squaresLayout } from '../data/pages.ts';
 import { createReader, type Reader } from './reader.ts';
 import { createSheet, dismissSheetOnBack } from './sheet.ts';
 
@@ -204,8 +206,14 @@ export function startShared(root: HTMLElement, code: string): void {
     };
 
     const songPage = (data: SharedList, row: Row, rows: readonly Row[]): void => {
-        const song = asSong(row.song, data.updatedAt);
-        const listKey = row.item.transpose;
+        // A page is one song, or two the owner divided: each in its square, and the tools speak of the selected one
+        const items = rows.map((entry) => entry.item);
+        const pages = pagesOf(items);
+        const pageIndex = Math.max(0, pageIndexOf(pages, row.item.id));
+        const pageItems = pages[pageIndex] ?? [row.item];
+        const pageRows = pageItems.map((item) => rows.find((entry) => entry.item.id === item.id) as Row);
+        const divided = pageRows.length === 2;
+        let focus = Math.max(0, pageRows.findIndex((entry) => entry.n === row.n));
         // "Acordes": the visitor's own choice, kept on this device like the size and the notation. With no chords there is no key to move.
         let chordsShown = readChords();
         const chordsSwitch = h('button', { type: 'button', class: 'pub-tools__switch', role: 'switch', 'aria-checked': String(chordsShown) },
@@ -216,14 +224,26 @@ export function startShared(root: HTMLElement, code: string): void {
         const keyButton = h('button', { type: 'button', class: 'pub-tool pub-key' }, h('small', {}, 'Tono'), keyText);
         const down = h('button', { type: 'button', class: 'pub-tool', 'aria-label': 'Bajar medio tono' }, '−');
         const up = h('button', { type: 'button', class: 'pub-tool', 'aria-label': 'Subir medio tono' }, '+');
-        /** The reader calls back while it is being made, before `reader` below has a value */
-        let made: Reader | undefined;
+        // A link to one song has no list to go back to and no neighbours: just the song, its author and the tools
+        const single = data.kind === 'song';
+        const barPart = h('small', {});
+        const barTitle = h('b', {});
+        const stripTitle = h('strong', {});
+        const countText = h('span', {});
+        const stripCount = h('span', { class: 'pub-strip__count' });
+
+        /** One song on the screen: its square, its reader and the key the list has it in */
+        interface Square { row: Row; song: Song; listKey: number; reader: Reader; element: HTMLElement }
+        const squares: Square[] = [];
+        const selected = (): Square => squares[focus] as Square;
         const paint = (): void => {
-            if (made === undefined) {
+            // The readers call back while they are being made
+            if (squares.length < pageRows.length) {
                 return;
             }
-            const name = made.keyName(made.shift());
-            const changed = !same(made.shift(), listKey);
+            const { reader, listKey, row: current } = selected();
+            const name = reader.keyName(reader.shift());
+            const changed = !same(reader.shift(), listKey);
             keyText.textContent = name ?? '';
             stripKey.textContent = chordsShown ? name ?? '' : '';
             stripKey.classList.toggle('is-changed', changed);
@@ -237,12 +257,49 @@ export function startShared(root: HTMLElement, code: string): void {
             // Moved off the list's key: yellow and a way back, so it is clear the chords are not the list's
             keyButton.classList.toggle('is-changed', changed);
             keyButton.setAttribute('aria-label', changed ? `Tono ${name ?? ''}. Volver al tono del listado` : `Tono ${name ?? ''}`);
+            barPart.textContent = single ? (current.song.author === '' ? 'Canto compartido' : current.song.author) : current.part.name;
+            barPart.className = single ? '' : 'is-part';
+            barTitle.textContent = current.song.title;
+            stripTitle.textContent = current.song.title;
+            const where = positionText(items, pageItems);
+            countText.textContent = where;
+            stripCount.textContent = where;
         };
-        const reader = createReader(song, { shift: listKey, keyPill: false, chords: chordsShown, onShift: () => paint(), onKey: () => paint() });
-        made = reader;
-        down.addEventListener('click', () => reader.setShift(reader.shift() - 1));
-        up.addEventListener('click', () => reader.setShift(reader.shift() + 1));
-        keyButton.addEventListener('click', () => reader.setShift(listKey));
+        for (const [index, entry] of pageRows.entries()) {
+            const song = asSong(entry.song, data.updatedAt);
+            const listKey = entry.item.transpose;
+            const bandKey = h('span', { class: 'perform__band-key' });
+            const reader = createReader(song, {
+                shift: listKey, keyPill: false, chords: chordsShown, second: index > 0,
+                onShift: () => paint(),
+                onKey: (key) => {
+                    bandKey.textContent = chordsShown ? key ?? '' : '';
+                    bandKey.hidden = bandKey.textContent === '';
+                    paint();
+                },
+            });
+            const band = h('div', { class: 'perform__band' }, h('small', {}, entry.part.name), h('strong', {}, entry.song.title), bandKey);
+            squares.push({ row: entry, song, listKey, reader, element: h('div', { class: 'perform__pane' }, band, reader.stage) });
+        }
+        // The tools of the lyrics are the selected song's: its size and display go in these slots
+        const sizeSlot = h('div', { class: 'toolbar' });
+        const displaySlot = h('div', { class: 'toolbar pub-tools__notation' });
+        const bindTools = (): void => {
+            sizeSlot.replaceChildren(selected().reader.size);
+            displaySlot.replaceChildren(selected().reader.display);
+        };
+        // Notation, fit and columns are the visitor's own: the other square follows a change
+        displaySlot.addEventListener('click', () => {
+            for (const [index, square] of squares.entries()) {
+                if (index !== focus) {
+                    square.reader.syncPrefs();
+                }
+            }
+        });
+        down.addEventListener('click', () => selected().reader.setShift(selected().reader.shift() - 1));
+        up.addEventListener('click', () => selected().reader.setShift(selected().reader.shift() + 1));
+        keyButton.addEventListener('click', () => selected().reader.setShift(selected().listKey));
+        bindTools();
         paint();
 
         const paintChords = (): void => {
@@ -253,12 +310,15 @@ export function startShared(root: HTMLElement, code: string): void {
         chordsSwitch.addEventListener('click', () => {
             chordsShown = !chordsShown;
             saveChords(chordsShown);
-            reader.setChords(chordsShown);
+            for (const square of squares) {
+                square.reader.setChords(chordsShown);
+            }
             paintChords();
         });
 
         const print = (version: PrintVersion): void => {
-            printPlans([planSheet(song, { version, shift: reader.shift(), notation: readNotation(), part: row.part.name })], song.title).catch(() => undefined);
+            const { song, reader, row: current } = selected();
+            printPlans([planSheet(song, { version, shift: reader.shift(), notation: readNotation(), part: current.part.name })], song.title).catch(() => undefined);
         };
 
         // --- the bar: back to the list, where this song is, the neighbours and the tools ---
@@ -270,11 +330,19 @@ export function startShared(root: HTMLElement, code: string): void {
             history.pushState(null, '', paths.shared(code, n));
             render();
         };
+        /** To the page before or after this one, on its first song */
+        const goPage = (by: -1 | 1): void => {
+            const target = pages[pageIndex + by]?.[0];
+            const to = target === undefined ? undefined : rows.find((entry) => entry.item.id === target.id);
+            if (to !== undefined) {
+                go(to.n);
+            }
+        };
         const toolsButton = h('button', { type: 'button', class: 'perform__more pub-bar__tools', 'aria-label': 'Herramientas', 'aria-expanded': 'false', 'aria-controls': 'pub-tools' }, icon('more', 22));
         const fold = h('button', { type: 'button', class: 'pub-tools__tab', 'aria-label': 'Plegar las herramientas' }, h('span', { class: 'pub-fold__grip' }, icon('chevron-up', 16)));
         const tools = h('div', { class: 'pub-tools', id: 'pub-tools', hidden: true, role: 'toolbar', 'aria-label': 'Herramientas de la letra' },
             h('div', { class: 'pub-tools__group' }, down, keyButton, up),
-            h('div', { class: 'pub-tools__group' }, h('div', { class: 'toolbar' }, reader.size), h('div', { class: 'toolbar pub-tools__notation' }, reader.display), printMenu(print)),
+            h('div', { class: 'pub-tools__group' }, sizeSlot, displaySlot, printMenu(print)),
             chordsSwitch, fold);
         const setTools = (shown: boolean): void => {
             tools.hidden = !shown;
@@ -282,17 +350,37 @@ export function startShared(root: HTMLElement, code: string): void {
         };
         toolsButton.addEventListener('click', () => setTools(tools.hidden));
         fold.addEventListener('click', () => setTools(false));
-        // A link to one song has no list to go back to and no neighbours: just the song, its author and the tools
-        const single = data.kind === 'song';
         // The same bar as when singing a list: the way back, the section and "Song • Key", the position that opens the songs, and "⋯" for the tools
-        const jumpButton = h('button', { type: 'button', class: 'perform__jump', 'aria-label': `Ir a otro canto. Canto ${row.n} de ${rows.length}` },
-            h('span', {}, `${row.n}/${rows.length}`), icon('chevron-down', 16));
+        const jumpButton = h('button', { type: 'button', class: 'perform__jump', 'aria-label': `Ir a otro canto. ${divided ? 'Cantos' : 'Canto'} ${row.n} de ${rows.length}` },
+            countText, icon('chevron-down', 16));
         const bar = h('div', { class: 'pub-bar' },
             ...(single ? [] : [h('a', { class: 'pub-bar__button', href: paths.shared(code), 'data-link': true, 'aria-label': `Volver al listado: ${data.title}` }, icon('arrow-left', 22))]),
-            h('span', { class: 'pub-bar__text' },
-                h('small', { class: single ? '' : 'is-part' }, single ? (row.song.author === '' ? 'Canto compartido' : row.song.author) : row.part.name),
-                h('span', { class: 'pub-bar__line' }, h('b', {}, row.song.title), barKey)),
+            h('span', { class: 'pub-bar__text' }, barPart, h('span', { class: 'pub-bar__line' }, barTitle, barKey)),
             ...(single ? [] : [jumpButton]), toolsButton);
+
+        // --- the squares: one stage alone, or two with a band each (side by side on a wide screen, one over the other otherwise) ---
+        const panesEl = h('div', { class: `perform__panes${divided ? ' is-split' : ''}`, 'data-layout': 'column' }, ...squares.map((square) => square.element));
+        const layoutObserver = new ResizeObserver(() => {
+            panesEl.dataset['layout'] = squaresLayout(panesEl.clientWidth, panesEl.clientHeight);
+        });
+        layoutObserver.observe(panesEl);
+        const select = (index: number): void => {
+            if (!divided || index === focus) {
+                return;
+            }
+            focus = index;
+            // The address names the selected song, so a reload returns to the same one
+            history.replaceState(null, '', paths.shared(code, selected().row.n));
+            for (const [at, square] of squares.entries()) {
+                square.element.classList.toggle('is-focus', at === focus);
+            }
+            bindTools();
+            paint();
+        };
+        for (const [index, square] of squares.entries()) {
+            square.element.classList.toggle('is-focus', divided && index === focus);
+            square.element.addEventListener('click', () => select(index));
+        }
 
         // --- the position button: the songs of the list, to jump to one ---
         const jumpSheet = createSheet('Cantos del listado');
@@ -300,45 +388,54 @@ export function startShared(root: HTMLElement, code: string): void {
             const choice = h('button', { type: 'button', class: 'perform__song-choice' },
                 h('span', { class: 'perform__song-number' }, String(entry.n)),
                 h('span', {}, h('small', {}, entry.part.name), entry.song.title));
-            if (entry.n === row.n) {
+            if (pageRows.some((onPage) => onPage.n === entry.n)) {
                 choice.setAttribute('aria-current', 'true');
             }
-            choice.addEventListener('click', () => jumpSheet.close(() => go(entry.n)));
+            choice.addEventListener('click', () => jumpSheet.close(() => {
+                const onPage = pageRows.findIndex((candidate) => candidate.n === entry.n);
+                if (onPage >= 0) {
+                    select(onPage);
+                } else {
+                    go(entry.n);
+                }
+            }));
 
             return h('li', {}, choice);
         }));
         jumpSheet.body.append(h('h3', {}, 'Cantos del listado'), songList);
         jumpButton.addEventListener('click', jumpSheet.open);
 
-        // --- the song follows the finger from the first sideways move, as when singing a list ---
-        const stage = reader.stage;
+        // --- the page follows the finger from the first sideways move, as when singing a list ---
+        const slideEl = (): HTMLElement => (divided ? panesEl : (squares[0] as Square).reader.stage);
         if (slideFrom !== null) {
-            stage.classList.add(`slide-in-${slideFrom}`);
+            slideEl().classList.add(`slide-in-${slideFrom}`);
             slideFrom = null;
         }
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         let start: { x: number; y: number } | null = null;
         let axis: Axis | null = null;
-        const hasSongOn = (dx: number): boolean => (dx < 0 ? row.n < rows.length : row.n > 1);
+        const hasPageOn = (dx: number): boolean => pages[pageIndex + (dx < 0 ? 1 : -1)] !== undefined;
         const place = (offset: number): void => {
-            stage.style.transition = 'none';
-            stage.style.transform = `translateX(${offset}px)`;
-            stage.style.opacity = String(1 - Math.min(Math.abs(offset) / stage.clientWidth, 1) * 0.6);
+            const moving = slideEl();
+            moving.style.transition = 'none';
+            moving.style.transform = `translateX(${offset}px)`;
+            moving.style.opacity = String(1 - Math.min(Math.abs(offset) / moving.clientWidth, 1) * 0.6);
         };
         const settle = (offset: number, opacity: number, then?: () => void): void => {
-            stage.style.transition = reduceMotion ? 'none' : `transform ${EXIT_TIME}ms ease-out, opacity ${EXIT_TIME}ms ease-out`;
-            stage.style.transform = offset === 0 ? '' : `translateX(${offset}px)`;
-            stage.style.opacity = opacity === 1 ? '' : String(opacity);
+            const moving = slideEl();
+            moving.style.transition = reduceMotion ? 'none' : `transform ${EXIT_TIME}ms ease-out, opacity ${EXIT_TIME}ms ease-out`;
+            moving.style.transform = offset === 0 ? '' : `translateX(${offset}px)`;
+            moving.style.opacity = opacity === 1 ? '' : String(opacity);
             if (then !== undefined) {
                 setTimeout(then, reduceMotion ? 0 : EXIT_TIME);
             }
         };
-        stage.addEventListener('touchstart', (event) => {
+        panesEl.addEventListener('touchstart', (event) => {
             const touch = event.touches[0];
             start = event.touches.length === 1 && touch !== undefined ? { x: touch.clientX, y: touch.clientY } : null;
             axis = null;
         }, { passive: true });
-        stage.addEventListener('touchmove', (event) => {
+        panesEl.addEventListener('touchmove', (event) => {
             const touch = event.touches[0];
             if (start === null || touch === undefined) {
                 return;
@@ -346,18 +443,18 @@ export function startShared(root: HTMLElement, code: string): void {
             const dx = touch.clientX - start.x;
             axis ??= swipeAxis(dx, touch.clientY - start.y);
             if (axis === 'x') {
-                stage.classList.remove('slide-in-next', 'slide-in-previous');
-                place(dragOffset(dx, hasSongOn(dx)));
+                slideEl().classList.remove('slide-in-next', 'slide-in-previous');
+                place(dragOffset(dx, hasPageOn(dx)));
             }
         }, { passive: true });
-        stage.addEventListener('touchcancel', () => {
+        panesEl.addEventListener('touchcancel', () => {
             start = null;
             if (axis === 'x') {
                 settle(0, 1);
             }
             axis = null;
         }, { passive: true });
-        stage.addEventListener('touchend', (event) => {
+        panesEl.addEventListener('touchend', (event) => {
             const touch = event.changedTouches[0];
             if (start === null || touch === undefined) {
                 return;
@@ -366,16 +463,16 @@ export function startShared(root: HTMLElement, code: string): void {
             const dy = touch.clientY - start.y;
             start = null;
             axis = null;
-            if (isSwipe(dx, dy) && hasSongOn(dx)) {
-                settle(Math.sign(dx) * stage.clientWidth * EXIT_DISTANCE, 0, () => go(dx < 0 ? row.n + 1 : row.n - 1));
+            if (isSwipe(dx, dy) && hasPageOn(dx)) {
+                settle(Math.sign(dx) * panesEl.clientWidth * EXIT_DISTANCE, 0, () => goPage(dx < 0 ? 1 : -1));
             } else {
                 settle(0, 1);
             }
         }, { passive: true });
 
-        // --- the bar folds to a thin strip (the title, the key, the position) while the lyrics scroll down, as when singing a list ---
-        const strip = h('button', { type: 'button', class: 'pub-strip', 'aria-label': 'Mostrar la barra' },
-            h('strong', {}, row.song.title), stripKey, ...(single ? [] : [h('span', { class: 'pub-strip__count' }, `${row.n}/${rows.length}`)]));
+        // --- the bar folds to a thin strip (the title, the key, the position) while the lyrics scroll down, as when singing a list;
+        // a divided page keeps it open ---
+        const strip = h('button', { type: 'button', class: 'pub-strip', 'aria-label': 'Mostrar la barra' }, stripTitle, stripKey, ...(single ? [] : [stripCount]));
         strip.inert = true;
         const chrome = h('div', { class: 'pub-chrome' }, bar, strip);
         let barFold: FoldState = { folded: false, anchor: 0 };
@@ -387,27 +484,34 @@ export function startShared(root: HTMLElement, code: string): void {
                 setTools(false);
             }
         };
-        stage.addEventListener('scroll', () => {
-            const next = nextFold(barFold, stage.scrollTop, barFoldPoint());
-            if (next.folded !== barFold.folded) {
-                setFolded(next.folded);
-            }
-            barFold = next;
-        }, { passive: true });
-        strip.addEventListener('click', () => {
-            setFolded(false);
-            barFold = { folded: false, anchor: stage.scrollTop };
-        });
+        const lone = (squares[0] as Square).reader.stage;
+        if (!divided) {
+            lone.addEventListener('scroll', () => {
+                const next = nextFold(barFold, lone.scrollTop, barFoldPoint());
+                if (next.folded !== barFold.folded) {
+                    setFolded(next.folded);
+                }
+                barFold = next;
+            }, { passive: true });
+            strip.addEventListener('click', () => {
+                setFolded(false);
+                barFold = { folded: false, anchor: lone.scrollTop };
+            });
+        }
+        paint();
 
-        show(h('div', { class: 'pub-song' }, stage, chrome, tools, jumpSheet.element));
+        show(h('div', { class: `pub-song${divided ? ' is-divided' : ''}` }, panesEl, chrome, tools, jumpSheet.element));
         // After `show`, which clears what belonged to the screen before
         // The arrow keys leave the song alone while the list of songs is open
         navigate = {
-            previous: () => !jumpSheet.isOpen() && go(row.n - 1),
-            next: () => !jumpSheet.isOpen() && go(row.n + 1),
+            previous: () => !jumpSheet.isOpen() && goPage(-1),
+            next: () => !jumpSheet.isOpen() && goPage(1),
         };
         dispose = () => {
-            reader.dispose();
+            layoutObserver.disconnect();
+            for (const square of squares) {
+                square.reader.dispose();
+            }
             jumpSheet.release();
         };
     };

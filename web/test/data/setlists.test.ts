@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { beforeEach, describe, it } from 'node:test';
 import { ValidationError } from '../../src/data/library.ts';
 import { MemoryStore } from '../../src/data/memory-store.ts';
+import { pagesOf } from '../../src/data/pages.ts';
 import {
     copyTitle, defaultTitle, inListOrder, itemsOfPart, moveOptions, movedToPart, partIndex, partName, partsOf, positionInList, recentFirst, reordered, Setlists,
     splitStarred, strayItems, visibleParts,
@@ -31,6 +32,65 @@ describe('Setlists', () => {
     const itemsOf = async (id: string): Promise<SetlistItem[]> => [...((await lists.get(id))?.items ?? [])];
     const transposeOf = async (id: string, itemId: string): Promise<number | undefined> =>
         (await itemsOf(id)).find((item) => item.id === itemId)?.transpose;
+
+    describe('dividing a page', () => {
+        const withSongs = async (): Promise<{ list: Setlist; ids: string[] }> => {
+            const list = await lists.create({ title: 'Misa', eventDate: null });
+            await lists.addItem(list.id, 'entrada', 's1');
+            await lists.addItem(list.id, 'salmo', 's2');
+            await lists.addItem(list.id, 'gloria', 's1');
+            await lists.addItem(list.id, 'comunion', 's2');
+
+            return { list, ids: (await itemsOf(list.id)).map((item) => item.id) };
+        };
+        const orderIds = async (id: string): Promise<string[]> => inListOrder((await lists.get(id)) as Setlist).map((item) => item.id);
+
+        it('shares the page of a song with the one that follows it in the order of the list', async () => {
+            const { list } = await withSongs();
+            const order = await orderIds(list.id);
+
+            await lists.joinWithNext(list.id, order[1] as string);
+
+            const after = (await lists.get(list.id)) as Setlist;
+            assert.equal(after.items.find((item) => item.id === order[1])?.withNext, order[2]);
+            assert.deepEqual(pagesOf(inListOrder(after)).map((page) => page.length), [1, 2, 1]);
+        });
+
+        it('says why it cannot: the last song, and a next one that is already divided with another', async () => {
+            const { list } = await withSongs();
+            const order = await orderIds(list.id);
+            await assert.rejects(lists.joinWithNext(list.id, order[3] as string), /último canto/);
+
+            await lists.joinWithNext(list.id, order[2] as string);
+            await assert.rejects(lists.joinWithNext(list.id, order[1] as string), /ya está unido con otro/);
+            await assert.rejects(lists.joinWithNext(list.id, order[2] as string), /ya están unidos/);
+        });
+
+        it('separates a pair from either of its songs, and leaves a page that is not divided as it is', async () => {
+            const { list } = await withSongs();
+            const order = await orderIds(list.id);
+            await lists.joinWithNext(list.id, order[1] as string);
+
+            await lists.separate(list.id, order[2] as string);
+            assert.equal(((await lists.get(list.id)) as Setlist).items.some((item) => item.withNext !== undefined), false);
+
+            await lists.separate(list.id, order[0] as string);
+            assert.equal(((await lists.get(list.id)) as Setlist).items.some((item) => item.withNext !== undefined), false);
+        });
+
+        it('a copy of the list keeps its divided pages, pointing at the copy\'s own songs', async () => {
+            const { list } = await withSongs();
+            const order = await orderIds(list.id);
+            await lists.joinWithNext(list.id, order[0] as string);
+
+            const copy = await lists.duplicate(list.id);
+
+            const copyOrder = inListOrder(copy);
+            assert.deepEqual(pagesOf(copyOrder).map((page) => page.length), [2, 1, 1]);
+            assert.notEqual(copyOrder[0]?.withNext, order[1], 'it points at the copy\'s item, not the original\'s');
+            assert.equal(copyOrder[0]?.withNext, copyOrder[1]?.id);
+        });
+    });
 
     describe('following "mi tono"', () => {
         const only = async (id: string, itemId: string): Promise<SetlistItem | undefined> => (await itemsOf(id)).find((item) => item.id === itemId);

@@ -170,7 +170,7 @@ by `main.ts` like the visitor's page). `tests/e2e/signup.ts` covers it end to en
 
 A list can be shared by a link anyone can open, read only (the owner's decision, 2026-11-01: "cualquiera"). It is the one thing of this
 app that is public, so it says as little as it can: `GET /api/shared/:code` answers only the title, the sections the list shows, the songs in
-order with the key each has in it and, if the person chose it, the lyrics (`src/Share/ShareRepository.php`); never the account, the notes, the
+order with the key each has in it, which songs share a page (`withNext`: the owner divided it while singing, and the visitor reads the same pages) and, if the person chose it, the lyrics (`src/Share/ShareRepository.php`); never the account, the notes, the
 tags or anything else, and a stopped, never given or malformed link all answer the same 404. The visitor's page (`/c/:code`, `web/src/views/shared.ts`)
 is drawn like the public site's pages and loads nothing from another domain, sets no cookie and has no analytics or ads: the privacy text
 proposed for the public site says so, so **do not add any of those without telling the owner first**. The words belong to their authors: the

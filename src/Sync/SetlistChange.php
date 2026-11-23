@@ -40,7 +40,9 @@ final class SetlistChange
     private const DATE = '~^(\d{4})-(\d{2})-(\d{2})$~';
 
     /**
-     * @param list<array{id: string, part: string, songId: string, transpose: int, note: string, fixed?: true}> $items
+     * @param list<array{
+     *     id: string, part: string, songId: string, transpose: int, note: string, fixed?: true, withNext?: string
+     * }> $items
      * @param list<array{id: string, name: string, off?: true, optional?: true, note?: string}> $parts
      */
     public function __construct(
@@ -153,7 +155,9 @@ final class SetlistChange
     }
 
     /**
-     * @return list<array{id: string, part: string, songId: string, transpose: int, note: string, fixed?: true}>
+     * @return list<array{
+     *     id: string, part: string, songId: string, transpose: int, note: string, fixed?: true, withNext?: string
+     * }>
      *
      * @throws InvalidSetlist
      */
@@ -184,7 +188,9 @@ final class SetlistChange
     }
 
     /**
-     * @return array{id: string, part: string, songId: string, transpose: int, note: string, fixed?: true}
+     * @return array{
+     *     id: string, part: string, songId: string, transpose: int, note: string, fixed?: true, withNext?: string
+     * }
      *
      * @throws InvalidSetlist
      */
@@ -217,6 +223,14 @@ final class SetlistChange
         // Saved for this list ("En este listado"): "mi tono" leaves it alone. Without the mark the item follows it.
         if (($raw['fixed'] ?? false) === true) {
             $item['fixed'] = true;
+        }
+        // The page is divided: this song shares it with the next one (its id); the client checks they are neighbours.
+        $withNext = $raw['withNext'] ?? null;
+        if ($withNext !== null) {
+            if (!is_string($withNext) || !Uuid::isValid($withNext)) {
+                throw new InvalidSetlist('La unión de un canto del listado no es válida.');
+            }
+            $item['withNext'] = $withNext;
         }
 
         return $item;

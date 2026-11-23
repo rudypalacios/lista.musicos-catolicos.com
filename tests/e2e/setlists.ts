@@ -265,7 +265,7 @@ try {
     await page.locator('.sheet-layer').getByRole('button', { name: 'Subir un semitono' }).click();
     await page.locator('.sheet-layer .tone-control__hint').waitFor();
     await noTypedIcons(page, 'the key control with a change');
-    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+    await page.locator('.sheet-layer').getByRole('button', { name: 'Guardar', exact: true }).click();
     await page.locator('.toast', { hasText: 'Tono guardado en este listado' }).waitFor();
     await page.locator('.sheet-layer .tone-control__hint').waitFor({ state: 'hidden' });
     await closeSheet(page);

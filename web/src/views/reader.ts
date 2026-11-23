@@ -29,6 +29,8 @@ export interface ReaderOptions {
     songHead?: boolean;
     /** The bar says the title and whether it is a draft (the song page): the head is left out, and the title stays for a screen reader. The author is in the "⋯" sheet. */
     titleInBar?: boolean;
+    /** Not the first song on the screen: it leaves out the ids (`#song-sheet`, `#song-content`, `#stage`), which must be unique */
+    second?: boolean;
     /** Draw the chords over the lyrics (default). `false` starts with the lyrics alone; `setChords` changes it later. */
     chords?: boolean;
 }
@@ -52,6 +54,8 @@ export interface Reader {
     setShift: (next: number) => void;
     /** The name of the key `shift` semitones from the song's own, in the notation shown; null when the song has no key */
     keyName: (shift: number) => string | null;
+    /** Reads again the choices that are the device's (notation, fit, columns): another song on the same screen changed one */
+    syncPrefs: () => void;
     /** Where the song is drawn: give it all the space left, it fits the song to it */
     stage: HTMLElement;
     dispose: () => void;
@@ -76,7 +80,8 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
     let chordsShown = options.chords !== false;
 
     // --- the song ---
-    const sheet = h('div', { class: 'song-sheet', id: 'song-sheet' });
+    const ids = options.second !== true;
+    const sheet = h('div', { class: 'song-sheet', ...(ids ? { id: 'song-sheet' } : {}) });
     setSheet(sheet, sheetHtml(sheetData));
     const chords = Array.from(sheet.querySelectorAll<HTMLElement>('.ch[data-chord]'));
 
@@ -103,10 +108,10 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
         head.append(meta);
     }
     // Without the visible head the title is still the heading of the screen, for a screen reader
-    const content = h('div', { class: 'viewer-content', id: 'song-content' },
+    const content = h('div', { class: 'viewer-content', ...(ids ? { id: 'song-content' } : {}) },
         ...(options.songHead === false || options.titleInBar === true ? [h('h2', { class: 'sr-only' }, song.title)] : []),
         ...(head.childElementCount > 0 ? [head] : []), sheet);
-    const stage = h('div', { class: 'stage', id: 'stage' }, content);
+    const stage = h('div', { class: 'stage', ...(ids ? { id: 'stage' } : {}) }, content);
 
     // --- the toolbar ---
     const live = h('span', { class: 'sr-only', 'aria-live': 'polite' });
@@ -260,6 +265,12 @@ export function createReader(song: Song, options: ReaderOptions): Reader {
             }
         },
         keyName: (shift) => (original === null ? null : transpose(original, shift, notation)),
+        syncPrefs: () => {
+            notation = readNotation();
+            fit = readFit();
+            columns = readColumns();
+            update();
+        },
         stage,
         dispose: () => {
             stopPinch();
