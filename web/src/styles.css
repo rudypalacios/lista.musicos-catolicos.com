@@ -3273,37 +3273,210 @@ button.sheet-action.is-danger .icon {
 }
 
 /* ===== The key in the editor of a song: − / + move every chord of the text ===== */
-.edit-tone {
+/* ===== The lyrics box and its bar: one box ===== */
+/* The wrapper has the only border and the radius; the bar and the text sit flush inside it, with no border, padding or margin between them */
+.composer {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+}
+
+.composer:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent);
+}
+
+.composer textarea {
+    flex: 1;
+    border: 0;
+    border-radius: 0 0 0.75rem 0.75rem;
+    background: transparent;
+}
+
+.composer textarea:focus {
+    outline: none;
+}
+
+.lyrics-toolbar {
+    position: relative;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.5rem 0.75rem;
-    margin: 0.25rem 0 0.6rem;
+    background: var(--surface-2);
+    border-radius: 0.7rem 0.7rem 0 0;
 }
 
-.edit-tone__label {
-    font-weight: 600;
+.lyrics-toolbar .tone-control__step {
+    min-height: 2.75rem;
+    background: none;
+    border: 0;
 }
 
-.edit-tone__hint {
-    font-size: 0.8rem;
-    color: var(--muted);
+.lyrics-toolbar .tone-control__key {
+    min-width: 2.6rem;
 }
 
-.edit-format .tone-control__step button {
-    min-width: 3rem;
-    font-weight: 700;
+.lyrics-toolbar .tone-control__step button:first-child {
+    border-top-left-radius: 0.7rem;
 }
 
-.edit-indication {
+.lyrics-toolbar .tone-control__step button:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.lyrics-toolbar__sep {
+    align-self: stretch;
+    width: 1px;
+    margin: 0.5rem 0.25rem;
+    background: var(--border);
+}
+
+.lyrics-toolbar__wrap {
+    position: static;
+}
+
+.lyrics-toolbar__menu {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
+    min-height: 2.75rem;
+    padding: 0 0.75rem;
+    color: var(--text);
+    background: none;
+    border: 0;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
 }
 
-.edit-tone .tone-control__step button:disabled {
-    opacity: 0.4;
-    cursor: default;
+.lyrics-toolbar__menu:hover,
+.lyrics-toolbar__menu[aria-expanded='true'] {
+    color: var(--accent);
+    background: var(--accent-soft);
+}
+
+/* The arrow is drawn, not typed */
+.lyrics-toolbar__menu i {
+    width: 0.45rem;
+    height: 0.45rem;
+    border: solid currentColor;
+    border-width: 0 2px 2px 0;
+    transform: translateY(-0.12rem) rotate(45deg);
+}
+
+.lyrics-toolbar__menu[aria-expanded='true'] i {
+    transform: translateY(0.1rem) rotate(225deg);
+}
+
+/* The list that hangs from a button of the bar */
+.lyrics-menu {
+    position: absolute;
+    top: calc(100% + 0.25rem);
+    left: 0;
+    z-index: 8;
+    width: min(19rem, 100%);
+    padding: 0.25rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    box-shadow: 0 0.6rem 1.6rem rgba(0, 0, 0, 0.35);
+}
+
+.lyrics-menu[data-align='right'] {
+    right: 0;
+    left: auto;
+}
+
+.lyrics-menu h4 {
+    margin: 0.4rem 0.6rem 0.15rem;
+    color: var(--muted);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.lyrics-menu hr {
+    margin: 0.25rem 0.4rem;
+    border: 0;
+    border-top: 1px solid var(--border);
+}
+
+.lyrics-menu__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0.35rem 0.6rem;
+    color: var(--text);
+    background: none;
+    border: 0;
+    border-radius: 0.5rem;
+    font: inherit;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+}
+
+.lyrics-menu__item:hover {
+    background: var(--accent-soft);
+}
+
+.lyrics-menu__what {
+    display: grid;
+    gap: 0.2rem;
+    justify-items: start;
+}
+
+.lyrics-menu__what small {
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-weight: 400;
+}
+
+.lyrics-menu__item code {
+    flex: none;
+    padding: 0.05rem 0.35rem;
+    background: var(--surface-2);
+    border-radius: 0.3rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.lyrics-menu__example {
+    flex: none;
+    min-width: 2.2rem;
+    color: var(--accent);
+    font-weight: 700;
+    text-align: center;
+}
+
+/* How each thing will look in the song */
+.lyrics-menu .song-section__label {
+    font-size: 0.7rem;
+}
+
+.lyrics-menu__note {
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
+.lyrics-menu__chorus {
+    padding-left: 0.5rem;
+    border-left: 3px solid var(--accent-rule);
+    font-size: 0.95rem;
+}
+
+/* Capo, tempo and compás above the lyrics, in the preview */
+.preview__notes {
+    display: contents;
 }
 
 /* ===== The key of a song in a list: − / + for today, "Guardar" for the list ===== */

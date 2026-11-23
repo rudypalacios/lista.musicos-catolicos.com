@@ -36,6 +36,10 @@ describe('changeCaseInRange', () => {
         assert.equal(result.text.slice(result.from, result.to), 'ALE[g]LUYA, ALE[Am]LUYA\nPREPA[G]RAD EL CA[a]MINO');
     });
 
+    it('does not take the next line when a whole line is picked with its newline', () => {
+        assert.equal(changeCaseInRange('uno\ndos', 0, 4, 'upper').text, 'UNO\ndos');
+    });
+
     it('works on the last line and on a selection that is only a cursor', () => {
         const text = 'Uno [C]DOS\ntres CUATRO\ncinco SEIS';
 
