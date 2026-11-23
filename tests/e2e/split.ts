@@ -42,7 +42,17 @@ const positionOf = (page: Page): Promise<string> => page.locator('.perform__coun
 const squares = (page: Page): Promise<number> => page.locator('.perform__pane').count();
 
 async function sing(page: Page, listId: string, n: number): Promise<void> {
-    await page.goto(`${BASE}/listados/${listId}/cantar/${n}`);
+    // The list may still be on its way from the server (it was just pushed): look again once it has had time to arrive
+    for (let attempt = 0; attempt < 3; attempt++) {
+        await page.goto(`${BASE}/listados/${listId}/cantar/${n}`);
+        try {
+            await page.locator('.perform__song-name').waitFor({ timeout: 8000 });
+
+            return;
+        } catch {
+            await synced(page);
+        }
+    }
     await page.locator('.perform__song-name').waitFor();
 }
 

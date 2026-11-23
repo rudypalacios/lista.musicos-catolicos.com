@@ -3,6 +3,7 @@ import { capitaliseChords } from '../chordpro/capitalise.ts';
 import { transposeBody } from '../chordpro/transpose-body.ts';
 import { parse, songKey } from '../chordpro/parser.ts';
 import { sheetHtml } from '../chordpro/sheet.ts';
+import { changeCaseInRange, type CaseMode } from '../chordpro/letter-case.ts';
 import { ValidationError, type SongDraft } from '../data/library.ts';
 import { partsOf } from '../data/setlists.ts';
 import { sameTag, tagOf, tagsInUse } from '../data/tags.ts';
@@ -102,6 +103,20 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         h('span', { class: 'edit-tone__label' }, 'Tono'),
         h('div', { class: 'tone-control__step' }, toneDown, toneKey, toneUp),
         h('span', { class: 'edit-tone__hint' }, 'Cambia los acordes de la letra'));
+    // The format of the words (minúsculas, MAYÚSCULAS, Tipo oración): the lyrics only, never the chords; the lines selected, or all of them
+    const caseButton = (mode: CaseMode, text: string, label: string): HTMLButtonElement =>
+        h('button', { type: 'button', 'data-case': mode, 'aria-label': label, title: label }, text);
+    const caseButtons = [caseButton('lower', 'aa', 'Minúsculas'), caseButton('upper', 'AA', 'Mayúsculas'), caseButton('sentence', 'Aa', 'Tipo oración')];
+    const formatRow = h('div', { class: 'edit-tone edit-format' },
+        h('span', { class: 'edit-tone__label' }, 'Formato'),
+        h('div', { class: 'tone-control__step' }, ...caseButtons),
+        h('span', { class: 'edit-tone__hint' }, 'Minúsculas, mayúsculas o tipo oración: solo las palabras, no los acordes'));
+    // An indication ({ci: Intro}, {ci: x2}): a note in italics inside the stanza, with no label and no verse number
+    const indication = h('button', { type: 'button', class: 'button edit-indication' }, icon('plus', 18), 'Indicación');
+    const indicationRow = h('div', { class: 'edit-tone edit-format' },
+        h('span', { class: 'edit-tone__label' }, 'Insertar'),
+        indication,
+        h('span', { class: 'edit-tone__hint' }, 'Una nota en cursiva, como «Intro» o «x2»'));
     const moveChords = (by: number): void => {
         body.value = transposeBody(capitaliseChords(body.value), by);
         // As if typed: the preview, the notice of the key, the draft and the leave guard all follow
@@ -126,8 +141,15 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
     };
     body.addEventListener('input', draw);
     // Leaving the box writes the capitals for real (not while typing: the text under the cursor would jump)
+    // Only when something changes, and keeping the selection: assigning the value puts the cursor at the end, and a format button
+    // touched right after selecting lines would find nothing selected and change the whole lyrics
     body.addEventListener('change', () => {
-        body.value = capitaliseChords(body.value);
+        const capitalised = capitaliseChords(body.value);
+        if (capitalised !== body.value) {
+            const { selectionStart, selectionEnd } = body;
+            body.value = capitalised;
+            body.setSelectionRange(selectionStart, selectionEnd);
+        }
     });
     draw();
 
@@ -247,6 +269,48 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         keepSoon();
         body.focus();
     });
+    // The format of the words: the selected lines, or all of them, and "Deshacer" gives them back
+    const applyCase = (mode: CaseMode, said: string): void => {
+        const before = body.value;
+        const from = body.selectionStart;
+        const to = body.selectionEnd;
+        const selected = from !== to;
+        const result = changeCaseInRange(before, selected ? from : 0, selected ? to : before.length, mode);
+        if (result.text === before) {
+            return;
+        }
+        body.value = result.text;
+        if (selected) {
+            body.setSelectionRange(result.from, result.to);
+        } else {
+            body.setSelectionRange(from, to);
+        }
+        convertedText.textContent = `${said}${selected ? ' en las líneas seleccionadas' : ''}`;
+        converted.hidden = false;
+        revert = () => {
+            body.value = before;
+            body.setSelectionRange(from, to);
+        };
+        draw();
+        keepSoon();
+    };
+    const said: Readonly<Record<CaseMode, string>> = { lower: 'Letra en minúsculas', upper: 'Letra en MAYÚSCULAS', sentence: 'Letra en tipo oración' };
+    for (const button of caseButtons) {
+        button.addEventListener('click', () => applyCase(button.dataset['case'] as CaseMode, said[button.dataset['case'] as CaseMode]));
+    }
+    indication.addEventListener('click', () => {
+        const text = body.value;
+        const at = body.selectionStart;
+        // On a line of its own, with the cursor inside the braces
+        const lead = at > 0 && text[at - 1] !== '\n' ? '\n' : '';
+        const tail = at < text.length && text[at] !== '\n' ? '\n' : '';
+        body.setRangeText(`${lead}{ci: }${tail}`, at, at, 'end');
+        const caret = at + lead.length + '{ci: '.length;
+        body.setSelectionRange(caret, caret);
+        body.focus();
+        // As if typed: the preview, the draft and the leave guard follow
+        body.dispatchEvent(new Event('input', { bubbles: true }));
+    });
     // The offer is for the paste just made: once the text is edited there is nothing to give back
     body.addEventListener('input', () => {
         converted.hidden = true;
@@ -272,6 +336,8 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         h('label', { for: 'body' }, 'Letra con acordes'),
         body,
         toneRow,
+        formatRow,
+        indicationRow,
         converted,
         tagField.element,
         draftField,
@@ -281,7 +347,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
             h('summary', {}, 'Cómo escribir los acordes'),
             h('p', {}, 'Los acordes van entre corchetes, justo antes de la sílaba donde cambian. Puedes escribirlos en cifrado americano (C, Am, F#m7) o en español (Do, Lam, Fa#m7).'),
             h('pre', {}, HELP),
-            h('p', {}, '{c: Coro} abre una sección con nombre; {soc} … {eoc} es un coro; {ci: x2} es una nota en cursiva. Las líneas que empiezan con # no se muestran.'),
+            h('p', {}, '{c: Coro} abre una sección con nombre; {soc} … {eoc} es un coro; {ci: x2} es una indicación: una nota en cursiva dentro de la estrofa, sin etiqueta ni número (por ejemplo {ci: Intro} antes de una línea de acordes); el botón «Indicación» la inserta. Las líneas que empiezan con # no se muestran.'),
             h('p', {}, 'También puedes pegar una hoja con los acordes en una línea arriba de la letra: se convierte sola.'),
         ),
     );

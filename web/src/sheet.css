@@ -60,6 +60,11 @@
     display: block;
 }
 
+/* A line of chords only (an intro) has no row of text under its chords, as on paper */
+.song-sheet .line--chords .lyr {
+    display: none;
+}
+
 /* A note at the end of a line of lyrics ({ci: bis}): beside the words, in italics. It travels with the
    last word when the line wraps, and stays on one row itself */
 .song-sheet .line__note {
@@ -151,6 +156,11 @@
 
     .song-section--verse .line--first {
         counter-increment: verse;
+    }
+
+    /* A stanza with no sung line (an intro: chords and notes only) is not a verse: it takes no number, and the next stanza is the first */
+    .song-section--verse:not(:has(.line:not(.line--chords):not(.line--note))) .line--first {
+        counter-increment: none;
     }
 
     .song-section--verse .line--first.line--plain,

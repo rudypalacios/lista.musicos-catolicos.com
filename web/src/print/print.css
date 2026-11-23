@@ -243,6 +243,11 @@
         counter-increment: verse;
     }
 
+    /* A stanza with no sung line (an intro: chords and notes only) is not a verse: it takes no number, and the next stanza is the first */
+    .song-section--verse:not(:has(.line:not(.line--chords):not(.line--note))) .line--first {
+        counter-increment: none;
+    }
+
     .song-section--verse .line--first.line--plain,
     .song-section--verse .line--first > .w:first-child > .seg:first-child > .lyr {
         position: relative;
