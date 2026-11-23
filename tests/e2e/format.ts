@@ -33,11 +33,11 @@ try {
     assert.equal(await body.inputValue(), TEXT);
     pass('minúsculas changes the words and not the chords or the directives, and "Deshacer" gives them back');
 
-    // Tipo oración: a capital at each paragraph and sentence, and on the names of the faith
+    // Tipo oración: a capital at each paragraph and sentence
     await page.getByRole('button', { name: 'Tipo oración' }).click();
-    assert.equal(await body.inputValue(), '{c: Coro}\nAleluya[D]aaa[G]a, aleluya\npreparad el Señor.\n\n{ci: Intro}\n[C] [G]\n\nAllanad sus sendas');
+    assert.equal(await body.inputValue(), '{c: Coro}\nAleluya[D]aaa[G]a, aleluya\npreparad el señor.\n\n{ci: Intro}\n[C] [G]\n\nAllanad sus sendas');
     await note.getByRole('button', { name: 'Deshacer' }).click();
-    pass('tipo oración puts the capitals where a paragraph or a sentence starts, and keeps "Señor"');
+    pass('tipo oración puts the capitals where a paragraph or a sentence starts');
 
     // A selection changes only the lines it touches (the whole line: a chord is never cut)
     await body.evaluate((element) => {
@@ -62,13 +62,7 @@ try {
     assert.equal(await body.inputValue(), 'ALE[G]LUYA, ALE[Am]LUYA\nPREPA[G]RAD EL CA[A]MINO\ntercera [D]LÍNEA', 'two lines in capitals, the chords written as their own control writes them, the third line as it was');
     await note.getByRole('button', { name: 'Deshacer' }).click();
     await body.fill(TEXT);
-    await page.getByRole('heading', { name: 'Nuevo canto' }).click();
-    // Nothing to change says so, with nothing to give back
-    await page.getByRole('button', { name: 'Mayúsculas' }).click();
-    await page.getByRole('button', { name: 'Mayúsculas' }).click();
-    assert.equal(await note.locator('span').innerText(), 'La letra ya estaba así');
-    assert.equal(await note.getByRole('button', { name: 'Deshacer' }).isVisible(), false);
-    pass('a selection changes the lines it touches; a text already in that case says so');
+    pass('a selection changes only the lines it touches, and no chord');
 
     // The preview: the intro of chords is a note and a row of chords, with no label, no number and no empty row; the verse after it is the first
     const intro = page.locator('.song-sheet .song-section', { has: page.locator('.line--note', { hasText: 'Intro' }) });

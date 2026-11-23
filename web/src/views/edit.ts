@@ -277,11 +277,6 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         const selected = from !== to;
         const result = changeCaseInRange(before, selected ? from : 0, selected ? to : before.length, mode);
         if (result.text === before) {
-            convertedText.textContent = 'La letra ya estaba así';
-            converted.hidden = false;
-            revert = null;
-            undo.hidden = true;
-
             return;
         }
         body.value = result.text;
@@ -292,7 +287,6 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         }
         convertedText.textContent = `${said}${selected ? ' en las líneas seleccionadas' : ''}`;
         converted.hidden = false;
-        undo.hidden = false;
         revert = () => {
             body.value = before;
             body.setSelectionRange(from, to);

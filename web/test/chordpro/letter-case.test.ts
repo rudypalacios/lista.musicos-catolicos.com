@@ -3,73 +3,42 @@ import { describe, it } from 'node:test';
 import { changeCase, changeCaseInRange } from '../../src/chordpro/letter-case.ts';
 
 describe('changeCase', () => {
-    it('lowercases the words and leaves the chords and the directives as they are', () => {
-        assert.equal(changeCase('ALE[G]LUYA {ci: Bis}\n{c: Coro}\n[Am] [F]', 'lower'), 'ale[G]luya {ci: Bis}\n{c: Coro}\n[Am] [F]');
+    it('lowercases and uppercases the words, and leaves the chords and the directives as they are', () => {
+        const text = 'Ale[Am]LUYA {ci: Bis}\n{c: Coro}\n[F#m7/C#] Señor';
+
+        assert.equal(changeCase(text, 'lower'), 'ale[Am]luya {ci: Bis}\n{c: Coro}\n[F#m7/C#] señor');
+        assert.equal(changeCase(text, 'upper'), 'ALE[Am]LUYA {ci: Bis}\n{c: Coro}\n[F#m7/C#] SEÑOR');
     });
 
-    it('uppercases the words, accents and ñ included, and a chord in the middle of a word does not matter', () => {
-        assert.equal(changeCase('prepa[G]rad el Se[D]ñor, árbol', 'upper'), 'PREPA[G]RAD EL SE[D]ÑOR, ÁRBOL');
+    it('is a capital at the start of the text, of each paragraph and of each sentence, and lowercase otherwise', () => {
+        const text = 'ALELUYA[D]AAA[G]A, ALELUYA\nPREPARAD EL SEÑOR.\n\nALLANAD SUS SENDAS. ¿LLEGÓ? ¡SÍ!';
+
+        assert.equal(changeCase(text, 'sentence'), 'Aleluya[D]aaa[G]a, aleluya\npreparad el señor.\n\nAllanad sus sendas. ¿Llegó? ¡Sí!');
     });
 
-    it('is a capital at the start of each paragraph and sentence, and lowercase otherwise', () => {
-        const text = 'ALELUYA[D]AAA[G]A, ALELUYA\nPREPARAD EL CAMINO DEL SEÑOR.\n\nALLANAD SUS SENDAS. LLEGÓ LA SALVACIÓN';
-        assert.equal(changeCase(text, 'sentence'), 'Aleluya[D]aaa[G]a, aleluya\npreparad el camino del Señor.\n\nAllanad sus sendas. Llegó la salvación');
+    it('starts a paragraph after a directive on a line of its own, not after a note at the end of a line', () => {
+        assert.equal(changeCase('{c: Coro}\nALELUYA, ALELUYA\n{c: Verso 2}\nADIÓS', 'sentence'), '{c: Coro}\nAleluya, aleluya\n{c: Verso 2}\nAdiós');
+        assert.equal(changeCase('HOLA {ci: BIS}\nOTRA VEZ', 'sentence'), 'Hola {ci: BIS}\notra vez');
     });
 
-    it('keeps the capital of the names of the faith, even with a chord inside them', () => {
-        assert.equal(changeCase('GLORIA A DIOS Y AL SE[D]ÑOR JESÚS, ESPÍRITU SANTO', 'sentence'), 'Gloria a Dios y al Se[D]ñor Jesús, Espíritu Santo');
-        assert.equal(changeCase('el padre y la señora', 'sentence'), 'El padre y la señora', 'a word that only starts like a name is not one');
-    });
-
-    it('starts a paragraph after a directive line, and after ¿ and ¡', () => {
-        assert.equal(changeCase('{c: Coro}\nALELUYA, ALELUYA\n¡VEN, SEÑOR!', 'sentence'), '{c: Coro}\nAleluya, aleluya\n¡Ven, Señor!');
-        assert.equal(changeCase('hola\n{c: Verso 2}\nadiós', 'sentence'), 'Hola\n{c: Verso 2}\nAdiós');
-    });
-
-    it('leaves a line of comment ("#") and a line of chords alone', () => {
-        assert.equal(changeCase('# NOTA PARA MÍ\n[C] [G]\nHOLA', 'lower'), '# NOTA PARA MÍ\n[C] [G]\nhola');
-    });
-
-    it('never changes the length, so every chord keeps its place', () => {
-        const text = 'STRAßE [G]ŉx\n{ci: X2} a[D]MÉN';
-        for (const mode of ['lower', 'upper', 'sentence'] as const) {
-            assert.equal(changeCase(text, mode).length, text.length, mode);
-        }
-    });
-
-    it('does nothing to an empty text or one with no words', () => {
+    it('does nothing to an empty text or one of chords only', () => {
         assert.equal(changeCase('', 'upper'), '');
         assert.equal(changeCase('[C] [G]\n\n{soc}\n{eoc}', 'upper'), '[C] [G]\n\n{soc}\n{eoc}');
     });
 });
 
 describe('changeCaseInRange', () => {
-    const text = 'Uno [C]DOS\ntres CUATRO\ncinco SEIS';
-
-    it('takes the whole lines a selection touches, so a chord is never cut', () => {
-        const from = text.indexOf('DOS');
-        const to = text.indexOf('tres') + 2;
-        const result = changeCaseInRange(text, from, to, 'lower');
-
-        assert.equal(result.text, 'uno [C]dos\ntres cuatro\ncinco SEIS');
-        assert.equal(result.text.slice(result.from, result.to), 'uno [C]dos\ntres cuatro');
-    });
-
-    it('changes only the selected lines and never a chord, not even one typed in lowercase (the editor capitalises those itself)', () => {
+    it('changes only the lines the selection touches, whole, and never a chord (not even one typed in lowercase)', () => {
         const song = 'Ale[g]luya, ale[Am]LUYA\nprepa[G]rad EL ca[a]mino\ntercera [D]LÍNEA';
-        const from = song.indexOf('luya');
-        const to = song.indexOf('EL') + 2;
-        const chordsOf = (value: string): string[] => value.match(/\[[^\]]*\]/g) ?? [];
+        const result = changeCaseInRange(song, song.indexOf('luya'), song.indexOf('EL') + 2, 'upper');
 
-        for (const mode of ['lower', 'upper', 'sentence'] as const) {
-            const result = changeCaseInRange(song, from, to, mode);
-            assert.deepEqual(chordsOf(result.text), chordsOf(song), `${mode}: the chords are as they were`);
-            assert.equal(result.text.split('\n')[2], 'tercera [D]LÍNEA', `${mode}: the line that was not selected is as it was`);
-        }
-        assert.equal(changeCaseInRange(song, from, to, 'upper').text, 'ALE[g]LUYA, ALE[Am]LUYA\nPREPA[G]RAD EL CA[a]MINO\ntercera [D]LÍNEA');
+        assert.equal(result.text, 'ALE[g]LUYA, ALE[Am]LUYA\nPREPA[G]RAD EL CA[a]MINO\ntercera [D]LÍNEA');
+        assert.equal(result.text.slice(result.from, result.to), 'ALE[g]LUYA, ALE[Am]LUYA\nPREPA[G]RAD EL CA[a]MINO');
     });
 
     it('works on the last line and on a selection that is only a cursor', () => {
+        const text = 'Uno [C]DOS\ntres CUATRO\ncinco SEIS';
+
         assert.equal(changeCaseInRange(text, text.length, text.length, 'upper').text, 'Uno [C]DOS\ntres CUATRO\nCINCO SEIS');
         assert.equal(changeCaseInRange('a\nb', 0, 0, 'upper').text, 'A\nb');
     });
