@@ -54,6 +54,12 @@ export interface SetlistItem {
     readonly songId: string;
     /** Semitones, −11…11 */
     readonly transpose: number;
+    /**
+     * Set when the person saved this key for this list ("En este listado"), or put the song in a key that was not their own.
+     * Without it the item follows the song's "mi tono": saving a new "mi tono" moves it (`Setlists.followMyShift`).
+     * The order of precedence is: only today (the device, never stored here) › this list (`fixed`) › "mi tono" › the song's own key.
+     */
+    readonly fixed?: true;
     /** Free text for this use of the song ("sin el último coro"), "" when there is none */
     readonly note: string;
 }

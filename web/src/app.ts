@@ -235,7 +235,14 @@ export class App {
 
     /** Sets "mi tono" of a song (see `Library.setMyShift`) */
     async setMyShift(id: string, shift: number): Promise<Song> {
-        return this.afterWrite(await this.library.setMyShift(id, shift));
+        const before = await this.library.get(id);
+        const song = await this.library.setMyShift(id, shift);
+        // The lists that follow "mi tono" follow it here too; the ones with a key of their own stay (`Setlists.followMyShift`)
+        if (before !== undefined && before.myShift !== song.myShift) {
+            await this.setlists.followMyShift(id, before.myShift, song.myShift);
+        }
+
+        return this.afterWrite(song);
     }
 
     async remove(id: string): Promise<void> {

@@ -89,6 +89,17 @@ final class SetlistChangeTest extends TestCase
         $this->assertSame([$this->item()], $change->items);
     }
 
+    public function testAnItemKeepsTheMarkOfAKeyFixedForItsListAndNothingElseCountsAsOne(): void
+    {
+        $fixed = SetlistChange::fromArray($this->data(['items' => [$this->item(['fixed' => true])]]), self::NOW);
+        $this->assertTrue($fixed->items[0]['fixed'] ?? false);
+
+        foreach ([[], ['fixed' => false], ['fixed' => 'yes'], ['fixed' => 1]] as $override) {
+            $change = SetlistChange::fromArray($this->data(['items' => [$this->item($override)]]), self::NOW);
+            $this->assertArrayNotHasKey('fixed', $change->items[0], 'it follows "mi tono"');
+        }
+    }
+
     public function testAnItemWithoutTransposeOrNoteGetsTheDefaults(): void
     {
         $raw = $this->item();
