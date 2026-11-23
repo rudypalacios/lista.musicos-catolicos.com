@@ -6,30 +6,30 @@
 
 export type CaseMode = 'lower' | 'upper' | 'sentence';
 
-/** A chord or a directive; as the pattern has a group, `split` returns them at the odd places */
-const OPAQUE = /(\[[^\]\n]*\]|\{[^}\n]*\})/;
+/** A chord or a directive (kept as it is), or a run of words (changed) */
+const PARTS = /(\[[^\]\n]*\]|\{[^}\n]*\})|[^[{]+/g;
 
 /**
  * `text` with its words in the case `mode` says. `sentence`: lowercase, with a capital at the start of the text, of every
  * paragraph (after a blank line, or after a directive line such as {c: Coro}) and of every sentence (after . ! ? … ¿ ¡).
  */
 export function changeCase(text: string, mode: CaseMode): string {
-    const parts = text.split(OPAQUE);
     if (mode !== 'sentence') {
-        return parts.map((part, index) => (index % 2 === 1 ? part : mode === 'upper' ? part.toUpperCase() : part.toLowerCase())).join('');
+        return text.replace(PARTS, (part, kept?: string) => kept ?? (mode === 'upper' ? part.toUpperCase() : part.toLowerCase()));
     }
 
-    let out = '';
     /** The next letter starts a sentence */
     let capital = true;
     let breaks = 0;
-    for (const [index, part] of parts.entries()) {
-        if (index % 2 === 1) {
+
+    return text.replace(PARTS, (part, kept: string | undefined, at: number) => {
+        if (kept !== undefined) {
             // A directive on a line of its own: what comes after it is a new paragraph
-            capital = capital || (part.startsWith('{') && (out === '' || out.endsWith('\n')));
-            out += part;
-            continue;
+            capital = capital || (kept.startsWith('{') && (at === 0 || text[at - 1] === '\n'));
+
+            return kept;
         }
+        let out = '';
         for (const char of part.toLowerCase()) {
             breaks = char === '\n' ? breaks + 1 : /\s/u.test(char) ? breaks : 0;
             capital = capital || breaks >= 2;
@@ -41,9 +41,9 @@ export function changeCase(text: string, mode: CaseMode): string {
                 out += char;
             }
         }
-    }
 
-    return out;
+        return out;
+    });
 }
 
 /**
