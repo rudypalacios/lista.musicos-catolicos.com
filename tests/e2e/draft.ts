@@ -79,9 +79,20 @@ try {
     const toneStep = await wide.locator('.perform__tone .tone-control__step').boundingBox();
     const jump = await wide.getByRole('button', { name: /Ir a otro canto/ }).boundingBox();
     assert.ok(toneStep !== null && jump !== null && toneStep.x + toneStep.width <= jump.x, 'the key is in the bar, left of the position button');
+    const stepBefore = await wide.locator('.perform__tone .tone-control__step').boundingBox();
+    const jumpBefore = await wide.getByRole('button', { name: /Ir a otro canto/ }).boundingBox();
     await wide.locator('.perform__tone').getByRole('button', { name: 'Subir un semitono' }).click();
     const barSave = wide.locator('.perform__tone .tone-control__save');
     await barSave.waitFor();
+    // Order "Solo hoy", Guardar, − key +; and nothing of the step or the position button moves when they appear
+    const hintBox = await wide.locator('.perform__tone .tone-control__hint').boundingBox();
+    const saveBox = await barSave.boundingBox();
+    const stepAfter = await wide.locator('.perform__tone .tone-control__step').boundingBox();
+    const jumpAfter = await wide.getByRole('button', { name: /Ir a otro canto/ }).boundingBox();
+    assert.ok(hintBox !== null && saveBox !== null && stepAfter !== null && stepBefore !== null && jumpBefore !== null && jumpAfter !== null);
+    assert.ok(hintBox.x + hintBox.width <= saveBox.x && saveBox.x + saveBox.width <= stepAfter.x, 'order: Solo hoy, Guardar, then the step');
+    assert.equal(Math.round(stepAfter.x), Math.round(stepBefore.x), 'the step does not move when Guardar appears');
+    assert.equal(Math.round(jumpAfter.x), Math.round(jumpBefore.x), 'the position button does not move either');
     await wide.locator('.perform__tone .tone-control__more').click();
     assert.equal(await wide.locator('.perform__tone .tone-control__menu').isVisible(), true, 'the menu of Guardar hangs under the bar');
     await wide.locator('.perform__tone .tone-control__more').click();
@@ -121,24 +132,41 @@ try {
     assert.equal(await bar.locator('.bar__song-key').textContent(), 'Tono Do#', 'the bar follows the key on screen');
     await wide.getByRole('button', { name: 'Bajar un semitono' }).click();
     pass('the page of a song names itself in the bar: name, key and "Borrador"');
-    await wide.getByRole('button', { name: 'Subir un semitono' }).click();
-    const box = async (page: Page, locator: ReturnType<Page['locator']>) => {
+    const box = async (locator: ReturnType<Page['locator']>) => {
         const found = await locator.boundingBox();
         assert.ok(found !== null);
 
         return found;
     };
-    const more = await box(wide, wide.getByRole('button', { name: 'Más opciones', exact: true }));
-    const step = await box(wide, wide.locator('.song-tools .tone-control__step'));
-    const save = await box(wide, wide.getByRole('button', { name: 'Guardar', exact: true }));
-    const size = await box(wide, wide.locator('.song-tools__row > .toolbar'));
+    const moreButton = wide.getByRole('button', { name: 'Más opciones', exact: true });
+    const stepBox = wide.locator('.song-tools .tone-control__step');
+    const toolsBar = wide.locator('.song-tools');
+    const songStepBefore = await box(stepBox);
+    const moreBefore = await box(moreButton);
+    const heightBefore = (await box(toolsBar)).height;
+    const lyricsBefore = await box(wide.locator('.song-sheet'));
+    await wide.getByRole('button', { name: 'Subir un semitono' }).click();
+    const more = await box(moreButton);
+    const step = await box(stepBox);
+    const save = await box(wide.getByRole('button', { name: 'Guardar', exact: true }));
+    const hint = await box(wide.locator('.song-tools .tone-control__hint'));
+    const size = await box(wide.locator('.song-tools__row > .toolbar'));
     for (const [name, found] of [['the key', step], ['Guardar', save]] as const) {
         assert.ok(Math.abs(found.y + found.height / 2 - (more.y + more.height / 2)) < 4, `${name} is level with the "⋯"`);
         assert.ok(found.x + found.width <= more.x, `${name} is at the left of the "⋯"`);
     }
-    assert.ok(size.x + size.width <= step.x, 'the lyrics size stays at the other end');
-    assert.ok(step.x + step.width <= save.x, 'the key, then Guardar');
-    pass('wide: the key and Guardar are in the bar, just left of the "⋯"');
+    assert.ok(size.x + size.width <= hint.x, 'the lyrics size stays at the other end');
+    assert.ok(hint.x + hint.width <= save.x && save.x + save.width <= step.x, 'order: "Solo por ahora", Guardar, then the step');
+    assert.equal(Math.round(step.x), Math.round(songStepBefore.x), 'the step does not move when Guardar appears');
+    assert.equal(Math.round(more.x), Math.round(moreBefore.x), 'neither does the "⋯"');
+    assert.equal((await box(toolsBar)).height, heightBefore, 'the bar keeps its height');
+    assert.equal(Math.round((await box(wide.locator('.song-sheet'))).y), Math.round(lyricsBefore.y), 'and the lyrics stay where they were');
+    await wide.getByRole('button', { name: 'Otros sitios donde guardar' }).click();
+    assert.equal(await wide.locator('.song-tools .tone-control__menu').isVisible(), true, 'the menu of Guardar hangs under the bar');
+    assert.equal(Math.round((await box(wide.locator('.song-sheet'))).y), Math.round(lyricsBefore.y), 'without pushing the lyrics');
+    await wide.getByRole('button', { name: 'Otros sitios donde guardar' }).click();
+    await wide.getByRole('button', { name: 'Bajar un semitono' }).click();
+    pass('wide: "Solo por ahora", Guardar and the key are in the bar, just left of the "⋯", and nothing moves when they appear');
 
     // Publishing only takes the tag away
     await wide.getByRole('button', { name: 'Más opciones', exact: true }).click();
@@ -156,8 +184,8 @@ try {
     await signIn(phone, server.base);
     await phone.getByRole('link', { name: /Junto a ti Jesús/ }).click();
     await phone.getByRole('button', { name: 'Subir un semitono' }).click();
-    const phoneMore = await box(phone, phone.getByRole('button', { name: 'Más opciones', exact: true }));
-    const phoneSave = await box(phone, phone.getByRole('button', { name: 'Guardar', exact: true }));
+    const phoneMore = await box(phone.getByRole('button', { name: 'Más opciones', exact: true }));
+    const phoneSave = await box(phone.getByRole('button', { name: 'Guardar', exact: true }));
     assert.ok(phoneSave.y > phoneMore.y + phoneMore.height - 1, 'on a phone Guardar is under the row of tools');
     pass('phone: the bar is as it was (Guardar under the row)');
 

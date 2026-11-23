@@ -78,6 +78,27 @@ describe('App', () => {
         assert.equal(await app.owner(), null);
     });
 
+    it('saving "mi tono" moves every list that follows it and respects a key fixed for a list (list › mi tono › original)', async () => {
+        const app = await App.create();
+        await app.adopt('a@example.com');
+        const song = await app.create(draft('Canto'));
+        const follows = await app.setlists.create({ title: 'Sigue', eventDate: null });
+        const fixed = await app.setlists.create({ title: 'Fijo', eventDate: null });
+        await app.setlists.addItem(follows.id, 'entrada', song.id);
+        await app.setlists.addItem(fixed.id, 'entrada', song.id);
+        const fixedItem = (await app.setlists.get(fixed.id))?.items[0];
+        await app.setlists.setTranspose(fixed.id, fixedItem?.id ?? '', 3);
+        const keyIn = async (id: string): Promise<number | undefined> => (await app.setlists.get(id))?.items[0]?.transpose;
+
+        await app.setMyShift(song.id, 2);
+        assert.equal(await keyIn(follows.id), 2, 'it follows "mi tono"');
+        assert.equal(await keyIn(fixed.id), 3, 'the key fixed for its list wins over "mi tono"');
+
+        await app.setMyShift(song.id, 0);
+        assert.equal(await keyIn(follows.id), 0, 'without "mi tono" it is the song\'s own key');
+        assert.equal(await keyIn(fixed.id), 3);
+    });
+
     it('tells listeners when the songs change', async () => {
         const app = await App.create();
         await app.adopt('a@example.com');

@@ -92,7 +92,9 @@ const pickSetlist = ({ id, title, eventDate, notes, starred, items, parts, updat
     eventDate,
     notes,
     starred,
-    items: items.map(({ id: itemId, part, songId, transpose, note }) => ({ id: itemId, part, songId, transpose, note })),
+    items: items.map(({ id: itemId, part, songId, transpose, note, fixed }) => ({
+        id: itemId, part, songId, transpose, note, ...(fixed === true ? { fixed } : {}),
+    })),
     parts: parts.map(({ id: partId, name, off, optional, note }) => ({
         id: partId,
         name,

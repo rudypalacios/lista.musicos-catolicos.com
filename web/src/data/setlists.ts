@@ -269,7 +269,7 @@ export class Setlists {
             for (const item of source.items) {
                 const song = await this.store.get('songs', item.songId);
                 if (song !== undefined && song.deletedAt === null) {
-                    items.push({ id: this.newId(), part: item.part, songId: item.songId, transpose: item.transpose, note: '' });
+                    items.push({ id: this.newId(), part: item.part, songId: item.songId, transpose: item.transpose, note: '', ...(item.fixed === true ? { fixed: true as const } : {}) });
                 }
             }
             const copy: Setlist = {
@@ -331,11 +331,12 @@ export class Setlists {
                 throw new ValidationError(`Un listado admite hasta ${LIMITS.items} cantos.`);
             }
 
-            // The song starts in the key its owner sings it in (copied: changing "mi tono" later leaves this list alone)
+            // The song starts in the key its owner sings it in and follows it: a new "mi tono" moves this use too. Put in
+            // another key (the one on screen on the song page) it is fixed there, and "mi tono" leaves it alone.
             const own = Number.isInteger(song.myShift) ? song.myShift : 0;
             const shift = transpose !== undefined && Number.isInteger(transpose) ? transpose % 12 : own;
 
-            return { items: [...list.items, { id: this.newId(), part, songId, transpose: shift, note: '' }] };
+            return { items: [...list.items, { id: this.newId(), part, songId, transpose: shift, note: '', ...(shift === own ? {} : { fixed: true as const }) }] };
         });
     }
 
@@ -454,17 +455,41 @@ export class Setlists {
         return touched;
     }
 
+    /**
+     * "Mi tono" of a song moved from `from` to `to`: every use of it in a list that follows it moves too. A use the person
+     * fixed for its list (`fixed`) stays. A use with no mark that is not in `from` was set before the mark existed, so it
+     * is a key of its own: it is marked now and stays. Returns how many uses moved.
+     */
+    async followMyShift(songId: string, from: number, to: number): Promise<number> {
+        let moved = 0;
+        for (const list of await this.using(songId)) {
+            await this.editItems(list.id, (items) => items.map((item) => {
+                if (item.songId !== songId || item.fixed === true) {
+                    return item;
+                }
+                if (item.transpose !== from) {
+                    return { ...item, fixed: true as const };
+                }
+                moved++;
+
+                return { ...item, transpose: wrap(to) };
+            }));
+        }
+
+        return moved;
+    }
+
     /** Raises or lowers the key of this use of the song by `delta` semitones, around the octave */
     shiftItem(id: string, itemId: string, delta: number): Promise<Setlist> {
         return this.editItems(id, (items) =>
-            items.map((item) => (item.id === itemId ? { ...item, transpose: wrap(item.transpose + delta) } : item)),
+            items.map((item) => (item.id === itemId ? { ...item, transpose: wrap(item.transpose + delta), fixed: true as const } : item)),
         );
     }
 
-    /** Sets the key of this use of the song, in semitones (−11…11); 0 is the song's own key */
+    /** Sets the key of this use of the song, in semitones (−11…11); 0 is the song's own key. It is the list's own from now on (`fixed`) */
     setTranspose(id: string, itemId: string, semitones: number): Promise<Setlist> {
         return this.editItems(id, (items) =>
-            items.map((item) => (item.id === itemId ? { ...item, transpose: wrap(semitones) } : item)),
+            items.map((item) => (item.id === itemId ? { ...item, transpose: wrap(semitones), fixed: true as const } : item)),
         );
     }
 

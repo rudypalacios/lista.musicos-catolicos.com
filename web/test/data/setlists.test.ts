@@ -32,6 +32,76 @@ describe('Setlists', () => {
     const transposeOf = async (id: string, itemId: string): Promise<number | undefined> =>
         (await itemsOf(id)).find((item) => item.id === itemId)?.transpose;
 
+    describe('following "mi tono"', () => {
+        const only = async (id: string, itemId: string): Promise<SetlistItem | undefined> => (await itemsOf(id)).find((item) => item.id === itemId);
+
+        it('a use added in "mi tono" follows it; one put in another key is fixed there', async () => {
+            await store.save('songs', { ...song('s3', 1), myShift: 2 });
+            const list = await lists.create({ title: 'Misa', eventDate: null });
+            await lists.addItem(list.id, 'entrada', 's3');
+            await lists.addItem(list.id, 'salmo', 's3', 5);
+            await lists.addItem(list.id, 'gloria', 's3', 2);
+            const [follows, fixed, sameAsMine] = await itemsOf(list.id);
+
+            assert.equal(follows?.fixed, undefined);
+            assert.equal(fixed?.fixed, true);
+            assert.equal(sameAsMine?.fixed, undefined, 'the key on screen was already "mi tono": nothing to fix');
+        });
+
+        it('a new "mi tono" moves the uses that follow it, in every list, and leaves a fixed one where it is', async () => {
+            const one = await lists.create({ title: 'Uno', eventDate: null });
+            const two = await lists.create({ title: 'Dos', eventDate: null });
+            await lists.addItem(one.id, 'entrada', 's1');
+            await lists.addItem(two.id, 'entrada', 's1');
+            await lists.addItem(two.id, 'salida', 's1');
+            const fixedId = (await itemsOf(two.id))[1]?.id ?? '';
+            await lists.setTranspose(two.id, fixedId, 3);
+
+            const moved = await lists.followMyShift('s1', 0, 4);
+
+            assert.equal(moved, 2);
+            assert.deepEqual((await itemsOf(one.id)).map((item) => item.transpose), [4]);
+            assert.deepEqual((await itemsOf(two.id)).map((item) => item.transpose), [4, 3]);
+        });
+
+        it('saving a key for the list fixes it, so "mi tono" no longer moves it', async () => {
+            const list = await lists.create({ title: 'Misa', eventDate: null });
+            await lists.addItem(list.id, 'entrada', 's1');
+            const itemId = (await itemsOf(list.id))[0]?.id ?? '';
+            assert.equal((await only(list.id, itemId))?.fixed, undefined);
+
+            await lists.setTranspose(list.id, itemId, 0);
+            await lists.followMyShift('s1', 0, 5);
+
+            assert.equal((await only(list.id, itemId))?.fixed, true);
+            assert.equal(await transposeOf(list.id, itemId), 0, 'its own key, even when it is the same as the song\'s');
+        });
+
+        it('a use with no mark that is not in the old "mi tono" was set before the mark existed: it is its own and stays', async () => {
+            const list = await lists.create({ title: 'Misa', eventDate: null });
+            await lists.addItem(list.id, 'entrada', 's1');
+            const itemId = (await itemsOf(list.id))[0]?.id ?? '';
+            const saved = await store.get('setlists', list.id);
+            await store.save('setlists', { ...(saved as Setlist), items: [{ ...(saved?.items[0] as SetlistItem), transpose: 7 }] });
+
+            const moved = await lists.followMyShift('s1', 0, 4);
+
+            assert.equal(moved, 0);
+            assert.equal(await transposeOf(list.id, itemId), 7);
+            assert.equal((await only(list.id, itemId))?.fixed, true, 'marked, so it is not guessed again');
+        });
+
+        it('a copy of a list keeps what is fixed', async () => {
+            const list = await lists.create({ title: 'Misa', eventDate: null });
+            await lists.addItem(list.id, 'entrada', 's1', 3);
+            await lists.addItem(list.id, 'salida', 's1');
+
+            const copy = await lists.duplicate(list.id);
+
+            assert.deepEqual((await itemsOf(copy.id)).map((item) => item.fixed), [true, undefined]);
+        });
+    });
+
     describe('moving an item to another section', () => {
         it('moves it in the list, which refuses a section it does not have', async () => {
             const list = await lists.create({ title: 'Misa' });

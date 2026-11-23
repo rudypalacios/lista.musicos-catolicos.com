@@ -177,6 +177,13 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
                 return fail(failure, 'No se pudo guardar tu tono.');
             }
             mine = shift;
+            // This use of the song follows "mi tono" unless the list fixed its own key: it may have moved with it
+            const fresh = (await app.setlists.get(setlist.id))?.items.find((candidate) => candidate.id === item.id);
+            if (fresh !== undefined && fresh.transpose !== saved) {
+                saved = fresh.transpose;
+                todayKeys.clear(setlist.id, item.id);
+                markStrip();
+            }
 
             return true;
         };

@@ -87,7 +87,7 @@ final class SetlistRepository
      *
      * @return list<array{
      *     id: string, title: string, eventDate: ?string, notes: string, starred: bool,
-     *     items: list<array{id: string, part: string, songId: string, transpose: int, note: string}>,
+     *     items: list<array{id: string, part: string, songId: string, transpose: int, note: string, fixed?: true}>,
      *     parts: list<array{id: string, name: string, off?: true, optional?: true, note?: string}>,
      *     updatedAt: int, deletedAt: ?int, seq: int
      * }>

@@ -44,6 +44,8 @@ something the owner has could break without it:
   of a new item would be `NaN`.
 - `myShift` / `starred` / `status` optional on the server (`SongChange`, `SetlistChange`, the `COALESCE` in both repositories):
   a record queued or saved on a device before those fields is pushed without them, and must keep what is stored.
+- Items with no `fixed` mark (`Setlists.followMyShift`): made before "mi tono" reached the lists, they are read as following it only while their key is the old "mi tono"; any other key is marked `fixed` the first time "mi tono" changes.
+  Remove once every list of the owner has been through one change of "mi tono".
 - `withDefaults` (`data/library.ts`) reads a song stored before the state (`Song.status`) as published, and `pickSong`
   (`api.ts`) does the same for a record the server sent without it.
 - `songs` / `setlists` each optional in `PushAction` (at least one): an app from before the lists pushes songs only.
@@ -112,6 +114,10 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       the lines that matched, also on Cantos). No highlight of the matched words on purpose: showing the matching
       line does the job with no offset mapping across accents. Not added: searching inside the key or chords.
       **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 14.
+- [x] **"Mi tono" reaches the lists** (`SetlistItem.fixed`, `Setlists.followMyShift`, `App.setMyShift`; the owner asked on 2026-11-23). Saving "mi tono" (from the song page's "Como mi tono", or from singing) moves the song in every list that follows it.
+      Precedence: **only today › this list (`fixed`) › "mi tono" › the song's own key.** A key saved "En este listado" (or a song added in another key than "mi tono") marks the item `fixed` and "mi tono" leaves it. Items made before the mark:
+      the first time "mi tono" changes, one still at the old "mi tono" follows it and one at another key is marked `fixed` (it was a key of its own). Side effect: a list that follows and moves is rewritten, so it rises in "Recientes"
+      (one record per list, newest edit wins). Test: `tests/e2e/mytone.ts`.
 - [x] **Cb Db Fb Gb Ab are shown as B C# E F# G#, Eb as D#, and E# B# A# as F C Bb** (Si Do# Mi Fa# Sol#; `PREFERRED_SPELLING` in `web/src/chordpro/chord.ts`; the owner asked on 2026-11-08, Ab → G# included, confirmed twice). It is the app's one deliberate difference from the public site's `song.js` (golden test adapted); the editor's − / + writes the new spelling into the text; songs already holding those flats are untouched until a chord is moved. **To tell the public site's owner when the two systems are mixed.**
 - [x] **The state of a song: draft or published** (`Song.status`, migration `0019`, synced; the owner asked on 2026-11-08 and unlocked the song rows of Cantos, of the picker and of a list in `DESIGN-LOCK.md`):
       a draft carries a grey "Borrador" pill after its author and key wherever it is listed (`draftTag` in `web/src/dom.ts`); publishing only takes it away, there is no "Publicado" tag. The editor has a
@@ -124,7 +130,7 @@ the owner one complete list of what to try on the iPad. Until then only the Andr
       is Tono + Letra only: Nota (already gone), Pantalla, Ajustes and Salir left it; a screen lock that fails now says so
       with a toast. **Owner's check:** `DEPLOY.md` "Fases 4 y 5", item 15.
 - [x] The key of a song in a list, PR 2 of 3: **"mi tono"** (`Song.myShift`, migration `0007`, synced; 0 is the written key, the
-      same as none): a song added to a list starts in it (copied to the item, not followed). "Guardar ▾" in Cantar offers
+      same as none): a song added to a list starts in it (superseded on 2026-11-23: it now follows it, see "Mi tono reaches the lists"). "Guardar ▾" in Cantar offers
       "Solo hoy / En este listado / Como mi tono / En el listado y como mi tono" and the line under it says "Mío Re"; the song
       page in Cantos has the same control (compact: the line shows only while there is a change) with "Guardar como mi tono", and
       the song opens in it (the address carries `?t=` only when the key is not the person's own). **Owner's check:** `DEPLOY.md`

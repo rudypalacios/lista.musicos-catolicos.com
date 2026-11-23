@@ -637,12 +637,15 @@ ul.notes {
 }
 
 /*
- * From 900px the key and Guardar ride in the same bar, just left of the "⋯" (the lyrics size stays at the other end).
- * The three wrappers dissolve so each tool becomes an item of the bar itself; the menu of Guardar and the line with the
- * keys ("Original Do · Mío Do") wrap under it, as they did. Under 900px nothing of this applies: it is the phone's bar.
+ * From 900px the key and Guardar ride in the same bar, just left of the "⋯" (the lyrics size stays at the other end), in the
+ * order "Solo por ahora", Guardar, − key +: what appears and hides while the key changes sits at the left of the step, which
+ * stays against the "⋯", so nothing at its right moves. The menu of Guardar and the line with the keys ("Original Do · Mío Do")
+ * hang under the bar instead of pushing the lyrics down. The three wrappers dissolve so each tool becomes an item of the bar.
+ * Under 900px nothing of this applies: it is the phone's bar.
  */
 @media (min-width: 900px) {
     .song-tools {
+        position: relative;
         display: flex;
         flex-wrap: wrap;
         align-items: center;
@@ -660,17 +663,17 @@ ul.notes {
         margin-right: auto;
     }
 
-    .song-tools .tone-control__step {
+    .song-tools .tone-control__hint {
         order: 1;
+        white-space: nowrap;
     }
 
     .song-tools .tone-control__split {
         order: 2;
     }
 
-    .song-tools .tone-control__hint {
+    .song-tools .tone-control__step {
         order: 3;
-        white-space: nowrap;
     }
 
     .song-tools__more {
@@ -679,15 +682,23 @@ ul.notes {
     }
 
     .song-tools .tone-control__menu {
-        order: 5;
-        flex: 0 0 min(100%, 22rem);
-        margin: 0 0 0 auto;
+        position: absolute;
+        top: 100%;
+        right: 0.75rem;
+        z-index: 5;
+        width: min(22rem, calc(100% - 1.5rem));
+        margin: 0;
     }
 
     .song-tools .tone-control__refs {
-        order: 6;
-        flex: 0 0 100%;
+        position: absolute;
+        top: 100%;
+        left: 0.75rem;
+        z-index: 4;
         margin: 0;
+        padding: 0.15rem 0.5rem;
+        background: var(--bg);
+        border-radius: 0 0 0.5rem 0.5rem;
     }
 }
 
@@ -2540,8 +2551,8 @@ body {
 }
 
 /*
- * The key in the singing bar, from 900px only (under it the key is in the "⋯" sheet, as always): − key +, then Guardar
- * and its hint while there is a change, before the position button. The menu of Guardar hangs under the bar.
+ * The key in the singing bar, from 900px only (under it the key is in the "⋯" sheet, as always): "Solo hoy" and Guardar
+ * while there is a change, then − key +, before the position button. The menu of Guardar hangs under the bar.
  */
 .perform__tone {
     display: none;
@@ -2561,8 +2572,21 @@ body {
         display: contents;
     }
 
+    /*
+     * "Solo hoy", Guardar, then − key +: what appears and hides while the key changes is at the left, and the step stays
+     * against the position button, so nothing at its right moves when the key is changed or saved.
+     */
     .perform__tone .tone-control__hint {
+        order: 0;
         white-space: nowrap;
+    }
+
+    .perform__tone .tone-control__split {
+        order: 1;
+    }
+
+    .perform__tone .tone-control__step {
+        order: 2;
     }
 
     .perform__tone .tone-control__refs {
