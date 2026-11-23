@@ -58,8 +58,8 @@ try {
     await listWithTheSong(page);
     await page.getByRole('link', { name: 'Cantar' }).click();
     await page.locator('.perform__tone').getByRole('button', { name: 'Subir un semitono' }).click();
-    await page.locator('.perform__tone .tone-control__save').click();
-    await page.locator('.perform__tone .tone-control__save').waitFor({ state: 'hidden' });
+    await page.locator('.perform__dock .tone-control__save').click();
+    await page.locator('.perform__dock').waitFor({ state: 'hidden' });
     await page.getByRole('link', { name: 'Volver al listado' }).click();
     assert.equal(await keyInList(page), 'Do#', 'the third list has its own key');
     pass('a list can have a key of its own ("En este listado"), set from singing');

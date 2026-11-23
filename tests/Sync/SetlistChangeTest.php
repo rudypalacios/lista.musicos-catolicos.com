@@ -100,6 +100,26 @@ final class SetlistChangeTest extends TestCase
         }
     }
 
+    public function testAnItemKeepsTheUnionOfItsPageAndRefusesOneThatIsNotAnId(): void
+    {
+        $next = 'ffffffff-ffff-4fff-8fff-ffffffffffff';
+        $change = SetlistChange::fromArray($this->data(['items' => [$this->item(['withNext' => $next])]]), self::NOW);
+        $this->assertSame($next, $change->items[0]['withNext'] ?? null);
+
+        foreach ([[], ['withNext' => null]] as $override) {
+            $none = SetlistChange::fromArray($this->data(['items' => [$this->item($override)]]), self::NOW);
+            $this->assertArrayNotHasKey('withNext', $none->items[0]);
+        }
+        foreach (['no es un id', 7, true] as $bad) {
+            try {
+                SetlistChange::fromArray($this->data(['items' => [$this->item(['withNext' => $bad])]]), self::NOW);
+                $this->fail('a union that is not an id is refused');
+            } catch (InvalidSetlist $error) {
+                $this->assertStringContainsString('unión', $error->getMessage());
+            }
+        }
+    }
+
     public function testAnItemWithoutTransposeOrNoteGetsTheDefaults(): void
     {
         $raw = $this->item();

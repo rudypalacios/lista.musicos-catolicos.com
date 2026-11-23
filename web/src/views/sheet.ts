@@ -197,9 +197,10 @@ export function createSheet(label: string, onOpen?: () => void | Promise<void>, 
 }
 
 /** A row of a sheet: an icon and what it does, big enough to tap, and a quiet line under it if it needs one */
-export function sheetAction(name: IconName, label: string, run: () => void, options: { danger?: boolean; hint?: string; lit?: boolean } = {}): HTMLElement {
+export function sheetAction(name: IconName, label: string, run: () => void, options: { danger?: boolean; hint?: string; lit?: boolean; disabled?: boolean } = {}): HTMLElement {
     const button = h('button', { type: 'button', class: ['sheet-action', ...(options.danger === true ? ['is-danger'] : []), ...(options.lit === true ? ['is-lit'] : [])].join(' ') },
         icon(name, 20), h('span', { class: 'sheet-action__text' }, label, ...(options.hint === undefined ? [] : [h('small', {}, options.hint)])));
+    button.disabled = options.disabled === true;
     button.addEventListener('click', run);
 
     return button;

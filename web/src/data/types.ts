@@ -60,6 +60,11 @@ export interface SetlistItem {
      * The order of precedence is: only today (the device, never stored here) › this list (`fixed`) › "mi tono" › the song's own key.
      */
     readonly fixed?: true;
+    /**
+     * The id of the song that follows this one, when the person divided the page: the two are read together, in two squares
+     * (`pagesOf`, `data/pages.ts`). Only counts while that song is the next one in the order of the list.
+     */
+    readonly withNext?: string;
     /** Free text for this use of the song ("sin el último coro"), "" when there is none */
     readonly note: string;
 }

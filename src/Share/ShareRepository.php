@@ -93,7 +93,7 @@ final class ShareRepository
      *     withLyrics: bool,
      *     updatedAt: int,
      *     parts: list<array{id: string, name: string}>,
-     *     items: list<array{id: string, part: string, songId: string, transpose: int}>,
+     *     items: list<array{id: string, part: string, songId: string, transpose: int, withNext?: string}>,
      *     songs: list<array{id: string, title: string, author: string, body?: string}>
      * }|null
      */
@@ -133,7 +133,7 @@ final class ShareRepository
                     'part' => (string) $item['part'],
                     'songId' => (string) $item['songId'],
                     'transpose' => (int) $item['transpose'],
-                ];
+                ] + (isset($item['withNext']) && is_string($item['withNext']) ? ['withNext' => $item['withNext']] : []);
             }
         }
 

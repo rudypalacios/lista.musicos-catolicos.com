@@ -20,6 +20,8 @@ export interface SharedItem {
     songId: string;
     /** Semitones from the song's own key: the key the list has it in */
     transpose: number;
+    /** The id of the song that shares its page with this one (the owner divided the page); only counts while it is the next one */
+    withNext?: string;
 }
 
 export interface SharedList {

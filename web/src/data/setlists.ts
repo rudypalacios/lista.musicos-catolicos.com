@@ -2,6 +2,7 @@ import { isValidDate, shortDate, today } from '../dates.ts';
 import { massSections } from '../mass.ts';
 import { addedTo, cleanParts, movedIn, renamedIn, switchedIn, withoutPart } from './parts.ts';
 import { copyOf } from './copy-of.ts';
+import { canJoin, pageIndexOf, pagesOf } from './pages.ts';
 import { ValidationError } from './library.ts';
 import type { LocalStore } from './store.ts';
 import { nearestShift } from '../keys.ts';
@@ -266,10 +267,22 @@ export class Setlists {
                 throw new Error('El listado ya no existe.');
             }
             const items: SetlistItem[] = [];
+            /** The copy's id for each item of the source, so a divided page is divided in the copy too */
+            const copied = new Map<string, string>();
             for (const item of source.items) {
                 const song = await this.store.get('songs', item.songId);
                 if (song !== undefined && song.deletedAt === null) {
-                    items.push({ id: this.newId(), part: item.part, songId: item.songId, transpose: item.transpose, note: '', ...(item.fixed === true ? { fixed: true as const } : {}) });
+                    copied.set(item.id, this.newId());
+                }
+            }
+            for (const item of source.items) {
+                const id = copied.get(item.id);
+                if (id !== undefined) {
+                    const withNext = item.withNext === undefined ? undefined : copied.get(item.withNext);
+                    items.push({
+                        id, part: item.part, songId: item.songId, transpose: item.transpose, note: '',
+                        ...(item.fixed === true ? { fixed: true as const } : {}), ...(withNext === undefined ? {} : { withNext }),
+                    });
                 }
             }
             const copy: Setlist = {
@@ -456,6 +469,37 @@ export class Setlists {
     }
 
     /**
+     * Divides the page: the song shares it with the one that follows it in the order of the list (two squares on a screen).
+     * Only for a song that is alone on its page. @throws ValidationError (as a rejected promise) with the reason when it cannot
+     */
+    joinWithNext(id: string, itemId: string): Promise<Setlist> {
+        return this.edit(id, (list) => {
+            const order = inListOrder(list);
+            const check = canJoin(order, itemId);
+            if (!check.ok) {
+                throw new ValidationError(check.reason);
+            }
+            const next = order[order.findIndex((item) => item.id === itemId) + 1] as SetlistItem;
+
+            return { items: list.items.map((item) => (item.id === itemId ? { ...item, withNext: next.id } : item)) };
+        });
+    }
+
+    /** Undoes the division of the page `itemId` is on: each song goes back to a page of its own. Nothing happens when it is not divided */
+    separate(id: string, itemId: string): Promise<Setlist> {
+        return this.edit(id, (list) => {
+            const pages = pagesOf(inListOrder(list));
+            const page = pages[pageIndexOf(pages, itemId)] ?? [];
+            const first = page.length === 2 ? page[0] : undefined;
+            if (first === undefined) {
+                return { items: list.items };
+            }
+
+            return { items: list.items.map((item) => (item.id === first.id ? withoutNext(item) : item)) };
+        });
+    }
+
+    /**
      * "Mi tono" of a song moved from `from` to `to`: every use of it in a list that follows it moves too. A use the person
      * fixed for its list (`fixed`) stays. A use with no mark that is not in `from` was set before the mark existed, so it
      * is a key of its own: it is marked now and stays. Returns how many uses moved.
@@ -564,4 +608,11 @@ function assertFits(list: Setlist): void {
     if (bytes(list.parts) > LIMITS.partsJson) {
         throw new ValidationError('Las secciones del listado son demasiado grandes.');
     }
+}
+
+/** The item with no division after it */
+function withoutNext(item: SetlistItem): SetlistItem {
+    const { withNext: _unused, ...rest } = item;
+
+    return rest;
 }
