@@ -3290,6 +3290,17 @@ button.sheet-action.is-danger .icon {
     color: var(--muted);
 }
 
+.edit-format .tone-control__step button {
+    min-width: 3rem;
+    font-weight: 700;
+}
+
+.edit-indication {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
 .edit-tone .tone-control__step button:disabled {
     opacity: 0.4;
     cursor: default;
