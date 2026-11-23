@@ -141,8 +141,15 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
     };
     body.addEventListener('input', draw);
     // Leaving the box writes the capitals for real (not while typing: the text under the cursor would jump)
+    // Only when something changes, and keeping the selection: assigning the value puts the cursor at the end, and a format button
+    // touched right after selecting lines would find nothing selected and change the whole lyrics
     body.addEventListener('change', () => {
-        body.value = capitaliseChords(body.value);
+        const capitalised = capitaliseChords(body.value);
+        if (capitalised !== body.value) {
+            const { selectionStart, selectionEnd } = body;
+            body.value = capitalised;
+            body.setSelectionRange(selectionStart, selectionEnd);
+        }
     });
     draw();
 

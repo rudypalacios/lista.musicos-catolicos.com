@@ -55,6 +55,20 @@ describe('changeCaseInRange', () => {
         assert.equal(result.text.slice(result.from, result.to), 'uno [C]dos\ntres cuatro');
     });
 
+    it('changes only the selected lines and never a chord, not even one typed in lowercase (the editor capitalises those itself)', () => {
+        const song = 'Ale[g]luya, ale[Am]LUYA\nprepa[G]rad EL ca[a]mino\ntercera [D]LÍNEA';
+        const from = song.indexOf('luya');
+        const to = song.indexOf('EL') + 2;
+        const chordsOf = (value: string): string[] => value.match(/\[[^\]]*\]/g) ?? [];
+
+        for (const mode of ['lower', 'upper', 'sentence'] as const) {
+            const result = changeCaseInRange(song, from, to, mode);
+            assert.deepEqual(chordsOf(result.text), chordsOf(song), `${mode}: the chords are as they were`);
+            assert.equal(result.text.split('\n')[2], 'tercera [D]LÍNEA', `${mode}: the line that was not selected is as it was`);
+        }
+        assert.equal(changeCaseInRange(song, from, to, 'upper').text, 'ALE[g]LUYA, ALE[Am]LUYA\nPREPA[G]RAD EL CA[a]MINO\ntercera [D]LÍNEA');
+    });
+
     it('works on the last line and on a selection that is only a cursor', () => {
         assert.equal(changeCaseInRange(text, text.length, text.length, 'upper').text, 'Uno [C]DOS\ntres CUATRO\nCINCO SEIS');
         assert.equal(changeCaseInRange('a\nb', 0, 0, 'upper').text, 'A\nb');

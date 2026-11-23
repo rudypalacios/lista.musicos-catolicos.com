@@ -50,6 +50,19 @@ try {
     assert.equal(await body.inputValue(), TEXT.replace('PREPARAD EL SEÑOR.', 'preparad el señor.'));
     assert.match(await note.locator('span').innerText(), /seleccionadas/);
     await note.getByRole('button', { name: 'Deshacer' }).click();
+    // Two lines with chords, one of them typed in lowercase: only those lines change and no chord does
+    await body.fill('Ale[g]luya, ale[Am]LUYA\nprepa[G]rad EL ca[a]mino\ntercera [D]LÍNEA');
+    await body.evaluate((element) => {
+        const area = element as HTMLTextAreaElement;
+        area.focus();
+        area.setSelectionRange(area.value.indexOf('luya'), area.value.indexOf('EL') + 2);
+    });
+    await page.getByRole('button', { name: 'Mayúsculas' }).click();
+    // Touching the button leaves the box, and the box writes the capitals of the chords it holds ([g] → [G]): that must not lose the selection
+    assert.equal(await body.inputValue(), 'ALE[G]LUYA, ALE[Am]LUYA\nPREPA[G]RAD EL CA[A]MINO\ntercera [D]LÍNEA', 'two lines in capitals, the chords written as their own control writes them, the third line as it was');
+    await note.getByRole('button', { name: 'Deshacer' }).click();
+    await body.fill(TEXT);
+    await page.getByRole('heading', { name: 'Nuevo canto' }).click();
     // Nothing to change says so, with nothing to give back
     await page.getByRole('button', { name: 'Mayúsculas' }).click();
     await page.getByRole('button', { name: 'Mayúsculas' }).click();
