@@ -157,10 +157,10 @@ try {
     pass('chords typed in lowercase are read, previewed and written as capitals');
 
     // − / + in the editor move every chord of the text, with the preview, and back leaves it as it was
-    assert.equal(await page.locator('.edit-tone .tone-control__key').innerText(), 'Do');
+    assert.equal(await page.locator('.lyrics-toolbar .tone-control__key').innerText(), 'Do');
     await page.getByRole('button', { name: 'Bajar el tono un semitono' }).click();
     assert.equal(await page.getByLabel('Letra con acordes').inputValue(), SHORT.replace('[C]', '[B]').replace('[G]', '[F#]'));
-    assert.equal(await page.locator('.edit-tone .tone-control__key').innerText(), 'Si');
+    assert.equal(await page.locator('.lyrics-toolbar .tone-control__key').innerText(), 'Si');
     assert.deepEqual(await page.locator('.preview .ch').allTextContents(), ['Si', 'Fa#']);
     await page.getByRole('button', { name: 'Subir el tono un semitono' }).click();
     assert.equal(await page.getByLabel('Letra con acordes').inputValue(), SHORT);
@@ -687,7 +687,8 @@ try {
     await page.getByRole('heading', { name: 'Nuevo canto' }).waitFor();
     await page.getByLabel('Letra con acordes').fill('[C]Uno [G]dos');
     const tops = await page.evaluate(() => [
-        (document.getElementById('body') as HTMLElement).getBoundingClientRect().top,
+        // The box of the lyrics is the wrapper of the bar and the text
+        (document.querySelector('.page--edit .composer') as HTMLElement).getBoundingClientRect().top,
         (document.querySelector('.page--edit .preview .song-sheet') as HTMLElement).getBoundingClientRect().top,
     ]);
     assert.ok(Math.abs((tops[0] ?? 0) - (tops[1] ?? 99)) <= 1, `the two boxes are level (${tops.join(' / ')})`);

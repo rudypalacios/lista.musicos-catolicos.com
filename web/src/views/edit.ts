@@ -3,11 +3,13 @@ import { capitaliseChords } from '../chordpro/capitalise.ts';
 import { transposeBody } from '../chordpro/transpose-body.ts';
 import { parse, songKey } from '../chordpro/parser.ts';
 import { sheetHtml } from '../chordpro/sheet.ts';
+import { insertItem, type InsertKind } from '../chordpro/insert.ts';
 import { changeCaseInRange, type CaseMode } from '../chordpro/letter-case.ts';
 import { ValidationError, type SongDraft } from '../data/library.ts';
 import { partsOf } from '../data/setlists.ts';
 import { sameTag, tagOf, tagsInUse } from '../data/tags.ts';
 import { MASS_PARTS } from '../mass.ts';
+import { createLyricsToolbar } from './lyrics-toolbar.ts';
 import { createTagField } from './tag-field.ts';
 import { convertPastedSheet } from '../importer.ts';
 import type { Song } from '../data/types.ts';
@@ -99,24 +101,15 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
     const toneDown = h('button', { type: 'button', 'aria-label': 'Bajar el tono un semitono' }, icon('minus', 20));
     const toneUp = h('button', { type: 'button', 'aria-label': 'Subir el tono un semitono' }, icon('plus', 20));
     const toneKey = h('span', { class: 'tone-control__key', 'aria-live': 'polite' });
-    const toneRow = h('div', { class: 'edit-tone' },
-        h('span', { class: 'edit-tone__label' }, 'Tono'),
-        h('div', { class: 'tone-control__step' }, toneDown, toneKey, toneUp),
-        h('span', { class: 'edit-tone__hint' }, 'Cambia los acordes de la letra'));
-    // The format of the words (minúsculas, MAYÚSCULAS, Tipo oración): the lyrics only, never the chords; the lines selected, or all of them
-    const caseButton = (mode: CaseMode, text: string, label: string): HTMLButtonElement =>
-        h('button', { type: 'button', 'data-case': mode, 'aria-label': label, title: label }, text);
-    const caseButtons = [caseButton('lower', 'aa', 'Minúsculas'), caseButton('upper', 'AA', 'Mayúsculas'), caseButton('sentence', 'Aa', 'Tipo oración')];
-    const formatRow = h('div', { class: 'edit-tone edit-format' },
-        h('span', { class: 'edit-tone__label' }, 'Formato'),
-        h('div', { class: 'tone-control__step' }, ...caseButtons),
-        h('span', { class: 'edit-tone__hint' }, 'Minúsculas, mayúsculas o tipo oración: solo las palabras, no los acordes'));
-    // An indication ({ci: Intro}, {ci: x2}): a note in italics inside the stanza, with no label and no verse number
-    const indication = h('button', { type: 'button', class: 'button edit-indication' }, icon('plus', 18), 'Indicación');
-    const indicationRow = h('div', { class: 'edit-tone edit-format' },
-        h('span', { class: 'edit-tone__label' }, 'Insertar'),
-        indication,
-        h('span', { class: 'edit-tone__hint' }, 'Una nota en cursiva, como «Intro» o «x2»'));
+    const toneGroup = h('div', { class: 'tone-control__step', role: 'group', 'aria-label': 'Tono' }, toneDown, toneKey, toneUp);
+    // The bar of the lyrics box (the key, "Formato", "Insertar"), flush on top of the text inside one wrapper with it
+    const toolbar = createLyricsToolbar({
+        tone: toneGroup,
+        onCase: (mode) => applyCase(mode, said[mode]),
+        onInsert: (kind) => insert(kind),
+        hasSelection: () => body.selectionStart !== body.selectionEnd,
+    });
+    const composer = h('div', { class: 'composer' }, toolbar.element, body);
     const moveChords = (by: number): void => {
         body.value = transposeBody(capitaliseChords(body.value), by);
         // As if typed: the preview, the notice of the key, the draft and the leave guard all follow
@@ -125,7 +118,9 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
     toneDown.addEventListener('click', () => moveChords(-1));
     toneUp.addEventListener('click', () => moveChords(1));
     const sheet = h('div', { class: 'song-sheet' });
-    const preview = h('section', { class: 'preview', 'aria-label': 'Vista previa' }, h('h3', {}, 'Vista previa '), keyChip, sheet);
+    // Capo, tempo and compás ({capo: 2}…) are shown above the lyrics, as when the song is read
+    const noteChips = h('span', { class: 'preview__notes' });
+    const preview = h('section', { class: 'preview', 'aria-label': 'Vista previa' }, h('h3', {}, 'Vista previa '), keyChip, noteChips, sheet);
 
     const draw = (): void => {
         // What is previewed is what is saved: a chord typed [c] is read as [C]
@@ -134,6 +129,11 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         const key = songKey(parsed);
         keyChip.hidden = key === null;
         keyChip.textContent = key === null ? '' : `Tono ${transpose(key, 0, readNotation())}`;
+        noteChips.replaceChildren(...([['capo', 'Capo'], ['tempo', 'Tempo'], ['time', 'Compás']] as const).flatMap(([name, label]) => {
+            const value = parsed.meta[name];
+
+            return value === undefined ? [] : [h('span', { class: 'chip' }, `${label} ${value}`)];
+        }));
         toneKey.textContent = key === null ? '—' : transpose(key, 0, readNotation());
         // A text with no chord has nothing to move
         toneDown.disabled = key === null;
@@ -295,22 +295,14 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         keepSoon();
     };
     const said: Readonly<Record<CaseMode, string>> = { lower: 'Letra en minúsculas', upper: 'Letra en MAYÚSCULAS', sentence: 'Letra en tipo oración' };
-    for (const button of caseButtons) {
-        button.addEventListener('click', () => applyCase(button.dataset['case'] as CaseMode, said[button.dataset['case'] as CaseMode]));
-    }
-    indication.addEventListener('click', () => {
-        const text = body.value;
-        const at = body.selectionStart;
-        // On a line of its own, with the cursor inside the braces
-        const lead = at > 0 && text[at - 1] !== '\n' ? '\n' : '';
-        const tail = at < text.length && text[at] !== '\n' ? '\n' : '';
-        body.setRangeText(`${lead}{ci: }${tail}`, at, at, 'end');
-        const caret = at + lead.length + '{ci: '.length;
-        body.setSelectionRange(caret, caret);
+    /** "Insertar": at the cursor or around the selection (`chordpro/insert.ts`), as if typed: the preview, the draft and the leave guard follow */
+    const insert = (kind: InsertKind): void => {
+        const result = insertItem(body.value, body.selectionStart, body.selectionEnd, kind);
+        body.value = result.text;
         body.focus();
-        // As if typed: the preview, the draft and the leave guard follow
+        body.setSelectionRange(result.from, result.to);
         body.dispatchEvent(new Event('input', { bubbles: true }));
-    });
+    };
     // The offer is for the paste just made: once the text is edited there is nothing to give back
     body.addEventListener('input', () => {
         converted.hidden = true;
@@ -334,10 +326,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
 
     writePane.append(
         h('label', { for: 'body' }, 'Letra con acordes'),
-        body,
-        toneRow,
-        formatRow,
-        indicationRow,
+        composer,
         converted,
         tagField.element,
         draftField,
@@ -465,6 +454,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
     return {
         element,
         dispose: () => {
+            toolbar.dispose();
             keepNow();
             wide.removeEventListener('change', placeRemove);
             window.removeEventListener('pagehide', keepNow);

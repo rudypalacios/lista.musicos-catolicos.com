@@ -4,6 +4,8 @@
  * chord, and "{C: CORO}" would no longer be a directive. Pure: text in, text out.
  */
 
+import { lineRange } from './lines.ts';
+
 export type CaseMode = 'lower' | 'upper' | 'sentence';
 
 /** A chord or a directive (kept as it is), or a run of words (changed) */
@@ -51,10 +53,8 @@ export function changeCase(text: string, mode: CaseMode): string {
  * the middle of a line takes the whole line, so a chord is never cut in two. Returns the new text and the new range.
  */
 export function changeCaseInRange(text: string, from: number, to: number, mode: CaseMode): { text: string; from: number; to: number } {
-    const start = text.lastIndexOf('\n', Math.max(0, from) - 1) + 1;
-    const end = text.indexOf('\n', Math.max(to, from));
-    const stop = end < 0 ? text.length : end;
-    const changed = changeCase(text.slice(start, stop), mode);
+    const { start, end } = lineRange(text, from, to);
+    const changed = changeCase(text.slice(start, end), mode);
 
-    return { text: text.slice(0, start) + changed + text.slice(stop), from: start, to: start + changed.length };
+    return { text: text.slice(0, start) + changed + text.slice(end), from: start, to: start + changed.length };
 }
