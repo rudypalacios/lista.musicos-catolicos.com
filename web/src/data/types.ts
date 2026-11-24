@@ -18,6 +18,8 @@ export interface Song {
     readonly myShift: number;
     /** Draft or published; a song stored before the state existed reads as published (`withDefaults`) */
     readonly status: SongStatus;
+    /** A link to hear the original, `https://…`, "" when there is none; a song stored before it existed reads as none (`withDefaults`) */
+    readonly listenUrl: string;
     /** When this version was written, by the clock of the device that wrote it (epoch ms) */
     readonly updatedAt: number;
     /** When it was deleted, or null. A deleted song stays as a tombstone so the deletion syncs */

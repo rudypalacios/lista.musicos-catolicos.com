@@ -36,9 +36,10 @@ final class SongRepositoryTest extends TestCase
         string $id = self::SONG,
         ?int $myShift = null,
         ?array $tags = null,
-        ?string $status = null
+        ?string $status = null,
+        ?string $listenUrl = null
     ): SongChange {
-        return new SongChange($id, $title, 'Autor', "[G]Letra de $title", $at, $deleted, $myShift, $tags, $status);
+        return new SongChange($id, $title, 'Autor', "[G]Letra de $title", $at, $deleted, $myShift, $tags, $status, $listenUrl);
     }
 
     public function testANewSongIsStoredAndNumbered(): void
@@ -53,6 +54,22 @@ final class SongRepositoryTest extends TestCase
         $this->assertNull($rows[0]['deletedAt']);
         $this->assertSame(1, $rows[0]['seq']);
         $this->assertSame(1, $this->sequence->latest(self::ME));
+    }
+
+    public function testTheLinkToHearItIsStoredKeptByAnOlderClientAndTakenAwayByABlankOne(): void
+    {
+        $this->songs->apply(self::ME, $this->change('Uno', 1000));
+        $this->assertSame('', $this->songs->changedSince(self::ME, 0, 10)[0]['listenUrl'], 'none said');
+
+        $url = 'https://youtu.be/Zk3mPq8vLw4';
+        $this->songs->apply(self::ME, $this->change('Uno', 2000, listenUrl: $url));
+        $this->assertSame($url, $this->songs->changedSince(self::ME, 0, 10)[0]['listenUrl']);
+
+        $this->songs->apply(self::ME, $this->change('Uno', 3000));
+        $this->assertSame($url, $this->songs->changedSince(self::ME, 0, 10)[0]['listenUrl'], 'an older client that sends none keeps the stored one');
+
+        $this->songs->apply(self::ME, $this->change('Uno', 4000, listenUrl: ''));
+        $this->assertSame('', $this->songs->changedSince(self::ME, 0, 10)[0]['listenUrl'], 'blank takes it away');
     }
 
     public function testANewerEditReplacesAndGetsANewNumber(): void

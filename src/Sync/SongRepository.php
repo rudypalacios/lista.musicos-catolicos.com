@@ -55,7 +55,8 @@ final class SongRepository
                 $this->pdo
                     ->prepare(
                         'UPDATE songs SET title = ?, author = ?, body = ?, updated_at = ?, deleted_at = ?, seq = ?, '
-                        . 'my_shift = COALESCE(?, my_shift), tags = COALESCE(?, tags), status = COALESCE(?, status) '
+                        . 'my_shift = COALESCE(?, my_shift), tags = COALESCE(?, tags), status = COALESCE(?, status), '
+                        . 'listen_url = COALESCE(?, listen_url) '
                         . 'WHERE id = ? AND user_id = ?'
                     )
                     ->execute([
@@ -63,6 +64,7 @@ final class SongRepository
                         $change->myShift,
                         $change->tags === null ? null : $change->tagsJson(),
                         $change->status,
+                        $change->listenUrl,
                         $change->id,
                         $userId,
                     ]);
@@ -70,14 +72,15 @@ final class SongRepository
                 $this->pdo
                     ->prepare(
                         'INSERT INTO songs '
-                        . '(title, author, body, updated_at, deleted_at, seq, my_shift, tags, status, id, user_id) '
-                        . 'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+                        . '(title, author, body, updated_at, deleted_at, seq, my_shift, tags, status, listen_url, id, user_id) '
+                        . 'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
                     )
                     ->execute([
                         ...$values,
                         $change->myShift ?? 0,
                         $change->tagsJson(),
                         $change->status ?? SongChange::STATUS_PUBLISHED,
+                        $change->listenUrl ?? '',
                         $change->id,
                         $userId,
                     ]);
@@ -96,13 +99,13 @@ final class SongRepository
      *
      * @return list<array{
      *     id: string, title: string, author: string, body: string,
-     *     updatedAt: int, deletedAt: ?int, seq: int, myShift: int, tags: list<string>, status: string
+     *     updatedAt: int, deletedAt: ?int, seq: int, myShift: int, tags: list<string>, status: string, listenUrl: string
      * }>
      */
     public function changedSince(string $userId, int $since, int $limit): array
     {
         $statement = $this->pdo->prepare(
-            'SELECT id, title, author, body, updated_at, deleted_at, seq, my_shift, tags, status FROM songs '
+            'SELECT id, title, author, body, updated_at, deleted_at, seq, my_shift, tags, status, listen_url FROM songs '
             . 'WHERE user_id = ? AND seq > ? ORDER BY seq ASC LIMIT ' . max(1, $limit)
         );
         $statement->execute([$userId, $since]);
@@ -121,6 +124,7 @@ final class SongRepository
                 // A song written before the tags has none: NULL reads as an empty list
                 'tags' => $row['tags'] === null ? [] : json_decode((string) $row['tags'], true, 4, JSON_THROW_ON_ERROR),
                 'status' => (string) $row['status'],
+                'listenUrl' => (string) $row['listen_url'],
             ];
         }
 

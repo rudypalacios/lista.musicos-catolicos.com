@@ -1,6 +1,7 @@
 import { copyOf } from './copy-of.ts';
 import type { LocalStore } from './store.ts';
 import { cleanTags, sameTag } from './tags.ts';
+import { readListenUrl } from '../listen-url.ts';
 import { LIMITS, type Song, type SongStatus } from './types.ts';
 
 /** A song the person wrote that cannot be saved; the message is Spanish and can be shown as is */
@@ -19,6 +20,8 @@ export interface SongDraft {
     tags?: readonly string[];
     /** Left out: a new song is a draft (it is checked before it is published) and an edit keeps the state it has */
     status?: SongStatus;
+    /** Left out: a new song has none and an edit keeps the one it has; "" takes it away */
+    listenUrl?: string;
 }
 
 /**
@@ -55,7 +58,7 @@ export class Library {
     }
 
     async create(draft: SongDraft): Promise<Song> {
-        const song: Song = { ...clean(draft), tags: cleanTags(draft.tags ?? []), myShift: 0, status: draft.status ?? 'draft', id: this.newId(), updatedAt: this.now(), deletedAt: null };
+        const song: Song = { ...clean(draft), tags: cleanTags(draft.tags ?? []), myShift: 0, status: draft.status ?? 'draft', listenUrl: cleanListenUrl(draft.listenUrl ?? ''), id: this.newId(), updatedAt: this.now(), deletedAt: null };
         await this.store.save('songs', song);
 
         return song;
@@ -88,6 +91,7 @@ export class Library {
             ...clean(draft),
             tags: draft.tags === undefined ? current.tags : cleanTags(draft.tags),
             status: draft.status ?? current.status,
+            listenUrl: draft.listenUrl === undefined ? current.listenUrl : cleanListenUrl(draft.listenUrl),
             updatedAt: this.stamp(current),
         };
         await this.store.save('songs', song);
@@ -181,13 +185,26 @@ export class Library {
     }
 }
 
-/** A song saved before "mi tono", the tags or the state has none: the guard gives it the value they start with */
+/** The link to hear the original as it is kept: trimmed, and only if it is something the app can use. @throws ValidationError */
+function cleanListenUrl(text: string): string {
+    const read = readListenUrl(text);
+    if (read.kind === 'bad') {
+        throw new ValidationError(read.why);
+    }
+
+    return text.trim();
+}
+
+/** A song saved before "mi tono", the tags, the state or the link has none: the guard gives it the value they start with */
 function withDefaults(song: Song): Song {
     const myShift = Number.isInteger(song.myShift) ? song.myShift : 0;
     const tags = Array.isArray(song.tags) ? song.tags : [];
     const status = song.status === 'draft' ? 'draft' : 'published';
+    const listenUrl = typeof song.listenUrl === 'string' ? song.listenUrl : '';
 
-    return myShift === song.myShift && tags === song.tags && status === song.status ? song : { ...song, myShift, tags, status };
+    return myShift === song.myShift && tags === song.tags && status === song.status && listenUrl === song.listenUrl
+        ? song
+        : { ...song, myShift, tags, status, listenUrl };
 }
 
 function clean(draft: SongDraft): Pick<SongDraft, 'title' | 'author' | 'body'> {

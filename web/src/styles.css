@@ -5264,3 +5264,144 @@ button.srow__tool:disabled {
         padding-top: 0.4rem;
     }
 }
+
+/* ===== A link to hear the original: the row between the tools and the lyrics, and YouTube's player (views/listen.ts) ===== */
+.song-listen-slot {
+    display: contents;
+}
+
+.song-listen {
+    display: flex;
+    flex: none;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.5rem;
+    padding: 0.45rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.song-listen__hint {
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+.song-listen .button,
+.song-player .button {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 0.45rem;
+    white-space: nowrap;
+}
+
+/* The player is 16:9 across the width, so it is never under the 200 px YouTube asks of an embedded player; it is not hidden to leave only the sound */
+.song-player {
+    flex: none;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+}
+
+.song-player__screen {
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    color: var(--text);
+    text-align: center;
+    background: #05070a;
+}
+
+.song-player__screen iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.song-player__msg {
+    padding: 1rem;
+}
+
+.song-player__msg p {
+    max-width: 18rem;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.song-player__bar {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    min-height: 2.9rem;
+    padding: 0.1rem 0.3rem 0.1rem 0.75rem;
+}
+
+.song-player__what {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 0.82rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.song-player__close {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    min-height: 0;
+    padding: 0;
+    color: var(--text);
+    background: none;
+    border: 0;
+    border-radius: 50%;
+}
+
+/* From 900px the player is a column at the right of the lyrics, which keep their height */
+@media (min-width: 900px) {
+    .viewer {
+        position: relative;
+    }
+
+    .song-player {
+        position: absolute;
+        top: 4.25rem;
+        right: 1rem;
+        z-index: 2;
+        width: 24rem;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 0.7rem;
+    }
+
+    .viewer.has-player .stage {
+        padding-right: 26rem;
+    }
+}
+
+/* In the editor: the field of the link, and what the app understood of it */
+.listen-field {
+    margin-top: 0.25rem;
+}
+
+.listen-hint {
+    min-height: 1.3rem;
+    margin: 0.3rem 0 0;
+    font-size: 0.88rem;
+}
+
+.listen-hint--ok {
+    color: var(--ok);
+}
+
+.listen-hint--link {
+    color: var(--accent);
+}
+
+.listen-hint--bad {
+    color: var(--danger);
+}

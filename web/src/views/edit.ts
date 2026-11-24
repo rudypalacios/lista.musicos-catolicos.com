@@ -18,6 +18,7 @@ import { convertPastedSheet } from '../importer.ts';
 import type { Song } from '../data/types.ts';
 import { h, link, setSheet } from '../dom.ts';
 import { icon } from '../icons.ts';
+import { clock, readListenUrl } from '../listen-url.ts';
 import { keyDistance } from '../keys.ts';
 import { retuneTodayKeys } from '../transpose-song.ts';
 import { setLeaveGuard } from '../leave-guard.ts';
@@ -65,6 +66,20 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
     title.value = existing?.title ?? start.title ?? '';
     author.value = existing?.author ?? '';
     body.value = existing?.body ?? '';
+    // A link to hear the original: it is opened from the page of the song (`views/listen.ts`)
+    const listenUrl = h('input', { id: 'listen-url', name: 'listenUrl', type: 'url', inputmode: 'url', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', placeholder: 'https://', 'aria-describedby': 'listen-hint' });
+    listenUrl.value = existing?.listenUrl ?? '';
+    const listenHint = h('p', { class: 'muted listen-hint', id: 'listen-hint', 'aria-live': 'polite' });
+    const showListenHint = (): void => {
+        const read = readListenUrl(listenUrl.value);
+        listenHint.className = `muted listen-hint${read.kind === 'youtube' ? ' listen-hint--ok' : read.kind === 'link' ? ' listen-hint--link' : read.kind === 'bad' ? ' listen-hint--bad' : ''}`;
+        listenHint.textContent = read.kind === 'none' ? 'Opcional. Pega el enlace del canto original para escucharlo desde su página.'
+            : read.kind === 'bad' ? read.why
+                : read.kind === 'link' ? `${read.site}: se abrirá aparte (no se puede reproducir dentro de Lista).`
+                    : `Listo: ${read.site}${read.start > 0 ? `, arranca en ${clock(read.start)}` : ''}. Se podrá escuchar aquí.`;
+    };
+    listenUrl.addEventListener('input', showListenHint);
+    showListenHint();
 
     // The tags: below the lyrics and optional. Offered: the ones in use, then the Mass's (what a section asks for)
     let known: string[] = MASS_PARTS.map((part) => part.tag);
@@ -237,7 +252,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         clearTimeout(keepTimer);
         keepTimer = undefined;
         if (keepsDraft && !discarded) {
-            newSongDraft.keep({ title: title.value, author: author.value, body: body.value });
+            newSongDraft.keep({ title: title.value, author: author.value, body: body.value, listenUrl: listenUrl.value });
         }
     };
     const keepSoon = (): void => {
@@ -259,7 +274,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         }
     };
     if (keepsDraft) {
-        for (const field of [title, author, body]) {
+        for (const field of [title, author, body, listenUrl]) {
             field.addEventListener('input', keepSoon);
         }
         body.addEventListener('change', keepSoon);
@@ -281,6 +296,8 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         title.value = resumed.title;
         author.value = resumed.author;
         body.value = resumed.body;
+        listenUrl.value = resumed.listenUrl ?? '';
+        showListenHint();
         recovered.hidden = false;
         draw();
     }
@@ -290,6 +307,8 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         title.value = '';
         author.value = '';
         body.value = '';
+        listenUrl.value = '';
+        showListenHint();
         recovered.hidden = true;
         // The form is empty again: nothing written, nothing to ask about
         baseline = snapshot();
@@ -409,6 +428,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         composer,
         converted,
         tagField.element,
+        h('div', { class: 'listen-field' }, h('label', { for: 'listen-url' }, 'Enlace para escuchar'), listenUrl, listenHint),
         draftField,
         h(
             'details',
@@ -484,6 +504,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         body.value = capitaliseChords(body.value);
         const draft: SongDraft = {
             title: title.value, author: author.value, body: body.value, tags: tagField.value(), status: draftBox.checked ? 'draft' : 'published',
+            listenUrl: listenUrl.value,
         };
 
         return existing === undefined ? app.create(draft) : saveEdit(app, existing, draft);
@@ -524,7 +545,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
 
     // ----- leaving with something not saved: the person is asked (the back button, the menu, a link, Cancelar) -----
     // The draft is for the app closing or hanging; the question is for leaving by mistake: a new song has both
-    const snapshot = (): string => JSON.stringify([title.value, author.value, body.value, tagField.value(), draftBox.checked]);
+    const snapshot = (): string => JSON.stringify([title.value, author.value, body.value, tagField.value(), draftBox.checked, listenUrl.value]);
     baseline = snapshot();
     const isDirty = (): boolean => !saved && snapshot() !== baseline;
     setLeaveGuard({

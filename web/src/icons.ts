@@ -60,6 +60,7 @@ const DRAWINGS = {
     /** Choosing a picture from the gallery (Importar) */
     image: { shapes: [['rect', { x: '3', y: '4.5', width: '18', height: '15', rx: '2' }], ['circle', { cx: '8.6', cy: '9.6', r: '1.7' }], ['path', { d: 'M4 18l5.2-5.2 3.6 3.6 2.6-2.6L20 17.6' }]] },
     eye: { shapes: [['path', { d: 'M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z' }], ['circle', { cx: '12', cy: '12', r: '3' }]] },
+    external: { shapes: [['path', { d: 'M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5' }]] },
     copy: { shapes: [['rect', { x: '9', y: '9', width: '11', height: '11', rx: '2' }], ['path', { d: 'M5 15V6a2 2 0 0 1 2-2h9' }]] },
     star: { shapes: [['path', { d: STAR }]] },
     'star-filled': { filled: true, shapes: [['path', { d: STAR }]] },

@@ -27,6 +27,8 @@ final class SongChange
     /** The states of a song: a draft is marked in the lists until it is published */
     public const STATUS_DRAFT = 'draft';
     public const STATUS_PUBLISHED = 'published';
+    /** Characters of the link to hear the song (the column is VARCHAR(500)) */
+    public const MAX_LISTEN_URL = 500;
 
     public function __construct(
         public readonly string $id,
@@ -45,6 +47,8 @@ final class SongChange
         public readonly ?array $tags = null,
         /** `draft` or `published`; `null` means the client did not say (an older one): keep what is stored */
         public readonly ?string $status = null,
+        /** A link to hear the original, `https://…`; '' takes it away; `null`: the client did not say (an older one), keep it */
+        public readonly ?string $listenUrl = null,
     ) {
     }
 
@@ -85,6 +89,7 @@ final class SongChange
             self::shift($data['myShift'] ?? null),
             self::tags($data['tags'] ?? null),
             self::status($data['status'] ?? null),
+            self::listenUrl($data['listenUrl'] ?? null),
         );
     }
 
@@ -138,6 +143,39 @@ final class SongChange
         }
 
         return $value;
+    }
+
+    /**
+     * The link is kept as pasted (trimmed): the app only opens it, or builds a player from its video id. It must be a
+     * plain https address, so nothing else (a `javascript:` link, markup) is stored where a link is expected.
+     *
+     * @throws InvalidSong
+     */
+    private static function listenUrl(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+        if (!is_string($value)) {
+            throw new InvalidSong('El enlace para escuchar no es válido.');
+        }
+        $url = trim($value);
+        if ($url === '') {
+            return '';
+        }
+        if (mb_strlen($url) > self::MAX_LISTEN_URL) {
+            throw new InvalidSong(
+                'El enlace para escuchar es demasiado largo (máximo ' . self::MAX_LISTEN_URL . ' caracteres).'
+            );
+        }
+        $host = parse_url($url, PHP_URL_HOST);
+        // Characters that end a link or open markup are not allowed; a backslash is one of them
+        $plain = preg_match('~^https://[^\s<>"\'\\\\]+$~u', $url) === 1;
+        if (!$plain || !is_string($host) || $host === '') {
+            throw new InvalidSong('El enlace para escuchar debe empezar con https://');
+        }
+
+        return $url;
     }
 
     /**

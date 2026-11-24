@@ -9,7 +9,7 @@ import { h } from '../dom.ts';
  */
 
 /** The day this text was last revised */
-export const PRIVACY_UPDATED = '4 de noviembre de 2026';
+export const PRIVACY_UPDATED = '24 de noviembre de 2026';
 
 /** Where people write about their data */
 export const PRIVACY_EMAIL = 'contacto@musicos-catolicos.com';
@@ -30,7 +30,7 @@ export const PRIVACY_SECTIONS: readonly Section[] = [
             ul: [
                 'Puedes usar Listas sin cuenta: lo que escribas se guarda solo en tu dispositivo.',
                 'Si creas una cuenta, guardamos tu correo, tu contraseña (cifrada, no la podemos leer) y tu biblioteca de cantos, listados y plantillas.',
-                'Listas no usa analítica ni publicidad, no carga nada de otros sitios y no te sigue.',
+                'Listas no usa analítica ni publicidad y no te sigue. Solo carga algo de otro sitio si tú lo pides: el reproductor de YouTube de un canto, al tocar «Escuchar aquí».',
                 'La única cookie es la de tu sesión, y solo si inicias sesión.',
                 'No vendemos tus datos y no te mandamos publicidad.',
                 'Puedes pedir que borremos tu cuenta con todo lo que guardaste.',
@@ -53,7 +53,7 @@ export const PRIVACY_SECTIONS: readonly Section[] = [
         blocks: [{
             ul: [
                 'Tus datos de cuenta: tu correo, tu contraseña (la guardamos solo transformada de forma irreversible: no podemos leerla ni recuperarla), la fecha en que creaste la cuenta y si confirmaste tu correo.',
-                'Tu biblioteca: tus cantos (título, autor, letra y acordes, etiquetas, tu tono), tus listados (nombre, secciones, qué cantos llevan y en qué tono, notas) y tus plantillas. Es tu biblioteca personal: nadie más la ve, salvo lo que tú compartas con un enlace. Se guarda en nuestro servidor para que la tengas en todos tus dispositivos y puedas recuperarla si pierdes uno.',
+                'Tu biblioteca: tus cantos (título, autor, letra y acordes, etiquetas, tu tono y el enlace para escuchar el original, si lo pones), tus listados (nombre, secciones, qué cantos llevan y en qué tono, notas) y tus plantillas. Es tu biblioteca personal: nadie más la ve, salvo lo que tú compartas con un enlace. Se guarda en nuestro servidor para que la tengas en todos tus dispositivos y puedas recuperarla si pierdes uno.',
                 'Tu sesión: al iniciar sesión se guarda en tu navegador una cookie llamada lista_session, necesaria para reconocerte; dura hasta 180 días o hasta que salgas. En el servidor solo se guarda una huella irreversible de ella. No hay cookies de publicidad ni de analítica.',
                 'Correos: usamos tu correo para confirmar que es tuyo y para que puedas elegir una contraseña nueva si la olvidas. Los mensajes salen de noreply@musicos-catolicos.com. No te enviamos publicidad ni boletines.',
             ],
@@ -80,7 +80,7 @@ export const PRIVACY_SECTIONS: readonly Section[] = [
     {
         id: 'terceros',
         title: 'Con quién se comparten los datos',
-        blocks: [{ p: 'Solo con nuestro proveedor de alojamiento web, que aloja Listas, guarda sus registros del servidor y su base de datos, y envía los dos correos de la aplicación (confirmar tu correo y elegir una contraseña nueva) desde nuestro buzón. No hay más terceros. También podríamos entregar datos si una autoridad competente lo exige conforme a la ley.' }],
+        blocks: [{ p: 'Solo con nuestro proveedor de alojamiento web, que aloja Listas, guarda sus registros del servidor y su base de datos, y envía los dos correos de la aplicación (confirmar tu correo y elegir una contraseña nueva) desde nuestro buzón. Fuera de eso, solo hay un tercero más, y únicamente si tú lo pides: si guardas un enlace de YouTube en un canto y tocas «Escuchar aquí», el reproductor de YouTube (youtube-nocookie.com) se carga en ese momento y YouTube recibe tu dirección IP y lo que su propia política describe; antes de ese toque no se carga nada de YouTube, y la página de un listado que compartes nunca lo incluye. También podríamos entregar datos si una autoridad competente lo exige conforme a la ley.' }],
     },
     {
         id: 'conservacion',

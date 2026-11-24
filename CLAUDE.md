@@ -189,6 +189,19 @@ visitor's device, and the privacy text proposed for the public site says so. The
 site folded away (a small tab at the bottom edge), and a song shown as when singing (the app's `createReader`, lyrics fitted to the screen, the tools
 folded under the bar, a swipe or ← → to change song). Keep it that way: the lyrics get the screen.
 
+## A link to hear the original (the owner's decision, 2026-11-24)
+
+A song carries one optional link (`Song.listenUrl`, column `listen_url`, synced with the record; never in a shared link). It is a reference, not a
+music player and not hosting: nothing is stored but the address. `web/src/listen-url.ts` (pure, tested) says what a pasted text is: a YouTube or
+YouTube Music video (a player in the page), any other `https` link (a button that opens apart) or nothing usable. The song page (`views/listen.ts`) puts
+a row between the tools and the lyrics; "Escuchar aquí" creates YouTube's own player (`youtube-nocookie.com`, a sandboxed frame) above the lyrics (a column
+beside them from 900px) and ✕ removes it, which ends the sound. **Rules that matter:** the frame's address is always built from the video id, never from the
+pasted text; **nothing of YouTube loads before that touch** (the one widening of the CSP is `frame-src https://www.youtube-nocookie.com`, and `Referrer-Policy`
+is `strict-origin-when-cross-origin` because the player refuses to play with no referrer); the player is not hidden or shrunk under 200 px to leave only the
+sound (YouTube's terms); the privacy text says it (`views/privacy.ts`, "terceros"). Later the references are meant to be the owner's own (musicoscatolicos.com
+and the tutorials): another kind of link is a new case of `readListenUrl`, and each new domain is a deliberate widening of the CSP with the privacy text in
+the same PR. `tests/e2e/listen.ts` covers it under the production policy.
+
 ## Public repository
 
 Nothing private goes in the repo: no `.env`, no real server paths, user names or database
@@ -198,7 +211,7 @@ environment on GitHub and in `.env` on the server.
 ## Policies
 
 The app is private (login, `noindex`, no ads, no analytics, nothing loaded from another
-domain: the CSP in `public/.htaccess` enforces it), except the pages of a list its owner shared ("Sharing a list"). **Before** a change that opens it to other
+domain: the CSP in `public/.htaccess` enforces it), except the pages of a list its owner shared ("Sharing a list") and **the YouTube player** ("A link to hear the original"). **Before** a change that opens it to other
 people, loads anything from another domain, adds analytics or ads, stores new kinds of
 personal data or publishes songs of others, tell the owner and propose the privacy text: the
 public site's policies (`musicos-catolicos`, `src/Templates/legal/`) must keep describing what

@@ -61,6 +61,15 @@ final class SongChangeTest extends TestCase
         $this->assertSame('published', $published->status);
     }
 
+    public function testTheLinkToHearItIsAnHttpsAddressTrimmedAndAnOldClientSendsNone(): void
+    {
+        $this->assertNull(SongChange::fromArray($this->data(), self::NOW)->listenUrl, 'not sent: keep what is stored');
+        $blank = SongChange::fromArray($this->data(['listenUrl' => '   ']), self::NOW);
+        $this->assertSame('', $blank->listenUrl, 'blank takes it away');
+        $url = 'https://music.youtube.com/watch?v=Zk3mPq8vLw4&t=75s';
+        $this->assertSame($url, SongChange::fromArray($this->data(['listenUrl' => "  $url "]), self::NOW)->listenUrl);
+    }
+
     public function testEightTagsAreAllowedAndNineAreNot(): void
     {
         $tags = static fn (int $n): array => array_map(static fn (int $i): string => 'T' . $i, range(1, $n));
@@ -102,6 +111,13 @@ final class SongChangeTest extends TestCase
             'shift as a decimal' => [['myShift' => 2.5], 'tono'],
             'a state that does not exist' => [['status' => 'archived'], 'estado'],
             'a state that is not text' => [['status' => true], 'estado'],
+            'a link that is not text' => [['listenUrl' => 3], 'enlace'],
+            'a link that is not https' => [['listenUrl' => 'http://youtu.be/Zk3mPq8vLw4'], 'https'],
+            'a javascript link' => [['listenUrl' => 'javascript:alert(1)'], 'https'],
+            'a link with no address' => [['listenUrl' => 'https://'], 'https'],
+            'a link with a space in it' => [['listenUrl' => 'https://youtu.be/a b'], 'https'],
+            'a link with markup in it' => [['listenUrl' => 'https://youtu.be/"><script>'], 'https'],
+            'a link too long' => [['listenUrl' => 'https://youtu.be/' . str_repeat('a', 500)], 'largo'],
             'tags not a list' => [['tags' => 'Entrada'], 'etiquetas'],
             'tags as an object' => [['tags' => ['a' => 'Entrada']], 'etiquetas'],
             'a tag that is not text' => [['tags' => [3]], 'etiqueta'],

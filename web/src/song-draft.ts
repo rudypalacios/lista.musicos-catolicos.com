@@ -9,6 +9,8 @@ export interface Draft {
     title: string;
     author: string;
     body: string;
+    /** The link to hear the original; a draft kept before it existed has none */
+    listenUrl?: string;
     /** When it was last kept (ms since the epoch) */
     savedAt: number;
 }
@@ -63,7 +65,7 @@ export class NewSongDraft {
     }
 
     /** Keeps what is written. A form with nothing in it is no draft: it clears the old one instead */
-    keep(fields: { title: string; author: string; body: string }): void {
+    keep(fields: { title: string; author: string; body: string; listenUrl?: string }): void {
         if (isBlank(fields)) {
             this.clear();
 
@@ -85,8 +87,8 @@ export class NewSongDraft {
     }
 }
 
-function isBlank(fields: { title: string; author: string; body: string }): boolean {
-    return fields.title.trim() === '' && fields.author.trim() === '' && fields.body.trim() === '';
+function isBlank(fields: { title: string; author: string; body: string; listenUrl?: string }): boolean {
+    return fields.title.trim() === '' && fields.author.trim() === '' && fields.body.trim() === '' && (fields.listenUrl ?? '').trim() === '';
 }
 
 /** The device's own draft */

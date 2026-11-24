@@ -11,6 +11,7 @@ import type { PrintVersion } from '../print/layout.ts';
 import { printSong } from '../print/jobs.ts';
 import { createAddToList } from './add-to-list.ts';
 import { deleteSongAfterAsking } from './delete-song.ts';
+import { createListen } from './listen.ts';
 import { createReader } from './reader.ts';
 import { showToast } from '../toast.ts';
 import { createToneControl, type ToneControl } from './tone-control.ts';
@@ -194,16 +195,23 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
         tone.element,
     );
 
+    // The link to hear the original: a row under the tools and, when asked, YouTube's player fixed above the lyrics
+    const viewer = h('div', { class: 'viewer' });
+    const listen = createListen(song.listenUrl, { onToggle: (open) => viewer.classList.toggle('has-player', open) });
+
     // A song on a stand must not go dark while it is being read (unless turned off in Ajustes)
     const releaseScreen = readKeepAwake() ? screenKeeper.hold() : (): void => undefined;
 
+    viewer.append(tools, listen.element, error, reader.stage, sheet.element, addToList.element, shareSheet.element);
+
     return {
-        element: h('div', { class: 'viewer' }, tools, error, reader.stage, sheet.element, addToList.element, shareSheet.element),
+        element: viewer,
         dispose: () => {
             if (songHeading.get() === ownHeading) {
                 songHeading.set(null);
             }
             releaseScreen();
+            listen.close();
             sheet.release();
             addToList.release();
             shareSheet.release();
