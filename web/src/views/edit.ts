@@ -11,6 +11,7 @@ import { partsOf } from '../data/setlists.ts';
 import { sameTag, tagOf, tagsInUse } from '../data/tags.ts';
 import { MASS_PARTS } from '../mass.ts';
 import { createChordSheet } from './chord-sheet.ts';
+import { chooseDialog } from './confirm-dialog.ts';
 import { createLyricsToolbar } from './lyrics-toolbar.ts';
 import { createTagField } from './tag-field.ts';
 import { convertPastedSheet } from '../importer.ts';
@@ -19,6 +20,7 @@ import { h, link, setSheet } from '../dom.ts';
 import { icon } from '../icons.ts';
 import { keyDistance } from '../keys.ts';
 import { retuneTodayKeys } from '../transpose-song.ts';
+import { setLeaveGuard } from '../leave-guard.ts';
 import { paths, type Placement } from '../router.ts';
 import { newSongDraft } from '../song-draft.ts';
 import { showToast } from '../toast.ts';
@@ -72,13 +74,21 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         known = [...inUse, ...known.filter((tag) => !inUse.some((used) => sameTag(used, tag)))];
         tagField.refresh();
     });
+    // What the form held when it opened, to know whether the person changed anything (`isDirty`, below)
+    let baseline = '';
+    let saved = false;
     // A song written for a section starts with that section's tag: it is the one it was missing when it was searched for
     if (existing === undefined && start.into !== undefined) {
         const { setlist: setlistId, part: partId } = start.into;
         void app.setlists.get(setlistId).then((list) => {
             const part = list === undefined ? undefined : partsOf(list).find((candidate) => candidate.id === partId);
             if (part !== undefined && tagField.value().length === 0) {
+                // The tag the section gives is not something the person changed: an untouched form stays untouched
+                const untouched = !isDirty();
                 tagField.set([tagOf(part)]);
+                if (untouched) {
+                    baseline = snapshot();
+                }
             }
         });
     }
@@ -446,30 +456,42 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
     placeRemove();
     wide.addEventListener('change', placeRemove);
 
-    form.addEventListener('submit', (event) => {
-        event.preventDefault();
-        error.textContent = '';
-        // Said at the field, which gets the focus: with the keyboard open the buttons are out of sight
-        if (title.value.trim() === '') {
-            titleError.textContent = 'El canto necesita un título.';
-            title.setAttribute('aria-invalid', 'true');
-            title.focus();
-
-            return;
-        }
-        save.disabled = true;
+    /** The title is missing: said at the field, which gets the focus (with the keyboard open the buttons are out of sight) */
+    const askForTitle = (): void => {
+        titleError.textContent = 'El canto necesita un título.';
+        title.setAttribute('aria-invalid', 'true');
+        title.focus();
+    };
+    /** Writes what is in the form to the song (chords capitalised, as previewed); the caller says what comes next */
+    const commit = (): Promise<Song> => {
         body.value = capitaliseChords(body.value);
         const draft: SongDraft = {
             title: title.value, author: author.value, body: body.value, tags: tagField.value(), status: draftBox.checked ? 'draft' : 'published',
         };
-        const saved = existing === undefined ? app.create(draft) : saveEdit(app, existing, draft);
-        saved
+
+        return existing === undefined ? app.create(draft) : saveEdit(app, existing, draft);
+    };
+    const failureText = (failure: unknown): string => (failure instanceof ValidationError || failure instanceof Error ? failure.message : 'No se pudo guardar.');
+    /** Allowed (a title first, the lyrics later), but not in silence */
+    const warnIfEmpty = (song: Song): void => {
+        if (song.body.trim() === '') {
+            showToast(`“${song.title}” se guardó sin letra todavía.`, 4000, true);
+        }
+    };
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        error.textContent = '';
+        if (title.value.trim() === '') {
+            askForTitle();
+
+            return;
+        }
+        save.disabled = true;
+        commit()
             .then((song) => {
+                saved = true;
                 dropDraft();
-                // Allowed (a title first, the lyrics later), but not in silence
-                if (song.body.trim() === '') {
-                    showToast(`“${song.title}” se guardó sin letra todavía.`, 4000, true);
-                }
+                warnIfEmpty(song);
                 if (existing === undefined && start.into !== undefined) {
                     return placeInPart(app, navigate, song, start.into);
                 }
@@ -478,9 +500,62 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
                 return start.back !== undefined ? navigate(start.back, { replace: true }) : navigate(paths.view(song.id));
             })
             .catch((failure: unknown) => {
-                error.textContent = failure instanceof ValidationError || failure instanceof Error ? failure.message : 'No se pudo guardar.';
+                error.textContent = failureText(failure);
                 save.disabled = false;
             });
+    });
+
+    // ----- leaving with something not saved: the person is asked (the back button, the menu, a link, Cancelar) -----
+    // A new song kept as a draft is already safe on the device (it is offered again), so only what would be lost is asked about
+    const snapshot = (): string => JSON.stringify([title.value, author.value, body.value, tagField.value(), draftBox.checked]);
+    baseline = snapshot();
+    const unprotected = existing !== undefined || !keepsDraft;
+    const isDirty = (): boolean => unprotected && !saved && snapshot() !== baseline;
+    setLeaveGuard({
+        isDirty,
+        ask: async () => {
+            const answer = await chooseDialog({
+                title: '¿Salir sin guardar?',
+                text: existing === undefined ? 'Escribiste este canto y no lo has guardado.' : 'Cambiaste este canto y no lo has guardado.',
+                cancel: 'Seguir editando',
+                choices: [
+                    { label: 'Descartar', value: 'discard' as const, kind: 'danger' },
+                    { label: 'Guardar', value: 'save' as const, kind: 'primary' },
+                ],
+            });
+            if (answer === 'discard') {
+                dropDraft();
+
+                return true;
+            }
+            if (answer !== 'save') {
+                return false;
+            }
+            if (title.value.trim() === '') {
+                // Cannot be saved without one: the person stays, with the field asking for it
+                askForTitle();
+
+                return false;
+            }
+            save.disabled = true;
+            try {
+                const song = await commit();
+                saved = true;
+                dropDraft();
+                warnIfEmpty(song);
+                if (existing === undefined && start.into !== undefined) {
+                    // The song goes to the section it was written for, and the person goes where they were heading
+                    await app.setlists.addItem(start.into.setlist, start.into.part, song.id).catch(() => showToast(`“${song.title}” se guardó, pero no se agregó al listado.`, 6000, true));
+                }
+
+                return true;
+            } catch (failure) {
+                error.textContent = failureText(failure);
+                save.disabled = false;
+
+                return false;
+            }
+        },
     });
 
     // What editing a song that is already used means, one line each (the text opens with its button)
@@ -518,6 +593,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         element,
         dispose: () => {
             toolbar.dispose();
+            setLeaveGuard(null);
             chordSheet.dispose();
             footObserver.disconnect();
             document.removeEventListener('keydown', closeOnEscape);
