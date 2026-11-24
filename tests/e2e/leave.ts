@@ -133,6 +133,32 @@ try {
     assert.match(await page.locator('#title-error').innerText(), /necesita un título/);
     pass('saving from the question with no title stays in the editor and asks for the title');
 
+    // A new song has both: the draft (for the app closing) and the question (for leaving by mistake)
+    await page.goto(song);
+    await page.locator('.song-sheet').waitFor();
+    await page.evaluate(() => {
+        history.pushState(null, '', '/cantos/nuevo');
+        window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+    await page.getByLabel('Título').waitFor();
+    await page.getByLabel('Título').fill('Canto nuevo');
+    await page.locator('#body').fill('Algo escrito');
+    await page.goBack();
+    await settle(page);
+    assert.equal(await asking(page), true, 'a new song asks too');
+    assert.match(await page.locator('.confirm__panel').innerText(), /Escribiste este canto y no lo has guardado/);
+    await page.getByRole('button', { name: 'Seguir editando' }).click();
+    await settle(page);
+    assert.equal(await page.locator('#body').inputValue(), 'Algo escrito');
+    await page.goBack();
+    await settle(page);
+    await page.getByRole('button', { name: 'Descartar' }).click();
+    await settle(page);
+    await page.goto(`${server.base}/cantos/nuevo`);
+    await page.getByLabel('Título').waitFor();
+    assert.equal(await page.getByText('Borrador recuperado').isVisible(), false, 'discarding takes the draft with it');
+    pass('a new song asks too, and "Descartar" takes its draft with it');
+
     assert.deepEqual(problems, [], 'no uncaught errors in the page');
     console.log(`\n${count()} checks passed`);
 } catch (error) {

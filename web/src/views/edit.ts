@@ -255,7 +255,12 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         body.addEventListener('change', keepSoon);
         window.addEventListener('pagehide', keepNow);
         document.addEventListener('visibilitychange', keepWhenHidden);
-        cancel.addEventListener('click', dropDraft);
+        // Cancelar with something written asks first (the guard below), and only "Descartar" there drops the draft
+        cancel.addEventListener('click', () => {
+            if (!isDirty()) {
+                dropDraft();
+            }
+        });
     }
 
     const recovered = h('div', { class: 'note-bar note-bar--draft', role: 'status', hidden: true });
@@ -276,6 +281,8 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         author.value = '';
         body.value = '';
         recovered.hidden = true;
+        // The form is empty again: nothing written, nothing to ask about
+        baseline = snapshot();
         draw();
         title.focus();
     });
@@ -506,11 +513,10 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
     });
 
     // ----- leaving with something not saved: the person is asked (the back button, the menu, a link, Cancelar) -----
-    // A new song kept as a draft is already safe on the device (it is offered again), so only what would be lost is asked about
+    // The draft is for the app closing or hanging; the question is for leaving by mistake: a new song has both
     const snapshot = (): string => JSON.stringify([title.value, author.value, body.value, tagField.value(), draftBox.checked]);
     baseline = snapshot();
-    const unprotected = existing !== undefined || !keepsDraft;
-    const isDirty = (): boolean => unprotected && !saved && snapshot() !== baseline;
+    const isDirty = (): boolean => !saved && snapshot() !== baseline;
     setLeaveGuard({
         isDirty,
         ask: async () => {

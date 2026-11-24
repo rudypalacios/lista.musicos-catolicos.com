@@ -638,16 +638,18 @@ try {
     assert.equal(await page.getByText('acordes convertidos').isVisible(), false);
     pass('a plain lyric pasted is left alone');
 
-    // Leaving by the menu keeps what was written; coming back offers it
+    // Leaving by mistake asks first (the menu here); the draft is for the app closing or hanging, and offers what was written again
     await page.getByLabel('Título').fill('Borrador de prueba');
     await page.getByLabel('Letra con acordes').fill('[C]Algo que no se guardó');
-    await openSection(page, 'Listados');
-    await openSection(page, 'Cantos');
-    await page.getByRole('link', { name: 'Nuevo canto' }).click();
+    await page.getByRole('navigation', { name: 'Menú' }).getByRole('link', { name: 'Listados', exact: true }).click();
+    await page.getByRole('alertdialog', { name: '¿Salir sin guardar?' }).waitFor();
+    await page.getByRole('button', { name: 'Seguir editando' }).click();
+    assert.equal(await page.getByLabel('Título').inputValue(), 'Borrador de prueba', 'staying keeps what was written');
+    await page.goto(BASE + '/cantos/nuevo');
     await page.getByText('Borrador recuperado').waitFor();
     assert.equal(await page.getByLabel('Título').inputValue(), 'Borrador de prueba');
     assert.equal(await page.getByLabel('Letra con acordes').inputValue(), '[C]Algo que no se guardó');
-    pass('what was written and not saved is recovered, as a draft, after leaving by the menu');
+    pass('leaving by the menu asks first, and what was written is kept as a draft for the app closing and offered again');
 
     // Closing the app (a reload) keeps it too; "Descartar" empties it for good
     await page.goto(BASE + '/cantos/nuevo');
@@ -662,6 +664,7 @@ try {
     // "Cancelar" and "Guardar" are the two ways to say the draft is not wanted any more
     await page.getByLabel('Título').fill('Lo cancelé');
     await page.getByRole('link', { name: 'Cancelar' }).click();
+    await page.getByRole('button', { name: 'Descartar' }).click();
     await page.getByRole('link', { name: 'Nuevo canto' }).click();
     await page.getByRole('heading', { name: 'Nuevo canto' }).waitFor();
     assert.equal(await page.getByText('Borrador recuperado').isVisible(), false);
@@ -672,7 +675,7 @@ try {
     await page.getByRole('link', { name: 'Nuevo canto' }).click();
     await page.getByRole('heading', { name: 'Nuevo canto' }).waitFor();
     assert.equal(await page.getByText('Borrador recuperado').isVisible(), false);
-    pass('cancelling or saving a new song clears its draft');
+    pass('discarding (after Cancelar asks) or saving a new song clears its draft');
 
     // Guardar stays in view however long the lyrics are
     await page.getByLabel('Letra con acordes').fill(longSong(30));
