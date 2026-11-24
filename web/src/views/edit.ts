@@ -41,6 +41,9 @@ cantando vamos hacia tu [Am]casa.
 [G]Coro: las líneas entre {soc} y {eoc}
 {eoc}`;
 
+/** Characters from which the preview is drawn once per frame, not at every input (about 70 lines of lyrics) */
+const LONG_TEXT = 3000;
+
 /** How long after the last key pressed the draft is kept (ms): not at every letter of a long lyric */
 const DRAFT_DELAY = 500;
 
@@ -224,7 +227,22 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         toneDown.disabled = key === null;
         toneUp.disabled = key === null;
     };
-    body.addEventListener('input', draw);
+    // The preview has a piece for every syllable, so a very long text costs more to draw: what is typed or pasted in one go is drawn
+    // once, on the next frame. A song of ordinary length is drawn at once, as always.
+    let drawing = 0;
+    body.addEventListener('input', () => {
+        if (body.value.length <= LONG_TEXT) {
+            draw();
+
+            return;
+        }
+        if (drawing === 0) {
+            drawing = requestAnimationFrame(() => {
+                drawing = 0;
+                draw();
+            });
+        }
+    });
     // Leaving the box writes the capitals for real (not while typing: the text under the cursor would jump)
     // Only when something changes, and keeping the selection: assigning the value puts the cursor at the end, and a format button
     // touched right after selecting lines would find nothing selected and change the whole lyrics
@@ -629,6 +647,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
     return {
         element,
         dispose: () => {
+            cancelAnimationFrame(drawing);
             toolbar.dispose();
             setLeaveGuard(null);
             chordSheet.dispose();
