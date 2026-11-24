@@ -22,7 +22,8 @@ describe('editSheet', () => {
     it('gives every syllable a slot for its chord, empty where it has none, so a plain line can be touched', () => {
         const { html } = editSheet('Hola mundo');
 
-        assert.equal(html.split('data-chord=""').length - 1, 4);
+        // ho · la · (the space) · mun · do
+        assert.equal(html.split('data-chord=""').length - 1, 5);
         assert.ok(!html.includes('line--plain'));
     });
 

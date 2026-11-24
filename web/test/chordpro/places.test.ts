@@ -8,14 +8,14 @@ const shown = (text: string): string[][] => linesOf(text).map((line) => line.pie
 
 describe('linesOf', () => {
     it('cuts a line of lyrics at every syllable and at every chord', () => {
-        assert.deepEqual(shown('Cuán[G]to he es[D]perado'), [['Cuán', '[G]to ', 'he ', 'es', '[D]pe', 'ra', 'do']]);
+        assert.deepEqual(shown('Cuán[G]to he es[D]perado'), [['Cuán', '[G]to', ' ', 'he', ' ', 'es', '[D]pe', 'ra', 'do']]);
     });
 
     it('is only the lines of lyrics: blank lines, comments and directives are not lines', () => {
         const lines = linesOf('{c: Coro}\nHola mundo\n\n# nota\n{ci: x2}\nOtra línea');
 
         assert.equal(lines.length, 2);
-        assert.deepEqual(lines.map((line) => line.pieces.map((piece) => piece.id)), [['0:0:0', '0:2:0', '0:5:0', '0:8:0'], ['1:0:0', '1:1:0', '1:5:0', '1:7:0', '1:9:0']]);
+        assert.deepEqual(lines.map((line) => line.pieces.map((piece) => piece.id)), [['0:0:0', '0:2:0', '0:4:0', '0:5:0', '0:8:0'], ['1:0:0', '1:1:0', '1:4:0', '1:5:0', '1:7:0', '1:9:0']]);
     });
 
     it('names a place by line, by where it starts in the words and by the chords that share the spot', () => {
@@ -41,7 +41,7 @@ describe('linesOf', () => {
     });
 
     it('is not fooled by a bracket with nothing in it, and keeps a note of the line apart from the words', () => {
-        assert.deepEqual(shown('Hola[] mundo'), [['Ho', 'la ', 'mun', 'do']]);
+        assert.deepEqual(shown('Hola[] mundo'), [['Ho', 'la', ' ', 'mun', 'do']]);
         const [line] = linesOf('Aleluya {ci: bis}');
 
         assert.equal(line?.note, 'bis');
@@ -52,6 +52,12 @@ describe('linesOf', () => {
         const [line] = linesOf('  hola');
 
         assert.deepEqual(line?.pieces.map((piece) => [piece.text, piece.place]), [['  ', false], ['ho', true], ['la', true]]);
+    });
+
+    it('makes the space between two words a place, and not the ones at the ends of the line', () => {
+        const [line] = linesOf('uno  dos ');
+
+        assert.deepEqual(line?.pieces.map((piece) => [piece.text, piece.place]), [['u', true], ['no', true], ['  ', true], ['dos', true]]);
     });
 
     it('is a line of lyrics exactly when the parser says so, and reads the same chords and words as it', () => {
@@ -106,6 +112,11 @@ describe('setChordAt', () => {
         const song = '{c: Coro}\r\nuno\r\n\r\n# no\r\ndos tres';
 
         assert.equal(setChordAt(song, '1:4:0', 'C'), '{c: Coro}\r\nuno\r\n\r\n# no\r\ndos [C]tres');
+    });
+
+    it('writes a chord on the space between two words, just before the space', () => {
+        assert.equal(setChordAt('Cuánto he', '0:6:0', 'G'), 'Cuánto[G] he');
+        assert.equal(setChordAt('Cuánto[G] he', '0:6:0', null), 'Cuánto he');
     });
 
     it('keeps a note at the end of the line', () => {
