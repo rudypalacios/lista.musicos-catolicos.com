@@ -6,7 +6,7 @@ declare module 'playwright' {
         hasText?: string | RegExp;
     }
     interface Locator {
-        click(options?: { force?: boolean }): Promise<void>;
+        click(options?: { force?: boolean; position?: { x: number; y: number } }): Promise<void>;
         tap(): Promise<void>;
         check(): Promise<void>;
         uncheck(): Promise<void>;
@@ -14,7 +14,8 @@ declare module 'playwright' {
         fill(value: string): Promise<void>;
         blur(): Promise<void>;
         first(): Locator;
-        filter(options: { hasText?: string | RegExp }): Locator;
+        last(): Locator;
+        filter(options: LocatorOptions): Locator;
         nth(index: number): Locator;
         boundingBox(): Promise<{ x: number; y: number; width: number; height: number } | null>;
         waitFor(options?: { state?: 'visible' | 'hidden' | 'attached' | 'detached'; timeout?: number }): Promise<void>;
@@ -26,6 +27,7 @@ declare module 'playwright' {
         isDisabled(): Promise<boolean>;
         innerText(): Promise<string>;
         allTextContents(): Promise<string[]>;
+        allInnerTexts(): Promise<string[]>;
         locator(selector: string, options?: LocatorOptions): Locator;
         getByLabel(text: string, options?: { exact?: boolean }): Locator;
         getByRole(role: string, options?: { name?: string | RegExp; exact?: boolean }): Locator;

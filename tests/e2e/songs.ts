@@ -139,7 +139,7 @@ try {
     await page.getByRole('link', { name: 'Nuevo canto' }).click();
     await page.getByLabel('Título').fill('Caminamos con alegría');
     await page.getByLabel('Letra con acordes').fill(SHORT);
-    assert.deepEqual(await page.locator('.preview .ch').allTextContents(), ['Do', 'Sol']);
+    assert.deepEqual(await page.locator('.preview .ch:not([data-chord=""])').allTextContents(), ['Do', 'Sol']);
     // At this width the lyrics and the preview take turns: "Ver" shows the preview, "Escribir" comes back
     assert.equal(await page.locator('.preview').isVisible(), false);
     await page.getByRole('tab', { name: 'Ver' }).click();
@@ -150,7 +150,7 @@ try {
 
     // A chord typed in lowercase ([c], [g]) is read as the capital, shown so in the preview, and written so
     await page.getByLabel('Letra con acordes').fill('[c]Caminamos con a[g]legría y [am]fe');
-    assert.deepEqual(await page.locator('.preview .ch').allTextContents(), ['Do', 'Sol', 'Lam']);
+    assert.deepEqual(await page.locator('.preview .ch:not([data-chord=""])').allTextContents(), ['Do', 'Sol', 'Lam']);
     await page.getByLabel('Letra con acordes').blur();
     assert.equal(await page.getByLabel('Letra con acordes').inputValue(), '[C]Caminamos con a[G]legría y [Am]fe');
     await page.getByLabel('Letra con acordes').fill(SHORT);
@@ -161,7 +161,7 @@ try {
     await page.getByRole('button', { name: 'Bajar el tono un semitono' }).click();
     assert.equal(await page.getByLabel('Letra con acordes').inputValue(), SHORT.replace('[C]', '[B]').replace('[G]', '[F#]'));
     assert.equal(await page.locator('.lyrics-toolbar .tone-control__key').innerText(), 'Si');
-    assert.deepEqual(await page.locator('.preview .ch').allTextContents(), ['Si', 'Fa#']);
+    assert.deepEqual(await page.locator('.preview .ch:not([data-chord=""])').allTextContents(), ['Si', 'Fa#']);
     await page.getByRole('button', { name: 'Subir el tono un semitono' }).click();
     assert.equal(await page.getByLabel('Letra con acordes').inputValue(), SHORT);
     pass('the editor has a key control: − / + move every chord of the text and the preview follows');
