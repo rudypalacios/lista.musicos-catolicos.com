@@ -2,13 +2,15 @@ import type { App } from '../app.ts';
 import { capitaliseChords } from '../chordpro/capitalise.ts';
 import { transposeBody } from '../chordpro/transpose-body.ts';
 import { parse, songKey } from '../chordpro/parser.ts';
-import { sheetHtml } from '../chordpro/sheet.ts';
+import { editSheet, markPlaces } from '../chordpro/edit-sheet.ts';
+import { setChordAt, type Piece } from '../chordpro/places.ts';
 import { insertItem, type InsertKind } from '../chordpro/insert.ts';
 import { changeCaseInRange, type CaseMode } from '../chordpro/letter-case.ts';
 import { ValidationError, type SongDraft } from '../data/library.ts';
 import { partsOf } from '../data/setlists.ts';
 import { sameTag, tagOf, tagsInUse } from '../data/tags.ts';
 import { MASS_PARTS } from '../mass.ts';
+import { createChordSheet } from './chord-sheet.ts';
 import { createLyricsToolbar } from './lyrics-toolbar.ts';
 import { createTagField } from './tag-field.ts';
 import { convertPastedSheet } from '../importer.ts';
@@ -117,15 +119,63 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
     };
     toneDown.addEventListener('click', () => moveChords(-1));
     toneUp.addEventListener('click', () => moveChords(1));
-    const sheet = h('div', { class: 'song-sheet' });
+    // From 900px the lyrics and their preview sit side by side, and the sheet of chords is shown whole
+    const wide = window.matchMedia('(min-width: 900px)');
+    const sheet = h('div', { class: 'song-sheet song-sheet--edit' });
+    // The places of the preview, as last drawn: a syllable touched puts a chord on it (`chordpro/places.ts`)
+    let places = new Map<string, Piece>();
+    const chordSheet = createChordSheet({
+        chordAt: (id) => (places.has(id) ? places.get(id)?.chord ?? null : undefined),
+        labelAt: (id) => places.get(id)?.text.trim() ?? '',
+        used: () => [...new Set([...places.values()].flatMap((piece) => (piece.chord === null ? [] : [piece.chord])))],
+        write: (id, chord) => {
+            // Written into the text as if typed: the preview, the draft, the notice of the key and the leave guard all follow
+            const next = setChordAt(capitaliseChords(body.value), id, chord);
+            if (next !== null) {
+                body.value = next;
+                body.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        },
+        notation: readNotation,
+        wide,
+        onPick: () => markPicked(),
+        // The syllable touched stays clear of the sheet: what it covers is what the lyrics scroll around
+        onHeight: (height) => {
+            form.style.setProperty('--chord-dock-h', `${height}px`);
+            if (height > 0) {
+                sheet.querySelector('.is-picked')?.scrollIntoView({ block: 'nearest' });
+            }
+        },
+    });
+    const markPicked = (): void => {
+        sheet.querySelector('.is-picked')?.classList.remove('is-picked');
+        const id = chordSheet.picked();
+        if (id !== null) {
+            sheet.querySelector(`[data-place="${CSS.escape(id)}"]`)?.classList.add('is-picked');
+        }
+    };
+    sheet.addEventListener('click', (event) => {
+        const id = (event.target as Element).closest<HTMLElement>('.seg')?.dataset['place'];
+        if (id !== undefined) {
+            chordSheet.pick(id);
+        } else if (chordSheet.picked() !== null) {
+            chordSheet.close();
+        }
+    });
     // Capo, tempo and compás ({capo: 2}…) are shown above the lyrics, as when the song is read
     const noteChips = h('span', { class: 'preview__notes' });
     const preview = h('section', { class: 'preview', 'aria-label': 'Vista previa' }, h('h3', {}, 'Vista previa '), keyChip, noteChips, sheet);
 
     const draw = (): void => {
         // What is previewed is what is saved: a chord typed [c] is read as [C]
-        const parsed = parse(capitaliseChords(body.value));
-        setSheet(sheet, sheetHtml(parsed));
+        const text = capitaliseChords(body.value);
+        const parsed = parse(text);
+        // The same lyrics, cut at every syllable so each can be touched; if the drawing and the pieces ever disagreed, nothing is touchable
+        const drawn = editSheet(text, parsed);
+        setSheet(sheet, drawn.html);
+        places = new Map(markPlaces(sheet, drawn.pieces) ? drawn.pieces.map((piece) => [piece.id, piece]) : []);
+        markPicked();
+        chordSheet.refresh();
         const key = songKey(parsed);
         keyChip.hidden = key === null;
         keyChip.textContent = key === null ? '' : `Tono ${transpose(key, 0, readNotation())}`;
@@ -321,7 +371,10 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         writeTab.setAttribute('aria-selected', String(pane === 'write'));
         seeTab.setAttribute('aria-selected', String(pane === 'see'));
     };
-    writeTab.addEventListener('click', () => showPane('write'));
+    writeTab.addEventListener('click', () => {
+        chordSheet.dismiss();
+        showPane('write');
+    });
     seeTab.addEventListener('click', () => showPane('see'));
 
     writePane.append(
@@ -337,6 +390,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
             h('p', {}, 'Los acordes van entre corchetes, justo antes de la sílaba donde cambian. Puedes escribirlos en cifrado americano (C, Am, F#m7) o en español (Do, Lam, Fa#m7).'),
             h('pre', {}, HELP),
             h('p', {}, '{c: Coro} abre una sección con nombre; {soc} … {eoc} es un coro; {ci: x2} es una indicación: una nota en cursiva dentro de la estrofa, sin etiqueta ni número (por ejemplo {ci: Intro} antes de una línea de acordes); el botón «Indicación» la inserta. Las líneas que empiezan con # no se muestran.'),
+            h('p', {}, 'Sin escribir corchetes: en la vista previa (la pestaña «Ver» en el teléfono) toca una sílaba y arma el acorde con la hoja que se abre; toca de nuevo lo marcado para quitarlo.'),
             h('p', {}, 'También puedes pegar una hoja con los acordes en una línea arriba de la letra: se convierte sola.'),
         ),
     );
@@ -363,13 +417,22 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         switcher,
         panes,
         error,
+        chordSheet.element,
         foot,
     );
+    // The sheet of chords rests on the foot (Guardar, Cancelar): it needs to know how tall that is
+    const footObserver = new ResizeObserver(() => form.style.setProperty('--edit-foot-h', `${foot.offsetHeight}px`));
+    footObserver.observe(foot);
+    const closeOnEscape = (event: KeyboardEvent): void => {
+        if (event.key === 'Escape' && chordSheet.picked() !== null) {
+            chordSheet.close();
+        }
+    };
+    document.addEventListener('keydown', closeOnEscape);
 
     // From 900px "Eliminar" rides in the foot, level with Guardar and Cancelar (on a phone it stays under the
     // lyrics, away from Guardar). It is the same button: only where it sits changes. A new song has none.
     const removeButton = writePane.querySelector<HTMLElement>('.edit-remove');
-    const wide = window.matchMedia('(min-width: 900px)');
     const placeRemove = (): void => {
         if (removeButton === null) {
             return;
@@ -455,6 +518,9 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         element,
         dispose: () => {
             toolbar.dispose();
+            chordSheet.dispose();
+            footObserver.disconnect();
+            document.removeEventListener('keydown', closeOnEscape);
             keepNow();
             wide.removeEventListener('change', placeRemove);
             window.removeEventListener('pagehide', keepNow);

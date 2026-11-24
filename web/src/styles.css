@@ -4954,3 +4954,306 @@ button.srow__tool:disabled {
 .privacy p {
     margin: 0.4rem 0;
 }
+
+/* ===== Chords put on the syllables of the editor's preview (views/chord-sheet.ts, chordpro/places.ts) ===== */
+/* Every syllable is a place for a chord. The target is larger than what is drawn, so a one-letter syllable can be touched, and the lyrics do not move for it */
+.song-sheet--edit .seg[data-place] {
+    position: relative;
+    cursor: pointer;
+}
+
+.song-sheet--edit .seg[data-place]::after {
+    content: '';
+    position: absolute;
+    inset: -0.2em -0.15em;
+}
+
+/* A syllable with no chord yet: a dotted line says it is a place. The empty chord of its slot underlines nothing */
+.song-sheet--edit .seg--free .lyr {
+    text-decoration: underline dotted var(--border);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.2em;
+}
+
+.song-sheet--edit .ch[data-chord=''] + .lyr .syl {
+    text-decoration: none;
+}
+
+/* The one being worked on stays clear of the sheet and the foot when the lyrics scroll to it */
+.song-sheet--edit .seg.is-picked {
+    background: var(--accent-soft);
+    border-radius: 0.3em;
+    outline: 2px solid var(--accent);
+    scroll-margin-bottom: calc(var(--edit-foot-h, 4rem) + var(--chord-dock-h, 0px) + 0.75rem);
+}
+
+/* The dock rests on the foot (Guardar, Cancelar) and is as tall as what shows of the sheet: the lyrics scroll in what is left.
+   The sheet is laid out at its full height and moved with a transform, so what is not in view yet waits below the foot (which paints over it) */
+.chord-dock {
+    position: sticky;
+    bottom: var(--edit-foot-h, 4rem);
+    z-index: 2;
+    flex: none;
+    margin: 0.5rem -1rem 0;
+    /* On a phone it clips the part of the sheet that is below the fold, and lets touches through the strip over it */
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.chord-sheet {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: 0 1rem 0.9rem;
+    background: var(--surface);
+    pointer-events: auto;
+    border-top: 1px solid var(--border);
+    border-radius: 1rem 1rem 0 0;
+    box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.28);
+}
+
+/* While it is low, what is below the fold stays out of reach of the keyboard and the screen reader; moving, it shows */
+.chord-sheet--peek:not(.is-moving) .chord-sheet__more {
+    visibility: hidden;
+}
+
+.chord-sheet__head {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 3.9rem;
+    padding-top: 0.9rem;
+}
+
+.chord-sheet__head--grip {
+    touch-action: none;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.chord-sheet__head--grip:focus-visible {
+    outline-offset: -2px;
+    border-radius: 0.6rem;
+}
+
+/* The handle: grey at rest, the colour of the text while it is touched or dragged */
+.chord-sheet__head--grip::before {
+    content: '';
+    position: absolute;
+    top: 0.4rem;
+    left: 50%;
+    width: 2.4rem;
+    height: 0.28rem;
+    margin-left: -1.2rem;
+    border-radius: 9px;
+    background: var(--border);
+    transition: background-color 0.15s;
+}
+
+.chord-sheet.is-held .chord-sheet__head--grip::before,
+.chord-sheet__head--grip:active::before {
+    background: var(--text);
+}
+
+.chord-sheet__main {
+    display: grid;
+    flex: 1;
+    gap: 0.05rem;
+    min-width: 0;
+}
+
+.chord-sheet__chord {
+    color: var(--accent);
+    font-size: 1.55rem;
+    font-weight: 700;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+}
+
+/* A long name (Fa#7add9/Sib) gets smaller instead of reaching the close button */
+.chord-sheet__chord--l1 {
+    font-size: 1.3rem;
+}
+
+.chord-sheet__chord--l2 {
+    font-size: 1.1rem;
+}
+
+.chord-sheet__chord.is-none {
+    color: var(--muted);
+    font-weight: 400;
+}
+
+.chord-sheet__code {
+    color: var(--muted);
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 0.78rem;
+    overflow-wrap: anywhere;
+}
+
+.chord-sheet__close {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    color: var(--text);
+    background: var(--surface-2);
+    border: 0;
+    border-radius: 50%;
+}
+
+.chord-sheet__body,
+.chord-sheet__more {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.4rem;
+}
+
+.chord-sheet__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.chord-sheet__label {
+    width: 100%;
+    margin-top: 0.1rem;
+    color: var(--muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.chord-sheet__gap {
+    width: 0.5rem;
+}
+
+.chord-chip {
+    flex: 1 1 0;
+    min-width: 2.2rem;
+    min-height: 2.75rem;
+    padding: 0 0.25rem;
+    color: var(--text);
+    font-size: 0.95rem;
+    white-space: nowrap;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+}
+
+.chord-chip.is-on {
+    color: var(--on-accent);
+    font-weight: 700;
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+.chord-sheet__row > .chord-chip[data-act='bassopen'] {
+    flex: 0 0 auto;
+    padding: 0 0.9rem;
+}
+
+.chord-sheet__other {
+    flex: 1 1 5rem;
+    min-width: 4rem;
+    min-height: 2.75rem;
+    padding: 0 0.6rem;
+    color: var(--text);
+    background: var(--surface-2);
+    border: 1px dashed var(--border);
+    border-radius: 0.5rem;
+}
+
+/* "En este canto": the chords already in the song, in one row that slides sideways; an arrow at the side where more wait (it also moves the row for a mouse) */
+.chord-used {
+    position: relative;
+    width: 100%;
+}
+
+.chord-used__list {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.3rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+}
+
+.chord-used__list::-webkit-scrollbar {
+    display: none;
+}
+
+.chord-used__list .chord-chip {
+    flex: 0 0 auto;
+    min-width: 3rem;
+    padding: 0 0.7rem;
+    font-weight: 700;
+}
+
+.chord-used__arrow {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 2.6rem;
+    padding: 0;
+    color: var(--text);
+    border: 0;
+}
+
+.chord-used__arrow--left {
+    left: 0;
+    background: linear-gradient(to right, var(--surface) 45%, transparent);
+}
+
+.chord-used__arrow--right {
+    right: 0;
+    background: linear-gradient(to left, var(--surface) 45%, transparent);
+}
+
+/* From 900px there is room: the sheet is shown whole, with no handle, across the foot in two columns (the chord and the notes at the
+   left, the details at the right) so it is low and leaves the preview in sight */
+@media (min-width: 900px) {
+    .chord-dock {
+        overflow: visible;
+        pointer-events: auto;
+    }
+
+    .chord-sheet {
+        position: static;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        column-gap: 1.5rem;
+        row-gap: 0.4rem;
+        align-items: start;
+        padding-bottom: 0.7rem;
+    }
+
+    .chord-sheet__head {
+        grid-column: 1;
+        min-height: 3.2rem;
+        padding-top: 0.4rem;
+    }
+
+    .chord-sheet__body {
+        display: contents;
+    }
+
+    .chord-sheet__body > * {
+        grid-column: 1;
+    }
+
+    .chord-sheet__body > .chord-sheet__more {
+        grid-column: 2;
+        grid-row: 1 / span 3;
+        padding-top: 0.4rem;
+    }
+}
