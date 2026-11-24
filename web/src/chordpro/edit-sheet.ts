@@ -60,6 +60,8 @@ export function markPlaces(root: HTMLElement, pieces: readonly Piece[]): boolean
         if (piece?.place === true) {
             seg.dataset['place'] = piece.id;
             seg.classList.toggle('seg--free', piece.chord === null);
+            // The space between two words: drawn wide enough to be touched (styles.css)
+            seg.classList.toggle('seg--gap', /^\s/u.test(piece.text));
         }
     });
 

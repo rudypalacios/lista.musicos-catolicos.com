@@ -27,7 +27,7 @@ export interface Piece {
     /** The chord in English notation, or null when the piece has none */
     chord: string | null;
     text: string;
-    /** Whether a chord can be put here or the one here changed: the start of a syllable, or a chord already written */
+    /** Whether a chord can be put here or the one here changed: the start of a syllable, the space between two words, or a chord already written */
     place: boolean;
     /** Where the chord's `[bracket]` is in the text, [from, to), or null without a chord */
     bracket: readonly [number, number] | null;
@@ -128,7 +128,9 @@ function linePieces(raw: string, lineStart: number, index: number): LinePieces |
     }
     takeText(lyrics.length);
 
-    const cuts = [...new Set([0, ...syllableStarts(plain), ...markers.map((marker) => marker.plain)])].sort((a, b) => a - b);
+    // The space between two words is a place too: a note is sometimes played there, between "to" and "he"
+    const gaps = [...plain.matchAll(/(?<=\S)\s+(?=\S)/gu)].map((match) => match.index);
+    const cuts = [...new Set([0, ...syllableStarts(plain), ...gaps, ...markers.map((marker) => marker.plain)])].sort((a, b) => a - b);
     const pieces: Piece[] = [];
     for (const [position, cut] of cuts.entries()) {
         const text = plain.slice(cut, cuts[position + 1] ?? plain.length);
@@ -140,7 +142,7 @@ function linePieces(raw: string, lineStart: number, index: number): LinePieces |
             id: `${index}:${cut}:${pieces.filter((piece) => piece.id.startsWith(`${index}:${cut}:`)).length}`,
             chord: marker?.chord ?? null,
             text: words,
-            place: marker !== undefined || /^\S/u.test(words),
+            place: marker !== undefined || /^\S/u.test(words) || gaps.includes(cut),
             bracket: marker === undefined ? null : [marker.from, marker.to],
             at: offsets[cut] ?? lineStart + lyrics.length,
         });

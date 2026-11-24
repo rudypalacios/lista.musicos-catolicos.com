@@ -4975,6 +4975,13 @@ button.srow__tool:disabled {
     text-underline-offset: 0.2em;
 }
 
+/* The space between two words: kept as it is written (not collapsed) and wide enough to be touched */
+.song-sheet--edit .seg--gap .lyr {
+    display: inline-block;
+    min-width: 0.6em;
+    white-space: pre;
+}
+
 .song-sheet--edit .ch[data-chord=''] + .lyr .syl {
     text-decoration: none;
 }

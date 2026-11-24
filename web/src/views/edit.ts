@@ -136,7 +136,11 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
     let places = new Map<string, Piece>();
     const chordSheet = createChordSheet({
         chordAt: (id) => (places.has(id) ? places.get(id)?.chord ?? null : undefined),
-        labelAt: (id) => places.get(id)?.text.trim() ?? '',
+        labelAt: (id) => {
+            const text = places.get(id)?.text ?? '';
+
+            return text.trim() === '' && text !== '' ? 'espacio' : text.trim();
+        },
         used: () => [...new Set([...places.values()].flatMap((piece) => (piece.chord === null ? [] : [piece.chord])))],
         write: (id, chord) => {
             // Written into the text as if typed: the preview, the draft, the notice of the key and the leave guard all follow
@@ -184,6 +188,12 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         const drawn = editSheet(text, parsed);
         setSheet(sheet, drawn.html);
         places = new Map(markPlaces(sheet, drawn.pieces) ? drawn.pieces.map((piece) => [piece.id, piece]) : []);
+        // The chords are drawn in the notation chosen in Ajustes, like everywhere else (the sheet draws them in Latin)
+        const notation = readNotation();
+        for (const chord of sheet.querySelectorAll<HTMLElement>('.ch[data-chord]')) {
+            const name = chord.dataset['chord'] ?? '';
+            chord.textContent = name === '' ? '' : transpose(name, 0, notation);
+        }
         markPicked();
         chordSheet.refresh();
         const key = songKey(parsed);
