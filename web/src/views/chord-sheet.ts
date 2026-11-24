@@ -17,6 +17,7 @@ import * as chordBuilder from '../chordpro/chord-builder.ts';
 import { h } from '../dom.ts';
 import { icon } from '../icons.ts';
 import { levelsOf, pickLevel, velocityOf, type Sample } from '../sheet-detents.ts';
+import { holdBack, type BackHold } from './sheet.ts';
 
 export interface ChordSheetOptions {
     /** The chord written at a place now (English notation), null when it has none, undefined when the place is gone */
@@ -81,6 +82,8 @@ export function createChordSheet(options: ChordSheetOptions): ChordSheet {
     let leaving = false;
     let centerUsed = true;
     let drag: Drag | null = null;
+    /** The history entry the open sheet holds: the back button closes the sheet, not the screen */
+    let hold: BackHold | null = null;
     /** While an action writes into the text, the editor draws again by itself: the sheet is drawn once, afterwards */
     let writing = false;
 
@@ -292,6 +295,8 @@ export function createChordSheet(options: ChordSheetOptions): ChordSheet {
 
     function dismiss(): void {
         leaving = false;
+        hold?.give();
+        hold = null;
         picked = null;
         builder = chordBuilder.blank();
         expanded = false;
@@ -513,6 +518,11 @@ export function createChordSheet(options: ChordSheetOptions): ChordSheet {
             leaving = false;
             picked = id;
             centerUsed = true;
+            // Back closes the sheet (with the way down on a phone) instead of leaving the screen
+            hold ??= holdBack(() => {
+                hold = null;
+                closeAnimated();
+            });
             if (options.wide.matches) {
                 builder = chordBuilder.readChord(options.chordAt(id) ?? '');
                 expanded = true;
@@ -533,6 +543,8 @@ export function createChordSheet(options: ChordSheetOptions): ChordSheet {
         picked: () => picked,
         dispose: () => {
             options.wide.removeEventListener('change', onWideChange);
+            hold?.drop();
+            hold = null;
             document.removeEventListener('pointermove', onMove);
             document.removeEventListener('pointerup', onRelease);
             document.removeEventListener('pointercancel', onRelease);

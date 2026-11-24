@@ -4,6 +4,55 @@ import { icon, type IconName } from '../icons.ts';
 /** The sheets that are open now, last one on top: the back button closes the top one */
 const opened: Array<{ closeFromBack: () => void }> = [];
 
+/** What `holdBack` gives its owner */
+export interface BackHold {
+    /**
+     * The owner closed what it held by itself (not by the back button): gives the history entry back. `then` runs once that
+     * has landed, when it is safe to navigate.
+     */
+    give: (then?: () => void) => void;
+    /** The screen is being replaced anyway: forgets it without touching the history */
+    drop: () => void;
+}
+
+/**
+ * For anything that opens over a screen and is not a `createSheet` (the chords sheet of the editor): it takes an entry in the
+ * history, so the back button closes it instead of leaving the screen (`onBack` is what closes it, and the entry is already
+ * given back then). Whoever closes it any other way calls `give`.
+ */
+export function holdBack(onBack: () => void): BackHold {
+    history.pushState({ sheet: true }, '', location.href);
+    let holds = true;
+    const self = {
+        closeFromBack: () => {
+            holds = false;
+            opened.splice(opened.indexOf(self), 1);
+            onBack();
+        },
+    };
+    opened.push(self);
+
+    return {
+        give: (then) => {
+            if (!holds) {
+                then?.();
+
+                return;
+            }
+            holds = false;
+            opened.splice(opened.indexOf(self), 1);
+            ownBacks.push(then);
+            history.back();
+        },
+        drop: () => {
+            if (holds) {
+                holds = false;
+                opened.splice(opened.indexOf(self), 1);
+            }
+        },
+    };
+}
+
 /** What to do once each `history.back()` we made ourselves has landed (their popstates are not the person's) */
 const ownBacks: Array<(() => void) | undefined> = [];
 
