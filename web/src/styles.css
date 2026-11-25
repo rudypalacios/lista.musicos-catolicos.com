@@ -5393,44 +5393,47 @@ button.srow__tool:disabled {
     font-size: 0.9rem;
 }
 
+.song-player__head {
+    border-bottom: 1px solid var(--border);
+}
+
+/* The grabber of a half sheet, on top of the window: hold it and move it (an open hand on a mouse, the finger on a touch screen) */
+.song-player__grabber {
+    display: block;
+    margin: 0.4rem auto 0;
+}
+
 .song-player__bar {
     display: flex;
     align-items: center;
     gap: 0.3rem;
     min-height: 2.9rem;
-    padding: 0.1rem 0.3rem 0.1rem 0.5rem;
-    border-bottom: 1px solid var(--border);
+    padding: 0.1rem 0.3rem 0.1rem 0.75rem;
 }
 
-.song-player.is-folded .song-player__bar {
+.song-player.is-folded .song-player__head {
     border-bottom: 0;
 }
 
-/* The bar of a window is its handle: it moves with the finger and does not scroll the page */
-.song-player__bar.is-handle {
+/* The head of a window is its handle: it moves with the finger and does not scroll the page */
+.song-player__head.is-handle {
     cursor: grab;
     touch-action: none;
     user-select: none;
 }
 
-.song-player.is-dragging .song-player__bar {
+.song-player.is-dragging .song-player__head {
     cursor: grabbing;
 }
 
-/* Docked, the bar can be swiped up and down to fold the video: it must not scroll the page either */
-.song-player:not(.is-float) .song-player__bar {
+/* Docked, the head can be swiped up and down to fold the video: it must not scroll the page either */
+.song-player:not(.is-float) .song-player__head {
     touch-action: none;
 }
 
-.song-player__grip {
-    flex: none;
-    width: 0.3rem;
-    height: 1.2rem;
-    margin-right: 0.25rem;
-    border-right: 2px dotted var(--faint);
-    border-left: 2px dotted var(--faint);
-    box-sizing: content-box;
-    opacity: 0.8;
+.song-player__head button,
+.song-player__head a {
+    cursor: pointer;
 }
 
 .song-player__bar .button {

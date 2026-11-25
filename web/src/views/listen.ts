@@ -109,12 +109,14 @@ function buildPlayer(read: Extract<Listenable, { kind: 'youtube' }>, options: Pl
     const foldButton = options.fold === true
         ? h('button', { type: 'button', class: 'song-player__close', 'aria-label': 'Ocultar el video', 'aria-expanded': 'true' }, icon('chevron-up', 20))
         : null;
-    const handle = h('div', { class: 'song-player__bar' },
-        h('span', { class: 'song-player__grip', 'aria-hidden': 'true' }),
-        h('span', { class: 'song-player__what' }, options.what),
-        h('a', { class: 'button', href: read.href, target: '_blank', rel: 'noopener noreferrer' }, 'Abrir', icon('external', 20)),
-        ...(foldButton === null ? [] : [foldButton]),
-        closeButton);
+    // The same little bar every half sheet has on top: what people already know means "hold and move me"
+    const handle = h('div', { class: 'song-player__head' },
+        h('span', { class: 'sheet__grab song-player__grabber', 'aria-hidden': 'true' }),
+        h('div', { class: 'song-player__bar' },
+            h('span', { class: 'song-player__what' }, options.what),
+            h('a', { class: 'button', href: read.href, target: '_blank', rel: 'noopener noreferrer' }, 'Abrir', icon('external', 20)),
+            ...(foldButton === null ? [] : [foldButton]),
+            closeButton));
     const element = h('div', { class: 'song-player', role: 'region', 'aria-label': 'Escuchar el canto original' }, handle, playerScreen(read));
     if (foldButton !== null) {
         const setFolded = (folded: boolean): void => {
