@@ -1868,7 +1868,8 @@ button.item__open:focus-visible {
     font-size: 0.85rem;
 }
 
-button.item__more {
+button.item__more,
+a.item__more {
     flex: none;
     display: inline-flex;
     align-items: center;
@@ -1878,6 +1879,12 @@ button.item__more {
     color: var(--muted);
     background: none;
     border: 0;
+}
+
+/* A link (another site) has the look of the button, and none of a link */
+a.item__more {
+    align-self: stretch;
+    text-decoration: none;
 }
 
 .item.is-new {
@@ -5265,33 +5272,9 @@ button.srow__tool:disabled {
     }
 }
 
-/* ===== A link to hear the original: the row between the tools and the lyrics, and YouTube's player (views/listen.ts) ===== */
+/* ===== A link to hear the original: YouTube's player, above the lyrics of a song or in a sheet (views/listen.ts) ===== */
 .song-listen-slot {
     display: contents;
-}
-
-.song-listen {
-    display: flex;
-    flex: none;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.4rem 0.5rem;
-    padding: 0.45rem 0.75rem;
-    border-bottom: 1px solid var(--border);
-}
-
-.song-listen__hint {
-    color: var(--muted);
-    font-size: 0.85rem;
-}
-
-.song-listen .button,
-.song-player .button {
-    display: inline-flex;
-    flex: none;
-    align-items: center;
-    gap: 0.45rem;
-    white-space: nowrap;
 }
 
 /* The player is 16:9 across the width, so it is never under the 200 px YouTube asks of an embedded player; it is not hidden to leave only the sound */
@@ -5336,6 +5319,23 @@ button.srow__tool:disabled {
     gap: 0.3rem;
     min-height: 2.9rem;
     padding: 0.1rem 0.3rem 0.1rem 0.75rem;
+}
+
+.song-player__bar .button {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 0.45rem;
+    white-space: nowrap;
+}
+
+/* In a sheet (a list, singing): the same player, rounded like the rest of the sheet, with its bar under it */
+.sheet__body > .song-player__screen {
+    border-radius: 0.7rem;
+}
+
+.sheet__body > .song-player__bar {
+    padding: 0.6rem 0 0.2rem;
 }
 
 .song-player__what {

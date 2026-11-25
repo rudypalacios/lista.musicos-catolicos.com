@@ -14,6 +14,7 @@ import { paths } from '../router.ts';
 import { dragOffset, isSwipe, swipeAxis, type Axis } from '../swipe.ts';
 import { describeAwake, screenKeeper } from '../wakelock.ts';
 import { createReader, type Reader } from './reader.ts';
+import { createListenSheet, listenAction, listenableOf } from './listen.ts';
 import { createSheet, sheetAction, sheetList, spaced } from './sheet.ts';
 import { createToneControl, type ToneControl, type ToneControlOptions } from './tone-control.ts';
 import type { Navigate, View } from './types.ts';
@@ -351,6 +352,8 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
 
     // --- "⋯": the key and the lyrics tools of the selected song, and dividing the page ---
     const toolsSheet = createSheet('Tono y letra', () => fillTools());
+    // "Escuchar el original": the player of the song on screen, in a sheet that comes over the lyrics and goes away with them
+    const listenSheet = createListenSheet();
     const fillTools = (): void => {
         const pane = focused();
         const { song, reader, tone } = pane;
@@ -387,7 +390,9 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
                 }
             }
         };
+        const heard = listenableOf(song);
         toolsSheet.body.replaceChildren(h('h3', {}, 'Tono'), tone.element, h('h3', {}, 'Letra'), reader.toolbar, spaced(sheetList(
+            ...(heard === null ? [] : [listenAction(heard, () => toolsSheet.close(() => listenSheet.open(song)))]),
             divide,
             edit,
             sheetAction('printer', 'Imprimir con acordes', () => print('chords')),
@@ -551,11 +556,12 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     }
 
     return {
-        element: h('div', { class: `viewer perform${divided ? ' is-divided' : ''}` }, panesEl, dock, chrome, jumpSheet.element, toolsSheet.element),
+        element: h('div', { class: `viewer perform${divided ? ' is-divided' : ''}` }, panesEl, dock, chrome, jumpSheet.element, toolsSheet.element, listenSheet.element),
         dispose: () => {
             document.removeEventListener('keydown', onKey);
             layoutObserver.disconnect();
             toolsSheet.release();
+            listenSheet.release();
             jumpSheet.release();
             stopAwake();
             releaseScreen();

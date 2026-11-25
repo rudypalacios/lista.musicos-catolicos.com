@@ -11,7 +11,7 @@ import type { PrintVersion } from '../print/layout.ts';
 import { printSong } from '../print/jobs.ts';
 import { createAddToList } from './add-to-list.ts';
 import { deleteSongAfterAsking } from './delete-song.ts';
-import { createListen } from './listen.ts';
+import { createListen, listenAction } from './listen.ts';
 import { createReader } from './reader.ts';
 import { showToast } from '../toast.ts';
 import { createToneControl, type ToneControl } from './tone-control.ts';
@@ -119,6 +119,10 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
         }],
     });
 
+    // The link to hear the original: an option of the "⋯" sheet and, when chosen, YouTube's player fixed above the lyrics
+    const viewer = h('div', { class: 'viewer' });
+    const listen = createListen(song.listenUrl, { onToggle: (open) => viewer.classList.toggle('has-player', open) });
+
     // --- "⋯": what is done less often ---
     const sheet = createSheet('Opciones del canto', undefined, { anchored: true });
     sheet.element.classList.add('sheet-layer--window');
@@ -156,6 +160,8 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
         h('div', { class: 'toolbar', role: 'toolbar', 'aria-label': 'Herramientas de la letra' }, reader.display),
         h('h3', {}, 'Este canto'),
         sheetList(
+            // Hearing the original: the player opens above the lyrics, which stay in sight
+            ...(listen.read === null ? [] : [listenAction(listen.read, () => sheet.close(() => listen.open()))]),
             sheetAction('list-plus', 'Agregar a un listado', () => sheet.close(() => addToList.open())),
             sheetAction('printer', 'Imprimir con acordes', () => print('chords')),
             sheetAction('printer', 'Imprimir solo la letra', () => print('lyrics')),
@@ -194,10 +200,6 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
         h('div', { class: 'song-tools__row' }, tone.step, h('div', { class: 'toolbar' }, reader.size), more),
         tone.element,
     );
-
-    // The link to hear the original: a row under the tools and, when asked, YouTube's player fixed above the lyrics
-    const viewer = h('div', { class: 'viewer' });
-    const listen = createListen(song.listenUrl, { onToggle: (open) => viewer.classList.toggle('has-player', open) });
 
     // A song on a stand must not go dark while it is being read (unless turned off in Ajustes)
     const releaseScreen = readKeepAwake() ? screenKeeper.hold() : (): void => undefined;

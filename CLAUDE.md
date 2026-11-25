@@ -193,9 +193,10 @@ folded under the bar, a swipe or ← → to change song). Keep it that way: the 
 
 A song carries one optional link (`Song.listenUrl`, column `listen_url`, synced with the record; never in a shared link). It is a reference, not a
 music player and not hosting: nothing is stored but the address. `web/src/listen-url.ts` (pure, tested) says what a pasted text is: a YouTube or
-YouTube Music video (a player in the page), any other `https` link (a button that opens apart) or nothing usable. The song page (`views/listen.ts`) puts
-a row between the tools and the lyrics; "Escuchar aquí" creates YouTube's own player (`youtube-nocookie.com`, a sandboxed frame) above the lyrics (a column
-beside them from 900px) and ✕ removes it, which ends the sound. **Rules that matter:** the frame's address is always built from the video id, never from the
+YouTube Music video (a player in the page), any other `https` link (a button that opens apart) or nothing usable. The way in is an option "Escuchar el original" of the "⋯" sheet of a song
+(`views/listen.ts`: its page, a row of a list, singing) and a ♪ in the rows of a list that have a link; there is no row on the page (it cost the lyrics screen). On the page of a song
+it creates YouTube's own player (`youtube-nocookie.com`, a sandboxed frame) above the lyrics (a column beside them from 900px); in a list and while singing it is a sheet. Closing it
+removes the frame, which ends the sound. **Rules that matter:** the frame's address is always built from the video id, never from the
 pasted text; **nothing of YouTube loads before that touch** (the one widening of the CSP is `frame-src https://www.youtube-nocookie.com`, and `Referrer-Policy`
 is `strict-origin-when-cross-origin` because the player refuses to play with no referrer); the player is not hidden or shrunk under 200 px to leave only the
 sound (YouTube's terms); the privacy text says it (`views/privacy.ts`, "terceros"). Later the references are meant to be the owner's own (musicoscatolicos.com
