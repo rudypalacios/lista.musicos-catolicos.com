@@ -3990,14 +3990,20 @@ button.srow__tool:disabled {
     margin-top: 1.25rem;
 }
 
-/* The state of the song, under its tags: a box and a word, the explanation quiet under it */
-.draft-field {
-    margin-top: 1rem;
+/* The head of the editor: its title and, at the right, the state of the song (a box and a word) */
+.edit-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
 }
 
-.draft-field__hint {
-    margin: 0 0 0 1.85rem;
-    font-size: 0.85rem;
+.edit-head h2 {
+    margin-block: 0;
+}
+
+.draft-field {
+    flex: none;
 }
 
 .tag-field__have,
