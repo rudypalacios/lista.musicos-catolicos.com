@@ -2609,6 +2609,22 @@ body {
     }
 }
 
+/* The ♪ of the song in the singing bar: from 900px only, beside its key (under it the option is in the "⋯" sheet) */
+.perform__listen-slot {
+    display: none;
+}
+
+.perform__more.perform__listen {
+    color: var(--accent);
+}
+
+@media (min-width: 900px) {
+    .perform__listen-slot {
+        display: flex;
+        flex: none;
+    }
+}
+
 /* A tag ("Borrador") that sits among the flex items of its line */
 .perform__tag {
     display: contents;
