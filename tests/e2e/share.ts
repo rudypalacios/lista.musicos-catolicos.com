@@ -16,7 +16,7 @@ const LIST = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
 
 const payload = {
     songs: [
-        { id: SONG_ONE, title: 'Caminamos con alegría', author: 'Ana Pérez', body: '{key: C}\n[C]Caminamos con [G]alegría\n[Am]por el [F]camino', updatedAt: 1_700_000_000_000, deleted: false },
+        { id: SONG_ONE, title: 'Caminamos con alegría', author: 'Ana Pérez', body: '{key: C}\n[C]Caminamos con [G]alegría\n[Am]por el [F]camino', updatedAt: 1_700_000_000_000, deleted: false, listenUrl: 'https://music.youtube.com/watch?v=Zk3mPq8vLw4&t=75s' },
         { id: SONG_TWO, title: 'Pan de vida', author: '', body: '[G]Pan de [C]vida', updatedAt: 1_700_000_001_000, deleted: false },
     ],
     setlists: [{
@@ -188,6 +188,44 @@ try {
     assert.deepEqual(violations, [], 'the production security policy is respected');
     assert.deepEqual(visitorProblems, []);
     pass('visitor: no request to another origin, no policy violation, no uncaught error');
+
+    // ----- the link to hear the original travels with the song (no switch), and YouTube loads only on the touch -----
+    const heardContext = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
+    const heardPage = await heardContext.newPage();
+    const heardViolations = await enforcePolicy(heardContext, heardPage);
+    const asked: string[] = [];
+    heardPage.on('request', (request) => {
+        if (/youtube/.test(request.url())) {
+            asked.push(request.url());
+        }
+    });
+    await heardContext.route(/youtube-nocookie\.com/, async (route) => {
+        await route.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><title>player</title><p>stand-in</p>' });
+    });
+    await heardPage.goto(url);
+    await heardPage.getByRole('heading', { name: TITLE }).waitFor();
+    assert.equal(await heardPage.locator('.pub-row__listen').count(), 1, 'a ♪ only in the song that has a link');
+    assert.equal(await heardPage.locator('.pub-row-wrap', { hasText: 'Caminamos con alegría' }).count(), 1);
+    assert.deepEqual(asked, [], 'nothing of YouTube before the touch');
+    await heardPage.getByRole('button', { name: 'Escuchar el original: Caminamos con alegría' }).click();
+    await heardPage.locator('.sheet iframe').waitFor();
+    assert.equal(await heardPage.locator('.sheet iframe').getAttribute('src'), 'https://www.youtube-nocookie.com/embed/Zk3mPq8vLw4?autoplay=1&playsinline=1&rel=0&start=75');
+    await heardPage.getByRole('button', { name: 'Cerrar' }).click();
+    await heardPage.locator('.sheet iframe').waitFor({ state: 'detached' });
+    // On the page of the song: in the tools, for the song that has a link; the other song has none
+    await heardPage.getByText('Caminamos con alegría').first().click();
+    await heardPage.locator('.song-sheet').waitFor();
+    await heardPage.getByRole('button', { name: 'Herramientas' }).click();
+    await heardPage.locator('.pub-tools__listen').click();
+    await heardPage.locator('.sheet iframe').waitFor();
+    await heardPage.getByRole('button', { name: 'Cerrar' }).click();
+    await heardPage.locator('.sheet iframe').waitFor({ state: 'detached' });
+    await heardPage.goto(`${url}/2`);
+    await heardPage.locator('.song-sheet').waitFor();
+    await heardPage.getByRole('button', { name: 'Herramientas' }).click();
+    assert.equal(await heardPage.locator('.pub-tools__listen').isVisible(), false, 'a song with no link has no option');
+    assert.deepEqual(heardViolations, [], 'the player breaks no rule of the policy');
+    pass('visitor: a song with a link carries it with no switch: a ♪ in the list and an option in the tools, YouTube loads only on the touch, a song with none has nothing');
 
     // ----- the same app: a swipe changes the song, and the list opens with no connection -----
     const touch = await browser.newContext({ viewport: { width: 390, height: 800 }, hasTouch: true, serviceWorkers: 'block' });

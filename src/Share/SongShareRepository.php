@@ -80,13 +80,13 @@ final class SongShareRepository
      *     updatedAt: int,
      *     parts: list<array{id: string, name: string}>,
      *     items: list<array{id: string, part: string, songId: string, transpose: int}>,
-     *     songs: list<array{id: string, title: string, author: string, body: string}>
+     *     songs: list<array{id: string, title: string, author: string, body: string, listenUrl?: string}>
      * }|null
      */
     public function view(string $code): ?array
     {
         $statement = $this->pdo->prepare(
-            'SELECT g.id, g.title, g.author, g.body, g.updated_at FROM song_shares s '
+            'SELECT g.id, g.title, g.author, g.body, g.listen_url, g.updated_at FROM song_shares s '
             . 'JOIN songs g ON g.id = s.song_id AND g.user_id = s.user_id '
             . 'WHERE s.code = ? AND s.revoked_at IS NULL AND g.deleted_at IS NULL'
         );
@@ -110,7 +110,7 @@ final class SongShareRepository
                 'title' => (string) $row['title'],
                 'author' => (string) $row['author'],
                 'body' => (string) $row['body'],
-            ]],
+            ] + ((string) $row['listen_url'] !== '' ? ['listenUrl' => (string) $row['listen_url']] : [])],
         ];
     }
 

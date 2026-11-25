@@ -30,7 +30,7 @@ export const PRIVACY_SECTIONS: readonly Section[] = [
             ul: [
                 'Puedes usar Listas sin cuenta: lo que escribas se guarda solo en tu dispositivo.',
                 'Si creas una cuenta, guardamos tu correo, tu contraseña (cifrada, no la podemos leer) y tu biblioteca de cantos, listados y plantillas.',
-                'Listas no usa analítica ni publicidad y no te sigue. Solo carga algo de otro sitio si tú lo pides: el reproductor de YouTube de un canto, al tocar «Escuchar aquí».',
+                'Listas no usa analítica ni publicidad y no te sigue. Solo carga algo de otro sitio si tú lo pides: el reproductor de YouTube de un canto, al tocar «Escuchar el original» o la nota ♪, también en la página de un listado que compartes.',
                 'La única cookie es la de tu sesión, y solo si inicias sesión.',
                 'No vendemos tus datos y no te mandamos publicidad.',
                 'Puedes pedir que borremos tu cuenta con todo lo que guardaste.',
@@ -80,7 +80,7 @@ export const PRIVACY_SECTIONS: readonly Section[] = [
     {
         id: 'terceros',
         title: 'Con quién se comparten los datos',
-        blocks: [{ p: 'Solo con nuestro proveedor de alojamiento web, que aloja Listas, guarda sus registros del servidor y su base de datos, y envía los dos correos de la aplicación (confirmar tu correo y elegir una contraseña nueva) desde nuestro buzón. Fuera de eso, solo hay un tercero más, y únicamente si tú lo pides: si guardas un enlace de YouTube en un canto y tocas «Escuchar aquí», el reproductor de YouTube (youtube-nocookie.com) se carga en ese momento y YouTube recibe tu dirección IP y lo que su propia política describe; antes de ese toque no se carga nada de YouTube, y la página de un listado que compartes nunca lo incluye. También podríamos entregar datos si una autoridad competente lo exige conforme a la ley.' }],
+        blocks: [{ p: 'Solo con nuestro proveedor de alojamiento web, que aloja Listas, guarda sus registros del servidor y su base de datos, y envía los dos correos de la aplicación (confirmar tu correo y elegir una contraseña nueva) desde nuestro buzón. Fuera de eso, solo hay un tercero más, y únicamente si tú lo pides: si guardas un enlace de YouTube en un canto y tocas «Escuchar el original» (o la nota ♪), el reproductor de YouTube (youtube-nocookie.com) se carga en ese momento y YouTube recibe tu dirección IP y lo que su propia política describe; antes de ese toque no se carga nada de YouTube. Si compartes un listado o un canto cuyo canto tiene ese enlace, el enlace (solo la dirección) viaja con lo compartido y quien abre tu enlace puede tocar la nota ♪ para escucharlo; entonces se carga el reproductor y YouTube recibe la dirección IP de esa persona, no la tuya; si no lo toca, no se carga nada. También podríamos entregar datos si una autoridad competente lo exige conforme a la ley.' }],
     },
     {
         id: 'conservacion',

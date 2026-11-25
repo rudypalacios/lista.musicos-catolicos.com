@@ -233,6 +233,22 @@ final class ShareApiTest extends TestCase
         $this->assertSame('Ana Pérez', $view['songs'][0]['author']);
     }
 
+    public function testASongWithALinkToHearItCarriesItWithOrWithoutLyricsAndOthersCarryNone(): void
+    {
+        $cookies = $this->owner();
+        $this->seed($cookies);
+        $link = 'https://music.youtube.com/watch?v=Zk3mPq8vLw4&t=75s';
+        $song = $this->song(self::SONG_ONE, 'Caminamos con alegría', 'Ana Pérez', '[C]Caminamos', 1_700_000_010_000);
+        $this->call('POST', '/api/sync', ['songs' => [$song + ['listenUrl' => $link]]], $cookies);
+
+        foreach ([true, false] as $withLyrics) {
+            $view = $this->body($this->read($this->share($cookies, $withLyrics), $withLyrics ? '4.4.4.4' : '5.5.5.5'));
+
+            $this->assertSame($link, $view['songs'][0]['listenUrl'], 'no switch: a song that has one carries it');
+            $this->assertArrayNotHasKey('listenUrl', $view['songs'][1], 'a song with none carries nothing');
+        }
+    }
+
     public function testTheLyricsSwitchChangesWhatTheSameLinkShows(): void
     {
         $cookies = $this->owner();

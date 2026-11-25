@@ -173,7 +173,7 @@ by `main.ts` like the visitor's page). `tests/e2e/signup.ts` covers it end to en
 A list can be shared by a link anyone can open, read only (the owner's decision, 2026-11-01: "cualquiera"). It is the one thing of this
 app that is public, so it says as little as it can: `GET /api/shared/:code` answers only the title, the sections the list shows, the songs in
 order with the key each has in it, which songs share a page (`withNext`: the owner divided it while singing, and the visitor reads the same pages) and, if the person chose it, the lyrics (`src/Share/ShareRepository.php`); never the account, the notes, the
-tags or anything else, and a stopped, never given or malformed link all answer the same 404. The visitor's page (`/c/:code`, `web/src/views/shared.ts`)
+tags or anything else (but the link to hear the original of a song that has one: see "A link to hear the original"), and a stopped, never given or malformed link all answer the same 404. The visitor's page (`/c/:code`, `web/src/views/shared.ts`)
 is drawn like the public site's pages and loads nothing from another domain, sets no cookie and has no analytics or ads: the privacy text
 proposed for the public site says so, so **do not add any of those without telling the owner first**. The words belong to their authors: the
 sheet asks whether the lyrics go with the link, the page says "uso personal" and links to the public site's copyright page. Stopping a share
@@ -191,7 +191,7 @@ folded under the bar, a swipe or ← → to change song). Keep it that way: the 
 
 ## A link to hear the original (the owner's decision, 2026-11-24)
 
-A song carries one optional link (`Song.listenUrl`, column `listen_url`, synced with the record; never in a shared link). It is a reference, not a
+A song carries one optional link (`Song.listenUrl`, column `listen_url`, synced with the record; it goes in a shared list or song **whenever the song has one, with no switch** (the owner, 2026-11-25: `listenUrl` in `GET /api/shared/:code`, the ♪ in the visitor's list and an option in the visitor's tools, the player in a sheet, nothing of YouTube before the touch)). It is a reference, not a
 music player and not hosting: nothing is stored but the address. `web/src/listen-url.ts` (pure, tested) says what a pasted text is: a YouTube or
 YouTube Music video (a player in the page), any other `https` link (a button that opens apart) or nothing usable. The way in is an option "Escuchar el original" of the "⋯" sheet of a song
 (`views/listen.ts`: its page, a row of a list, singing) and a ♪ in the rows of a list that have a link and in the tools row of the song's page, before its "⋯" (the owner: the same icon everywhere; hidden under 371px wide, the option stays); there is no row on the page (it cost the lyrics screen). On the page of a song

@@ -67,6 +67,11 @@ describe('asSong', () => {
         assert.deepEqual([song.id, song.title, song.author, song.body, song.tags, song.myShift, song.deletedAt], ['s', 'T', 'A', '[C]x', [], 0, null]);
         assert.equal(asSong({ id: 's', title: 'T', author: '' }, 5).body, '');
     });
+
+    it('keeps the link to hear the original when the song has one, and none otherwise', () => {
+        assert.equal(asSong({ id: 's', title: 'T', author: '', listenUrl: 'https://youtu.be/Zk3mPq8vLw4' }, 5).listenUrl, 'https://youtu.be/Zk3mPq8vLw4');
+        assert.equal(asSong({ id: 's', title: 'T', author: '' }, 5).listenUrl, '');
+    });
 });
 
 describe('labels', () => {

@@ -5439,3 +5439,38 @@ button.srow__tool:disabled {
 .listen-hint--bad {
     color: var(--danger);
 }
+
+/* The visitor's list: a row with a ♪ is a link and its button side by side, the border and the hover belong to the pair */
+.pub-row-wrap {
+    display: flex;
+    align-items: center;
+    border-top: 1px solid var(--line-soft);
+}
+
+.pub-row-wrap > .pub-row {
+    flex: 1;
+    min-width: 0;
+    border-top: 0;
+}
+
+.pub-row__listen {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    color: var(--accent);
+    background: none;
+    border: 0;
+    border-radius: 0.6rem;
+    cursor: pointer;
+}
+
+.pub-row__listen:hover {
+    background: var(--surface-2);
+}
+
+.pub-tools__listen[hidden] {
+    display: none;
+}

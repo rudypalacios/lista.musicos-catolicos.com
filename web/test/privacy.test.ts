@@ -32,7 +32,8 @@ describe('the text about the data', () => {
     it('says the one thing that is loaded from another site, and only when the person asks: the player of YouTube', () => {
         assert.match(everything, /youtube-nocookie\.com/);
         assert.match(everything, /antes de ese toque no se carga nada de YouTube/);
-        assert.match(everything, /nunca lo incluye/);
+        assert.match(everything, /viaja con lo compartido/);
+        assert.match(everything, /si no lo toca, no se carga nada/);
     });
 
     it('does not promise what the app does not do: no analytics of its own, and deleting an account is by email for now', () => {
