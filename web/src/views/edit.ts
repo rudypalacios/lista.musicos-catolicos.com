@@ -114,9 +114,8 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
     // The state: a draft is marked "Borrador" in every list until it is published (a new song starts as a draft, to be checked first)
     const draftBox = h('input', { id: 'song-draft', type: 'checkbox' });
     draftBox.checked = existing === undefined || existing.status === 'draft';
-    const draftField = h('div', { class: 'draft-field' },
-        h('label', { class: 'choice__option', for: 'song-draft' }, draftBox, h('span', {}, 'Borrador')),
-        h('p', { class: 'muted draft-field__hint' }, 'Se marca como borrador en los listados hasta que lo publiques.'));
+    // At the right of the page's title, where it is always in sight (the owner: no scrolling down to publish)
+    const draftField = h('label', { class: 'choice__option draft-field', for: 'song-draft', title: 'Se marca como borrador en los listados hasta que lo publiques.' }, draftBox, h('span', {}, 'Borrador'));
 
     const error = h('p', { class: 'error', role: 'alert' });
     const titleError = h('p', { class: 'error field-error', id: 'title-error', role: 'alert' });
@@ -446,8 +445,6 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         composer,
         converted,
         tagField.element,
-        h('div', { class: 'listen-field' }, h('label', { for: 'listen-url' }, 'Enlace para escuchar'), listenUrl, listenHint),
-        draftField,
         h(
             'details',
             { class: 'help' },
@@ -479,6 +476,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         titleError,
         h('label', { for: 'author' }, 'Autor (opcional)'),
         author,
+        h('div', { class: 'listen-field' }, h('label', { for: 'listen-url' }, 'Enlace para escuchar'), listenUrl, listenHint),
         switcher,
         panes,
         error,
@@ -640,7 +638,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         });
     }
 
-    const element = h('div', { class: 'page page--edit' }, h('h2', {}, existing === undefined ? 'Nuevo canto' : 'Editar canto'), recovered, notices, form);
+    const element = h('div', { class: 'page page--edit' }, h('div', { class: 'edit-head' }, h('h2', {}, existing === undefined ? 'Nuevo canto' : 'Editar canto'), draftField), recovered, notices, form);
     // With the title already typed (from the search, or a draft), the lyrics are what is missing
     queueMicrotask(() => (existing === undefined && title.value === '' ? title : body).focus());
 

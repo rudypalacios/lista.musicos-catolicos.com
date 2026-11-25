@@ -323,6 +323,22 @@ try {
     assert.equal(await phone.locator('.perform .song-sheet').first().isVisible(), true, 'the lyrics are there again');
     pass('while singing the option is in the sheet of the "⋯", and the player is a sheet that goes away with the lyrics where they were');
 
+    // On a wide screen the singing bar has room: the same ♪, beside the key; under 900px it is not there (the option stays in the sheet)
+    assert.equal(await phone.locator('.perform__listen').isVisible(), false, 'no ♪ in the bar of a phone');
+    await phone.setViewportSize({ width: 1280, height: 800 });
+    await settle(phone);
+    const barNote = phone.locator('.perform__listen');
+    await barNote.waitFor();
+    const toneBox = await phone.locator('.perform__tone').boundingBox();
+    const noteBarBox = await barNote.boundingBox();
+    assert.ok(toneBox !== null && noteBarBox !== null && noteBarBox.x >= toneBox.x + toneBox.width - 1 && Math.abs(noteBarBox.y - toneBox.y) < 30, 'beside the key, in the bar');
+    await barNote.click();
+    await phone.locator('.sheet iframe').waitFor();
+    await phone.getByRole('button', { name: 'Cerrar' }).click();
+    await settle(phone);
+    assert.equal(await phone.locator('.sheet iframe').count(), 0);
+    pass('on a wide screen the singing bar has the same ♪ beside the key, and it opens the player in a sheet');
+
     assert.deepEqual(problems, [], 'no uncaught errors in the page');
     console.log(`\n${count()} checks passed`);
 } catch (error) {

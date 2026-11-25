@@ -2609,6 +2609,22 @@ body {
     }
 }
 
+/* The ♪ of the song in the singing bar: from 900px only, beside its key (under it the option is in the "⋯" sheet) */
+.perform__listen-slot {
+    display: none;
+}
+
+.perform__more.perform__listen {
+    color: var(--accent);
+}
+
+@media (min-width: 900px) {
+    .perform__listen-slot {
+        display: flex;
+        flex: none;
+    }
+}
+
 /* A tag ("Borrador") that sits among the flex items of its line */
 .perform__tag {
     display: contents;
@@ -3974,14 +3990,20 @@ button.srow__tool:disabled {
     margin-top: 1.25rem;
 }
 
-/* The state of the song, under its tags: a box and a word, the explanation quiet under it */
-.draft-field {
-    margin-top: 1rem;
+/* The head of the editor: its title and, at the right, the state of the song (a box and a word) */
+.edit-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
 }
 
-.draft-field__hint {
-    margin: 0 0 0 1.85rem;
-    font-size: 0.85rem;
+.edit-head h2 {
+    margin-block: 0;
+}
+
+.draft-field {
+    flex: none;
 }
 
 .tag-field__have,

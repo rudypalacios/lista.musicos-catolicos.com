@@ -14,7 +14,7 @@ import { paths } from '../router.ts';
 import { dragOffset, isSwipe, swipeAxis, type Axis } from '../swipe.ts';
 import { describeAwake, screenKeeper } from '../wakelock.ts';
 import { createReader, type Reader } from './reader.ts';
-import { createListenSheet, listenAction, listenableOf } from './listen.ts';
+import { createListenSheet, listenAction, listenableOf, listenButton } from './listen.ts';
 import { createSheet, sheetAction, sheetList, spaced } from './sheet.ts';
 import { createToneControl, type ToneControl, type ToneControlOptions } from './tone-control.ts';
 import type { Navigate, View } from './types.ts';
@@ -127,7 +127,10 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     const moreButton = h('button', { type: 'button', class: 'perform__more', 'aria-label': 'Más herramientas' }, icon('more', 22));
     // On a wide screen the key's − / + rides in the bar, before the position button; the selected song's goes in
     const toneSlot = h('div', { class: 'perform__tone' });
-    const full = h('div', { class: 'perform__full' }, back, heading, toneSlot, jumpButton, moreButton);
+    // Also on a wide screen only (there is room): the ♪ of the selected song, if it has a link to hear the original, beside its key
+    const listenSheet = createListenSheet();
+    const listenSlot = h('div', { class: 'perform__listen-slot' });
+    const full = h('div', { class: 'perform__full' }, back, heading, toneSlot, listenSlot, jumpButton, moreButton);
     const stripName = h('strong', {});
     const stripKey = h('span', { class: 'perform__strip-key' });
     const stripTag = h('span', { class: 'perform__tag' });
@@ -169,6 +172,9 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
         } else {
             toneSlot.replaceChildren();
         }
+        const song = pane.song;
+        const read = song === undefined ? null : listenableOf(song);
+        listenSlot.replaceChildren(...(song === undefined || read === null ? [] : [listenButton(read, '', () => listenSheet.open(song), 'perform__more perform__listen')]));
         dock.replaceChildren(pane.dock);
         dock.hidden = !pane.changed();
         for (const [index, other] of panes.entries()) {
@@ -353,7 +359,6 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     // --- "⋯": the key and the lyrics tools of the selected song, and dividing the page ---
     const toolsSheet = createSheet('Tono y letra', () => fillTools());
     // "Escuchar el original": the player of the song on screen, in a sheet that comes over the lyrics and goes away with them
-    const listenSheet = createListenSheet();
     const fillTools = (): void => {
         const pane = focused();
         const { song, reader, tone } = pane;
