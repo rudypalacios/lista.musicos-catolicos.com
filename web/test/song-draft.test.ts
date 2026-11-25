@@ -45,6 +45,19 @@ describe('NewSongDraft', () => {
         assert.equal(draft.load(), null);
     });
 
+    it('keeps the link to hear the original, reads a draft kept before it existed, and is not blank with only a link', () => {
+        const stored: Record<string, string> = {};
+        const draft = new NewSongDraft({ getItem: (key) => stored[key] ?? null, setItem: (key, value) => void (stored[key] = value), removeItem: (key) => void delete stored[key] }, () => 5);
+
+        draft.keep({ title: '', author: '', body: '', listenUrl: 'https://youtu.be/Zk3mPq8vLw4' });
+        assert.equal(draft.load()?.listenUrl, 'https://youtu.be/Zk3mPq8vLw4');
+
+        draft.clear();
+        stored['lista:borrador-canto'] = JSON.stringify({ title: 'Viejo', author: '', body: '[C]x', savedAt: 1 });
+        assert.equal(draft.load()?.title, 'Viejo');
+        assert.equal(draft.load()?.listenUrl, undefined, 'a draft of before has none');
+    });
+
     it('ignores what is stored when it is not a draft', () => {
         const storage = memoryStorage();
         const draft = new NewSongDraft(storage);

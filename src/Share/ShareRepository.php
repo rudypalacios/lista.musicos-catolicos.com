@@ -94,7 +94,7 @@ final class ShareRepository
      *     updatedAt: int,
      *     parts: list<array{id: string, name: string}>,
      *     items: list<array{id: string, part: string, songId: string, transpose: int, withNext?: string}>,
-     *     songs: list<array{id: string, title: string, author: string, body?: string}>
+     *     songs: list<array{id: string, title: string, author: string, body?: string, listenUrl?: string}>
      * }|null
      */
     public function view(string $code): ?array
@@ -196,7 +196,7 @@ final class ShareRepository
      * @param list<string> $ids
      *
      * @return array{
-     *     rows: array<string, array{id: string, title: string, author: string, updatedAt: int, body?: string}>
+     *     rows: array<string, array{id: string, title: string, author: string, updatedAt: int, body?: string, listenUrl?: string}>
      * }
      */
     private function songsOf(string $userId, array $ids, bool $withLyrics): array
@@ -206,7 +206,7 @@ final class ShareRepository
         }
         $marks = implode(',', array_fill(0, count($ids), '?'));
         $statement = $this->pdo->prepare(
-            'SELECT id, title, author, body, updated_at FROM songs '
+            'SELECT id, title, author, body, listen_url, updated_at FROM songs '
             . 'WHERE user_id = ? AND deleted_at IS NULL AND id IN (' . $marks . ')'
         );
         $statement->execute([$userId, ...$ids]);
@@ -222,6 +222,11 @@ final class ShareRepository
             ];
             if ($withLyrics) {
                 $rows[$id]['body'] = (string) $song['body'];
+            }
+            // The link to hear the original goes only when the song has one: it is a reference the visitor can open, not
+            // something the person chooses per share (the owner, 2026-11-25)
+            if ((string) $song['listen_url'] !== '') {
+                $rows[$id]['listenUrl'] = (string) $song['listen_url'];
             }
         }
 

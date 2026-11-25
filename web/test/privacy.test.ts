@@ -29,6 +29,13 @@ describe('the text about the data', () => {
         assert.ok(everything.includes(PRIVACY_EMAIL));
     });
 
+    it('says the one thing that is loaded from another site, and only when the person asks: the player of YouTube', () => {
+        assert.match(everything, /youtube-nocookie\.com/);
+        assert.match(everything, /antes de ese toque no se carga nada de YouTube/);
+        assert.match(everything, /viaja con lo compartido/);
+        assert.match(everything, /si no lo toca, no se carga nada/);
+    });
+
     it('does not promise what the app does not do: no analytics of its own, and deleting an account is by email for now', () => {
         assert.match(everything, /no usa analítica ni publicidad/);
         assert.match(everything, /Por ahora, para borrar tu cuenta escribe a/);

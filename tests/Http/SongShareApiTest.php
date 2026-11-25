@@ -132,6 +132,21 @@ final class SongShareApiTest extends TestCase
         $this->assertStringNotContainsString('owner@example.com', (string) $response->getBody());
     }
 
+    public function testTheLinkToHearTheOriginalGoesWithTheSongOnlyWhenItHasOne(): void
+    {
+        $cookies = $this->owner();
+        $this->seed($cookies);
+        $link = 'https://www.youtube.com/watch?v=Zk3mPq8vLw4';
+        $this->call('POST', '/api/sync', ['songs' => [[
+            'id' => self::SONG, 'title' => 'Caminamos con alegría', 'author' => 'Ana Pérez', 'body' => '[C]Caminamos',
+            'updatedAt' => 1_700_000_010_000, 'deleted' => false, 'tags' => [], 'listenUrl' => $link,
+        ]], 'setlists' => []], $cookies);
+
+        $view = $this->body($this->call('GET', '/api/shared/' . $this->share($cookies)));
+
+        $this->assertSame($link, $view['songs'][0]['listenUrl']);
+    }
+
     public function testStatusSaysWhetherTheSongIsSharedAndAskingAgainKeepsTheLink(): void
     {
         $cookies = $this->owner();

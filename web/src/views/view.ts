@@ -11,6 +11,7 @@ import type { PrintVersion } from '../print/layout.ts';
 import { printSong } from '../print/jobs.ts';
 import { createAddToList } from './add-to-list.ts';
 import { deleteSongAfterAsking } from './delete-song.ts';
+import { createListen, listenAction, listenButton } from './listen.ts';
 import { createReader } from './reader.ts';
 import { showToast } from '../toast.ts';
 import { createToneControl, type ToneControl } from './tone-control.ts';
@@ -118,6 +119,18 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
         }],
     });
 
+    // The link to hear the original: an option of the "⋯" sheet and, when chosen, YouTube's player fixed above the lyrics
+    const viewer = h('div', { class: 'viewer' });
+    /** The ♪ of the row of tools (a shortcut to the same thing): lit while the player is open */
+    let heard: HTMLElement | null = null;
+    const listen = createListen(song.listenUrl, {
+        onToggle: (open) => {
+            viewer.classList.toggle('has-player', open);
+            heard?.setAttribute('aria-pressed', String(open));
+        },
+    });
+    heard = listen.read === null ? null : listenButton(listen.read, '', () => (listen.isOpen() ? listen.close() : listen.open()), 'lrow__more song-tools__listen');
+
     // --- "⋯": what is done less often ---
     const sheet = createSheet('Opciones del canto', undefined, { anchored: true });
     sheet.element.classList.add('sheet-layer--window');
@@ -155,6 +168,8 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
         h('div', { class: 'toolbar', role: 'toolbar', 'aria-label': 'Herramientas de la letra' }, reader.display),
         h('h3', {}, 'Este canto'),
         sheetList(
+            // Hearing the original: the player opens above the lyrics, which stay in sight
+            ...(listen.read === null ? [] : [listenAction(listen.read, () => sheet.close(() => listen.open()))]),
             sheetAction('list-plus', 'Agregar a un listado', () => sheet.close(() => addToList.open())),
             sheetAction('printer', 'Imprimir con acordes', () => print('chords')),
             sheetAction('printer', 'Imprimir solo la letra', () => print('lyrics')),
@@ -190,20 +205,23 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
     const tools = h(
         'div',
         { class: 'song-tools' },
-        h('div', { class: 'song-tools__row' }, tone.step, h('div', { class: 'toolbar' }, reader.size), more),
+        h('div', { class: heard === null ? 'song-tools__row' : 'song-tools__row has-listen' }, tone.step, h('div', { class: 'toolbar' }, reader.size), ...(heard === null ? [] : [heard]), more),
         tone.element,
     );
 
     // A song on a stand must not go dark while it is being read (unless turned off in Ajustes)
     const releaseScreen = readKeepAwake() ? screenKeeper.hold() : (): void => undefined;
 
+    viewer.append(tools, listen.element, error, reader.stage, sheet.element, addToList.element, shareSheet.element);
+
     return {
-        element: h('div', { class: 'viewer' }, tools, error, reader.stage, sheet.element, addToList.element, shareSheet.element),
+        element: viewer,
         dispose: () => {
             if (songHeading.get() === ownHeading) {
                 songHeading.set(null);
             }
             releaseScreen();
+            listen.close();
             sheet.release();
             addToList.release();
             shareSheet.release();

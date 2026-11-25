@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { beforeEach, describe, it } from 'node:test';
 import { Library, ValidationError } from '../../src/data/library.ts';
 import { MemoryStore } from '../../src/data/memory-store.ts';
-import { LIMITS } from '../../src/data/types.ts';
+import { LIMITS, type Song } from '../../src/data/types.ts';
 
 describe('Library', () => {
     let store: MemoryStore;
@@ -20,9 +20,41 @@ describe('Library', () => {
         const song = await library.create({ title: '  Caminamos con alegría ', author: ' Anónimo ', body: '[C]Caminamos' });
 
         assert.deepEqual(song, {
-            id: 'id-0', title: 'Caminamos con alegría', author: 'Anónimo', body: '[C]Caminamos', tags: [], myShift: 0, status: 'draft', updatedAt: 1000, deletedAt: null,
+            id: 'id-0', title: 'Caminamos con alegría', author: 'Anónimo', body: '[C]Caminamos', tags: [], myShift: 0, status: 'draft', listenUrl: '', updatedAt: 1000, deletedAt: null,
         });
         assert.deepEqual(await store.pending('songs'), [song]);
+    });
+
+    describe('the link to hear the original', () => {
+        const LINK = 'https://music.youtube.com/watch?v=Zk3mPq8vLw4&t=75s';
+
+        it('is kept trimmed, travels with the song and is copied with it', async () => {
+            const song = await library.create({ title: 'Pan de vida', author: '', body: '', listenUrl: `  ${LINK} ` });
+
+            assert.equal(song.listenUrl, LINK);
+            assert.equal((await library.duplicate(song.id)).listenUrl, LINK);
+        });
+
+        it('is kept by an edit that does not say, replaced by one that does, and taken away by a blank one', async () => {
+            const song = await library.create({ title: 'Pan de vida', author: '', body: '', listenUrl: LINK });
+
+            assert.equal((await library.update(song.id, { title: 'Pan de vida', author: '', body: '[C]Pan' })).listenUrl, LINK);
+            assert.equal((await library.update(song.id, { title: 'Pan de vida', author: '', body: '', listenUrl: 'https://youtu.be/Zk3mPq8vLw4' })).listenUrl, 'https://youtu.be/Zk3mPq8vLw4');
+            assert.equal((await library.update(song.id, { title: 'Pan de vida', author: '', body: '', listenUrl: '   ' })).listenUrl, '');
+        });
+
+        it('is refused when it is not an https link, with the reason in Spanish', async () => {
+            await assert.rejects(library.create({ title: 'Pan', author: '', body: '', listenUrl: 'http://youtu.be/Zk3mPq8vLw4' }), /https/);
+            await assert.rejects(library.create({ title: 'Pan', author: '', body: '', listenUrl: 'caminamos con alegría' }), /enlace completo/);
+            await assert.rejects(library.create({ title: 'Pan', author: '', body: '', listenUrl: 'javascript:alert(1)' }), /https/);
+        });
+
+        it('reads as none in a song stored before it existed', async () => {
+            const old = { id: 'old', title: 'Viejo', author: '', body: '', tags: [], myShift: 0, status: 'published', updatedAt: 1, deletedAt: null };
+            await store.save('songs', old as unknown as Song);
+
+            assert.equal((await library.get('old'))?.listenUrl, '');
+        });
     });
 
     describe('duplicate', () => {

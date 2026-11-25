@@ -14,6 +14,7 @@ import { showToast, showUndoToast } from '../toast.ts';
 import { todayKeys } from '../today-keys.ts';
 import { deleteListAfterAsking } from './delete-list.ts';
 import { createShareSheet } from './share-sheet.ts';
+import { createListenSheet, listenAction, listenableOf, listenButton } from './listen.ts';
 import { createSheet, sheetAction, sheetHead, sheetList, sheetShare } from './sheet.ts';
 import type { Navigate, View } from './types.ts';
 
@@ -94,7 +95,9 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
     songSheet.element.classList.add('sheet-layer--window');
     // "Compartir listado": its own sheet, which comes after the list's
     const shareSheet = createShareSheet();
-    element.append(listSheet.element, songSheet.element, shareSheet.element);
+    // "Escuchar el original": the player of a song with a link, in a sheet (the list has no lyrics on screen to cover)
+    const listenSheet = createListenSheet();
+    element.append(listSheet.element, songSheet.element, shareSheet.element, listenSheet.element);
 
     const print = (version: PrintVersion): void => {
         // Straight from the tap (a browser may refuse to print from anything later), then the sheet goes
@@ -206,6 +209,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
                             const at = positionInList(setlist, item.id);
                             songSheet.close(() => navigate(paths.perform(setlist.id, at)));
                         }, { hint: 'Ahí se cambia el tono' }),
+                        ...listenOption(song),
                         // Straight to the editor; saving or cancelling comes back to this list
                         action('pencil', 'Editar', () => songSheet.close(() => navigate(paths.edit(song.id, paths.setlist(setlist.id)))), { hint: 'Letra y acordes' }),
                         action('printer', 'Imprimir con acordes', () => printItem(item, song, 'chords')),
@@ -239,6 +243,12 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             songView = 'main';
             fillSongSheet();
         }
+    };
+    /** The option "Escuchar el original" of a song's sheet, when it has a link: the sheet goes and the player comes */
+    const listenOption = (song: Song): HTMLElement[] => {
+        const heard = listenableOf(song);
+
+        return heard === null ? [] : [listenAction(heard, () => songSheet.close(() => listenSheet.open(song)))];
     };
     const openSongSheet = (itemId: string, trigger: Element): void => {
         target = itemId;
@@ -402,6 +412,11 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             });
             li.append(open);
         }
+        // A ♪ in the songs that have a link to hear the original: one touch to the player, in the place of nothing
+        const heard = song === undefined ? null : listenableOf(song);
+        if (song !== undefined && heard !== null) {
+            li.append(listenButton(heard, name, () => listenSheet.open(song)));
+        }
         const options = h('button', {
             type: 'button', class: 'item__more', 'aria-label': `Más opciones: ${name}`, 'data-focus': `more:${item.id}`,
         }, icon('more', 22));
@@ -507,6 +522,7 @@ export async function setlistView(app: App, navigate: Navigate, initial: Setlist
             songSheet.release();
             listSheet.release();
             shareSheet.release();
+            listenSheet.release();
             // What was typed and not yet "changed" (a navigation can come before the blur) is still saved
             const unchanged = title.value === setlist.title;
             if (!unchanged && title.value.trim() !== '') {

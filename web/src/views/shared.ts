@@ -14,6 +14,7 @@ import type { Song } from '../data/types.ts';
 import { pageIndexOf, pagesOf, positionText, squaresLayout } from '../data/pages.ts';
 import { createReader, type Reader } from './reader.ts';
 import { createSheet, dismissSheetOnBack } from './sheet.ts';
+import { createListenSheet, listenableOf, listenButton } from './listen.ts';
 
 /**
  * A list (or one song) somebody shared, as a visitor reads it: no account, no menu, nothing to edit or save. It is the same app (the same
@@ -174,18 +175,23 @@ export function startShared(root: HTMLElement, code: string): void {
             })), data.title).catch(() => undefined);
         };
         const body = h('div', { class: 'pub-list' });
+        // The ♪ of a song that has a link: the same button as in the app, YouTube's player in a sheet
+        const listenSheet = createListenSheet();
         for (const group of bySection(rows)) {
             body.append(h('h2', { class: 'pub-sec' }, group.part.name));
             for (const row of group.rows) {
                 const key = keyOf(row.song, row.item.transpose, notation);
                 const text = [h('span', { class: 'pub-row__title' }, row.song.title),
                     ...(row.song.author === '' ? [] : [h('small', {}, row.song.author)])];
-                body.append(data.withLyrics
-                    ? h('a', { class: 'pub-row', href: paths.shared(code, row.n), 'data-link': true },
-                        h('span', { class: 'pub-row__n' }, String(row.n)), h('span', { class: 'pub-row__text' }, ...text),
-                        ...(key === null ? [] : [h('span', { class: 'pub-row__key' }, key)]), icon('chevron-right', 20))
-                    : h('div', { class: 'pub-row is-plain' },
-                        h('span', { class: 'pub-row__n' }, String(row.n)), h('span', { class: 'pub-row__text' }, ...text)));
+                const read = listenableOf({ listenUrl: row.song.listenUrl ?? '' });
+                const heard = read === null ? null : listenButton(read, row.song.title, () => listenSheet.open({ title: row.song.title, author: row.song.author, listenUrl: row.song.listenUrl ?? '' }), 'pub-row__listen');
+                const plain = h('div', { class: 'pub-row is-plain' },
+                    h('span', { class: 'pub-row__n' }, String(row.n)), h('span', { class: 'pub-row__text' }, ...text), ...(heard === null ? [] : [heard]));
+                const link = h('a', { class: 'pub-row', href: paths.shared(code, row.n), 'data-link': true },
+                    h('span', { class: 'pub-row__n' }, String(row.n)), h('span', { class: 'pub-row__text' }, ...text),
+                    ...(key === null ? [] : [h('span', { class: 'pub-row__key' }, key)]), icon('chevron-right', 20));
+                // A button cannot live inside a link: the row is a link and the ♪ sits beside it
+                body.append(!data.withLyrics ? plain : heard === null ? link : h('div', { class: 'pub-row-wrap' }, link, heard));
             }
         }
         // Where the list comes from: the server, or the copy kept here; and that it can be read with no connection
@@ -202,7 +208,9 @@ export function startShared(root: HTMLElement, code: string): void {
                 ...(data.withLyrics ? [] : [h('p', { class: 'pub-banner' }, icon('info', 20),
                     h('span', {}, 'Quien lo compartió eligió mostrar solo el orden, sin letras ni acordes.'))]),
                 ...(rows.length === 0 ? [h('p', { class: 'pub-sub' }, 'Este listado todavía no tiene cantos.')] : [body])))),
+            listenSheet.element,
         );
+        dispose = () => listenSheet.release();
     };
 
     const songPage = (data: SharedList, row: Row, rows: readonly Row[]): void => {
@@ -232,6 +240,15 @@ export function startShared(root: HTMLElement, code: string): void {
         const countText = h('span', {});
         const stripCount = h('span', { class: 'pub-strip__count' });
 
+        // "Escuchar el original": in the tools, for the selected song when it has a link (YouTube's player in a sheet, another site apart)
+        const listenSheet = createListenSheet();
+        const listenTool = h('button', { type: 'button', class: 'pub-tools__switch pub-tools__listen' }, h('span', {}, 'Escuchar el original'), icon('music', 20));
+        listenTool.addEventListener('click', () => {
+            const { song } = selected();
+            setTools(false);
+            listenSheet.open(song);
+        });
+
         /** One song on the screen: its square, its reader and the key the list has it in */
         interface Square { row: Row; song: Song; listKey: number; reader: Reader; element: HTMLElement }
         const squares: Square[] = [];
@@ -245,6 +262,7 @@ export function startShared(root: HTMLElement, code: string): void {
             const name = reader.keyName(reader.shift());
             const changed = !same(reader.shift(), listKey);
             keyText.textContent = name ?? '';
+            listenTool.hidden = listenableOf(selected().song) === null;
             stripKey.textContent = chordsShown ? name ?? '' : '';
             stripKey.classList.toggle('is-changed', changed);
             barKey.textContent = chordsShown ? name ?? '' : '';
@@ -343,7 +361,7 @@ export function startShared(root: HTMLElement, code: string): void {
         const tools = h('div', { class: 'pub-tools', id: 'pub-tools', hidden: true, role: 'toolbar', 'aria-label': 'Herramientas de la letra' },
             h('div', { class: 'pub-tools__group' }, down, keyButton, up),
             h('div', { class: 'pub-tools__group' }, sizeSlot, displaySlot, printMenu(print)),
-            chordsSwitch, fold);
+            listenTool, chordsSwitch, fold);
         const setTools = (shown: boolean): void => {
             tools.hidden = !shown;
             toolsButton.setAttribute('aria-expanded', String(shown));
@@ -500,7 +518,7 @@ export function startShared(root: HTMLElement, code: string): void {
         }
         paint();
 
-        show(h('div', { class: `pub-song${divided ? ' is-divided' : ''}` }, panesEl, chrome, tools, jumpSheet.element));
+        show(h('div', { class: `pub-song${divided ? ' is-divided' : ''}` }, panesEl, chrome, tools, jumpSheet.element, listenSheet.element));
         // After `show`, which clears what belonged to the screen before
         // The arrow keys leave the song alone while the list of songs is open
         navigate = {
@@ -513,6 +531,7 @@ export function startShared(root: HTMLElement, code: string): void {
                 square.reader.dispose();
             }
             jumpSheet.release();
+            listenSheet.release();
         };
     };
 

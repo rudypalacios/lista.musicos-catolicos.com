@@ -45,7 +45,7 @@ declare module 'playwright' {
     }
     interface Route {
         fetch(): Promise<ApiResponse>;
-        fulfill(options: { response: ApiResponse; headers?: Record<string, string> }): Promise<void>;
+        fulfill(options: { response?: ApiResponse; headers?: Record<string, string>; status?: number; contentType?: string; body?: string }): Promise<void>;
     }
     interface Dialog {
         message(): string;
