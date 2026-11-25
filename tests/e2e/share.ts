@@ -208,18 +208,18 @@ try {
     assert.equal(await heardPage.locator('.pub-row-wrap', { hasText: 'Caminamos con alegría' }).count(), 1);
     assert.deepEqual(asked, [], 'nothing of YouTube before the touch');
     await heardPage.getByRole('button', { name: 'Escuchar el original: Caminamos con alegría' }).click();
-    await heardPage.locator('.sheet iframe').waitFor();
-    assert.equal(await heardPage.locator('.sheet iframe').getAttribute('src'), 'https://www.youtube-nocookie.com/embed/Zk3mPq8vLw4?autoplay=1&playsinline=1&rel=0&start=75');
-    await heardPage.getByRole('button', { name: 'Cerrar' }).click();
-    await heardPage.locator('.sheet iframe').waitFor({ state: 'detached' });
+    await heardPage.locator('.song-player iframe').waitFor();
+    assert.equal(await heardPage.locator('.song-player iframe').getAttribute('src'), 'https://www.youtube-nocookie.com/embed/Zk3mPq8vLw4?autoplay=1&playsinline=1&rel=0&start=75');
+    await heardPage.getByRole('button', { name: 'Cerrar el reproductor' }).click();
+    await heardPage.locator('.song-player iframe').waitFor({ state: 'detached' });
     // On the page of the song: in the tools, for the song that has a link; the other song has none
     await heardPage.getByText('Caminamos con alegría').first().click();
     await heardPage.locator('.song-sheet').waitFor();
     await heardPage.getByRole('button', { name: 'Herramientas' }).click();
     await heardPage.locator('.pub-tools__listen').click();
-    await heardPage.locator('.sheet iframe').waitFor();
-    await heardPage.getByRole('button', { name: 'Cerrar' }).click();
-    await heardPage.locator('.sheet iframe').waitFor({ state: 'detached' });
+    await heardPage.locator('.song-player iframe').waitFor();
+    await heardPage.getByRole('button', { name: 'Cerrar el reproductor' }).click();
+    await heardPage.locator('.song-player iframe').waitFor({ state: 'detached' });
     await heardPage.goto(`${url}/2`);
     await heardPage.locator('.song-sheet').waitFor();
     await heardPage.getByRole('button', { name: 'Herramientas' }).click();

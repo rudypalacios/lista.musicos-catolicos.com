@@ -5333,11 +5333,34 @@ button.srow__tool:disabled {
     display: contents;
 }
 
-/* The player is 16:9 across the width, so it is never under the 200 px YouTube asks of an embedded player; it is not hidden to leave only the sound */
+/* The player: a bar (its handle) over YouTube's frame, 16:9 across the width and never under the 200 px YouTube asks of it */
 .song-player {
     flex: none;
     background: var(--surface);
     border-bottom: 1px solid var(--border);
+}
+
+/* Floating (a list, singing, and the page of a song from 900px): a window with nothing behind it, so the lyrics can be touched and
+   scrolled while it plays; dragged by its bar (float.ts) */
+.song-player.is-float {
+    position: fixed;
+    z-index: 15;
+    width: min(24rem, calc(100vw - 1rem));
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 0.7rem;
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.45);
+}
+
+.song-player.is-dragging {
+    box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.6);
+}
+
+/* Folded (docked on a phone): the bar stays, the video goes out of sight and the sound goes on */
+.song-player.is-folded .song-player__screen {
+    height: 0;
+    min-height: 0;
+    aspect-ratio: auto;
 }
 
 .song-player__screen {
@@ -5345,6 +5368,7 @@ button.srow__tool:disabled {
     display: grid;
     place-items: center;
     aspect-ratio: 16 / 9;
+    min-height: 200px;
     overflow: hidden;
     color: var(--text);
     text-align: center;
@@ -5374,7 +5398,39 @@ button.srow__tool:disabled {
     align-items: center;
     gap: 0.3rem;
     min-height: 2.9rem;
-    padding: 0.1rem 0.3rem 0.1rem 0.75rem;
+    padding: 0.1rem 0.3rem 0.1rem 0.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.song-player.is-folded .song-player__bar {
+    border-bottom: 0;
+}
+
+/* The bar of a window is its handle: it moves with the finger and does not scroll the page */
+.song-player__bar.is-handle {
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+}
+
+.song-player.is-dragging .song-player__bar {
+    cursor: grabbing;
+}
+
+/* Docked, the bar can be swiped up and down to fold the video: it must not scroll the page either */
+.song-player:not(.is-float) .song-player__bar {
+    touch-action: none;
+}
+
+.song-player__grip {
+    flex: none;
+    width: 0.3rem;
+    height: 1.2rem;
+    margin-right: 0.25rem;
+    border-right: 2px dotted var(--faint);
+    border-left: 2px dotted var(--faint);
+    box-sizing: content-box;
+    opacity: 0.8;
 }
 
 .song-player__bar .button {
@@ -5383,15 +5439,6 @@ button.srow__tool:disabled {
     align-items: center;
     gap: 0.45rem;
     white-space: nowrap;
-}
-
-/* In a sheet (a list, singing): the same player, rounded like the rest of the sheet, with its bar under it */
-.sheet__body > .song-player__screen {
-    border-radius: 0.7rem;
-}
-
-.sheet__body > .song-player__bar {
-    padding: 0.6rem 0 0.2rem;
 }
 
 .song-player__what {
@@ -5406,6 +5453,7 @@ button.srow__tool:disabled {
 
 .song-player__close {
     display: grid;
+    flex: none;
     place-items: center;
     width: 2.75rem;
     height: 2.75rem;
@@ -5417,23 +5465,8 @@ button.srow__tool:disabled {
     border-radius: 50%;
 }
 
-/* From 900px the player is a column at the right of the lyrics, which keep their height */
+/* From 900px the window starts in the corner and the lyrics keep that column free until it is moved */
 @media (min-width: 900px) {
-    .viewer {
-        position: relative;
-    }
-
-    .song-player {
-        position: absolute;
-        top: 4.25rem;
-        right: 1rem;
-        z-index: 2;
-        width: 24rem;
-        overflow: hidden;
-        border: 1px solid var(--border);
-        border-radius: 0.7rem;
-    }
-
     .viewer.has-player .stage {
         padding-right: 26rem;
     }

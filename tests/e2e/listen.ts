@@ -141,6 +141,23 @@ try {
     assert.equal(await heard.getAttribute('aria-pressed'), 'false');
     pass('the song page has the same ♪ before the "⋯": it opens and closes the player, and the tools row keeps one line');
 
+    // Docked on a phone, the video can be folded away (a chevron) without stopping it, and brought back
+    await heard.click();
+    await phone.locator('.song-player iframe').waitFor();
+    const dockedBox = await phone.locator('.song-player__screen').boundingBox();
+    assert.ok(dockedBox !== null && dockedBox.height >= 200);
+    assert.equal(await phone.locator('.song-player').evaluate((element) => getComputedStyle(element).position), 'static', 'docked above the lyrics on a phone');
+    await phone.getByRole('button', { name: 'Ocultar el video' }).click();
+    assert.equal(Math.round((await phone.locator('.song-player__screen').boundingBox())?.height ?? -1), 0, 'the video is out of sight');
+    assert.equal(await phone.locator('.song-player iframe').count(), 1, 'but the frame is still there, playing');
+    const lyricsUp = await phone.locator('#stage').boundingBox();
+    assert.ok(lyricsUp !== null && lyricsUp.y < dockedBox.y + 120, 'the lyrics take the room back');
+    await phone.getByRole('button', { name: 'Mostrar el video' }).click();
+    assert.ok(((await phone.locator('.song-player__screen').boundingBox())?.height ?? 0) >= 200, 'and it comes back');
+    await heard.click();
+    assert.equal(await phone.locator('.song-player').count(), 0);
+    pass('docked on a phone the video folds away with a chevron without stopping, and comes back');
+
     // Offline: it says so, and the lyrics stay
     await phoneContext.setOffline(true);
     await listenFromMenu(phone);
@@ -229,6 +246,21 @@ try {
     assert.ok(column.y < lyrics.y + 200 && lyrics.height > 400, 'the lyrics keep their height');
     assert.ok(Math.abs(column.y - lyrics.y) < 200 && sheet.x + sheet.width <= column.x, 'and do not go under the player');
     assert.deepEqual(wideViolations, [], 'no rule of the policy is broken');
+    // From 900px it is a window: dragged by its bar it goes where it is left and the lyrics take the column back
+    const barWide = wide.locator('.song-player__bar');
+    const wideBar = await barWide.boundingBox();
+    assert.ok(wideBar !== null);
+    await wide.mouse.move(wideBar.x + 80, wideBar.y + 20);
+    await wide.mouse.down();
+    await wide.mouse.move(wideBar.x - 300, wideBar.y + 250, { steps: 8 });
+    await wide.mouse.up();
+    const dragged = await wide.locator('.song-player').boundingBox();
+    assert.ok(dragged !== null && column !== null && dragged.x < column.x - 200 && dragged.y > column.y + 150, 'dragged to another place');
+    assert.equal(await wide.locator('.viewer').evaluate((element) => element.classList.contains('has-player')), false, 'the lyrics get their column back');
+    assert.equal(await wide.locator('.song-player iframe').count(), 1);
+    // A touch on the lyrics does not close it
+    await wide.locator('#stage').click({ position: { x: 20, y: 300 } });
+    assert.equal(await wide.locator('.song-player iframe').count(), 1, 'touching the lyrics leaves it open');
     pass('on a wide screen the player is a column at the right of the lyrics');
 
     // ---------- a list: a ♪ in the rows that have a link, and the option in their "⋯"; the player is a sheet ----------
@@ -269,32 +301,52 @@ try {
     assert.equal(asked().length, askedBefore, 'nothing of YouTube is asked for by the list being there');
     pass('in a list the rows with a link have a ♪ (a 44px button before the "⋯"), the others have nothing');
 
-    // The ♪ opens the player in a sheet: it covers nothing that matters, and closing (✕, back) takes the frame away
+    // The ♪ opens the player as a window that floats: nothing behind it closes it, it is dragged by its bar, and pushed off the
+    // bottom of a phone it leaves its bar in sight; ✕ takes the frame away
     await note.click();
-    const listFrame = phone.locator('.sheet iframe');
+    const listFrame = phone.locator('.song-player iframe');
     await listFrame.waitFor();
     assert.equal(await listFrame.getAttribute('src'), EMBED);
-    assert.match(await phone.locator('.sheet[aria-label="Escuchar el original"] .sheet__title').innerText(), /Uno con YouTube/);
-    assert.match(await phone.locator('.sheet[aria-label="Escuchar el original"] .sheet__sub').innerText(), /Autor 1 · YouTube Music · arranca en 1:15/);
-    const sheetScreen = await phone.locator('.sheet .song-player__screen').boundingBox();
-    assert.ok(sheetScreen !== null && sheetScreen.height >= 200, `the player in the sheet is not under 200px (${sheetScreen?.height})`);
-    await phone.getByRole('button', { name: 'Cerrar' }).click();
-    await settle(phone);
-    assert.equal(await phone.locator('.sheet iframe').count(), 0, 'closing the sheet takes the frame away');
-    await note.click();
-    await listFrame.waitFor();
-    await phone.goBack();
-    await settle(phone);
-    assert.equal(await phone.locator('.sheet iframe').count(), 0, 'the back button closes the sheet and ends the sound');
-    assert.ok(phone.url().includes('/listados/'), 'and stays in the list');
+    assert.match(await phone.locator('.song-player__what').innerText(), /Uno con YouTube · YouTube Music · arranca en 1:15/);
+    const windowScreen = await phone.locator('.song-player__screen').boundingBox();
+    assert.ok(windowScreen !== null && windowScreen.height >= 200, `the player is not under 200px (${windowScreen?.height})`);
+    assert.equal(await phone.locator('.song-player').evaluate((element) => getComputedStyle(element).position), 'fixed');
+    assert.equal(await phone.locator('.sheet__scrim.is-open, .sheet-layer.is-open').count(), 0, 'no backdrop');
+    const bar = phone.locator('.song-player__bar');
+    const first = await phone.locator('.song-player').boundingBox();
+    assert.ok(first !== null && first.x >= 0 && first.x + first.width <= 390 && first.y + first.height <= 780, 'inside the screen at first');
+    const grab = await bar.boundingBox();
+    assert.ok(grab !== null);
+    await phone.mouse.move(grab.x + 60, grab.y + 20);
+    await phone.mouse.down();
+    await phone.mouse.move(grab.x + 60, grab.y - 150, { steps: 6 });
+    await phone.mouse.up();
+    const moved = await phone.locator('.song-player').boundingBox();
+    assert.ok(moved !== null && moved.y < first.y - 100, `dragged up by its bar (${first.y} → ${moved?.y})`);
+    assert.equal(await listFrame.count(), 1, 'moving it does not stop it');
+    // Pushed off the bottom: out of the way, but the bar is still there to bring it back
+    const grab2 = await bar.boundingBox();
+    assert.ok(grab2 !== null);
+    await phone.mouse.move(grab2.x + 60, grab2.y + 20);
+    await phone.mouse.down();
+    await phone.mouse.move(grab2.x + 60, 2000, { steps: 8 });
+    await phone.mouse.up();
+    const pushed = await bar.boundingBox();
+    assert.ok(pushed !== null && pushed.y >= 700 && pushed.y < 780, `only its bar is left in sight (${pushed?.y})`);
+    assert.equal(await listFrame.count(), 1, 'and it is still playing');
+    // The list behind is still the list: a touch on it neither closes the player nor is it covered
+    await phone.mouse.click(30, 120);
+    assert.equal(await listFrame.count(), 1, 'a touch elsewhere does not close it');
+    await phone.getByRole('button', { name: 'Cerrar el reproductor' }).click();
+    assert.equal(await phone.locator('.song-player').count(), 0, 'the cross takes the window and its frame away');
     assert.deepEqual(violations, [], 'no rule of the policy is broken');
-    pass('the ♪ opens the player in a sheet; the cross and the back button close it and end the sound');
+    pass('the ♪ opens a window with no backdrop that is dragged by its bar, can leave its bar at the edge without stopping, and closes with the cross');
 
     // The option of the song's "⋯" does the same; the one of another site opens apart; a song with no link has none
     await more.click();
     await phone.locator('.sheet-action', { hasText: 'Escuchar el original' }).click();
     await listFrame.waitFor();
-    await phone.getByRole('button', { name: 'Cerrar' }).click();
+    await phone.getByRole('button', { name: 'Cerrar el reproductor' }).click();
     await settle(phone);
     await phone.getByRole('button', { name: 'Más opciones: Dos sin enlace' }).click();
     await phone.getByRole('button', { name: 'Cantar desde aquí' }).waitFor();
@@ -307,7 +359,7 @@ try {
     assert.match((await spotifyNote.getAttribute('rel')) ?? '', /noopener/);
     pass('the option of the "⋯" plays it too; another site is a link that opens apart; a song with no link has no option');
 
-    // Singing: the option is in the sheet of the "⋯", and the player comes in a sheet over the lyrics
+    // Singing: the option is in the sheet of the "⋯", and the player floats over the lyrics
     await phone.getByRole('link', { name: 'Cantar' }).first().click();
     await phone.locator('.perform').waitFor();
     await phone.getByRole('button', { name: 'Más herramientas' }).click();
@@ -315,13 +367,19 @@ try {
     await singOption.waitFor();
     assert.match(await singOption.innerText(), /YouTube Music · arranca en 1:15/);
     await singOption.click();
-    await phone.locator('.sheet iframe').waitFor();
-    assert.equal(await phone.locator('.perform .song-player').count(), 0, 'it does not take room from the lyrics: it is a sheet');
-    await phone.getByRole('button', { name: 'Cerrar' }).click();
+    await phone.locator('.song-player iframe').waitFor();
+    const lyricsBefore = await phone.locator('.perform .stage').first().boundingBox();
+    assert.equal(await phone.locator('.perform .song-player').evaluate((element) => getComputedStyle(element).position), 'fixed', 'it floats over the lyrics and takes no room from them');
+    const lyricsWith = await phone.locator('.perform .stage').first().boundingBox();
+    assert.ok(lyricsBefore !== null && lyricsWith !== null && Math.abs(lyricsBefore.height - lyricsWith.height) < 1);
+    // The lyrics can be touched with it open: it stays
+    await phone.mouse.click(40, 300);
+    assert.equal(await phone.locator('.song-player iframe').count(), 1, 'touching the lyrics does not close it');
+    await phone.getByRole('button', { name: 'Cerrar el reproductor' }).click();
     await settle(phone);
-    assert.equal(await phone.locator('.sheet iframe').count(), 0);
+    assert.equal(await phone.locator('.song-player iframe').count(), 0);
     assert.equal(await phone.locator('.perform .song-sheet').first().isVisible(), true, 'the lyrics are there again');
-    pass('while singing the option is in the sheet of the "⋯", and the player is a sheet that goes away with the lyrics where they were');
+    pass('while singing the option is in the sheet of the "⋯", and the player floats over the lyrics, which stay in reach, until its cross');
 
     // On a wide screen the singing bar has room: the same ♪, beside the key; under 900px it is not there (the option stays in the sheet)
     assert.equal(await phone.locator('.perform__listen').isVisible(), false, 'no ♪ in the bar of a phone');
@@ -333,10 +391,10 @@ try {
     const noteBarBox = await barNote.boundingBox();
     assert.ok(toneBox !== null && noteBarBox !== null && noteBarBox.x >= toneBox.x + toneBox.width - 1 && Math.abs(noteBarBox.y - toneBox.y) < 30, 'beside the key, in the bar');
     await barNote.click();
-    await phone.locator('.sheet iframe').waitFor();
-    await phone.getByRole('button', { name: 'Cerrar' }).click();
+    await phone.locator('.song-player iframe').waitFor();
+    await phone.getByRole('button', { name: 'Cerrar el reproductor' }).click();
     await settle(phone);
-    assert.equal(await phone.locator('.sheet iframe').count(), 0);
+    assert.equal(await phone.locator('.song-player iframe').count(), 0);
     pass('on a wide screen the singing bar has the same ♪ beside the key, and it opens the player in a sheet');
 
     assert.deepEqual(problems, [], 'no uncaught errors in the page');

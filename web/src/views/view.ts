@@ -128,6 +128,8 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
             viewer.classList.toggle('has-player', open);
             heard?.setAttribute('aria-pressed', String(open));
         },
+        // Dragged away from its corner, the window no longer needs the column kept free for it
+        onMoved: () => viewer.classList.remove('has-player'),
     });
     heard = listen.read === null ? null : listenButton(listen.read, '', () => (listen.isOpen() ? listen.close() : listen.open()), 'lrow__more song-tools__listen');
 

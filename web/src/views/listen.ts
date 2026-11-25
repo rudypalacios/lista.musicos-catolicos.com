@@ -3,21 +3,23 @@
  *
  * - The way in is small and costs the lyrics nothing: an option in the "⋯" sheet of the song (its page, a row of a list, singing) and,
  *   in a list, a ♪ in the row of the songs that have a link (`listenButton`).
- * - A YouTube or YouTube Music link opens YouTube's own player: **fixed above the lyrics on the page of a song** (`createListen`; a
- *   column beside them from 900px), where the lyrics are in sight while it plays, and **in a sheet from the bottom** in a list and
- *   while singing (`createListenSheet`), where it is a thing to look at for a moment and then close. The frame does not exist
- *   until that touch: nothing of YouTube is loaded before it, and closing takes the frame away, which ends the sound. The controls
- *   are YouTube's.
+ * - A YouTube or YouTube Music link opens YouTube's own player. On the page of a song (`createListen`) it is **docked above the
+ *   lyrics** on a phone (a chevron, or a swipe on its bar, folds the video away without stopping it) and **a window that floats
+ *   and is dragged** from 900px. In a list and while singing (`createListenSheet`) it is always that window: it has nothing behind
+ *   it, so the lyrics can be touched and scrolled while it plays, and on a phone it may be pushed past an edge, leaving only its bar
+ *   in sight (`float.ts`). The frame does not exist until the touch: nothing of YouTube is loaded before it, and closing (✕) takes
+ *   the frame away, which ends the sound. The controls are YouTube's.
  * - Any other link has no player: it opens apart.
  * - Offline: the player says so.
  *
- * The player is 16:9 across the width (never under the 200 px YouTube asks of an embedded player) and is not hidden to leave only the
- * sound (its terms do not allow that).
+ * The player is 16:9 across the width and never under the 200 px YouTube asks of an embedded player. Folding it away or pushing it
+ * off the screen is the person's choice and the sound goes on; the owner knows YouTube's terms ask for the player to be in sight.
  */
 import { h } from '../dom.ts';
 import { icon } from '../icons.ts';
 import { clock, readListenUrl, youtubeEmbed, type ListenUrl } from '../listen-url.ts';
-import { createSheet, sheetAction, sheetHead, sheetList } from './sheet.ts';
+import { sheetAction } from './sheet.ts';
+import { WIDE, makeFloating, type Floating } from './float.ts';
 
 /** What of a link can be listened to: a video of YouTube, or a link that opens apart */
 export type Listenable = Extract<ListenUrl, { kind: 'youtube' | 'link' }>;
@@ -91,29 +93,79 @@ export function listenButton(read: Listenable, title: string, play: () => void, 
     return button;
 }
 
-// ---------- in a sheet: a list, or singing ----------
+// ---------- the player: a bar (its handle) over YouTube's frame ----------
+
+interface PlayerOptions {
+    /** What the bar says: the song and where it plays, or just where */
+    what: string;
+    close: () => void;
+    /** On the page of a song, docked: a chevron (and a swipe on the bar) folds the video away without stopping it */
+    fold?: boolean;
+}
+
+function buildPlayer(read: Extract<Listenable, { kind: 'youtube' }>, options: PlayerOptions): { element: HTMLElement; handle: HTMLElement } {
+    const closeButton = h('button', { type: 'button', class: 'song-player__close', 'aria-label': 'Cerrar el reproductor' }, icon('x', 20));
+    closeButton.addEventListener('click', options.close);
+    const foldButton = options.fold === true
+        ? h('button', { type: 'button', class: 'song-player__close', 'aria-label': 'Ocultar el video', 'aria-expanded': 'true' }, icon('chevron-up', 20))
+        : null;
+    const handle = h('div', { class: 'song-player__bar' },
+        h('span', { class: 'song-player__grip', 'aria-hidden': 'true' }),
+        h('span', { class: 'song-player__what' }, options.what),
+        h('a', { class: 'button', href: read.href, target: '_blank', rel: 'noopener noreferrer' }, 'Abrir', icon('external', 20)),
+        ...(foldButton === null ? [] : [foldButton]),
+        closeButton);
+    const element = h('div', { class: 'song-player', role: 'region', 'aria-label': 'Escuchar el canto original' }, handle, playerScreen(read));
+    if (foldButton !== null) {
+        const setFolded = (folded: boolean): void => {
+            element.classList.toggle('is-folded', folded);
+            foldButton.setAttribute('aria-expanded', String(!folded));
+            foldButton.setAttribute('aria-label', folded ? 'Mostrar el video' : 'Ocultar el video');
+            foldButton.replaceChildren(icon(folded ? 'chevron-down' : 'chevron-up', 20));
+        };
+        foldButton.addEventListener('click', () => setFolded(!element.classList.contains('is-folded')));
+        // A swipe up on the bar folds the video away, a swipe down brings it back
+        let from: number | null = null;
+        handle.addEventListener('pointerdown', (event) => {
+            from = (event.target as HTMLElement).closest('button, a') === null ? event.clientY : null;
+        });
+        handle.addEventListener('pointerup', (event) => {
+            if (from !== null && Math.abs(event.clientY - from) > 24) {
+                setFolded(event.clientY < from);
+            }
+            from = null;
+        });
+        handle.addEventListener('pointercancel', () => {
+            from = null;
+        });
+    }
+
+    return { element, handle };
+}
+
+// ---------- in a list, or singing: a window that floats ----------
 
 export interface ListenSheet {
-    /** Goes inside the screen it covers */
+    /** Goes anywhere in the screen: the player is `position: fixed` */
     element: HTMLElement;
-    /** Opens the player of a song (a link of YouTube); any other link opens apart */
+    /** Opens the player for the song (another one that was open is replaced) */
     open: (song: { readonly title: string; readonly author: string; readonly listenUrl: string }) => void;
     release: () => void;
 }
 
+/** The player in a list or while singing. Named for the sheet it used to be; it has no backdrop any more, so the lyrics stay in reach */
 export function createListenSheet(): ListenSheet {
-    const sheet = createSheet('Escuchar el original');
-    sheet.element.classList.add('sheet-layer--window');
-    // Closing takes the frame out of the page, which ends the sound; the sheet itself stays for the next time
-    const clear = new MutationObserver(() => {
-        if (!sheet.isOpen()) {
-            sheet.body.replaceChildren();
-        }
-    });
-    clear.observe(sheet.element, { attributes: true, attributeFilter: ['class'] });
+    const element = h('div', { class: 'song-listen-slot' });
+    let floating: Floating | null = null;
+    const close = (): void => {
+        // Taking the frame out of the page is what ends the sound
+        floating?.dispose();
+        floating = null;
+        element.replaceChildren();
+    };
 
     return {
-        element: sheet.element,
+        element,
         open: (song) => {
             const read = listenableOf(song);
             if (read === null) {
@@ -124,22 +176,13 @@ export function createListenSheet(): ListenSheet {
 
                 return;
             }
-            const close = h('button', { type: 'button', class: 'sheet-head__tool', 'aria-label': 'Cerrar' }, icon('x', 22));
-            close.addEventListener('click', () => sheet.close());
-            sheet.body.replaceChildren(
-                sheetList(sheetHead(song.title, [...(song.author === '' ? [] : [song.author, ' · ']), listenHint(read)], close)),
-                playerScreen(read),
-                h('div', { class: 'song-player__bar' },
-                    h('span', { class: 'song-player__what' }, 'Se cierra con ✕ o tocando fuera'),
-                    h('a', { class: 'button', href: read.href, target: '_blank', rel: 'noopener noreferrer' }, 'Abrir', icon('external', 20))),
-            );
-            sheet.open();
+            close();
+            const { element: player, handle } = buildPlayer(read, { what: `${song.title} · ${listenHint(read)}`, close });
+            element.append(player);
+            floating = makeFloating(player, handle);
+            floating.place();
         },
-        release: () => {
-            sheet.release();
-            clear.disconnect();
-            sheet.body.replaceChildren();
-        },
+        release: close,
     };
 }
 
@@ -160,17 +203,22 @@ export interface Listen {
 export interface ListenOptions {
     /** The player opened or closed: the page makes room for it */
     onToggle?: (open: boolean) => void;
+    /** The person moved the floating window (from 900px): the page no longer needs to keep a column free for it */
+    onMoved?: () => void;
 }
 
 export function createListen(listenUrl: string, options: ListenOptions = {}): Listen {
     const element = h('div', { class: 'song-listen-slot' });
     const read = listenableOf({ listenUrl });
     let player: HTMLElement | null = null;
+    let floating: Floating | null = null;
     const close = (): void => {
         if (player === null) {
             return;
         }
         // Taking the frame out of the page is what ends the sound
+        floating?.dispose();
+        floating = null;
         player.remove();
         player = null;
         options.onToggle?.(false);
@@ -184,15 +232,15 @@ export function createListen(listenUrl: string, options: ListenOptions = {}): Li
 
             return;
         }
-        const closeButton = h('button', { type: 'button', class: 'song-player__close', 'aria-label': 'Cerrar el reproductor' }, icon('x', 20));
-        closeButton.addEventListener('click', close);
-        player = h('div', { class: 'song-player', role: 'region', 'aria-label': 'Escuchar el canto original' },
-            playerScreen(read),
-            h('div', { class: 'song-player__bar' },
-                h('span', { class: 'song-player__what' }, `Referencia · ${listenHint(read)}`),
-                h('a', { class: 'button', href: read.href, target: '_blank', rel: 'noopener noreferrer' }, 'Abrir', icon('external', 20)),
-                closeButton));
+        // From 900px a window to drag; under it docked above the lyrics, which the video can be folded away from
+        const wide = window.innerWidth >= WIDE;
+        const built = buildPlayer(read, { what: `Referencia · ${listenHint(read)}`, close, fold: !wide });
+        player = built.element;
         element.append(player);
+        if (wide) {
+            floating = makeFloating(player, built.handle, options.onMoved === undefined ? {} : { onMoved: options.onMoved });
+            floating.place();
+        }
         options.onToggle?.(true);
     };
 
