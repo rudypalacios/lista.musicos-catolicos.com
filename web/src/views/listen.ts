@@ -74,14 +74,18 @@ export function listenAction(read: Listenable, play: () => void): HTMLElement {
     return sheetAction('music', 'Escuchar el original', play, { hint: listenHint(read) });
 }
 
-/** The ♪ in the row of a song of a list: a button that opens the player, or (another site) a link that opens apart */
-export function listenButton(read: Listenable, title: string, play: () => void): HTMLElement {
+/**
+ * The ♪: a button that opens the player, or (another site) a link that opens apart. In the row of a song of a list (`title` says which
+ * song it is for) and, with its own classes, in the row of tools of the song's page.
+ */
+export function listenButton(read: Listenable, title: string, play: () => void, className = 'item__more item__listen'): HTMLElement {
+    const name = title === '' ? '' : `: ${title}`;
     if (read.kind === 'link') {
         return h('a', {
-            class: 'item__more item__listen', href: read.href, target: '_blank', rel: 'noopener noreferrer', 'aria-label': `Escuchar en ${read.site}: ${title}`,
+            class: className, href: read.href, target: '_blank', rel: 'noopener noreferrer', 'aria-label': `Escuchar en ${read.site}${name}`,
         }, icon('music', 20));
     }
-    const button = h('button', { type: 'button', class: 'item__more item__listen', 'aria-label': `Escuchar el original: ${title}` }, icon('music', 20));
+    const button = h('button', { type: 'button', class: className, 'aria-label': `Escuchar el original${name}`, 'aria-pressed': 'false' }, icon('music', 20));
     button.addEventListener('click', play);
 
     return button;

@@ -632,6 +632,34 @@ ul.notes {
     margin-left: auto;
 }
 
+/*
+ * The ♪ that plays the song's original (views/view.ts): a 40px button just before the "⋯", which it sends to the end together with it. The
+ * three tools and the two buttons need a little less air to stay in one row of a 375px phone; where even that is not enough (360px)
+ * the ♪ is not drawn, and the option of the "⋯" sheet is the way in, as always. It never makes the row wrap.
+ */
+.song-tools .song-tools__listen {
+    min-width: 2.5rem;
+    margin-left: auto;
+}
+
+.song-tools .song-tools__listen + .song-tools__more {
+    margin-left: 0;
+}
+
+.song-tools .song-tools__listen[aria-pressed='true'] {
+    color: var(--accent);
+}
+
+.song-tools__row.has-listen {
+    column-gap: 0.25rem;
+}
+
+@media (max-width: 370px) {
+    .song-tools .song-tools__listen {
+        display: none;
+    }
+}
+
 .song-tools .tone-control.is-changed {
     margin-top: 0.4rem;
 }
@@ -676,8 +704,13 @@ ul.notes {
         order: 3;
     }
 
-    .song-tools__more {
+    .song-tools .song-tools__listen {
         order: 4;
+        margin-left: 0;
+    }
+
+    .song-tools__more {
+        order: 5;
         margin-left: 0;
     }
 
@@ -2211,7 +2244,8 @@ button.lrow__pick {
     color: var(--changed);
 }
 
-button.lrow__more {
+button.lrow__more,
+a.lrow__more {
     flex: none;
     display: inline-flex;
     align-items: center;

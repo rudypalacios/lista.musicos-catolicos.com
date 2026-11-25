@@ -11,7 +11,7 @@ import type { PrintVersion } from '../print/layout.ts';
 import { printSong } from '../print/jobs.ts';
 import { createAddToList } from './add-to-list.ts';
 import { deleteSongAfterAsking } from './delete-song.ts';
-import { createListen, listenAction } from './listen.ts';
+import { createListen, listenAction, listenButton } from './listen.ts';
 import { createReader } from './reader.ts';
 import { showToast } from '../toast.ts';
 import { createToneControl, type ToneControl } from './tone-control.ts';
@@ -121,7 +121,15 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
 
     // The link to hear the original: an option of the "⋯" sheet and, when chosen, YouTube's player fixed above the lyrics
     const viewer = h('div', { class: 'viewer' });
-    const listen = createListen(song.listenUrl, { onToggle: (open) => viewer.classList.toggle('has-player', open) });
+    /** The ♪ of the row of tools (a shortcut to the same thing): lit while the player is open */
+    let heard: HTMLElement | null = null;
+    const listen = createListen(song.listenUrl, {
+        onToggle: (open) => {
+            viewer.classList.toggle('has-player', open);
+            heard?.setAttribute('aria-pressed', String(open));
+        },
+    });
+    heard = listen.read === null ? null : listenButton(listen.read, '', () => (listen.isOpen() ? listen.close() : listen.open()), 'lrow__more song-tools__listen');
 
     // --- "⋯": what is done less often ---
     const sheet = createSheet('Opciones del canto', undefined, { anchored: true });
@@ -197,7 +205,7 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
     const tools = h(
         'div',
         { class: 'song-tools' },
-        h('div', { class: 'song-tools__row' }, tone.step, h('div', { class: 'toolbar' }, reader.size), more),
+        h('div', { class: heard === null ? 'song-tools__row' : 'song-tools__row has-listen' }, tone.step, h('div', { class: 'toolbar' }, reader.size), ...(heard === null ? [] : [heard]), more),
         tone.element,
     );
 

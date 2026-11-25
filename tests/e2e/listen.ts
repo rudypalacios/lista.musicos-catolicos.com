@@ -30,7 +30,7 @@ async function standInForYouTube(context: BrowserContext): Promise<void> {
 /** The option of the "⋯" sheet of the song page that plays it */
 async function listenFromMenu(page: Page, name = 'Escuchar el original'): Promise<void> {
     await page.getByRole('button', { name: 'Más opciones' }).click();
-    await page.getByRole('button', { name }).click();
+    await page.locator('.sheet-action', { hasText: name }).click();
 }
 
 async function createSong(page: Page, title: string, link: string): Promise<void> {
@@ -91,7 +91,7 @@ try {
     const stageTop = await phone.locator('#stage').boundingBox();
     assert.ok(tools !== null && stageTop !== null && Math.abs(stageTop.y - (tools.y + tools.height)) <= 1, 'the lyrics begin right under the tools');
     await phone.getByRole('button', { name: 'Más opciones' }).click();
-    const option = phone.getByRole('button', { name: 'Escuchar el original' });
+    const option = phone.locator('.sheet-action', { hasText: 'Escuchar el original' });
     await option.waitFor();
     assert.match(await option.innerText(), /YouTube Music · arranca en 1:15/);
     assert.deepEqual(asked(), [], 'nothing of YouTube was asked for before the touch');
@@ -124,6 +124,22 @@ try {
     await phone.getByRole('button', { name: 'Cerrar el reproductor' }).click();
     assert.equal(await phone.locator('.song-player').count(), 0);
     pass('✕ takes the frame away, which ends the sound');
+
+    // The ♪ of the tools row (the owner: the same icon as in the rows of a list): before the "⋯", toggles the player
+    const heard = phone.locator('.song-tools__listen');
+    const heardBox = await heard.boundingBox();
+    const dotsBox = await phone.getByRole('button', { name: 'Más opciones' }).boundingBox();
+    const rowBox = await phone.locator('.song-tools__row').boundingBox();
+    assert.ok(heardBox !== null && dotsBox !== null && rowBox !== null, 'the ♪ is in the tools row');
+    assert.ok(heardBox.x + heardBox.width <= dotsBox.x + 1 && heardBox.width >= 40 && rowBox.height <= 50, `just before the "⋯", the row does not wrap (${Math.round(rowBox.height)}px)`);
+    assert.equal(await heard.getAttribute('aria-pressed'), 'false');
+    await heard.click();
+    await phone.locator('.song-player iframe').waitFor();
+    assert.equal(await heard.getAttribute('aria-pressed'), 'true', 'it shows the player is open');
+    await heard.click();
+    assert.equal(await phone.locator('.song-player').count(), 0, 'a second touch closes it');
+    assert.equal(await heard.getAttribute('aria-pressed'), 'false');
+    pass('the song page has the same ♪ before the "⋯": it opens and closes the player, and the tools row keeps one line');
 
     // Offline: it says so, and the lyrics stay
     await phoneContext.setOffline(true);
