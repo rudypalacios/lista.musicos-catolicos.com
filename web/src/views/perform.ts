@@ -357,7 +357,7 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     layoutObserver.observe(panesEl);
 
     // --- "⋯": the key and the lyrics tools of the selected song, and dividing the page ---
-    const toolsSheet = createSheet('Tono y letra', () => fillTools());
+    const toolsSheet = createSheet('Tono y letra', () => fillTools(), { anchored: true });
     // "Escuchar el original": the player of the song on screen, in a sheet that comes over the lyrics and goes away with them
     const fillTools = (): void => {
         const pane = focused();
@@ -451,7 +451,7 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
         if (current !== null) {
             jumpSheet.reveal(current);
         }
-    });
+    }, { anchored: true });
     jumpSheet.body.append(h('h3', {}, 'Cantos del listado, en el orden de la misa'), songList);
     jumpButton.addEventListener('click', jumpSheet.open);
 

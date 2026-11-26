@@ -46,7 +46,7 @@ export function partNote(part: Pick<PartDef, 'optional'>, count: number, hasSong
  */
 export function createAddToList(options: AddToListOptions): Sheet {
     const { app, song } = options;
-    const sheet = createSheet('Agregar a un listado', () => showLists());
+    const sheet = createSheet('Agregar a un listado', () => showLists(), { anchored: true });
     sheet.element.classList.add('sheet-layer--window');
     const error = h('p', { class: 'error', role: 'alert', hidden: true });
     const fail = (failure: unknown, fallback: string): void => {

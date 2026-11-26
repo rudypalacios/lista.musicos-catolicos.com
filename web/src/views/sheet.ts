@@ -1,5 +1,6 @@
 import { h } from '../dom.ts';
 import { icon, type IconName } from '../icons.ts';
+import { levelsOf, pickLevel, velocityOf, type Sample } from '../sheet-detents.ts';
 
 /** The sheets that are open now, last one on top: the back button closes the top one */
 const opened: Array<{ closeFromBack: () => void }> = [];
@@ -83,6 +84,13 @@ const WIDE = '(min-width: 900px)';
 /** The space kept between an anchored menu and the button, and the edges of the window (px: it is a measure of the window, not of the design) */
 const GAP = 8;
 const EDGE = 16;
+/** How far (px) a touch on the handle must move to be a drag and not a tap */
+const DRAG_FROM = 4;
+/** How many of the last pointer moves count to know how fast the finger went */
+const SAMPLES = 5;
+
+/** The button the last menu opened beside: a menu opened by a row of another menu (which closed itself first) appears in the same place */
+let lastAnchor: Element | null = null;
 
 export interface SheetOptions {
     /**
@@ -123,8 +131,8 @@ export interface Sheet {
  */
 export function createSheet(label: string, onOpen?: () => void | Promise<void>, options: SheetOptions = {}): Sheet {
     const body = h('div', { class: 'sheet__body' });
-    const panel = h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': label, tabindex: '-1' },
-        h('div', { class: 'sheet__grab', 'aria-hidden': 'true' }), body);
+    const grab = h('div', { class: 'sheet__grab', 'aria-hidden': 'true' });
+    const panel = h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': label, tabindex: '-1' }, grab, body);
     const scrim = h('div', { class: 'sheet__scrim' });
     const element = h('div', { class: options.anchored === true ? 'sheet-layer sheet-layer--anchored' : 'sheet-layer' }, scrim, panel);
     panel.inert = true;
@@ -143,13 +151,20 @@ export function createSheet(label: string, onOpen?: () => void | Promise<void>, 
         if (options.anchored !== true || !open) {
             return;
         }
-        if (!wide.matches || anchor === null || !anchor.isConnected) {
-            // A phone (or a window that became one): the sheet from the bottom, with nothing of ours on it. A button
-            // redrawn away leaves the menu where it was.
-            if (!wide.matches) {
-                panel.style.removeProperty('left');
-                panel.style.removeProperty('top');
-            }
+        if (!wide.matches) {
+            // A phone (or a window that became one): the sheet from the bottom, with nothing of ours on it
+            panel.style.removeProperty('left');
+            panel.style.removeProperty('top');
+
+            return;
+        }
+        if (anchor === null || !anchor.isConnected) {
+            anchor = lastAnchor?.isConnected === true ? lastAnchor : null;
+        }
+        if (anchor === null) {
+            // Nothing to sit beside: in the window's upper middle
+            panel.style.left = `${Math.max(EDGE, (window.innerWidth - panel.offsetWidth) / 2)}px`;
+            panel.style.top = `${Math.max(EDGE, (window.innerHeight - panel.offsetHeight) / 3)}px`;
 
             return;
         }
@@ -202,6 +217,52 @@ export function createSheet(label: string, onOpen?: () => void | Promise<void>, 
     };
     scrim.addEventListener('click', () => close());
 
+    // The handle is what every half sheet has on top: hold it and pull down, and the sheet follows the finger. Let go and it
+    // closes if it was heading down (a flick is enough), or comes back. The same for every sheet, so it is made here once.
+    let drag: { startY: number; moved: boolean; samples: Sample[] } | null = null;
+    grab.addEventListener('pointerdown', (event) => {
+        if (!open || (event.pointerType === 'mouse' && event.button !== 0)) {
+            return;
+        }
+        grab.setPointerCapture(event.pointerId);
+        drag = { startY: event.clientY, moved: false, samples: [{ time: event.timeStamp, y: event.clientY }] };
+    });
+    grab.addEventListener('pointermove', (event) => {
+        if (drag === null) {
+            return;
+        }
+        const down = Math.max(0, event.clientY - drag.startY);
+        drag.samples = [...drag.samples, { time: event.timeStamp, y: event.clientY }].slice(-SAMPLES);
+        if (!drag.moved && down < DRAG_FROM) {
+            return;
+        }
+        drag.moved = true;
+        panel.style.transition = 'none';
+        panel.style.transform = `translateY(${down}px)`;
+    });
+    const letGo = (event: PointerEvent, cancelled: boolean): void => {
+        if (drag === null) {
+            return;
+        }
+        const { startY, moved, samples } = drag;
+        drag = null;
+        if (grab.hasPointerCapture(event.pointerId)) {
+            grab.releasePointerCapture(event.pointerId);
+        }
+        // Clearing the inline styles lets the sheet's own transition run from where the finger left it, to rest or to the bottom
+        panel.style.removeProperty('transition');
+        panel.style.removeProperty('transform');
+        if (!moved || cancelled) {
+            return;
+        }
+        const level = pickLevel(Math.max(0, event.clientY - startY), velocityOf(samples), levelsOf(0, panel.offsetHeight));
+        if (level === 'closed') {
+            close();
+        }
+    };
+    grab.addEventListener('pointerup', (event) => letGo(event, false));
+    grab.addEventListener('pointercancel', (event) => letGo(event, true));
+
     return {
         element,
         body,
@@ -218,8 +279,11 @@ export function createSheet(label: string, onOpen?: () => void | Promise<void>, 
             open = true;
             opener = document.activeElement;
             // A click does not always focus a button (Safari), so the button is given, not guessed
-            if (trigger instanceof Element) {
-                anchor = trigger;
+            // (a click handler may hand over the event itself)
+            const button = trigger instanceof Event ? trigger.currentTarget : trigger;
+            if (button instanceof Element) {
+                anchor = button;
+                lastAnchor = button;
             }
             void Promise.resolve(onOpen?.()).then(() => {
                 if (!open) {

@@ -81,7 +81,7 @@ export function templateChoices(app: App, handlers: TemplateChoiceHandlers, clos
  * @param sub the line under the title, written when the sheet opens (what picking will do)
  */
 export function createTemplatePickSheet(app: App, sub: () => string, pick: (choice: TemplatePick) => void, fail: (failure: unknown) => void): Sheet {
-    const sheet = createSheet('Selecciona una plantilla', () => fill());
+    const sheet = createSheet('Selecciona una plantilla', () => fill(), { anchored: true });
     sheet.element.classList.add('sheet-layer--window');
     const fill = (): void => {
         const head = sheetHead('Selecciona una plantilla', sub());
@@ -96,7 +96,7 @@ export function createTemplatePickSheet(app: App, sub: () => string, pick: (choi
 
 /** The sheet of the lists screen's "＋ Nuevo": choose a template, and the list is made and opened */
 export function createTemplateSheet(app: App, navigate: Navigate, fail: (failure: unknown) => void): Sheet {
-    const sheet = createSheet('Selecciona una plantilla', () => fill());
+    const sheet = createSheet('Selecciona una plantilla', () => fill(), { anchored: true });
     sheet.element.classList.add('sheet-layer--window');
     const fill = (): void => {
         const head = sheetHead('Nuevo listado', 'Selecciona una plantilla');

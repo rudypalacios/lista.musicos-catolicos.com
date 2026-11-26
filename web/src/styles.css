@@ -2947,11 +2947,27 @@ body {
 }
 
 .sheet__grab {
+    position: relative;
     width: 2.25rem;
     height: 0.25rem;
     margin: 0 auto 0.6rem;
     background: var(--border);
     border-radius: 0.25rem;
+    /* The handle is dragged, so the browser must not scroll the sheet from it */
+    touch-action: none;
+    cursor: grab;
+}
+
+/* The mark is thin; what answers to the finger is a band around it (12rem wide, 44px tall) */
+.sheet__grab::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 12rem;
+    max-width: 90vw;
+    height: 2.75rem;
+    transform: translate(-50%, -50%);
 }
 
 .sheet h3 {
