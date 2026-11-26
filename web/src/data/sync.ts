@@ -36,7 +36,10 @@ export interface ErrorKinds {
  * 1. push what waits in the queues (songs, setlists, templates), in batches. A batch the server
  *    refuses is retried record by record, so one bad record cannot keep the others from ever
  *    arriving.
- * 2. pull from the cursor, page by page, merging each page and moving the cursor with it.
+ * 2. pull from the cursor, page by page, merging each page and moving the cursor with it. A `full` sync pulls from the start instead:
+ *    what the server holds replaces what the device holds wherever it is the same or newer (`shouldTakeRemote`), so a record the
+ *    device read with an older app (which dropped a field it did not know) is read again with all of its fields. The cursor never
+ *    goes back (`mergeRemote` keeps the larger one).
  *
  * It can stop at any point and be run again: a queue only loses a record once the server has
  * it, and the cursor only moves together with the records it covers.
@@ -52,11 +55,11 @@ export class SyncEngine {
         this.errors = errors;
     }
 
-    async sync(): Promise<SyncResult> {
+    async sync(options: { full?: boolean } = {}): Promise<SyncResult> {
         const result: SyncResult = { pushed: 0, pulled: 0, rejected: [] };
         try {
             await this.push(result);
-            await this.pull(result);
+            await this.pull(result, options.full === true);
         } catch (error) {
             if (error instanceof SyncStopped) {
                 throw error;
@@ -114,8 +117,8 @@ export class SyncEngine {
         result.pushed += answer.applied.length;
     }
 
-    private async pull(result: SyncResult): Promise<void> {
-        let cursor = await this.store.cursor();
+    private async pull(result: SyncResult, full: boolean): Promise<void> {
+        let cursor = full ? 0 : await this.store.cursor();
         for (;;) {
             const page = await this.remote.pull(cursor);
             await this.store.mergeRemote(page, page.cursor);

@@ -1,3 +1,4 @@
+import { markFullPull, needsFullPull } from './data/pull-shape.ts';
 import { nearestShift } from './keys.ts';
 import { api, errorKinds, remote } from './api.ts';
 import { IdbStore } from './data/idb-store.ts';
@@ -277,24 +278,41 @@ export class App {
     }
 
     /** Runs a sync now, or joins the one that is running. Never throws: the outcome is the status. */
-    syncNow(): Promise<void> {
+    syncNow(options: { full?: boolean } = {}): Promise<void> {
         if (this.guest) {
             return Promise.resolve();
         }
+        const full = options.full === true;
         if (this.running === null) {
-            this.running = this.run().finally(() => {
+            this.running = this.run(full).finally(() => {
                 this.running = null;
             });
+        } else if (full) {
+            // One is under way (and may be an ordinary one): the full one follows it
+            const after = this.running.then(() => this.run(true)).finally(() => {
+                if (this.running === after) {
+                    this.running = null;
+                }
+            });
+            this.running = after;
         }
 
         return this.running;
     }
 
-    private async run(): Promise<void> {
+    /**
+     * `full` is what a person asking to sync gets (the dot, pulling down): the device reads everything again, so nothing it holds
+     * can stay out of date for good. A sync by itself is incremental, except the first one for a new shape of record (`pull-shape.ts`).
+     */
+    private async run(full: boolean): Promise<void> {
         this.state = 'syncing';
         this.emitStatus();
+        const everything = full || needsFullPull();
         try {
-            const result = await this.engine.sync();
+            const result = await this.engine.sync({ full: everything });
+            if (everything) {
+                markFullPull();
+            }
             this.rejected = new Set(result.rejected);
             this.state = 'idle';
             // After hearing from the server: only now is a missing Misa really missing (see `ensureMisa`)
