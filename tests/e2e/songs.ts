@@ -466,7 +466,8 @@ try {
     assert.ok(gone !== undefined && gone.deletedAt !== null, 'the server keeps a tombstone');
 
     await page.evaluate(() => window.dispatchEvent(new Event('online')));
-    await page.waitForFunction(() => !document.body.textContent?.includes('Editado en la otra tablet'));
+    // What is in sight (the bar keeps the last name it was given in an element it hides)
+    await page.waitForFunction(() => !document.body.innerText.includes('Editado en la otra tablet'));
     pass('deleting a song removes it from the other device too');
 
     // ----- importing -----

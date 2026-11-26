@@ -5,7 +5,7 @@
  *   in a list, a ♪ in the row of the songs that have a link (`listenButton`).
  * - A YouTube or YouTube Music link opens YouTube's own player. On the page of a song (`createListen`) it is **docked above the
  *   lyrics** on a phone (a chevron, or a swipe on its bar, folds the video away without stopping it) and **a window that floats
- *   and is dragged** from 900px. In a list and while singing (`createListenSheet`) it is always that window: it has nothing behind
+ *   and is dragged** from 600px (a tablet). In a list and while singing (`createListenSheet`) it is always that window: it has nothing behind
  *   it, so the lyrics can be touched and scrolled while it plays, and on a phone it may be pushed past an edge, leaving only its bar
  *   in sight (`float.ts`). The frame does not exist until the touch: nothing of YouTube is loaded before it, and closing (✕) takes
  *   the frame away, which ends the sound. The controls are YouTube's.
@@ -19,7 +19,7 @@ import { h } from '../dom.ts';
 import { icon } from '../icons.ts';
 import { clock, readListenUrl, youtubeEmbed, type ListenUrl } from '../listen-url.ts';
 import { sheetAction } from './sheet.ts';
-import { WIDE, makeFloating, type Floating } from './float.ts';
+import { FLOATS_FROM, makeFloating, type Floating } from './float.ts';
 
 /** What of a link can be listened to: a video of YouTube, or a link that opens apart */
 export type Listenable = Extract<ListenUrl, { kind: 'youtube' | 'link' }>;
@@ -205,7 +205,7 @@ export interface Listen {
 export interface ListenOptions {
     /** The player opened or closed: the page makes room for it */
     onToggle?: (open: boolean) => void;
-    /** The person moved the floating window (from 900px): the page no longer needs to keep a column free for it */
+    /** The person moved the floating window (from 600px): the page no longer needs to keep a column free for it */
     onMoved?: () => void;
 }
 
@@ -234,8 +234,8 @@ export function createListen(listenUrl: string, options: ListenOptions = {}): Li
 
             return;
         }
-        // From 900px a window to drag; under it docked above the lyrics, which the video can be folded away from
-        const wide = window.innerWidth >= WIDE;
+        // From a tablet's width (600px) a small window to drag; on a phone docked above the lyrics, which the video can be folded away from
+        const wide = window.innerWidth >= FLOATS_FROM;
         const built = buildPlayer(read, { what: `Referencia · ${listenHint(read)}`, close, fold: !wide });
         player = built.element;
         element.append(player);

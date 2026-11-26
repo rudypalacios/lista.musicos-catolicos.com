@@ -13,6 +13,7 @@ import { createAddToList } from './add-to-list.ts';
 import { deleteSongAfterAsking } from './delete-song.ts';
 import { createListen, listenAction, listenButton } from './listen.ts';
 import { createReader } from './reader.ts';
+import { redrawOnChange } from './redraw.ts';
 import { showToast } from '../toast.ts';
 import { createToneControl, type ToneControl } from './tone-control.ts';
 import { createShareSheet } from './share-sheet.ts';
@@ -54,6 +55,8 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
     let tone: ToneControl | undefined;
     /** What this page last told the bar: the next page is built before this one is disposed, and must not be cleared by it */
     let ownHeading: SongHeading | null = null;
+    /** The reader may still call back after the page is gone (a render that was waiting): it must not put its name in the bar again */
+    let gone = false;
     const reader = createReader(song, {
         shift,
         // The key is in the key control: a pill with the same words in the head of the song would say it twice
@@ -65,6 +68,9 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
             writeTransposition(t, mine);
         },
         onKey: (key) => {
+            if (gone) {
+                return;
+            }
             tone?.refresh();
             ownHeading = { title: song.title, key, draft: song.status === 'draft' };
             songHeading.set(ownHeading);
@@ -127,10 +133,21 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
         onToggle: (open) => {
             viewer.classList.toggle('has-player', open);
             heard?.setAttribute('aria-pressed', String(open));
+            // What arrived while it played waited, so as not to cut the sound
+            if (!open) {
+                redraw.resume();
+            }
         },
         // Dragged away from its corner, the window no longer needs the column kept free for it
         onMoved: () => viewer.classList.remove('has-player'),
     });
+    // A sync that brings another device's edit of this song: the page shows it (it was read when the page opened). The person's own
+    // changes here (their key) do not count, and a player that is playing is not cut: the page waits for it to close.
+    const redraw = redrawOnChange(app, navigate, async () => {
+        const fresh = await app.get(song.id);
+
+        return fresh === undefined ? null : JSON.stringify([fresh.title, fresh.author, fresh.body, fresh.listenUrl, fresh.status, fresh.tags]);
+    }, () => listen.isOpen());
     heard = listen.read === null ? null : listenButton(listen.read, '', () => (listen.isOpen() ? listen.close() : listen.open()), 'lrow__more song-tools__listen');
 
     // --- "⋯": what is done less often ---
@@ -219,9 +236,11 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
     return {
         element: viewer,
         dispose: () => {
+            gone = true;
             if (songHeading.get() === ownHeading) {
                 songHeading.set(null);
             }
+            redraw.stop();
             releaseScreen();
             listen.close();
             sheet.release();

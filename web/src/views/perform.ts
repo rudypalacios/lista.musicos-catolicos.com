@@ -15,6 +15,7 @@ import { dragOffset, isSwipe, swipeAxis, type Axis } from '../swipe.ts';
 import { describeAwake, screenKeeper } from '../wakelock.ts';
 import { createReader, type Reader } from './reader.ts';
 import { createListenSheet, listenAction, listenableOf, listenButton } from './listen.ts';
+import { redrawOnChange } from './redraw.ts';
 import { createSheet, sheetAction, sheetList, spaced } from './sheet.ts';
 import { createToneControl, type ToneControl, type ToneControlOptions } from './tone-control.ts';
 import type { Navigate, View } from './types.ts';
@@ -96,6 +97,24 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     const pageIndex = pageIndexOf(pages, (order[position - 1] as SetlistItem).id);
     const page = pages[pageIndex] as SetlistItem[];
     const divided = page.length === 2;
+    // Another device changed what is sung (the order, a section, the words of a song): the page shows it after a sync. The key the
+    // person saves here is not part of it, so saving it does not draw the page again.
+    const redraw = redrawOnChange(app, navigate, async () => {
+        const [latest, all] = await Promise.all([app.setlists.get(setlist.id), app.list()]);
+        if (latest === undefined) {
+            return null;
+        }
+        const byId = new Map(all.map((song) => [song.id, song]));
+
+        return JSON.stringify([
+            latest.parts,
+            latest.items.map((item) => {
+                const song = byId.get(item.songId);
+
+                return [item.id, item.part, item.songId, item.withNext ?? null, song === undefined ? null : [song.title, song.author, song.body, song.listenUrl, song.status]];
+            }),
+        ]);
+    });
     const songs = await Promise.all(page.map((entry) => app.get(entry.songId)));
     const positionOf = (item: SetlistItem): number => order.findIndex((candidate) => candidate.id === item.id) + 1;
 
@@ -563,6 +582,7 @@ export async function performView(app: App, navigate: Navigate, setlist: Setlist
     return {
         element: h('div', { class: `viewer perform${divided ? ' is-divided' : ''}` }, panesEl, dock, chrome, jumpSheet.element, toolsSheet.element, listenSheet.element),
         dispose: () => {
+            redraw.stop();
             document.removeEventListener('keydown', onKey);
             layoutObserver.disconnect();
             toolsSheet.release();

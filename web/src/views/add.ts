@@ -289,8 +289,11 @@ export function addView(app: App, navigate: Navigate, setlist: Setlist, part: Pa
     };
     search.addEventListener('input', draw);
     void reload();
+    // What a sync brings (a song edited or added on another device) shows without leaving the page
+    const stop = app.onData(() => void reload());
 
     return { element, dispose: () => {
+        stop();
         preview.release();
         confirmTag.release();
     } };
