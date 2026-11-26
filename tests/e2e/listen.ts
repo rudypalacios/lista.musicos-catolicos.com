@@ -108,13 +108,12 @@ try {
     assert.match((await frame.getAttribute('allow')) ?? '', /autoplay/);
     assert.equal(asked().length > 0 && asked().every((url) => url.startsWith('https://www.youtube-nocookie.com/embed/')), true, 'only the player was asked for');
     const screen = await phone.locator('.song-player__screen').boundingBox();
-    assert.ok(screen !== null && screen.height >= 200 && Math.abs(screen.width - 390) <= 1, `16:9 across the width, not under 200px (${screen?.width}×${screen?.height})`);
+    assert.ok(screen !== null && screen.height >= 200 && screen.width >= 360, `16:9 across its window, not under 200px (${screen?.width}×${screen?.height})`);
+    assert.equal(await phone.locator('.song-player').evaluate((element) => getComputedStyle(element).position), 'fixed', 'a window, on a phone too');
     assert.match(await phone.locator('.song-player__what').innerText(), /YouTube Music · arranca en 1:15/);
-    const stage = await phone.locator('#stage').boundingBox();
-    assert.ok(stage !== null && screen !== null && stage.y >= screen.y + screen.height - 1, 'the lyrics are under the player');
     assert.equal(await phone.locator('.song-sheet .ch').first().isVisible(), true, 'and the chords are in sight');
     assert.deepEqual(violations, [], 'the frame breaks no rule of the Content-Security-Policy');
-    pass('the option opens YouTube\'s own frame above the lyrics, built from the id, 16:9 across the width, under the production policy');
+    pass('the option opens YouTube\'s own frame in a window over the lyrics, built from the id, 16:9, under the production policy');
 
     // ✕ takes the frame away (that is what ends the sound)
     await phone.getByRole('button', { name: 'Cerrar el reproductor' }).click();
@@ -125,7 +124,26 @@ try {
     assert.equal(await phone.locator('.song-player').count(), 0);
     pass('✕ takes the frame away, which ends the sound');
 
-    // The ♪ of the tools row (the owner: the same icon as in the rows of a list): before the "⋯", toggles the player
+    // On a phone the ♪ is not drawn (the menu is the way in); the window is dragged by its bar here too
+    assert.equal(await phone.locator('.song-tools__listen').isVisible(), false, 'no ♪ in the tools row of a phone');
+    await listenFromMenu(phone);
+    await phone.locator('.song-player iframe').waitFor();
+    const barBox = await phone.locator('.song-player__bar').boundingBox();
+    const before = await phone.locator('.song-player').boundingBox();
+    assert.ok(barBox !== null && before !== null);
+    await phone.mouse.move(barBox.x + 60, barBox.y + 20);
+    await phone.mouse.down();
+    await phone.mouse.move(barBox.x + 60, barBox.y - 200, { steps: 6 });
+    await phone.mouse.up();
+    const after = await phone.locator('.song-player').boundingBox();
+    assert.ok(after !== null && after.y < before.y - 150, `dragged up by its bar on a phone (${before.y} → ${after?.y})`);
+    assert.equal(await phone.locator('.song-player iframe').count(), 1, 'moving it does not stop it');
+    await phone.getByRole('button', { name: 'Cerrar el reproductor' }).click();
+    pass('on the page of a song the player is a window that is dragged by its bar on a phone too');
+
+    // Where there is room (a tablet) the ♪ is before the "⋯", toggles the player, and the menu does not repeat it
+    await phone.setViewportSize({ width: 768, height: 1000 });
+    await settle(phone);
     const heard = phone.locator('.song-tools__listen');
     const heardBox = await heard.boundingBox();
     const dotsBox = await phone.getByRole('button', { name: 'Más opciones' }).boundingBox();
@@ -139,24 +157,14 @@ try {
     await heard.click();
     assert.equal(await phone.locator('.song-player').count(), 0, 'a second touch closes it');
     assert.equal(await heard.getAttribute('aria-pressed'), 'false');
-    pass('the song page has the same ♪ before the "⋯": it opens and closes the player, and the tools row keeps one line');
-
-    // Docked on a phone, the video can be folded away (a chevron) without stopping it, and brought back
-    await heard.click();
-    await phone.locator('.song-player iframe').waitFor();
-    const dockedBox = await phone.locator('.song-player__screen').boundingBox();
-    assert.ok(dockedBox !== null && dockedBox.height >= 200);
-    assert.equal(await phone.locator('.song-player').evaluate((element) => getComputedStyle(element).position), 'static', 'docked above the lyrics on a phone');
-    await phone.getByRole('button', { name: 'Ocultar el video' }).click();
-    assert.equal(Math.round((await phone.locator('.song-player__screen').boundingBox())?.height ?? -1), 0, 'the video is out of sight');
-    assert.equal(await phone.locator('.song-player iframe').count(), 1, 'but the frame is still there, playing');
-    const lyricsUp = await phone.locator('#stage').boundingBox();
-    assert.ok(lyricsUp !== null && lyricsUp.y < dockedBox.y + 120, 'the lyrics take the room back');
-    await phone.getByRole('button', { name: 'Mostrar el video' }).click();
-    assert.ok(((await phone.locator('.song-player__screen').boundingBox())?.height ?? 0) >= 200, 'and it comes back');
-    await heard.click();
-    assert.equal(await phone.locator('.song-player').count(), 0);
-    pass('docked on a phone the video folds away with a chevron without stopping, and comes back');
+    await phone.getByRole('button', { name: 'Más opciones' }).click();
+    await phone.getByRole('button', { name: 'Agregar a un listado' }).waitFor();
+    assert.equal(await phone.locator('.sheet-action', { hasText: 'Escuchar el original' }).isVisible(), false, 'the menu does not repeat the ♪');
+    await phone.keyboard.press('Escape');
+    await settle(phone);
+    await phone.setViewportSize({ width: 390, height: 780 });
+    await settle(phone);
+    pass('with room (a tablet) the song page has the ♪ before the "⋯" and the menu does not repeat it');
 
     // A tablet (600px and more): the same small window to drag, never the width of the screen
     await phone.setViewportSize({ width: 800, height: 1000 });
@@ -257,7 +265,7 @@ try {
     await signIn(wide, server.base);
     await createSong(wide, 'Caminamos ancho', YTM);
     await wide.locator('.song-sheet').waitFor();
-    await listenFromMenu(wide);
+    await wide.locator('.song-tools__listen').click();
     await wide.locator('.song-player iframe').waitFor();
     const column = await wide.locator('.song-player').boundingBox();
     const lyrics = await wide.locator('#stage').boundingBox();
@@ -316,15 +324,26 @@ try {
     assert.equal(await phone.locator('.item', { hasText: 'Dos sin enlace' }).locator('.item__listen').count(), 0);
     const note = phone.getByRole('button', { name: 'Escuchar el original: Uno con YouTube' });
     const more = phone.getByRole('button', { name: 'Más opciones: Uno con YouTube' });
+    assert.equal(await note.isVisible(), false, 'on a phone the ♪ is not drawn: the "⋯" menu is the way in');
+    await phone.setViewportSize({ width: 768, height: 1000 });
+    await settle(phone);
     const noteBox = await note.boundingBox();
     const moreBox = await more.boundingBox();
-    assert.ok(noteBox !== null && moreBox !== null && noteBox.width >= 44 && noteBox.height >= 44 && noteBox.x + noteBox.width <= moreBox.x + 1, 'a 44px button just before the "⋯"');
+    assert.ok(noteBox !== null && moreBox !== null && noteBox.width >= 44 && noteBox.height >= 44 && noteBox.x + noteBox.width <= moreBox.x + 1, 'with room, a 44px button just before the "⋯"');
     assert.equal(asked().length, askedBefore, 'nothing of YouTube is asked for by the list being there');
-    pass('in a list the rows with a link have a ♪ (a 44px button before the "⋯"), the others have nothing');
+    await more.click();
+    await phone.getByRole('button', { name: 'Cantar desde aquí' }).waitFor();
+    assert.equal(await phone.locator('.sheet-action', { hasText: 'Escuchar el original' }).isVisible(), false, 'and the menu does not repeat it');
+    await phone.keyboard.press('Escape');
+    await settle(phone);
+    await phone.setViewportSize({ width: 390, height: 780 });
+    await settle(phone);
+    pass('in a list the ♪ is drawn only where there is room (a tablet), and the menu has the option only where it is not');
 
     // The ♪ opens the player as a window that floats: nothing behind it closes it, it is dragged by its bar, and pushed off the
     // bottom of a phone it leaves its bar in sight; ✕ takes the frame away
-    await note.click();
+    await more.click();
+    await phone.locator('.sheet-action', { hasText: 'Escuchar el original' }).click();
     const listFrame = phone.locator('.song-player iframe');
     await listFrame.waitFor();
     assert.equal(await listFrame.getAttribute('src'), EMBED);
@@ -363,22 +382,21 @@ try {
     assert.deepEqual(violations, [], 'no rule of the policy is broken');
     pass('the ♪ opens a window with no backdrop that is dragged by its bar, can leave its bar at the edge without stopping, and closes with the cross');
 
-    // The option of the song's "⋯" does the same; the one of another site opens apart; a song with no link has none
-    await more.click();
-    await phone.locator('.sheet-action', { hasText: 'Escuchar el original' }).click();
-    await listFrame.waitFor();
-    await phone.getByRole('button', { name: 'Cerrar el reproductor' }).click();
-    await settle(phone);
+    // The one of another site opens apart; a song with no link has no option
     await phone.getByRole('button', { name: 'Más opciones: Dos sin enlace' }).click();
     await phone.getByRole('button', { name: 'Cantar desde aquí' }).waitFor();
     assert.equal(await phone.locator('.sheet-action', { hasText: /Escuchar/ }).count(), 0, 'no option for a song with no link');
     await phone.keyboard.press('Escape');
     await settle(phone);
+    await phone.setViewportSize({ width: 768, height: 1000 });
+    await settle(phone);
     const spotifyNote = phone.getByRole('link', { name: 'Escuchar en Spotify: Tres con Spotify' });
     assert.equal(await spotifyNote.getAttribute('href'), 'https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC');
     assert.equal(await spotifyNote.getAttribute('target'), '_blank');
     assert.match((await spotifyNote.getAttribute('rel')) ?? '', /noopener/);
-    pass('the option of the "⋯" plays it too; another site is a link that opens apart; a song with no link has no option');
+    await phone.setViewportSize({ width: 390, height: 780 });
+    await settle(phone);
+    pass('another site is a link that opens apart (a ♪ with room); a song with no link has no option');
 
     // Singing: the option is in the sheet of the "⋯", and the player floats over the lyrics
     await phone.getByRole('link', { name: 'Cantar' }).first().click();
@@ -402,7 +420,7 @@ try {
     assert.equal(await phone.locator('.perform .song-sheet').first().isVisible(), true, 'the lyrics are there again');
     pass('while singing the option is in the sheet of the "⋯", and the player floats over the lyrics, which stay in reach, until its cross');
 
-    // On a wide screen the singing bar has room: the same ♪, beside the key; under 900px it is not there (the option stays in the sheet)
+    // On a wide screen the singing bar has room: the same ♪, beside the key; under 600px it is not there (the option stays in the sheet)
     assert.equal(await phone.locator('.perform__listen').isVisible(), false, 'no ♪ in the bar of a phone');
     await phone.setViewportSize({ width: 1280, height: 800 });
     await settle(phone);
@@ -417,6 +435,19 @@ try {
     await settle(phone);
     assert.equal(await phone.locator('.song-player iframe').count(), 0);
     pass('on a wide screen the singing bar has the same ♪ beside the key, and it opens the player in a sheet');
+
+    // A tablet in portrait (768px) has room too: the ♪ is in the bar, the bar does not overflow, and the sheet does not repeat the option
+    await phone.setViewportSize({ width: 768, height: 1000 });
+    await settle(phone);
+    await barNote.waitFor();
+    const barFits = await phone.locator('.perform__chrome').evaluate((bar) => bar.scrollWidth <= bar.clientWidth + 1);
+    assert.equal(barFits, true, 'the singing bar fits at 768px with the ♪');
+    await phone.getByRole('button', { name: 'Más herramientas' }).click();
+    await phone.getByRole('button', { name: 'Imprimir con acordes' }).waitFor();
+    assert.equal(await phone.locator('.sheet-action', { hasText: 'Escuchar el original' }).isVisible(), false, 'the sheet does not repeat the ♪');
+    await phone.keyboard.press('Escape');
+    await settle(phone);
+    pass('on a tablet the singing bar has the ♪ and the sheet does not repeat the option');
 
     assert.deepEqual(problems, [], 'no uncaught errors in the page');
     console.log(`\n${count()} checks passed`);

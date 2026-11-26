@@ -87,7 +87,7 @@ export function pullAnswer(state: SyncState): string {
 }
 
 export interface PullSource {
-    /** Whether a pull may start on the screen being shown (not while singing, which has its own touches) */
+    /** Whether a pull may start on the screen being shown */
     enabled(): boolean;
     /** Syncs now and says how it ended */
     refresh(): Promise<SyncState>;
@@ -96,7 +96,8 @@ export interface PullSource {
 /** Touches that belong to something else: typing, choosing, a sheet that scrolls on its own */
 /** A song held in the air to be moved (`drag-reorder.ts`): its finger belongs to the drag */
 const LIFTED = '.is-lifted';
-const OWN_TOUCH = 'input, textarea, select, [contenteditable], dialog, [role="dialog"], .sheet';
+/** The player's window is moved by its bar and the chord sheet by its handle: a finger on them is a drag of their own, never a pull */
+const OWN_TOUCH = 'input, textarea, select, [contenteditable], dialog, [role="dialog"], .sheet, .song-player, .chord-dock';
 
 /**
  * Makes `container` (the scrolling screen) answer a pull down. Returns the strip that shows the

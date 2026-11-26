@@ -2,7 +2,7 @@ import { signOut, type App } from '../app.ts';
 import { h } from '../dom.ts';
 import { watchBottomChrome } from '../bottom-chrome.ts';
 import { createPullToRefresh, pullAnswer } from '../pull.ts';
-import { matchRoute, type Route } from '../router.ts';
+import type { Route } from '../router.ts';
 import { describeSync } from '../sync-line.ts';
 import { showToast } from '../toast.ts';
 import { confirmDialog } from '../views/confirm-dialog.ts';
@@ -79,9 +79,9 @@ export function createFrame(root: HTMLElement, data: App, installBanner: Install
             });
             header = frame;
             const view = h('main', { id: 'view' });
-            // Pull down to sync now (not while singing: the stage has its own touches)
+            // Pull down to sync now, on every screen of the app (singing included: its swipes are sideways, a pull is down from the top)
             const pull = createPullToRefresh(view, {
-                enabled: () => matchRoute(location.pathname).name !== 'perform',
+                enabled: () => true,
                 refresh: async () => {
                     await data.syncNow({ full: true });
 
