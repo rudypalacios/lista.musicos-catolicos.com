@@ -104,6 +104,43 @@ try {
     await tablet.waitForFunction(() => /Tres/.test(document.querySelector('.sheet__sub')?.textContent ?? ''));
     pass('after F5 the page ends up showing what the server has');
 
+    // The editor: untouched, it shows what arrived (the link taken away on the other device); with something typed it is left alone and says so
+    await phone.goto(`${server.base}/cantos/${songId}`);
+    await editFromSongPage(phone);
+    await phone.getByLabel('Enlace para escuchar').fill('https://youtu.be/Zk3mPq8vLw4');
+    await phone.getByRole('button', { name: 'Guardar' }).click();
+    await phone.locator('.song-sheet').waitFor();
+    await synced(phone);
+    await tablet.goto(`${server.base}/cantos/${songId}`);
+    await synced(tablet);
+    await editFromSongPage(tablet);
+    assert.equal(await tablet.getByLabel('Enlace para escuchar').inputValue(), 'https://youtu.be/Zk3mPq8vLw4');
+    await editFromSongPage(phone).catch(() => undefined);
+    await phone.goto(`${server.base}/cantos/${songId}`);
+    await editFromSongPage(phone);
+    await phone.getByLabel('Enlace para escuchar').fill('');
+    await phone.getByRole('button', { name: 'Guardar' }).click();
+    await phone.locator('.song-sheet').waitFor();
+    await synced(phone);
+    await tablet.locator('.sync-dot').click();
+    await tablet.waitForFunction(() => (document.querySelector('#listen-url') as HTMLInputElement | null)?.value === '');
+    pass('the editor of a song nobody touched here shows what another device changed, like the link taken away');
+
+    await phone.goto(`${server.base}/cantos/${songId}`);
+    await editFromSongPage(phone);
+    await phone.getByLabel('Autor (opcional)').fill('Cuatro');
+    await phone.getByRole('button', { name: 'Guardar' }).click();
+    await phone.locator('.song-sheet').waitFor();
+    await synced(phone);
+    await tablet.getByLabel('Título').fill('Lo que escribo aquí');
+    await tablet.locator('.sync-dot').click();
+    await tablet.getByText('Este canto cambió en otro dispositivo').waitFor();
+    assert.equal(await tablet.getByLabel('Título').inputValue(), 'Lo que escribo aquí', 'what is typed is not touched');
+    await tablet.getByRole('button', { name: 'Cargar lo nuevo' }).click();
+    await tablet.waitForFunction(() => (document.querySelector('#title') as HTMLInputElement | null)?.value !== 'Lo que escribo aquí');
+    assert.equal(await tablet.getByLabel('Autor (opcional)').inputValue(), 'Cuatro');
+    pass('with something typed the editor is left alone, says so, and "Cargar lo nuevo" takes what arrived');
+
     assert.deepEqual(problems, []);
     console.log(`\n${count()} checks passed`);
 } catch (error) {

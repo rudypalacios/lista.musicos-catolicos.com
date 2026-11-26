@@ -5548,3 +5548,20 @@ button.srow__tool:disabled {
 .pub-tools__listen[hidden] {
     display: none;
 }
+
+/* The editor of a song that another device changed while it was being edited: what happened and how to take what arrived */
+.notice-line--arrived {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.75rem;
+}
+
+.notice-line--arrived[hidden] {
+    display: none;
+}
+
+.notice-line--arrived .notice-line__text {
+    flex: 1 1 14rem;
+}
