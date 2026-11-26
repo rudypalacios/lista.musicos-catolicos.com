@@ -28,6 +28,7 @@ import { showToast } from '../toast.ts';
 import { deleteSongAfterAsking } from './delete-song.ts';
 import { transpose } from '../chordpro/chord.ts';
 import { readNotation } from '../prefs.ts';
+import { redrawOnChange, type Redraw } from './redraw.ts';
 import type { Navigate, View } from './types.ts';
 
 const HELP = `[C]Caminamos con a[G]legría, Señor,
@@ -638,6 +639,28 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
         });
     }
 
+    // A sync brings another device's edit of this song. A form nobody touched shows it (the page is drawn again from what the device
+    // holds); a form with something typed is left alone, and says so, offering what arrived. Saving counts as busy too: the save
+    // itself changes the song and goes on to another page.
+    let redraw: Redraw | null = null;
+    if (existing !== undefined) {
+        const arrived = h('div', { class: 'notice-line notice-line--arrived', role: 'status', hidden: true });
+        const load = h('button', { type: 'button', class: 'button' }, 'Cargar lo nuevo');
+        load.addEventListener('click', () => {
+            setLeaveGuard(null);
+            redraw?.now();
+        });
+        arrived.append(h('span', { class: 'notice-line__text' }, 'Este canto cambió en otro dispositivo mientras lo editabas. Si guardas, tu versión reemplaza a la otra.'), load);
+        notices.append(arrived);
+        redraw = redrawOnChange(app, navigate, async () => {
+            const fresh = await app.get(existing.id);
+
+            return fresh === undefined ? null : JSON.stringify([fresh.title, fresh.author, fresh.body, fresh.listenUrl, fresh.status, fresh.tags]);
+        }, () => saved || isDirty(), () => {
+            arrived.hidden = saved;
+        });
+    }
+
     const element = h('div', { class: 'page page--edit' }, h('div', { class: 'edit-head' }, h('h2', {}, existing === undefined ? 'Nuevo canto' : 'Editar canto'), draftField), recovered, notices, form);
     // With the title already typed (from the search, or a draft), the lyrics are what is missing
     queueMicrotask(() => (existing === undefined && title.value === '' ? title : body).focus());
@@ -645,6 +668,7 @@ export function editView(app: App, navigate: Navigate, existing?: Song, start: N
     return {
         element,
         dispose: () => {
+            redraw?.stop();
             cancelAnimationFrame(drawing);
             toolbar.dispose();
             setLeaveGuard(null);

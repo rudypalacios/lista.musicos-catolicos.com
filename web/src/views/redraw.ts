@@ -16,9 +16,18 @@ export interface Redraw {
     stop: () => void;
     /** The page is no longer busy: draws it again if something changed while it was */
     resume: () => void;
+    /** Draws the page again now, whatever it is doing (the person asked for what arrived) */
+    now: () => void;
 }
 
-export function redrawOnChange(app: App, navigate: Navigate, read: () => Promise<string | null>, busy: () => boolean = () => false): Redraw {
+export function redrawOnChange(
+    app: App,
+    navigate: Navigate,
+    read: () => Promise<string | null>,
+    busy: () => boolean = () => false,
+    /** Something changed but the page is busy: it can say so (the editor offers what arrived) */
+    onWaiting: () => void = () => undefined,
+): Redraw {
     // What the page shows as it opens: a change that arrives before this is known is compared with it, not lost
     const before = read().catch(() => null);
     let waiting = false;
@@ -35,6 +44,7 @@ export function redrawOnChange(app: App, navigate: Navigate, read: () => Promise
         }
         if (busy()) {
             waiting = true;
+            onWaiting();
         } else {
             redraw();
         }
@@ -46,6 +56,11 @@ export function redrawOnChange(app: App, navigate: Navigate, read: () => Promise
     }
 
     return {
+        now: () => {
+            if (!gone) {
+                redraw();
+            }
+        },
         stop,
         resume: () => {
             if (waiting && !gone && !busy()) {
