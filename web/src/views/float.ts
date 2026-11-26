@@ -23,6 +23,9 @@ export interface Size {
 /** From this width the window is kept whole on screen; under it, it may leave and keep only its handle in sight */
 export const WIDE = 900;
 
+/** From this width (a tablet) the player of a song's page is a window to drag, always small; under it (a phone) it is docked above the lyrics */
+export const FLOATS_FROM = 600;
+
 /** How much of a window pushed past an edge stays in sight (px): enough to find it and drag it back */
 export const KEEP = 48;
 
@@ -60,10 +63,15 @@ export function clampPlace(place: Place, screen: Size, box: Size, handle: number
 
 const STORE_KEY = 'lista.player.place';
 
-/** The place this device remembers for the kind of screen it is on (wide or phone), if any */
-function remembered(wide: boolean): Place | null {
+/** A place only makes sense on the kind of screen it was left on: a phone, a tablet or a wide one */
+function kindOf(width: number): 'phone' | 'tablet' | 'wide' {
+    return width >= WIDE ? 'wide' : width >= FLOATS_FROM ? 'tablet' : 'phone';
+}
+
+/** The place this device remembers for the kind of screen it is on, if any */
+function remembered(kind: string): Place | null {
     try {
-        const stored = JSON.parse(localStorage.getItem(`${STORE_KEY}.${wide ? 'wide' : 'phone'}`) ?? 'null') as Partial<Place> | null;
+        const stored = JSON.parse(localStorage.getItem(`${STORE_KEY}.${kind}`) ?? 'null') as Partial<Place> | null;
 
         return stored !== null && Number.isFinite(stored.x) && Number.isFinite(stored.y) ? { x: Number(stored.x), y: Number(stored.y) } : null;
     } catch {
@@ -71,9 +79,9 @@ function remembered(wide: boolean): Place | null {
     }
 }
 
-function remember(wide: boolean, place: Place): void {
+function remember(kind: string, place: Place): void {
     try {
-        localStorage.setItem(`${STORE_KEY}.${wide ? 'wide' : 'phone'}`, JSON.stringify(place));
+        localStorage.setItem(`${STORE_KEY}.${kind}`, JSON.stringify(place));
     } catch {
         // no storage: it starts at its default place next time
     }
@@ -97,7 +105,7 @@ export function makeFloating(element: HTMLElement, handle: HTMLElement, options:
     handle.classList.add('is-handle');
     const screen = (): Size => ({ width: window.innerWidth, height: window.innerHeight });
     const box = (): Size => ({ width: element.offsetWidth, height: element.offsetHeight });
-    const isWide = (): boolean => window.innerWidth >= WIDE;
+    const kind = (): string => kindOf(window.innerWidth);
     let current: Place = { x: 0, y: 0 };
     let moved = false;
 
@@ -106,7 +114,7 @@ export function makeFloating(element: HTMLElement, handle: HTMLElement, options:
         element.style.left = `${current.x}px`;
         element.style.top = `${current.y}px`;
     };
-    const place = (): void => apply(remembered(isWide()) ?? defaultPlace(screen(), box()));
+    const place = (): void => apply(remembered(kind()) ?? defaultPlace(screen(), box()));
 
     let start: { pointer: number; x: number; y: number; from: Place } | null = null;
     handle.addEventListener('pointerdown', (event) => {
@@ -133,7 +141,7 @@ export function makeFloating(element: HTMLElement, handle: HTMLElement, options:
         }
         start = null;
         element.classList.remove('is-dragging');
-        remember(isWide(), current);
+        remember(kind(), current);
     };
     handle.addEventListener('pointerup', drop);
     handle.addEventListener('pointercancel', drop);

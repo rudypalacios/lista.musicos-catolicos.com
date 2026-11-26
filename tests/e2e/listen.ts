@@ -158,6 +158,27 @@ try {
     assert.equal(await phone.locator('.song-player').count(), 0);
     pass('docked on a phone the video folds away with a chevron without stopping, and comes back');
 
+    // A tablet (600px and more): the same small window to drag, never the width of the screen
+    await phone.setViewportSize({ width: 800, height: 1000 });
+    await settle(phone);
+    await heard.click();
+    await phone.locator('.song-player iframe').waitFor();
+    const tablet = await phone.locator('.song-player').boundingBox();
+    assert.equal(await phone.locator('.song-player').evaluate((element) => getComputedStyle(element).position), 'fixed', 'it floats on a tablet');
+    assert.ok(tablet !== null && tablet.width <= 385 && tablet.width >= 300, `small, not the width of the screen (${tablet?.width})`);
+    const tabletBar = await phone.locator('.song-player__head').boundingBox();
+    assert.ok(tabletBar !== null);
+    await phone.mouse.move(tabletBar.x + 60, tabletBar.y + 10);
+    await phone.mouse.down();
+    await phone.mouse.move(tabletBar.x - 150, tabletBar.y - 200, { steps: 6 });
+    await phone.mouse.up();
+    const tabletMoved = await phone.locator('.song-player').boundingBox();
+    assert.ok(tabletMoved !== null && tablet !== null && tabletMoved.y < tablet.y - 100, 'and it is dragged by its head');
+    await phone.getByRole('button', { name: 'Cerrar el reproductor' }).click();
+    await phone.setViewportSize({ width: 390, height: 780 });
+    await settle(phone);
+    pass('on a tablet the player of a song is a small window that is dragged, not a docked one the width of the screen');
+
     // Offline: it says so, and the lyrics stay
     await phoneContext.setOffline(true);
     await listenFromMenu(phone);
