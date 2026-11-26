@@ -13,6 +13,7 @@ import { createAddToList } from './add-to-list.ts';
 import { deleteSongAfterAsking } from './delete-song.ts';
 import { createListen, listenAction, listenButton } from './listen.ts';
 import { createReader } from './reader.ts';
+import { redrawOnChange } from './redraw.ts';
 import { showToast } from '../toast.ts';
 import { createToneControl, type ToneControl } from './tone-control.ts';
 import { createShareSheet } from './share-sheet.ts';
@@ -133,8 +134,8 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
             viewer.classList.toggle('has-player', open);
             heard?.setAttribute('aria-pressed', String(open));
             // What arrived while it played waited, so as not to cut the sound
-            if (!open && stale) {
-                refresh();
+            if (!open) {
+                redraw.resume();
             }
         },
         // Dragged away from its corner, the window no longer needs the column kept free for it
@@ -142,23 +143,11 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
     });
     // A sync that brings another device's edit of this song: the page shows it (it was read when the page opened). The person's own
     // changes here (their key) do not count, and a player that is playing is not cut: the page waits for it to close.
-    let stale = false;
-    const refresh = (): void => {
-        stale = false;
-        navigate(`${location.pathname}${location.search}`, { replace: true });
-    };
-    const stopWatching = app.onData(() => {
-        app.get(song.id).then((fresh) => {
-            if (fresh === undefined || (fresh.title === song.title && fresh.author === song.author && fresh.body === song.body && fresh.listenUrl === song.listenUrl && fresh.status === song.status)) {
-                return;
-            }
-            if (listen.isOpen()) {
-                stale = true;
-            } else {
-                refresh();
-            }
-        }).catch(() => undefined);
-    });
+    const redraw = redrawOnChange(app, navigate, async () => {
+        const fresh = await app.get(song.id);
+
+        return fresh === undefined ? null : JSON.stringify([fresh.title, fresh.author, fresh.body, fresh.listenUrl, fresh.status, fresh.tags]);
+    }, () => listen.isOpen());
     heard = listen.read === null ? null : listenButton(listen.read, '', () => (listen.isOpen() ? listen.close() : listen.open()), 'lrow__more song-tools__listen');
 
     // --- "⋯": what is done less often ---
@@ -251,7 +240,7 @@ export function viewView(app: App, navigate: Navigate, song: Song): View {
             if (songHeading.get() === ownHeading) {
                 songHeading.set(null);
             }
-            stopWatching();
+            redraw.stop();
             releaseScreen();
             listen.close();
             sheet.release();
