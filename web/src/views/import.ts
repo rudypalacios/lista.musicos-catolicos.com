@@ -419,7 +419,7 @@ export function importView(app: App, navigate: Navigate): View {
     );
     saveAndList.addEventListener('click', () => {
         saveError.textContent = '';
-        pickSheet.open();
+        pickSheet.open(saveAndList);
     });
 
     const element = h(

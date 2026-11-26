@@ -57,7 +57,7 @@ async function copy(text: string, field: HTMLElement): Promise<boolean> {
  * since a song without them shows nothing. Sharing is a thing the server does, so it needs a connection.
  */
 export function createShareSheet(): ShareSheet {
-    const sheet = createSheet('Compartir');
+    const sheet = createSheet('Compartir', undefined, { anchored: true });
     sheet.element.classList.add('sheet-layer--window');
     let target: SharedTarget | null = null;
     /** What the person chose before creating the link; once shared the server's answer is the truth */

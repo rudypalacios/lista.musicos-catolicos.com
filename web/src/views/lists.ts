@@ -46,7 +46,7 @@ export function listsView(app: App, navigate: Navigate): View {
     element.append(templateSheet.element);
     create.addEventListener('click', () => {
         error.textContent = '';
-        templateSheet.open();
+        templateSheet.open(create);
     });
 
     // --- "⋯" of a row: what is done to that list from here ---

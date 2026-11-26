@@ -401,7 +401,7 @@ export function startShared(root: HTMLElement, code: string): void {
         }
 
         // --- the position button: the songs of the list, to jump to one ---
-        const jumpSheet = createSheet('Cantos del listado');
+        const jumpSheet = createSheet('Cantos del listado', undefined, { anchored: true });
         const songList = h('ul', { class: 'perform__songs' }, ...rows.map((entry) => {
             const choice = h('button', { type: 'button', class: 'perform__song-choice' },
                 h('span', { class: 'perform__song-number' }, String(entry.n)),
