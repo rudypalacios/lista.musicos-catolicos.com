@@ -75,7 +75,7 @@ hand (`DEPLOY.md`, "Pruebas en los dispositivos").
   nueva"). Never `skipWaiting()` on its own.
 - Records are created with client-generated UUIDs and synced from a queue, so everything
   works offline. Until synced, the device holds the only copy: say so in the UI.
-- The server is the source of truth; a device that loses its storage must be able to recover.
+- The server is the source of truth; a device that loses its storage must be able to recover. A pull goes from a cursor, so a record a device read with an older app (which dropped the fields it did not know) would never be read again: **a sync the person asks for (the dot, pulling down) is a full one** (`syncNow({ full: true })`, from cursor 0; newest edit still wins and pending edits are kept), and **whenever a record gains a field, `PULL_SHAPE` goes up** (`data/pull-shape.ts`) so each device does one full sync by itself.
 - **Never a blank screen, never a silent wait.** The page carries a splash until the app draws; a
   device that holds songs opens from them without waiting for the network and checks the session in
   the background; every API request has a timeout; an error while starting shows `showFatal`. An

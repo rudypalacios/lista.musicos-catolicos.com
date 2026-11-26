@@ -71,7 +71,7 @@ export function createFrame(root: HTMLElement, data: App, installBanner: Install
                 email: options.email,
                 onSync: () => {
                     // With no account the dot says so; there is nothing to sync
-                    void data.syncNow().then(() => showToast(data.status().guest ? 'Sin cuenta: tus cantos están solo en este dispositivo' : pullAnswer(data.status().state)));
+                    void data.syncNow({ full: true }).then(() => showToast(data.status().guest ? 'Sin cuenta: tus cantos están solo en este dispositivo' : pullAnswer(data.status().state)));
                 },
                 onSignOut: () => requestSignOut(),
                 onNeedsSignIn: options.onNeedsSignIn,
@@ -83,7 +83,7 @@ export function createFrame(root: HTMLElement, data: App, installBanner: Install
             const pull = createPullToRefresh(view, {
                 enabled: () => matchRoute(location.pathname).name !== 'perform',
                 refresh: async () => {
-                    await data.syncNow();
+                    await data.syncNow({ full: true });
 
                     return data.status().state;
                 },

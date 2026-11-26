@@ -56,6 +56,34 @@ describe('SyncEngine', () => {
         assert.deepEqual(await tablet.store.pending('songs'), [], 'what it received is not sent back');
     });
 
+    it('a full sync reads everything again, which an ordinary one does not', async () => {
+        const phone = device(server, clock);
+        const tablet = device(server, clock);
+        await phone.library.create(draft('Uno'));
+        await phone.engine.sync();
+        await tablet.engine.sync();
+
+        assert.equal((await tablet.engine.sync()).pulled, 0, 'the cursor is past it');
+        const full = await tablet.engine.sync({ full: true });
+
+        assert.equal(full.pulled, 1, 'a full one goes back for it');
+        assert.deepEqual((await tablet.library.list()).map((s) => s.title), ['Uno'], 'and keeps one copy');
+        assert.deepEqual(await tablet.store.pending('songs'), [], 'what it received again is not sent back');
+    });
+
+    it('a full sync does not take over a newer edit that waits to be sent', async () => {
+        const phone = device(server, clock);
+        const song = await phone.library.create(draft('Uno'));
+        await phone.engine.sync();
+        clock.now += 10;
+        await phone.library.update(song.id, { ...draft('Uno cambiado') });
+
+        await phone.engine.sync({ full: true });
+
+        assert.deepEqual((await phone.library.list()).map((s) => s.title), ['Uno cambiado']);
+        assert.equal(server.songs()[0]?.title, 'Uno cambiado');
+    });
+
     it('sends a template, brings it to another device and carries its deletion', async () => {
         const phone = device(server, clock);
         const tablet = device(server, clock);
