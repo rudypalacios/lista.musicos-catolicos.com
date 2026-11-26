@@ -162,7 +162,7 @@ try {
     await strip(page).waitFor({ state: 'hidden' });
     pass('from the top of the song, at its first line, the pull still starts');
 
-    // ----- not while singing -----
+    // ----- singing -----
     await openSection(page, 'Listados');
     await newList(page);
     await page.locator('section.slot').first().waitFor();
@@ -191,10 +191,9 @@ try {
     await page.getByRole('link', { name: 'Cantar' }).click();
     await page.locator('.perform').waitFor();
     await drag(page, 260);
-    await page.waitForTimeout(500);
-    assert.equal(await strip(page).isVisible(), false, 'no strip while singing');
-    assert.equal(await page.getByText('Sincronizando…', { exact: true }).count(), 0);
-    pass('while singing a pull does nothing: the stage keeps its own touches');
+    await strip(page).getByText('Sincronizado').waitFor({ timeout: 10000 });
+    await strip(page).waitFor({ state: 'hidden', timeout: 5000 });
+    pass('while singing a pull from the top of the lyrics syncs too (its swipes are sideways)');
 
     assert.deepEqual(problems, [], 'no uncaught errors in the page');
     pass('no uncaught errors in the page');

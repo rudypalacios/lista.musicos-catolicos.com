@@ -633,9 +633,9 @@ ul.notes {
 }
 
 /*
- * The ♪ that plays the song's original (views/view.ts): a 40px button just before the "⋯", which it sends to the end together with it. The
- * three tools and the two buttons need a little less air to stay in one row of a 375px phone; where even that is not enough (360px)
- * the ♪ is not drawn, and the option of the "⋯" sheet is the way in, as always. It never makes the row wrap.
+ * The ♪ that plays the song's original (views/view.ts): a 40px button just before the "⋯", which it sends to the end together with it.
+ * It is drawn only where there is room (600px: a tablet, a window); on a phone the option of the "⋯" sheet is the way in, and from
+ * 600px that option is not repeated there (`.listen-in-menu`). It never makes the row wrap.
  */
 .song-tools .song-tools__listen {
     min-width: 2.5rem;
@@ -654,11 +654,6 @@ ul.notes {
     column-gap: 0.25rem;
 }
 
-@media (max-width: 370px) {
-    .song-tools .song-tools__listen {
-        display: none;
-    }
-}
 
 .song-tools .tone-control.is-changed {
     margin-top: 0.4rem;
@@ -2609,7 +2604,7 @@ body {
     }
 }
 
-/* The ♪ of the song in the singing bar: from 900px only, beside its key (under it the option is in the "⋯" sheet) */
+/* The ♪ of the song in the singing bar: from 600px (room), beside its key; under it the option is in the "⋯" sheet */
 .perform__listen-slot {
     display: none;
 }
@@ -2618,7 +2613,7 @@ body {
     color: var(--accent);
 }
 
-@media (min-width: 900px) {
+@media (min-width: 600px) {
     .perform__listen-slot {
         display: flex;
         flex: none;
@@ -5356,7 +5351,7 @@ button.srow__tool:disabled {
     border-bottom: 1px solid var(--border);
 }
 
-/* Floating (a list, singing, and the page of a song from 900px): a window with nothing behind it, so the lyrics can be touched and
+/* Floating (everywhere the player appears): a window with nothing behind it, so the lyrics can be touched and
    scrolled while it plays; dragged by its bar (float.ts) */
 .song-player.is-float {
     position: fixed;
@@ -5370,13 +5365,6 @@ button.srow__tool:disabled {
 
 .song-player.is-dragging {
     box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.6);
-}
-
-/* Folded (docked on a phone): the bar stays, the video goes out of sight and the sound goes on */
-.song-player.is-folded .song-player__screen {
-    height: 0;
-    min-height: 0;
-    aspect-ratio: auto;
 }
 
 .song-player__screen {
@@ -5427,10 +5415,6 @@ button.srow__tool:disabled {
     padding: 0.1rem 0.3rem 0.1rem 0.75rem;
 }
 
-.song-player.is-folded .song-player__head {
-    border-bottom: 0;
-}
-
 /* The head of a window is its handle: it moves with the finger and does not scroll the page */
 .song-player__head.is-handle {
     cursor: grab;
@@ -5440,11 +5424,6 @@ button.srow__tool:disabled {
 
 .song-player.is-dragging .song-player__head {
     cursor: grabbing;
-}
-
-/* Docked, the head can be swiped up and down to fold the video: it must not scroll the page either */
-.song-player:not(.is-float) .song-player__head {
-    touch-action: none;
 }
 
 .song-player__head button,
@@ -5564,4 +5543,21 @@ button.srow__tool:disabled {
 
 .notice-line--arrived .notice-line__text {
     flex: 1 1 14rem;
+}
+
+/* Where the ♪ is drawn (600px up) the "Escuchar el original" option of a song's menu is not repeated: the ♪ is the way in. On a phone the menu has it */
+@media (min-width: 600px) {
+    .sheet-list > li:has(> .listen-in-menu) {
+        display: none;
+    }
+}
+
+/* On a phone (under 600px) the ♪ is not drawn, in the tools row of a song or in the rows of a list; the menu has the option instead. Last in
+   the file so it wins over the buttons' own display */
+@media (max-width: 599px) {
+    .song-tools .song-tools__listen,
+    button.item__listen,
+    a.item__listen {
+        display: none;
+    }
 }

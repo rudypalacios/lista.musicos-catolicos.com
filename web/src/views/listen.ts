@@ -3,11 +3,10 @@
  *
  * - The way in is small and costs the lyrics nothing: an option in the "⋯" sheet of the song (its page, a row of a list, singing) and,
  *   in a list, a ♪ in the row of the songs that have a link (`listenButton`).
- * - A YouTube or YouTube Music link opens YouTube's own player. On the page of a song (`createListen`) it is **docked above the
- *   lyrics** on a phone (a chevron, or a swipe on its bar, folds the video away without stopping it) and **a window that floats
- *   and is dragged** from 600px (a tablet). In a list and while singing (`createListenSheet`) it is always that window: it has nothing behind
- *   it, so the lyrics can be touched and scrolled while it plays, and on a phone it may be pushed past an edge, leaving only its bar
- *   in sight (`float.ts`). The frame does not exist until the touch: nothing of YouTube is loaded before it, and closing (✕) takes
+ * - A YouTube or YouTube Music link opens YouTube's own player. **Wherever it appears (the page of a song, a list, singing, a shared
+ *   list) it is the same window that floats and is dragged by its bar** (the owner, 2026-11-26): it has nothing behind it, so the
+ *   lyrics can be touched and scrolled while it plays, and on a phone it may be pushed past an edge, leaving only its bar in sight
+ *   (`float.ts`). The frame does not exist until the touch: nothing of YouTube is loaded before it, and closing (✕) takes
  *   the frame away, which ends the sound. The controls are YouTube's.
  * - Any other link has no player: it opens apart.
  * - Offline: the player says so.
@@ -19,7 +18,7 @@ import { h } from '../dom.ts';
 import { icon } from '../icons.ts';
 import { clock, readListenUrl, youtubeEmbed, type ListenUrl } from '../listen-url.ts';
 import { sheetAction } from './sheet.ts';
-import { FLOATS_FROM, makeFloating, type Floating } from './float.ts';
+import { makeFloating, type Floating } from './float.ts';
 
 /** What of a link can be listened to: a video of YouTube, or a link that opens apart */
 export type Listenable = Extract<ListenUrl, { kind: 'youtube' | 'link' }>;
@@ -65,15 +64,25 @@ function playerScreen(read: Extract<Listenable, { kind: 'youtube' }>): HTMLEleme
 }
 
 /**
+ * Where there is room (`LISTEN_ROOM`: a tablet, a window) the ♪ is drawn in the bar or the row and the menu does not repeat it; on a
+ * phone the ♪ is not drawn and the menu is the way in. The rule is in CSS (`.listen-in-menu`), so a turned tablet follows it by itself.
+ */
+function markInMenu(option: HTMLElement): HTMLElement {
+    option.classList.add('listen-in-menu');
+
+    return option;
+}
+
+/**
  * The option of a sheet. For YouTube it runs `play` (what opens the player: the caller closes its sheet first); for any other link it
  * opens it apart.
  */
 export function listenAction(read: Listenable, play: () => void): HTMLElement {
     if (read.kind === 'link') {
-        return sheetAction('external', `Escuchar en ${read.site}`, () => openApart(read.href), { hint: listenHint(read) });
+        return markInMenu(sheetAction('external', `Escuchar en ${read.site}`, () => openApart(read.href), { hint: listenHint(read) }));
     }
 
-    return sheetAction('music', 'Escuchar el original', play, { hint: listenHint(read) });
+    return markInMenu(sheetAction('music', 'Escuchar el original', play, { hint: listenHint(read) }));
 }
 
 /**
@@ -99,49 +108,19 @@ interface PlayerOptions {
     /** What the bar says: the song and where it plays, or just where */
     what: string;
     close: () => void;
-    /** On the page of a song, docked: a chevron (and a swipe on the bar) folds the video away without stopping it */
-    fold?: boolean;
 }
 
 function buildPlayer(read: Extract<Listenable, { kind: 'youtube' }>, options: PlayerOptions): { element: HTMLElement; handle: HTMLElement } {
     const closeButton = h('button', { type: 'button', class: 'song-player__close', 'aria-label': 'Cerrar el reproductor' }, icon('x', 20));
     closeButton.addEventListener('click', options.close);
-    const foldButton = options.fold === true
-        ? h('button', { type: 'button', class: 'song-player__close', 'aria-label': 'Ocultar el video', 'aria-expanded': 'true' }, icon('chevron-up', 20))
-        : null;
     // The same little bar every half sheet has on top: what people already know means "hold and move me"
     const handle = h('div', { class: 'song-player__head' },
         h('span', { class: 'sheet__grab song-player__grabber', 'aria-hidden': 'true' }),
         h('div', { class: 'song-player__bar' },
             h('span', { class: 'song-player__what' }, options.what),
             h('a', { class: 'button', href: read.href, target: '_blank', rel: 'noopener noreferrer' }, 'Abrir', icon('external', 20)),
-            ...(foldButton === null ? [] : [foldButton]),
             closeButton));
     const element = h('div', { class: 'song-player', role: 'region', 'aria-label': 'Escuchar el canto original' }, handle, playerScreen(read));
-    if (foldButton !== null) {
-        const setFolded = (folded: boolean): void => {
-            element.classList.toggle('is-folded', folded);
-            foldButton.setAttribute('aria-expanded', String(!folded));
-            foldButton.setAttribute('aria-label', folded ? 'Mostrar el video' : 'Ocultar el video');
-            foldButton.replaceChildren(icon(folded ? 'chevron-down' : 'chevron-up', 20));
-        };
-        foldButton.addEventListener('click', () => setFolded(!element.classList.contains('is-folded')));
-        // A swipe up on the bar folds the video away, a swipe down brings it back
-        let from: number | null = null;
-        handle.addEventListener('pointerdown', (event) => {
-            from = (event.target as HTMLElement).closest('button, a') === null ? event.clientY : null;
-        });
-        handle.addEventListener('pointerup', (event) => {
-            if (from !== null && Math.abs(event.clientY - from) > 24) {
-                setFolded(event.clientY < from);
-            }
-            from = null;
-        });
-        handle.addEventListener('pointercancel', () => {
-            from = null;
-        });
-    }
-
     return { element, handle };
 }
 
@@ -234,15 +213,11 @@ export function createListen(listenUrl: string, options: ListenOptions = {}): Li
 
             return;
         }
-        // From a tablet's width (600px) a small window to drag; on a phone docked above the lyrics, which the video can be folded away from
-        const wide = window.innerWidth >= FLOATS_FROM;
-        const built = buildPlayer(read, { what: `Referencia · ${listenHint(read)}`, close, fold: !wide });
+        const built = buildPlayer(read, { what: `Referencia · ${listenHint(read)}`, close });
         player = built.element;
         element.append(player);
-        if (wide) {
-            floating = makeFloating(player, built.handle, options.onMoved === undefined ? {} : { onMoved: options.onMoved });
-            floating.place();
-        }
+        floating = makeFloating(player, built.handle, options.onMoved === undefined ? {} : { onMoved: options.onMoved });
+        floating.place();
         options.onToggle?.(true);
     };
 
