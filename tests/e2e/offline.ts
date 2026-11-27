@@ -26,9 +26,9 @@ try {
 
     await page.goto(BASE + '/');
     await page.getByRole('button', { name: 'Probar sin cuenta' }).waitFor();
-    await page.getByRole('button', { name: 'Ya tengo cuenta' }).click();
+    await page.getByRole('button', { name: 'Usar mi correo' }).click();
     await page.getByRole('heading', { name: 'Inicia sesión' }).waitFor();
-    pass('the shell opens on the welcome, and "Ya tengo cuenta" asks to sign in');
+    pass('the shell opens on the welcome, and "Usar mi correo" asks to sign in');
 
     await page.getByLabel('Correo').fill(EMAIL);
     await page.getByLabel('Contraseña').fill('wrong');
@@ -65,7 +65,7 @@ try {
     await context.setOffline(false);
     await page.goto(BASE + '/');
     await signOutFromSettings(page);
-    await page.getByRole('button', { name: 'Ya tengo cuenta' }).waitFor();
+    await page.getByRole('button', { name: 'Usar mi correo' }).waitFor();
     pass('back online: signing out returns to the welcome');
 
     const manifest = (await (await fetch(BASE + '/manifest.webmanifest')).json()) as { display: string; icons: unknown[] };

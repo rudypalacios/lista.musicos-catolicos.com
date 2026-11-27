@@ -72,10 +72,13 @@ if (visiting.name === 'shared') {
     startShared(app, visiting.code);
 } else if (visiting.name === 'privacy') {
     // How the app uses the data of a person: a page of its own that needs no session and no data of the device
+    // (no menu rail around it: the bar is above the page, as on the screens where a person gets in)
+    app.classList.add('is-gate');
     startUpdates(false);
     startPrivacy(app);
 } else if (visiting.name === 'verify' || visiting.name === 'reset') {
     // The link of an email: a page of its own that needs no session and no data of this device
+    app.classList.add('is-gate');
     startUpdates(false);
     if (visiting.name === 'verify') {
         startVerifyEmail(app, visiting.token);

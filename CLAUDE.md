@@ -139,7 +139,7 @@ every chord. Real photos and screenshots are not in the repo (they are other peo
 
 ## Trying the app with no account (the owner's decision, 2026-11-02/03)
 
-The app is not behind a login. A device with nothing on it and no session opens on the welcome ("Probar sin cuenta" / "Ya tengo cuenta",
+The app is not behind a login. A device with nothing on it and no session opens on the welcome ("Continuar con Google" / "Usar mi correo" / "Probar sin cuenta",
 `web/src/views/welcome.ts`); trying it makes the device a **guest** (`web/src/guest.ts`: the store's owner is `GUEST_OWNER`, which is not an email,
 so no account can have it). A guest writes songs, lists and templates to the device like anyone, they wait in the queue, and **nothing is synced**
 (`App.syncNow` and `requestSync` do nothing while `guest`; the status is `local`). Signing in asks, once, only if something was written, what to do with it:
@@ -161,10 +161,14 @@ script, it does not tell a person from a program: the limits per address (`Secur
 Email goes through the site's mailbox over SMTP (`Mail/SmtpMailer.php`, PHPMailer); its settings are the `MAIL_*` of the owner's other system (`MailConfig`); with no `MAIL_HOST` it is written to the error log (`LogMailer`).
 Every account is separate: records are keyed by (user, id) (migration 0016). The accounts that existed before confirmation (the owner's) count as confirmed.
 
-**The app (3b):** "Crear cuenta" is offered in the welcome, on the guest's line and in Ajustes. The sign-up form (`views/signup.ts`) checks what it can itself (`account.ts`), asks for a puzzle and solves it on the device (`pow.ts`: SHA-256
+**The app (3b):** the welcome (`views/welcome.ts`, the owner chose it on 2026-11-27 from a mockup) offers three ways in: Google, "Usar mi correo" and, quiet as a text link, "Probar sin cuenta". "Usar mi correo", the guest's line ("Crear cuenta") and Ajustes
+("Ya tengo cuenta") all open **one access screen** (`views/access.ts`): the tabs **Entrar | Crear cuenta** (a session that ended shows only Entrar), Google on top, then the form of the tab (`views/signin.ts`, `views/signup.ts`; changing tab keeps the email typed).
+The sign-up form checks what it can itself (`account.ts`), asks for a puzzle and solves it on the device (`pow.ts`: SHA-256
 written out, with the first blocks mixed once, in slices so the screen moves; no worker and nothing from another domain), then registers; the person lands on
-`/ajustes/correo` ("Te mandamos un enlace") already signed in. A guest who signs up is asked **bring it to my account / start from zero / cancel**
+`/ajustes/correo` ("Te mandamos un enlace") already signed in. **The only thing said about privacy on these screens is one link, "Lee la privacidad"** (the owner, 2026-11-27: no "te mostramos cómo usamos tus datos" and no checkbox; the server never kept the checkbox, and
+`/privacidad` says in its first line that the data is used for nothing else): keep it that short, and keep that page short (`views/privacy.ts`; `web/test/privacy.test.ts` limits its length). A guest who signs up is asked **bring it to my account / start from zero / cancel**
 (`shell/session.ts`, `adoptGuestWork`, the same choice as when signing in, with other words); cancelling ends the session just made and keeps them as a guest.
+**The screens before anybody is in** (welcome, access, forgot, `/privacidad`, the links of the emails) have no menu rail: `#app.is-gate` stacks the bar over the screen (from 900px the app is a row, for its rail), and `.page--gate` is one column of 26rem, no box. `tests/e2e/gate.ts` checks it.
 The links of the emails open pages of their own that need no session and no data of the device (`/verificar/:token`, `/restablecer/:token`, `views/account-link.ts`, drawn
 by `main.ts` like the visitor's page). `tests/e2e/signup.ts` covers it end to end with a little SMTP server that receives the server's real emails.
 

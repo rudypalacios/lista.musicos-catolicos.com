@@ -9,7 +9,7 @@ describe('the text about the data', () => {
         const ids = PRIVACY_SECTIONS.map((section) => section.id);
 
         assert.equal(new Set(ids).size, ids.length, 'no anchor twice');
-        for (const id of ['sin-cuenta', 'cuenta', 'compartir', 'servidor', 'dispositivo', 'terceros', 'conservacion', 'derechos']) {
+        for (const id of ['resumen', 'sin-cuenta', 'cuenta', 'compartir', 'servidor', 'terceros', 'conservacion', 'derechos']) {
             assert.ok(ids.includes(id), id);
         }
         for (const section of PRIVACY_SECTIONS) {
@@ -36,18 +36,24 @@ describe('the text about the data', () => {
         assert.match(everything, /si no lo toca, no se carga nada/);
     });
 
+    it('says first, in the summary, that the data is used for nothing else, and that it is short', () => {
+        const summary = PRIVACY_SECTIONS[0];
+        assert.equal(summary?.id, 'resumen');
+        assert.match(JSON.stringify(summary), /No usamos tus datos para nada más que darte tu cuenta y tus cantos/);
+        assert.ok(everything.length < 9000, `the text stays short (${everything.length} characters)`);
+    });
+
     it('says what signing in with Google keeps and asks for, and that nothing of Google is contacted before the touch', () => {
         assert.match(everything, /Continuar con Google/);
-        assert.match(everything, /el identificador que Google da a tu cuenta/);
-        assert.match(everything, /No pedimos tu nombre, tu foto ni nada más de tu perfil/);
+        assert.match(everything, /el identificador de tu cuenta de Google: nada más de tu perfil/);
         assert.match(everything, /tu contraseña de Google nunca pasa por Listas/);
-        assert.match(everything, /Antes de ese toque no se contacta a Google/);
+        assert.match(everything, /antes de ese toque no se contacta a Google/);
         assert.match(everything, /hasta 10 minutos/);
-        assert.match(everything, /dos terceros más/, 'Google and YouTube are the only two');
+        assert.match(everything, /hay dos más/, 'Google and YouTube are the only two');
     });
 
     it('does not promise what the app does not do: no analytics of its own, and deleting an account is by email for now', () => {
-        assert.match(everything, /no usa analítica ni publicidad/);
+        assert.match(everything, /no hay publicidad ni analítica/);
         assert.match(everything, /Por ahora, para borrar tu cuenta escribe a/);
     });
 });

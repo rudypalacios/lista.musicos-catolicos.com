@@ -1,37 +1,39 @@
 import { h } from '../dom.ts';
+import { orDivider, privacyLine } from './gate-parts.ts';
 import { googleOption } from './google-button.ts';
 import type { View } from './types.ts';
 
 export interface WelcomeOptions {
     /** Starts using the app with no account: what is written stays on this device */
     onTry: () => void;
-    /** Shows the sign-in form */
-    onSignIn: () => void;
-    /** Shows the sign-up form */
-    onSignUp: () => void;
+    /** Shows the screen to sign in or create an account with an email */
+    onEmail: () => void;
     /** Said above the buttons when there is something the person should know (no connection, for one) */
     message?: string;
 }
 
 /**
- * What a device with nothing on it and no session shows first: the app is not behind a login. The person can try it
- * at once (and sign in later, keeping what they wrote) or sign in to an account they already have.
+ * What a device with nothing on it and no session shows first: the app is not behind a login. Three ways in, from the easiest:
+ * Google (which makes the account if there is none), an email (to sign in or to create the account), or trying the app with
+ * no account and signing in later, keeping what was written.
  */
 export function welcomeView(options: WelcomeOptions): View {
-    const tryIt = h('button', { type: 'button', class: 'button button--primary' }, 'Probar sin cuenta');
+    const email = h('button', { type: 'button', class: 'button welcome__email' }, 'Usar mi correo');
+    email.addEventListener('click', options.onEmail);
+    const tryIt = h('button', { type: 'button', class: 'button button--text' }, 'Probar sin cuenta');
     tryIt.addEventListener('click', options.onTry);
-    const signIn = h('button', { type: 'button', class: 'button' }, 'Ya tengo cuenta');
-    signIn.addEventListener('click', options.onSignIn);
-    const signUp = h('button', { type: 'button', class: 'button' }, 'Crear cuenta');
-    signUp.addEventListener('click', options.onSignUp);
 
     const element = h('div', { class: 'page page--gate welcome' },
-        h('div', { class: 'card welcome__card' },
-            h('p', {}, 'Prepara la música de la misa: arma un listado con tus cantos, cambia el tono de cada uno y léelo sin conexión.'),
-            ...(options.message === undefined ? [] : [h('p', { class: 'muted', role: 'status' }, options.message)]),
-            h('div', { class: 'actions welcome__actions' }, tryIt, signUp, signIn),
+        h('h2', { class: 'welcome__title' }, 'Prepara la música de la misa'),
+        h('p', { class: 'muted welcome__lead' }, 'Arma tu listado, cambia el tono de cada canto y léelo sin conexión.'),
+        h('div', { class: 'welcome__actions' },
             googleOption(),
-            h('p', { class: 'muted' }, 'Sin cuenta, lo que escribas se guarda solo en este dispositivo. Cuando inicies sesión, podrás llevarlo a tu cuenta.')));
+            email,
+            orDivider('o'),
+            tryIt,
+            h('p', { class: 'muted welcome__note' }, 'Sin cuenta, lo que escribas se queda en este dispositivo y lo puedes llevar a tu cuenta después.')),
+        ...(options.message === undefined ? [] : [h('p', { class: 'muted', role: 'status' }, options.message)]),
+        privacyLine());
 
     return { element };
 }

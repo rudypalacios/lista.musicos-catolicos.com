@@ -1,6 +1,6 @@
 import { api } from '../api.ts';
 import { h } from '../dom.ts';
-import { paths } from '../router.ts';
+import { orDivider } from './gate-parts.ts';
 
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -49,18 +49,15 @@ function googleOffered(): Promise<boolean> {
 }
 
 /**
- * "Continuar con Google", for the forms that sign in or sign up. It is a link to the server, which sends the person to
+ * "Continuar con Google", for the screens that sign in or sign up. It is a link to the server, which sends the person to
  * Google and brings them back (nothing of Google is loaded in this page). It stays out of sight until the server says it
- * offers Google, so a server without it set up, or a device with no connection, shows nothing that cannot work. Creating an
- * account this way is also agreeing to how the data is used, so the line under it says so and links to it.
+ * offers Google, so a server without it set up, or a device with no connection, shows nothing that cannot work. `then`, if
+ * given, is the rule that follows it ("o con tu correo") and appears with it.
  */
-export function googleOption(options: { separator?: boolean } = {}): HTMLElement {
-    const start = h('a', { class: 'button google-button', href: GOOGLE_START }, googleMark(), 'Continuar con Google');
+export function googleOption(options: { then?: string } = {}): HTMLElement {
     const option = h('div', { class: 'google-option', hidden: true },
-        ...(options.separator === true ? [h('p', { class: 'google-option__or muted', 'aria-hidden': 'true' }, 'o')] : []),
-        start,
-        h('p', { class: 'muted google-option__note' }, 'Al continuar con Google aceptas cómo se usan tus datos: ',
-            h('a', { href: paths.privacy(), target: '_blank', rel: 'noopener' }, 'Privacidad'), '.'));
+        h('a', { class: 'button google-button', href: GOOGLE_START }, googleMark(), 'Continuar con Google'),
+        ...(options.then === undefined ? [] : [orDivider(options.then)]));
     void googleOffered().then((yes) => {
         option.hidden = !yes;
     });

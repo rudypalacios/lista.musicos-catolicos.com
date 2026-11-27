@@ -1,6 +1,5 @@
 import { api, ApiError } from '../api.ts';
 import { h } from '../dom.ts';
-import { googleOption } from './google-button.ts';
 import type { View } from './types.ts';
 
 export interface SignInOptions {
@@ -8,16 +7,19 @@ export interface SignInOptions {
     onSignedIn: (email: string) => void;
     /** Said above the form (the session ended) */
     message?: string;
-    /** When there is somewhere to go back to (the welcome, or the app of a person with no account), adds a "Volver" */
-    onCancel?: () => void;
-    /** Adds "Olvidé mi contraseña", which leads to choosing a new one by email */
+    /** Adds "Olvidé mi contraseña", under the password, which leads to choosing a new one by email */
     onForgot?: () => void;
+    /** What to write in the email field to start with (the person had typed it in the other tab) */
+    email?: string;
 }
 
-/** The sign-in form */
+/**
+ * The form to sign in with an email. It is the first tab of the access screen (`access.ts`), which brings the way back, Google
+ * and the privacy line; the heading is for screen readers, the tab already says it.
+ */
 export function signInView(options: SignInOptions): View {
     const email = h('input', {
-        id: 'email', name: 'email', type: 'email', autocomplete: 'username', required: true, inputmode: 'email',
+        id: 'email', name: 'email', type: 'email', autocomplete: 'username', required: true, inputmode: 'email', value: options.email ?? '',
     });
     const password = h('input', {
         id: 'password', name: 'password', type: 'password', autocomplete: 'current-password', required: true,
@@ -26,22 +28,17 @@ export function signInView(options: SignInOptions): View {
     const submit = h('button', { type: 'submit', class: 'primary' }, 'Entrar');
     const forgot = h('button', { type: 'button', class: 'link' }, 'Olvidé mi contraseña');
     forgot.addEventListener('click', () => options.onForgot?.());
-    const back = h('button', { type: 'button', class: 'link' }, 'Volver');
-    back.addEventListener('click', () => options.onCancel?.());
     const form = h(
         'form',
-        { class: 'card', novalidate: true },
-        h('h2', {}, 'Inicia sesión'),
+        { class: 'gate-form', novalidate: true },
+        h('h2', { class: 'sr-only' }, 'Inicia sesión'),
         h('label', { for: 'email' }, 'Correo'),
         email,
         h('label', { for: 'password' }, 'Contraseña'),
         password,
+        ...(options.onForgot === undefined ? [] : [h('div', { class: 'gate-form__aside' }, forgot)]),
         error,
         submit,
-        googleOption({ separator: true }),
-        ...(options.onForgot === undefined && options.onCancel === undefined
-            ? []
-            : [h('div', { class: 'actions' }, ...(options.onForgot === undefined ? [] : [forgot]), ...(options.onCancel === undefined ? [] : [back]))]),
     );
 
     form.addEventListener('submit', (event) => {
@@ -60,7 +57,6 @@ export function signInView(options: SignInOptions): View {
                 submit.disabled = false;
             });
     });
-    queueMicrotask(() => email.focus());
 
-    return { element: h('div', { class: 'page page--gate' }, form) };
+    return { element: form };
 }
