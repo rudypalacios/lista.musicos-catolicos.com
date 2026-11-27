@@ -88,6 +88,7 @@ export function createFrame(root: HTMLElement, data: App, installBanner: Install
                     return data.status().state;
                 },
             });
+            root.classList.remove('is-gate');
             root.replaceChildren(h('div', { class: 'shell' }, ...frame.top, view, pull, installBanner.element), frame.menu);
             watchBottomChrome([installBanner.element, frame.menu]);
             watchSaves(data);

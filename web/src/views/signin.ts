@@ -62,5 +62,5 @@ export function signInView(options: SignInOptions): View {
     });
     queueMicrotask(() => email.focus());
 
-    return { element: h('div', { class: 'page' }, form) };
+    return { element: h('div', { class: 'page page--gate' }, form) };
 }

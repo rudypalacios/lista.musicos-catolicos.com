@@ -251,6 +251,49 @@ button.button--danger-solid {
     font-size: 1.25rem;
 }
 
+/*
+ * The screens where a person gets in (welcome, sign in, sign up, forgot): one narrow column, the same width on a phone as on a
+ * wide screen, so a field is never a metre wide. The way out sits at the edges and the main button takes the whole width.
+ */
+.page--gate {
+    max-width: 26rem;
+}
+
+.page--gate .card {
+    padding: 1.25rem;
+}
+
+.page--gate .error {
+    min-height: 0;
+    margin: 0.5rem 0 0;
+}
+
+.page--gate button.primary {
+    display: block;
+    width: 100%;
+    margin-top: 1.25rem;
+}
+
+.page--gate .actions {
+    justify-content: space-between;
+    margin: 0.75rem 0 0;
+}
+
+.page--gate .actions button.link {
+    padding: 0.5rem 0;
+}
+
+.page--gate > .card > button.link {
+    margin-top: 0.5rem;
+    padding-left: 0;
+}
+
+@media (min-width: 600px) {
+    .page--gate {
+        padding-top: 2.5rem;
+    }
+}
+
 .actions {
     display: flex;
     flex-wrap: wrap;
@@ -1561,6 +1604,19 @@ input[type='search'] {
 @media (min-width: 900px) {
     #app {
         flex-direction: row;
+    }
+
+    /* Before anybody is in there is no rail: the bar is above the screen, and its name sits in the middle of it */
+    #app.is-gate {
+        flex-direction: column;
+    }
+
+    #app.is-gate .bar {
+        justify-content: center;
+    }
+
+    #app.is-gate .bar h1 {
+        flex: none;
     }
 
     #app > .menu {
@@ -5008,6 +5064,10 @@ button.srow__tool:disabled {
     margin: 0;
 }
 
+.welcome__card .google-option {
+    margin-top: 0;
+}
+
 .welcome__actions {
     flex-direction: column;
     align-items: stretch;
@@ -5018,7 +5078,8 @@ button.srow__tool:disabled {
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: 0.5rem;
+    gap: 0.6rem;
+    margin-top: 1.25rem;
 }
 
 .google-option[hidden] {
@@ -5030,7 +5091,17 @@ button.srow__tool:disabled {
 }
 
 .google-option__or {
-    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.google-option__or::before,
+.google-option__or::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
 }
 
 .google-option__note {

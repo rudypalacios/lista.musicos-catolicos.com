@@ -84,5 +84,5 @@ export function signUpView(options: SignUpOptions): View {
     });
     queueMicrotask(() => email.focus());
 
-    return { element: h('div', { class: 'page' }, form), dispose: () => proof.cancel() };
+    return { element: h('div', { class: 'page page--gate' }, form), dispose: () => proof.cancel() };
 }

@@ -25,7 +25,7 @@ export function welcomeView(options: WelcomeOptions): View {
     const signUp = h('button', { type: 'button', class: 'button' }, 'Crear cuenta');
     signUp.addEventListener('click', options.onSignUp);
 
-    const element = h('div', { class: 'page welcome' },
+    const element = h('div', { class: 'page page--gate welcome' },
         h('div', { class: 'card welcome__card' },
             h('p', {}, 'Prepara la música de la misa: arma un listado con tus cantos, cambia el tono de cada uno y léelo sin conexión.'),
             ...(options.message === undefined ? [] : [h('p', { class: 'muted', role: 'status' }, options.message)]),

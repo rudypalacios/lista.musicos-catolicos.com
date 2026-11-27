@@ -254,6 +254,8 @@ export function createSession(parts: SessionParts): Session {
 
     /** What a device with nothing on it shows while it asks the server who is there */
     const showConnecting = (): void => {
+        // The page of a person who is not in yet: a bar and a screen, stacked (the rail of the app is not there; see `.is-gate`)
+        root.classList.add('is-gate');
         root.replaceChildren(
             h('header', { class: 'bar' }, h('h1', {}, 'Listas')),
             h('main', { id: 'view' }, splash('Conectando…')),
