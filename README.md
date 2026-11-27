@@ -65,6 +65,9 @@ All JSON, Spanish messages, `Cache-Control: no-store`. Requests that change data
 | `POST /api/login` `{email, password}` | `200 {email}` + cookie · `400` · `401` · `429` |
 | `POST /api/logout` | `200 {ok}` and clears the cookie |
 | `GET /api/me` | `200 {email, verified}` · `401` |
+| `GET /api/auth-options` | `200 {google: bool}`: whether the server offers signing in with Google (the owner set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`) |
+| `GET /api/google/start` | `302` to Google's page (and a cookie of 10 minutes that ties the return to this browser) · `302` to `/?google=unavailable` or `busy`. A page the browser is sent to, not a call of the app (`src/Http/Actions/GoogleStartAction.php`) |
+| `GET /api/google/callback?code&state` | `302` to `/?google=ok`, `new`, `cancelled`, `unverified`, `busy`, `unavailable` or `failed`, with the session cookie when it worked (`GoogleCallbackAction.php`). Google sends the browser here |
 | `GET /api/challenge` | `200 {challenge, bits, expiresAt}`: a proof-of-work puzzle for sign-up and password reset (`src/Security/ProofOfWork.php`) |
 | `POST /api/register` `{email, password, pow: {challenge, nonce}}` | `201 {email, verified: false, mailSent}` and the session cookie · `400` (`invalid_email`, `weak_password`) · `403 invalid_proof` · `409 email_taken` · `429` (6 an hour per address) |
 | `POST /api/verify-email` `{token}` | `200 {email}` (no session needed) · `400 invalid_token` |

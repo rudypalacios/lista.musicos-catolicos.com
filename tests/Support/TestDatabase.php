@@ -21,6 +21,12 @@ final class TestDatabase
 {
     public const MIGRATIONS = __DIR__ . '/../../migrations';
 
+    /**
+     * The one MySQL connection of the run. Every test empties the database first, so sharing it is safe, and a connection per
+     * test is not: PHPUnit keeps each test's objects until the end, and the server refuses past 151 connections.
+     */
+    private static ?PDO $mysql = null;
+
     public static function migrated(): PDO
     {
         $pdo = self::connect();
@@ -42,7 +48,7 @@ final class TestDatabase
             return new PDO('sqlite::memory:', null, null, $options);
         }
 
-        $pdo = new PDO(
+        $pdo = self::$mysql ??= new PDO(
             $dsn,
             (string) getenv('TEST_MYSQL_USER') ?: 'lista',
             (string) getenv('TEST_MYSQL_PASSWORD') ?: 'lista',

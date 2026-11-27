@@ -1,5 +1,6 @@
 import { api, ApiError } from '../api.ts';
 import type { App } from '../app.ts';
+import { GOOGLE_PROBLEMS, readGoogleReturn, type GoogleReturn } from '../google-return.ts';
 import { describeGuestWork, hasGuestWork, isGuest } from '../guest.ts';
 import { h } from '../dom.ts';
 import { paths } from '../router.ts';
@@ -112,7 +113,7 @@ export function createSession(parts: SessionParts): Session {
     /**
      * The person with no account has signed in or signed up, so there is a session. If they wrote anything, they choose:
      * keep it (it joins the account), drop it, or cancel (nothing is decided for them: the session just made is ended and
-     * they go on as they were). With nothing written there is nothing to ask.
+     * they go on as they were: the caller draws the app again). With nothing written there is nothing to ask.
      */
     const adoptGuestWork = async (email: string, moment: Moment): Promise<GuestChoice> => {
         const work = await data.guestWork();
@@ -136,7 +137,6 @@ export function createSession(parts: SessionParts): Session {
             if (moment === 'sign-up') {
                 showToast('Tu cuenta quedó creada. Inicia sesión cuando quieras.', 5000);
             }
-            showApp();
 
             return 'cancelled';
         }
@@ -161,6 +161,8 @@ export function createSession(parts: SessionParts): Session {
     const finishGuestSignIn = async (email: string): Promise<void> => {
         const choice = await adoptGuestWork(email, 'sign-in');
         if (choice === 'cancelled') {
+            showApp();
+
             return;
         }
         if (choice === 'dropped') {
@@ -184,6 +186,8 @@ export function createSession(parts: SessionParts): Session {
     const finishSignUp = async (email: string, mailSent: boolean, wasGuest: boolean): Promise<void> => {
         if (wasGuest) {
             if ((await adoptGuestWork(email, 'sign-up')) === 'cancelled') {
+                showApp();
+
                 return;
             }
         } else {
@@ -248,7 +252,64 @@ export function createSession(parts: SessionParts): Session {
         }
     };
 
-    const begin = async (): Promise<void> => {
+    /** What a device with nothing on it shows while it asks the server who is there */
+    const showConnecting = (): void => {
+        root.replaceChildren(
+            h('header', { class: 'bar' }, h('h1', {}, 'Listas')),
+            h('main', { id: 'view' }, splash('Conectando…')),
+            installBanner.element,
+        );
+    };
+
+    /**
+     * The person came back from Google and the server opened their session (see `GoogleReturn.php`): this device takes the
+     * account the same way as after a password. Whoever wrote songs with no account is asked what to do with them (a
+     * sign-up if Google just made the account, a sign-in if it was there). Returns false when it could not tell who signed
+     * in, and nothing was changed.
+     */
+    const finishGoogle = async (created: boolean): Promise<boolean> => {
+        const owner = await data.owner();
+        showConnecting();
+        let email: string;
+        try {
+            email = (await api.me()).email;
+        } catch {
+            return false;
+        }
+
+        if (isGuest(owner)) {
+            await data.startGuest();
+            const choice = await adoptGuestWork(email, created ? 'sign-up' : 'sign-in');
+            if (choice === 'cancelled') {
+                enterGuest();
+
+                return true;
+            }
+            if (choice === 'dropped') {
+                history.replaceState(null, '', paths.list());
+            }
+        } else if (owner !== email) {
+            await data.adopt(email);
+        }
+        enter(email);
+        data.requestSync(0);
+
+        return true;
+    };
+
+    /** Reads the word of the return from Google out of the address (and takes it out of it, so a reload does not repeat it) */
+    const takeGoogleReturn = (): GoogleReturn | null => {
+        const read = readGoogleReturn(location.search);
+        if (read === null) {
+            return null;
+        }
+        history.replaceState(null, '', location.pathname + read.rest + location.hash);
+
+        return read.result;
+    };
+
+    /** Opens the app for whoever this device belongs to, or asks who is there */
+    const open = async (): Promise<void> => {
         const owner = await data.owner();
         if (isGuest(owner)) {
             // No account: nothing to ask the server, so it opens at once, online or not
@@ -264,11 +325,7 @@ export function createSession(parts: SessionParts): Session {
             return;
         }
 
-        root.replaceChildren(
-            h('header', { class: 'bar' }, h('h1', {}, 'Listas')),
-            h('main', { id: 'view' }, splash('Conectando…')),
-            installBanner.element,
-        );
+        showConnecting();
         try {
             const me = await api.me();
             await data.adopt(me.email);
@@ -278,6 +335,23 @@ export function createSession(parts: SessionParts): Session {
             // No session on a device with nothing on it: the app is open to try; signing in needs a connection
             const offline = failure instanceof ApiError && failure.isOffline;
             showWelcome(offline ? 'Sin conexión: puedes probar la app; para iniciar sesión necesitas conexión.' : undefined);
+        }
+    };
+
+    const begin = async (): Promise<void> => {
+        const back = takeGoogleReturn();
+        if (back?.kind === 'signed-in') {
+            if (await finishGoogle(back.created)) {
+                return;
+            }
+            await open();
+            showToast(GOOGLE_PROBLEMS.failed, 6000);
+
+            return;
+        }
+        await open();
+        if (back?.kind === 'problem') {
+            showToast(back.message, 6000);
         }
     };
 

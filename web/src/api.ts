@@ -132,6 +132,8 @@ export const api = {
     me: (): Promise<Me> => request<Me>('GET', '/api/me'),
     login: (email: string, password: string): Promise<Me> => request<Me>('POST', '/api/login', { email, password }),
     logout: (): Promise<unknown> => request('POST', '/api/logout', {}),
+    /** Which ways of signing in the server offers (the button of Google only appears when the owner set it up) */
+    authOptions: (): Promise<{ google: boolean }> => request('GET', '/api/auth-options'),
     challenge: (): Promise<{ challenge: string; bits: number }> => request('GET', '/api/challenge'),
     register: (email: string, password: string, pow: Proof): Promise<{ email: string; mailSent: boolean }> =>
         request('POST', '/api/register', { email, password, pow }),

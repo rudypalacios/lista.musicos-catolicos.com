@@ -1,4 +1,5 @@
 import { h } from '../dom.ts';
+import { googleOption } from './google-button.ts';
 import type { View } from './types.ts';
 
 export interface WelcomeOptions {
@@ -29,6 +30,7 @@ export function welcomeView(options: WelcomeOptions): View {
             h('p', {}, 'Prepara la música de la misa: arma un listado con tus cantos, cambia el tono de cada uno y léelo sin conexión.'),
             ...(options.message === undefined ? [] : [h('p', { class: 'muted', role: 'status' }, options.message)]),
             h('div', { class: 'actions welcome__actions' }, tryIt, signUp, signIn),
+            googleOption(),
             h('p', { class: 'muted' }, 'Sin cuenta, lo que escribas se guarda solo en este dispositivo. Cuando inicies sesión, podrás llevarlo a tu cuenta.')));
 
     return { element };

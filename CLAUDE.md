@@ -145,7 +145,7 @@ so no account can have it). A guest writes songs, lists and templates to the dev
 (`App.syncNow` and `requestSync` do nothing while `guest`; the status is `local`). Signing in asks, once, only if something was written, what to do with it:
 `App.adoptKeepingGuestWork` (it joins the account: the records carry client UUIDs, so signing in only changes whose they are and syncs; the Mass is stamped
 as the oldest so the account's own always wins) or `App.adopt` (drops it). Cancelling the question changes nothing and ends the session the sign-in made.
-The bar, the dot and Ajustes say there is no account (`DESIGN-LOCK.md`). Sign-up with email and Google come next (see `TODO.md`, "Open sign-up").
+The bar, the dot and Ajustes say there is no account (`DESIGN-LOCK.md`). Sign-up with email, and Google, are below.
 
 ## Accounts of other people (step 3 of "Open sign-up": 3a the server, 3b the app)
 
@@ -167,6 +167,27 @@ written out, with the first blocks mixed once, in slices so the screen moves; no
 (`shell/session.ts`, `adoptGuestWork`, the same choice as when signing in, with other words); cancelling ends the session just made and keeps them as a guest.
 The links of the emails open pages of their own that need no session and no data of the device (`/verificar/:token`, `/restablecer/:token`, `views/account-link.ts`, drawn
 by `main.ts` like the visitor's page). `tests/e2e/signup.ts` covers it end to end with a little SMTP server that receives the server's real emails.
+
+## Signing in with Google (step 4 of "Open sign-up")
+
+A redirect flow done by the server: no script of Google is loaded in the page, so the CSP is unchanged (a link the browser follows is not governed by it). "Continuar con Google" is a plain link to `GET /api/google/start`
+(`Http/Actions/GoogleStartAction.php`), which sends the browser to Google; Google sends it back to `GET /api/google/callback` (`GoogleCallbackAction.php`), which opens the session and redirects to `/?google=<word>`; the app reads the word once
+and removes it from the address (`web/src/google-return.ts`, `shell/session.ts`). The button appears only when `GET /api/auth-options` says the server has `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` (`GoogleConfig`; with neither,
+the app is as before). Rules that matter:
+
+- Only `openid email` is asked (no name, no photo) and `prompt=select_account` (a tablet in a parish is shared). **Do not widen the scopes without telling the owner and changing `/privacidad` in the same PR.**
+- **Login CSRF:** the `state` is not enough, so the sign-in is tied to the browser that started it by a cookie (`lista_oauth`, `Http/OAuthCookie.php`, path `/api/google`, 10 minutes) whose hash is stored with the state
+  (`Auth/Google/OAuthStates.php`, table `oauth_states`: only hashes, one use, 10 minutes, PKCE verifier and nonce kept server-side). A return without that cookie signs nobody in.
+- The ID token comes straight from Google's token endpoint over TLS, so its signature is not checked (OpenID Connect Core 3.1.3.7); `GoogleIdentity::fromClaims` checks issuer, audience, expiry, nonce, `sub` and **`email_verified === true`**.
+  An address Google has not confirmed signs nobody in (`unverified`).
+- **Which account (`Auth/Google/GoogleAccounts.php`):** the person is found by Google's `sub` (table `identities`), never by email once linked; else by the **confirmed** address of an existing account (it is joined and keeps its password);
+  else an account whose address **nobody confirmed** is claimed (its password and sessions and links are dropped: otherwise whoever registered a stranger's address would get the stranger's data); else a new account is made, already
+  confirmed, with a password hash of random bytes nobody knows (`users.password_hash` is `NOT NULL`; the person can choose one with "Olvidé mi contraseña"). Never merge by an address Google has not confirmed.
+- Every return ends on `APP_URL` (never the request's `Host`), with one word: `ok`, `new` (an account was made, so a guest is asked as in a sign-up), `cancelled`, `unverified`, `busy`, `unavailable`, `failed`. Anything unknown is `failed`.
+  The code, the state and Google's answers are never logged. Starts and returns are limited per address (`RateLimiter`, kinds `google-start` and `google-return`).
+- `GOOGLE_AUTH_URL` and `GOOGLE_TOKEN_URL` exist only so `tests/e2e/google.ts` can put a stand-in for Google (`tests/e2e/fake-google.ts`, which checks client, secret, redirect and PKCE) in its place; they are never set on the server.
+- The privacy text says what is kept (the email and Google's id) and that Google learns of the sign-in; **when this changes, `views/privacy.ts` changes in the same PR.** Safari on the iPad (the installed app going to Google and coming back) is
+  checked by the owner by hand (`DEPLOY.md`, "Entrar con Google").
 
 ## Sharing a list
 

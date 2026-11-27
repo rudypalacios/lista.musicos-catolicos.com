@@ -4,12 +4,13 @@ import { h } from '../dom.ts';
  * How Listas uses a person's data, in plain Spanish. It must say what the code really does: when something here changes
  * (what is stored, for how long, who it goes to), this text changes in the same pull request. The numbers are the ones of the
  * server: a session lasts 180 days (`Authenticator::SESSION_DAYS`), the confirmation link 2 days and the one for a new
- * password 1 hour (`Accounts`), failed sign-ins are counted for 15 minutes (`Authenticator`) and the other counters of
- * repeated requests are deleted after a day (`RateLimiter`).
+ * password 1 hour (`Accounts`), failed sign-ins are counted for 15 minutes (`Authenticator`), the other counters of
+ * repeated requests are deleted after a day (`RateLimiter`) and a sign-in with Google that was started lasts 10 minutes
+ * (`OAuthStates::TTL_SECONDS`).
  */
 
 /** The day this text was last revised */
-export const PRIVACY_UPDATED = '24 de noviembre de 2026';
+export const PRIVACY_UPDATED = '27 de noviembre de 2026';
 
 /** Where people write about their data */
 export const PRIVACY_EMAIL = 'contacto@musicos-catolicos.com';
@@ -29,8 +30,8 @@ export const PRIVACY_SECTIONS: readonly Section[] = [
         blocks: [{
             ul: [
                 'Puedes usar Listas sin cuenta: lo que escribas se guarda solo en tu dispositivo.',
-                'Si creas una cuenta, guardamos tu correo, tu contraseña (cifrada, no la podemos leer) y tu biblioteca de cantos, listados y plantillas.',
-                'Listas no usa analítica ni publicidad y no te sigue. Solo carga algo de otro sitio si tú lo pides: el reproductor de YouTube de un canto, al tocar «Escuchar el original» o la nota ♪, también en la página de un listado que compartes.',
+                'Si creas una cuenta, guardamos tu correo, tu contraseña (cifrada, no la podemos leer; si entras con Google no hay contraseña) y tu biblioteca de cantos, listados y plantillas.',
+                'Listas no usa analítica ni publicidad y no te sigue. Solo conecta con otro sitio si tú lo pides: la página de Google, si tocas «Continuar con Google», y el reproductor de YouTube de un canto, al tocar «Escuchar el original» o la nota ♪, también en la página de un listado que compartes.',
                 'La única cookie es la de tu sesión, y solo si inicias sesión.',
                 'No vendemos tus datos y no te mandamos publicidad.',
                 'Puedes pedir que borremos tu cuenta con todo lo que guardaste.',
@@ -53,6 +54,7 @@ export const PRIVACY_SECTIONS: readonly Section[] = [
         blocks: [{
             ul: [
                 'Tus datos de cuenta: tu correo, tu contraseña (la guardamos solo transformada de forma irreversible: no podemos leerla ni recuperarla), la fecha en que creaste la cuenta y si confirmaste tu correo.',
+                'Si entras con Google: guardamos tu correo y el identificador que Google da a tu cuenta (una clave larga que no dice nada de ti). No pedimos tu nombre, tu foto ni nada más de tu perfil, y tu contraseña de Google nunca pasa por Listas. Google confirma que el correo es tuyo, así que no te mandamos el enlace de confirmación. Una cuenta hecha así no tiene contraseña de Listas; si quieres una, la eliges con «Olvidé mi contraseña». Si ya existía una cuenta con ese correo, entras en ella con todo lo que tenía; si esa cuenta se creó con contraseña y nadie llegó a confirmar el correo, pasa a ser de quien lo confirma con Google y esa contraseña deja de servir.',
                 'Tu biblioteca: tus cantos (título, autor, letra y acordes, etiquetas, tu tono y el enlace para escuchar el original, si lo pones), tus listados (nombre, secciones, qué cantos llevan y en qué tono, notas) y tus plantillas. Es tu biblioteca personal: nadie más la ve, salvo lo que tú compartas con un enlace. Se guarda en nuestro servidor para que la tengas en todos tus dispositivos y puedas recuperarla si pierdes uno.',
                 'Tu sesión: al iniciar sesión se guarda en tu navegador una cookie llamada lista_session, necesaria para reconocerte; dura hasta 180 días o hasta que salgas. En el servidor solo se guarda una huella irreversible de ella. No hay cookies de publicidad ni de analítica.',
                 'Correos: usamos tu correo para confirmar que es tuyo y para que puedas elegir una contraseña nueva si la olvidas. Los mensajes salen de noreply@musicos-catolicos.com. No te enviamos publicidad ni boletines.',
@@ -69,7 +71,8 @@ export const PRIVACY_SECTIONS: readonly Section[] = [
         title: 'Registros del servidor y protección contra abusos',
         blocks: [
             { p: 'El servidor de nuestro proveedor de alojamiento anota cada visita (dirección IP, fecha y hora, página pedida y tipo de navegador) para mantener Listas funcionando y protegerla de abusos.' },
-            { p: 'Para evitar que programas creen cuentas por miles o llenen de correos un buzón, al crear una cuenta o pedir una contraseña nueva tu dispositivo resuelve un pequeño cálculo; no usamos captchas de otras empresas y no se envía nada a terceros. Además anotamos por un tiempo corto tu dirección IP (y, al pedir una contraseña nueva, una huella del correo escrito) para limitar los intentos repetidos. Los intentos fallidos de iniciar sesión y de abrir enlaces que no existen se borran a los 15 minutos; lo demás, en un día como máximo.' },
+            { p: 'Para evitar que programas creen cuentas por miles o llenen de correos un buzón, al crear una cuenta o pedir una contraseña nueva tu dispositivo resuelve un pequeño cálculo; no usamos captchas de otras empresas y no se envía nada a terceros. Además anotamos por un tiempo corto tu dirección IP (y, al pedir una contraseña nueva, una huella del correo escrito) para limitar los intentos repetidos; lo mismo al empezar o terminar una entrada con Google. Los intentos fallidos de iniciar sesión y de abrir enlaces que no existen se borran a los 15 minutos; lo demás, en un día como máximo.' },
+            { p: 'Mientras entras con Google (hasta 10 minutos) guardamos unas claves de un solo uso, solo como huellas irreversibles, que atan el regreso de Google al navegador donde empezaste; se borran al terminar. Así nadie puede meter tu navegador en otra cuenta con un enlace que él empezó.' },
         ],
     },
     {
@@ -80,7 +83,7 @@ export const PRIVACY_SECTIONS: readonly Section[] = [
     {
         id: 'terceros',
         title: 'Con quién se comparten los datos',
-        blocks: [{ p: 'Solo con nuestro proveedor de alojamiento web, que aloja Listas, guarda sus registros del servidor y su base de datos, y envía los dos correos de la aplicación (confirmar tu correo y elegir una contraseña nueva) desde nuestro buzón. Fuera de eso, solo hay un tercero más, y únicamente si tú lo pides: si guardas un enlace de YouTube en un canto y tocas «Escuchar el original» (o la nota ♪), el reproductor de YouTube (youtube-nocookie.com) se carga en ese momento y YouTube recibe tu dirección IP y lo que su propia política describe; antes de ese toque no se carga nada de YouTube. Si compartes un listado o un canto cuyo canto tiene ese enlace, el enlace (solo la dirección) viaja con lo compartido y quien abre tu enlace puede tocar la nota ♪ para escucharlo; entonces se carga el reproductor y YouTube recibe la dirección IP de esa persona, no la tuya; si no lo toca, no se carga nada. También podríamos entregar datos si una autoridad competente lo exige conforme a la ley.' }],
+        blocks: [{ p: 'Solo con nuestro proveedor de alojamiento web, que aloja Listas, guarda sus registros del servidor y su base de datos, y envía los dos correos de la aplicación (confirmar tu correo y elegir una contraseña nueva) desde nuestro buzón. Fuera de eso, solo hay dos terceros más, y únicamente si tú lo pides. Uno es Google: si tocas «Continuar con Google», tu navegador va a la página de Google (accounts.google.com), donde eliges tu cuenta; Google sabe que entraste a Listas y recibe tu dirección IP, y nuestro servidor le habla a Google para saber qué cuenta eres (solo pedimos tu identificador y tu correo). Lo que Google hace con sus datos lo explica su propia política. Antes de ese toque no se contacta a Google, y si no usas Google nunca se le contacta. El otro es YouTube: si guardas un enlace de YouTube en un canto y tocas «Escuchar el original» (o la nota ♪), el reproductor de YouTube (youtube-nocookie.com) se carga en ese momento y YouTube recibe tu dirección IP y lo que su propia política describe; antes de ese toque no se carga nada de YouTube. Si compartes un listado o un canto cuyo canto tiene ese enlace, el enlace (solo la dirección) viaja con lo compartido y quien abre tu enlace puede tocar la nota ♪ para escucharlo; entonces se carga el reproductor y YouTube recibe la dirección IP de esa persona, no la tuya; si no lo toca, no se carga nada. También podríamos entregar datos si una autoridad competente lo exige conforme a la ley.' }],
     },
     {
         id: 'conservacion',
@@ -89,6 +92,7 @@ export const PRIVACY_SECTIONS: readonly Section[] = [
             ul: [
                 'Tu cuenta y tu biblioteca, mientras tengas la cuenta.',
                 'Los enlaces del correo: el de confirmar tu correo, 2 días; el de elegir una contraseña nueva, 1 hora. Se gastan al usarlos.',
+                'Las claves de una entrada con Google: 10 minutos, o hasta que termines.',
                 'Las sesiones, hasta 180 días; se borran al salir o al vencer.',
                 'Los registros contra abusos: entre 15 minutos y un día, como se explica arriba.',
                 'Las copias de seguridad que hace nuestro proveedor de alojamiento pueden conservar datos un tiempo más después de que los borremos.',

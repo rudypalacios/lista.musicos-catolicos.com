@@ -5,12 +5,20 @@ declare(strict_types=1);
 namespace App\Http;
 
 use App\Auth\Accounts;
+use App\Auth\Google\GoogleAccounts;
+use App\Auth\Google\GoogleOAuth;
+use App\Auth\Google\GoogleSignIn;
+use App\Auth\Google\HttpGoogleOAuth;
+use App\Auth\Google\OAuthStates;
 use App\Auth\Authenticator;
 use App\Auth\EmailTokens;
 use App\Config;
 use App\Database\Migrator;
+use App\Http\Actions\AuthOptionsAction;
 use App\Http\Actions\ChallengeAction;
 use App\Http\Actions\ForgotPasswordAction;
+use App\Http\Actions\GoogleCallbackAction;
+use App\Http\Actions\GoogleStartAction;
 use App\Http\Actions\HealthAction;
 use App\Http\Actions\LoginAction;
 use App\Http\Actions\LogoutAction;
@@ -61,8 +69,13 @@ final class AppFactory
     /**
      * @return App<ContainerInterface|null>
      */
-    public static function create(PDO $pdo, Config $config, string $migrationsDir, ?Mailer $mailer = null): App
-    {
+    public static function create(
+        PDO $pdo,
+        Config $config,
+        string $migrationsDir,
+        ?Mailer $mailer = null,
+        ?GoogleOAuth $google = null
+    ): App {
         $authenticator = new Authenticator($pdo);
         $mailer ??= $config->mail->canSend() ? new SmtpMailer($config->mail) : new LogMailer();
         $accounts = new Accounts(
@@ -70,6 +83,15 @@ final class AppFactory
             $authenticator,
             new EmailTokens($pdo),
             new AccountMail($mailer, $config->appUrl)
+        );
+        // Google is offered only when the owner has set it up (or a test brings its own stand-in)
+        $google ??= $config->google->isConfigured()
+            ? new HttpGoogleOAuth($config->google, $config->appUrl . '/api/google/callback')
+            : null;
+        $googleSignIn = $google === null ? null : new GoogleSignIn(
+            $google,
+            new OAuthStates($pdo),
+            new GoogleAccounts($pdo, $authenticator, new EmailTokens($pdo))
         );
         $proof = new ProofOfWork($pdo, new Secrets($pdo));
         $limits = new RateLimiter($pdo);
@@ -98,7 +120,9 @@ final class AppFactory
             $misses,
             $accounts,
             $proof,
-            $limits
+            $limits,
+            $googleSignIn,
+            $config
         ): void {
             $api->get('/health', new HealthAction($migrator));
             $api->post('/login', new LoginAction($authenticator));
@@ -112,6 +136,12 @@ final class AppFactory
                 ->add(new RequireUser($authenticator));
             $api->post('/forgot', new ForgotPasswordAction($accounts, $proof, $limits));
             $api->post('/reset', new ResetPasswordAction($accounts));
+
+            // Signing in with Google: the browser is sent there and comes back (pages it follows, not calls of the app)
+            $api->get('/auth-options', new AuthOptionsAction($googleSignIn !== null));
+            $api->get('/google/start', new GoogleStartAction($googleSignIn, $limits, $config->appUrl));
+            $api->get('/google/callback', new GoogleCallbackAction($googleSignIn, $limits, $config->appUrl));
+
             $api->get('/me', new MeAction())->add(new RequireUser($authenticator));
             $api->get('/sync', new PullAction($feed))->add(new RequireUser($authenticator));
             $api->post('/sync', new PushAction($songs, $setlists, $templates))->add(new RequireUser($authenticator));

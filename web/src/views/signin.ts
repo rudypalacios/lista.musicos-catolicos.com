@@ -1,5 +1,6 @@
 import { api, ApiError } from '../api.ts';
 import { h } from '../dom.ts';
+import { googleOption } from './google-button.ts';
 import type { View } from './types.ts';
 
 export interface SignInOptions {
@@ -37,6 +38,7 @@ export function signInView(options: SignInOptions): View {
         password,
         error,
         submit,
+        googleOption({ separator: true }),
         ...(options.onForgot === undefined && options.onCancel === undefined
             ? []
             : [h('div', { class: 'actions' }, ...(options.onForgot === undefined ? [] : [forgot]), ...(options.onCancel === undefined ? [] : [back]))]),
