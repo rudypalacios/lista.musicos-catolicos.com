@@ -487,8 +487,11 @@ Next, in this order (design agreed with the owner):
       (3) **sign-up and sign-in with email and password**, email verification and password recovery by email (the owner will create a cPanel mailbox for SMTP and give its data as secrets in the `production` environment),
       throttles per address, a quota per account and a proof-of-work check of our own (no third-party captcha: the policy forbids another domain; the owner agreed to a captcha if it is the safe option); on signing up the guest
       is asked **bring what I have to my account / start from zero**, and on signing in to an account that exists **add it to my account / discard it** (the records have client UUIDs, so bringing them is just sending them).
-      (4) **Google** (redirect flow on the server, no script of Google in the page) and the **merge by email**: only into an account whose email is verified; a password account never verified is claimed by Google, which drops its password and sessions
-      (otherwise someone who registered a stranger's email with a password would get the stranger's data when the stranger signed in with Google).
+      (4) **done (2026-11-27):** **Google** (redirect flow on the server, no script of Google in the page) and the **merge by email**: only into an account whose email is verified; a password account never verified is claimed by Google,
+      which drops its password and sessions (otherwise someone who registered a stranger's email with a password would get the stranger's data when the stranger signed in with Google). See CLAUDE.md, "Signing in with Google";
+      migrations `0021` and `0022`; tests `GoogleIdentityTest`, `OAuthStatesTest`, `GoogleAccountsTest`, `GoogleApiTest`, `web/test/google-return.test.ts` and `tests/e2e/google.ts`. **Owner's part:** the OAuth client in Google Cloud and the two values in `.env`
+      (`DEPLOY.md`, "Entrar con Google"); **the iPad is checked by hand.** **Not done, on purpose:** Ajustes does not say whether the account has Google linked, there is no "unlink", and Google's address is not compared with a person who typed
+      the same Gmail with or without dots (they are two accounts).
       (5) the privacy text for the public site (emails of other people are stored: the owner publishes it before opening sign-up), delete my account, export. **Before opening sign-up:** the owner publishes the privacy text.
 - [ ] Share the key a list has each song in when the lyrics are not shared: today the visitor of a list shared with no lyrics sees the order, the titles and the authors
       but no keys (the key comes from the chords, which the server does not read: the parser lives in the app).

@@ -23,6 +23,8 @@ export interface Server {
 export interface ServerOptions {
     /** The port of a `startMailSink`: the server sends its emails there, over real SMTP */
     mailPort?: number;
+    /** A stand-in for Google (`fake-google.ts`): the server is set up to sign people in with it */
+    google?: { authUrl: string; tokenUrl: string; clientId: string; clientSecret: string };
 }
 
 export async function startServer(port: number, options: ServerOptions = {}): Promise<Server> {
@@ -40,6 +42,14 @@ export async function startServer(port: number, options: ServerOptions = {}): Pr
                 OWNER_EMAIL: EMAIL,
                 OWNER_PASSWORD: PASSWORD,
                 APP_URL: base,
+                ...(options.google === undefined
+                    ? {}
+                    : {
+                        GOOGLE_CLIENT_ID: options.google.clientId,
+                        GOOGLE_CLIENT_SECRET: options.google.clientSecret,
+                        GOOGLE_AUTH_URL: options.google.authUrl,
+                        GOOGLE_TOKEN_URL: options.google.tokenUrl,
+                    }),
                 ...(options.mailPort === undefined ? {} : { MAIL_HOST: '127.0.0.1', MAIL_PORT: String(options.mailPort), MAIL_ENCRYPTION: 'none' }),
             },
             stdio: 'ignore',

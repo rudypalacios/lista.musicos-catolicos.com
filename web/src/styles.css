@@ -5013,6 +5013,34 @@ button.srow__tool:disabled {
     align-items: stretch;
 }
 
+/* ----- "Continuar con Google": under the form's own button, or among the buttons of the welcome ----- */
+.google-option {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+}
+
+.google-option[hidden] {
+    display: none;
+}
+
+.google-option p {
+    margin: 0;
+}
+
+.google-option__or {
+    text-align: center;
+}
+
+.google-option__note {
+    font-size: 0.85rem;
+}
+
+.google-button .google-button__mark {
+    flex: none;
+}
+
 /* ----- how the data is used (/privacidad): a long text, read in a column ----- */
 .privacy h3 {
     margin: 1.4rem 0 0.4rem;

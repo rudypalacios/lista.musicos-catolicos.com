@@ -31,6 +31,7 @@ final class Config
         public readonly ?string $ownerPasswordHash,
         public readonly string $appUrl = self::PRODUCTION_URL,
         public readonly MailConfig $mail = new MailConfig(),
+        public readonly GoogleConfig $google = new GoogleConfig(),
     ) {
     }
 
@@ -68,6 +69,7 @@ final class Config
             self::string($env, 'OWNER_PASSWORD_HASH'),
             rtrim(self::string($env, 'APP_URL') ?? self::PRODUCTION_URL, '/'),
             MailConfig::fromEnv($env),
+            GoogleConfig::fromEnv($env),
         );
     }
 

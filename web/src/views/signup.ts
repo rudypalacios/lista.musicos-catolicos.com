@@ -2,6 +2,7 @@ import { ApiError, api } from '../api.ts';
 import { emailProblem, passwordProblem } from '../account.ts';
 import { h } from '../dom.ts';
 import { paths } from '../router.ts';
+import { googleOption } from './google-button.ts';
 import { createProofStatus } from './proof.ts';
 import type { View } from './types.ts';
 
@@ -62,6 +63,7 @@ export function signUpView(options: SignUpOptions): View {
         error,
         proof.element,
         submit,
+        googleOption({ separator: true }),
         h('div', { class: 'actions' }, back, signIn));
 
     form.addEventListener('submit', (event) => {
