@@ -68,10 +68,14 @@ try {
     await page.getByRole('button', { name: 'Usar mi correo' }).waitFor();
     pass('back online: signing out returns to the welcome');
 
-    const manifest = (await (await fetch(BASE + '/manifest.webmanifest')).json()) as { display: string; icons: unknown[] };
+    const manifest = (await (await fetch(BASE + '/manifest.webmanifest')).json()) as { display: string; icons: { sizes: string; purpose?: string }[] };
     assert.equal(manifest.display, 'standalone');
-    assert.equal(manifest.icons.length, 2);
-    pass('the manifest is installable (standalone, icons)');
+    for (const purpose of ['any', 'maskable']) {
+        for (const sizes of ['192x192', '512x512']) {
+            assert.ok(manifest.icons.some((icon) => icon.sizes === sizes && icon.purpose === purpose), `an icon of ${sizes} for ${purpose}`);
+        }
+    }
+    pass('the manifest is installable (standalone, icons of 192 and 512, plain and maskable)');
 
     assert.deepEqual(problems, [], 'no uncaught errors in the page');
     pass('no uncaught errors in the page');

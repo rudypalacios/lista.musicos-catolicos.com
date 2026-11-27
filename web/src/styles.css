@@ -5037,15 +5037,34 @@ button.srow__tool:disabled {
 }
 
 /* ----- the first screen of a device with nothing on it: Google, an email, or try the app ----- */
-.welcome__title {
-    margin: 0;
-    font-size: 1.5rem;
-    line-height: 1.2;
-    text-wrap: balance;
+/* The mark of Músicos Católicos over its name, centred, then what the app is for (the welcome) */
+.brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.7rem;
+    text-align: center;
 }
 
-.welcome__lead {
-    margin: 0.5rem 0 1.75rem;
+.brand__mark {
+    width: 3.5rem;
+    height: 3.5rem;
+    stroke: var(--accent);
+}
+
+.brand__name {
+    margin: 0;
+    font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+    font-size: 1.65rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.brand__lead {
+    max-width: 21rem;
+    margin: 0.75rem auto 1.75rem;
+    text-align: center;
+    text-wrap: balance;
 }
 
 .welcome__actions {

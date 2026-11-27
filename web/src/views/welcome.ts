@@ -1,4 +1,5 @@
 import { h } from '../dom.ts';
+import { brandLockup } from './brand.ts';
 import { orDivider, privacyLine } from './gate-parts.ts';
 import { googleOption } from './google-button.ts';
 import type { View } from './types.ts';
@@ -13,7 +14,8 @@ export interface WelcomeOptions {
 }
 
 /**
- * What a device with nothing on it and no session shows first: the app is not behind a login. Three ways in, from the easiest:
+ * What a device with nothing on it and no session shows first: the mark of Músicos Católicos, its name and what the app is for, all
+ * centred, then three ways in (the app is not behind a login), from the easiest:
  * Google (which makes the account if there is none), an email (to sign in or to create the account), or trying the app with
  * no account and signing in later, keeping what was written.
  */
@@ -24,8 +26,8 @@ export function welcomeView(options: WelcomeOptions): View {
     tryIt.addEventListener('click', options.onTry);
 
     const element = h('div', { class: 'page page--gate welcome' },
-        h('h2', { class: 'welcome__title' }, 'Prepara la música de la misa'),
-        h('p', { class: 'muted welcome__lead' }, 'Arma tu listado, cambia el tono de cada canto y léelo sin conexión.'),
+        brandLockup(),
+        h('p', { class: 'muted brand__lead' }, 'Prepara la música de la misa: arma tu listado, cambia el tono de cada canto y léelo sin conexión.'),
         h('div', { class: 'welcome__actions' },
             googleOption(),
             email,

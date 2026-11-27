@@ -60,6 +60,15 @@ try {
             const title = await box(wide, '.bar h1');
             assert.ok(Math.abs(title.x + title.width / 2 - width / 2) <= 2, 'its name is in the middle');
         }
+        // The mark, then the name, then what the app is for: one under the other, all on the middle line
+        const mark = await box(wide, '.brand__mark');
+        const name = await box(wide, '.brand__name');
+        const lead = await box(wide, '.brand__lead');
+        assert.ok(mark.y + mark.height <= name.y + 1 && name.y + name.height <= lead.y + 1, `the mark is over the name, and the name over the description on ${device}`);
+        for (const [what, placed] of [['mark', mark], ['name', name], ['description', lead]] as const) {
+            assert.ok(Math.abs(placed.x + placed.width / 2 - width / 2) <= 2, `the ${what} is centred on ${device}`);
+        }
+        assert.equal(await wide.getByRole('heading', { name: 'Músicos Católicos' }).count(), 1, 'the name is the heading of the welcome');
         await wide.getByRole('button', { name: 'Usar mi correo' }).click();
         await wide.getByRole('heading', { name: 'Inicia sesión' }).waitFor();
         await checkColumn(wide, width, `sign in on ${device}`);
