@@ -39,8 +39,14 @@ async function createSong(page: Page, title: string): Promise<void> {
 async function signUp(page: Page, email: string, password = PASSWORD): Promise<void> {
     await page.getByLabel('Correo').fill(email);
     await page.getByLabel('Contraseña').fill(password);
-    await page.getByLabel('Leí cómo se usan mis datos').check();
     await page.locator('#view').getByRole('button', { name: 'Crear cuenta' }).click();
+}
+
+/** From the welcome: "Usar mi correo", then the tab "Crear cuenta" */
+async function openSignUpFromWelcome(page: Page): Promise<void> {
+    await page.getByRole('button', { name: 'Usar mi correo' }).click();
+    await page.getByRole('tab', { name: 'Crear cuenta' }).click();
+    await page.getByRole('heading', { name: 'Crea tu cuenta' }).waitFor();
 }
 
 /** The titles of the songs the server holds for the account signed in on `page` */
@@ -54,30 +60,27 @@ const serverSongs = (page: Page): Promise<string[]> =>
 try {
     // ----- creating an account from the welcome -----
     const page = await freshPhone(server.base);
-    await page.getByRole('button', { name: 'Crear cuenta' }).click();
-    await page.getByRole('heading', { name: 'Crea tu cuenta' }).waitFor();
-    for (const [email, password, consent, problem] of [
-        ['no es un correo', PASSWORD, true, 'Escribe un correo válido.'],
-        ['ana@example.com', 'corta', true, 'al menos 10 caracteres'],
-        ['ana@example.com', PASSWORD, false, 'cómo se usan tus datos'],
+    await openSignUpFromWelcome(page);
+    for (const [email, password, problem] of [
+        ['no es un correo', PASSWORD, 'Escribe un correo válido.'],
+        ['ana@example.com', 'corta', 'al menos 10 caracteres'],
     ] as const) {
         await page.getByLabel('Correo').fill(email);
         await page.getByLabel('Contraseña').fill(password);
-        const box = page.getByLabel('Leí cómo se usan mis datos');
-        await (consent ? box.check() : box.uncheck());
-        await page.getByRole('button', { name: 'Crear cuenta' }).click();
+        await page.locator('#view').getByRole('button', { name: 'Crear cuenta' }).click();
         await page.getByRole('alert').getByText(problem).waitFor();
     }
     assert.equal(mail.messages.length, 0, 'nothing was sent for a form that was wrong');
     pass('the form says what is wrong before asking anything of the server');
 
-    // "Leí cómo se usan mis datos" leads to the app's own text, which needs no session
-    const privacy = page.getByRole('link', { name: 'Privacidad' });
+    // "Lee la privacidad" leads to the app's own text, which needs no session
+    const privacy = page.getByRole('link', { name: 'Lee la privacidad' });
     assert.equal(await privacy.getAttribute('href'), '/privacidad');
     assert.equal(await privacy.getAttribute('target'), '_blank', 'it opens apart: the form is not lost');
     const reading = await freshPhone(server.base + '/privacidad');
-    await reading.getByRole('heading', { name: 'Cómo se usan tus datos' }).waitFor();
-    await reading.getByRole('heading', { name: 'Si creas una cuenta' }).waitFor();
+    await reading.getByRole('heading', { name: 'Privacidad' }).waitFor();
+    await reading.getByText('No usamos tus datos para nada más que darte tu cuenta y tus cantos').waitFor();
+    await reading.getByRole('heading', { name: 'Con cuenta, qué guardamos' }).waitFor();
     await reading.getByText('lista_session').waitFor();
     await reading.getByText('Por ahora, para borrar tu cuenta escribe a').waitFor();
     assert.equal(await reading.getByRole('button', { name: 'Crear cuenta' }).count(), 0, 'a page of text, with no app around it');
@@ -85,8 +88,7 @@ try {
 
     await page.getByLabel('Correo').fill('ana@example.com');
     await page.getByLabel('Contraseña').fill(PASSWORD);
-    await page.getByLabel('Leí cómo se usan mis datos').check();
-    await page.getByRole('button', { name: 'Crear cuenta' }).click();
+    await page.locator('#view').getByRole('button', { name: 'Crear cuenta' }).click();
     await page.getByRole('heading', { name: 'Te mandamos un enlace' }).waitFor();
     await page.getByText('ana@example.com').first().waitFor();
     await page.waitForFunction(() => document.querySelector('.bar__back') !== null);
@@ -123,7 +125,7 @@ try {
 
     // ----- forgetting the password -----
     await page.getByRole('button', { name: 'Salir' }).click();
-    await page.getByRole('button', { name: 'Ya tengo cuenta' }).click();
+    await page.getByRole('button', { name: 'Usar mi correo' }).click();
     await page.getByRole('button', { name: 'Olvidé mi contraseña' }).click();
     await page.getByLabel('Correo').fill('ana@example.com');
     await page.getByRole('button', { name: 'Mandar el enlace' }).click();
@@ -204,10 +206,10 @@ try {
 
     // ----- an address that has an account -----
     const twice = await freshPhone(server.base);
-    await twice.getByRole('button', { name: 'Crear cuenta' }).click();
+    await openSignUpFromWelcome(twice);
     await signUp(twice, 'ana@example.com');
     await twice.getByRole('alert').getByText('Ese correo ya tiene una cuenta').waitFor();
-    await twice.getByRole('button', { name: 'Crear cuenta' }).waitFor();
+    await twice.locator('#view').getByRole('button', { name: 'Crear cuenta' }).waitFor();
     pass('an address that already has an account is told so, and the form stays');
 
     console.log(`\n${count()} checks passed`);

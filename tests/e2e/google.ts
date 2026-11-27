@@ -57,7 +57,7 @@ const sessionEmail = (page: Page): Promise<string | null> =>
 try {
     // ----- the button is there only when the server offers Google -----
     const plain = await freshPhone(without.base);
-    await plain.getByRole('button', { name: 'Ya tengo cuenta' }).waitFor();
+    await plain.getByRole('button', { name: 'Usar mi correo' }).waitFor();
     await plain.waitForTimeout(500);
     assert.equal(await plain.locator('.google-option').count(), 1, 'the option is drawn, out of sight until the server says it offers Google');
     assert.equal(await plain.locator('.google-option').isVisible(), false, 'a server with no Google set up shows no button');
@@ -73,11 +73,10 @@ try {
     const violations = await enforcePolicy(policedContext, policed);
     await policed.goto(server.base + '/');
     await continueWithGoogle(policed).waitFor();
-    await policed.getByText('Al continuar con Google aceptas cómo se usan tus datos').waitFor();
-    assert.equal(await policed.getByRole('link', { name: 'Privacidad' }).getAttribute('href'), '/privacidad');
+    assert.equal(await policed.getByRole('link', { name: 'Lee la privacidad' }).getAttribute('href'), '/privacidad');
     assert.equal(await continueWithGoogle(policed).getAttribute('href'), '/api/google/start');
     assert.deepEqual(violations, [], 'nothing the policy forbids: the button is a link, and the mark is drawn in the page');
-    pass('the welcome offers "Continuar con Google" with the line about the data, and nothing breaks the policy');
+    pass('the welcome offers "Continuar con Google" and the one link to the privacy page, and nothing breaks the policy');
 
     // ----- a new person -----
     google.next = { sub: 'g-ana', email: 'ana@gmail.com' };

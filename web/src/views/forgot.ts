@@ -27,7 +27,7 @@ export function forgotView(options: { onBack: () => void }): View {
         proof.element,
         submit,
         back);
-    const element = h('div', { class: 'page' }, form);
+    const element = h('div', { class: 'page page--gate' }, form);
 
     form.addEventListener('submit', (event) => {
         event.preventDefault();

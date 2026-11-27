@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- The app's icon: the mark of Músicos Católicos (the ring with a cross of the public site's header, a 2-wide line on a 28 grid)
+       in the app's accent, on its dark background. The mark takes 57% of the side, inside the safe zone of a maskable icon. -->
+  <rect width="512" height="512" fill="#101216"/>
+  <g transform="translate(109 109) scale(10.5)" fill="none" stroke="#6cb8ff" stroke-width="2">
+    <circle cx="14" cy="14" r="12"/>
+    <path d="M14 6.5v15M9.5 11h9"/>
+  </g>
+</svg>

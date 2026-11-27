@@ -8,8 +8,7 @@ import { showToast } from '../toast.ts';
 import { chooseDialog } from '../views/confirm-dialog.ts';
 import { forgotView } from '../views/forgot.ts';
 import type { InstallBanner } from '../views/install-banner.ts';
-import { signInView } from '../views/signin.ts';
-import { signUpView } from '../views/signup.ts';
+import { accessView, type AccessMode } from '../views/access.ts';
 import { welcomeView } from '../views/welcome.ts';
 import type { Frame } from './frame.ts';
 import { splash, type Screen } from './screen.ts';
@@ -68,7 +67,8 @@ export function createSession(parts: SessionParts): Session {
                 void begin();
             },
             onNeedsSignIn: () => {
-                showSignIn({
+                showAccess({
+                    mode: 'sign-in',
                     message: 'Tu sesión terminó. Inicia sesión para seguir sincronizando; tus cantos siguen aquí.',
                     onSignedIn: (signedIn) => {
                         void data.adopt(signedIn).then(() => {
@@ -102,11 +102,26 @@ export function createSession(parts: SessionParts): Session {
         showToast(failure instanceof Error ? failure.message : 'No se pudo completar. Inténtalo de nuevo.');
     };
 
-    /** The sign-in form, with "Olvidé mi contraseña" (which comes back here) and, if given, a way back */
-    const showSignIn = (options: { onSignedIn: (email: string) => void; message?: string; onCancel?: () => void }): void => {
-        screen.show(signInView({
-            ...options,
-            onForgot: () => screen.show(forgotView({ onBack: () => showSignIn(options) })),
+    /**
+     * The screen to get in with an email: "Entrar" and "Crear cuenta" as two tabs of one screen, with Google on top. `onCreated`
+     * is what offers the second tab (a session that ended can only sign in); "Olvidé mi contraseña" comes back to the first.
+     */
+    const showAccess = (request: {
+        mode: AccessMode;
+        onSignedIn: (email: string) => void;
+        onCreated?: (email: string, mailSent: boolean) => void;
+        message?: string;
+        onCancel?: () => void;
+    }): void => {
+        screen.show(accessView({
+            mode: request.mode,
+            signIn: {
+                onSignedIn: request.onSignedIn,
+                ...(request.message === undefined ? {} : { message: request.message }),
+                onForgot: () => screen.show(forgotView({ onBack: () => showAccess({ ...request, mode: 'sign-in' }) })),
+            },
+            ...(request.onCreated === undefined ? {} : { signUp: { onCreated: request.onCreated } }),
+            ...(request.onCancel === undefined ? {} : { onCancel: request.onCancel }),
         }));
     };
 
@@ -150,13 +165,19 @@ export function createSession(parts: SessionParts): Session {
         return 'dropped';
     };
 
-    /** Shows the sign-in form over the app of a person with no account; "Volver" gives the app back */
-    const signInFromGuest = (): void => {
-        showSignIn({
+    /**
+     * The access screen (Entrar / Crear cuenta) over the app of a person with no account; "Volver" gives the app back. Whichever
+     * tab they use, what they wrote with no account is asked about (see `adoptGuestWork`).
+     */
+    const accessFromGuest = (mode: AccessMode): void => {
+        showAccess({
+            mode,
             onSignedIn: (email) => void finishGuestSignIn(email).catch(report),
+            onCreated: (email, mailSent) => void finishSignUp(email, mailSent, true).catch(report),
             onCancel: () => showApp(),
         });
     };
+    const signInFromGuest = (): void => accessFromGuest('sign-in');
 
     const finishGuestSignIn = async (email: string): Promise<void> => {
         const choice = await adoptGuestWork(email, 'sign-in');
@@ -173,14 +194,7 @@ export function createSession(parts: SessionParts): Session {
         data.requestSync(0);
     };
 
-    /** The sign-up form over the app of a person with no account; "Volver" gives the app back */
-    const signUpFromGuest = (): void => {
-        screen.show(signUpView({
-            onCreated: (email, mailSent) => void finishSignUp(email, mailSent, true).catch(report),
-            onSignIn: signInFromGuest,
-            onCancel: () => showApp(),
-        }));
-    };
+    const signUpFromGuest = (): void => accessFromGuest('sign-up');
 
     /** The account exists and its session is open: take what the device holds (if it was a guest's), and land on the page that says the link went out */
     const finishSignUp = async (email: string, mailSent: boolean, wasGuest: boolean): Promise<void> => {
@@ -198,38 +212,24 @@ export function createSession(parts: SessionParts): Session {
         data.requestSync(0);
     };
 
-    /** What a device with nothing on it and no session shows: try the app, create an account, or sign in */
+    /** What a device with nothing on it and no session shows: Google, an email (to sign in or to create the account), or try the app */
     const showWelcome = (message?: string): void => {
-        const again = (): void => showWelcome(message);
         screen.show(welcomeView({
             onTry: () => {
                 void data.startGuest().then(enterGuest);
             },
-            onSignIn: () => {
-                showSignIn({
+            onEmail: () => {
+                showAccess({
+                    mode: 'sign-in',
                     onSignedIn: (email) => {
                         void data.adopt(email).then(() => {
                             enter(email);
                             data.requestSync(0);
                         });
                     },
-                    onCancel: again,
-                });
-            },
-            onSignUp: () => {
-                screen.show(signUpView({
                     onCreated: (email, mailSent) => void finishSignUp(email, mailSent, false).catch(report),
-                    onSignIn: () => showSignIn({
-                        onSignedIn: (signedIn) => {
-                            void data.adopt(signedIn).then(() => {
-                                enter(signedIn);
-                                data.requestSync(0);
-                            });
-                        },
-                        onCancel: again,
-                    }),
-                    onCancel: again,
-                }));
+                    onCancel: () => showWelcome(message),
+                });
             },
             ...(message === undefined ? {} : { message }),
         }));
@@ -254,6 +254,8 @@ export function createSession(parts: SessionParts): Session {
 
     /** What a device with nothing on it shows while it asks the server who is there */
     const showConnecting = (): void => {
+        // The page of a person who is not in yet: a bar and a screen, stacked (the rail of the app is not there; see `.is-gate`)
+        root.classList.add('is-gate');
         root.replaceChildren(
             h('header', { class: 'bar' }, h('h1', {}, 'Listas')),
             h('main', { id: 'view' }, splash('Conectando…')),

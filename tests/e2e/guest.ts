@@ -74,13 +74,13 @@ try {
     });
     await page.goto(server.base + '/');
     await page.getByRole('button', { name: 'Probar sin cuenta' }).waitFor();
-    await page.getByRole('button', { name: 'Ya tengo cuenta' }).waitFor();
-    await page.getByText('Sin cuenta, lo que escribas se guarda solo en este dispositivo').waitFor();
+    await page.getByRole('button', { name: 'Usar mi correo' }).waitFor();
+    await page.getByText('Sin cuenta, lo que escribas se queda en este dispositivo').waitFor();
     assert.equal(await page.getByRole('heading', { name: 'Inicia sesión' }).count(), 0, 'the app is not behind a login');
     pass('a device with nothing on it opens on the welcome: try with no account, or sign in');
 
-    // "Ya tengo cuenta" shows the form and "Volver" goes back to the welcome
-    await page.getByRole('button', { name: 'Ya tengo cuenta' }).click();
+    // "Usar mi correo" shows the form and "Volver" goes back to the welcome
+    await page.getByRole('button', { name: 'Usar mi correo' }).click();
     await page.getByRole('heading', { name: 'Inicia sesión' }).waitFor();
     await page.getByRole('button', { name: 'Volver' }).click();
     await page.getByRole('button', { name: 'Probar sin cuenta' }).waitFor();
