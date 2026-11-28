@@ -1653,6 +1653,55 @@ input[type='search'] {
         text-overflow: ellipsis;
     }
 
+    /* With an account the foot is the person: their letter (its ring is the colour of the sync dot) and their address cut to fit; it
+       leads to Ajustes, where "Cerrar sesión" is. It says nothing about the sync: the dot at the top right says it */
+    .menu__foot--account {
+        flex-direction: row;
+        align-items: center;
+        gap: 0.55rem;
+        padding: 0.7rem 0.4rem;
+        color: var(--muted);
+        text-decoration: none;
+    }
+
+    .menu__foot--account:hover .menu__email {
+        color: var(--text);
+    }
+
+    .menu__foot--account .menu__email {
+        flex: 1;
+        min-width: 0;
+        white-space: nowrap;
+    }
+
+    .menu__avatar {
+        display: grid;
+        flex: none;
+        place-items: center;
+        box-sizing: border-box;
+        width: 2.1rem;
+        height: 2.1rem;
+        color: var(--accent);
+        background: var(--accent-soft);
+        border: 0.15rem solid var(--ok);
+        border-radius: 50%;
+        font-size: 0.95rem;
+        font-weight: 700;
+    }
+
+    .menu__avatar--busy {
+        border-color: var(--accent);
+    }
+
+    .menu__avatar--quiet {
+        border-color: var(--faint);
+    }
+
+    .menu__avatar--pending,
+    .menu__avatar--warn {
+        border-color: var(--warn);
+    }
+
     .bar__back {
         flex: 1;
     }
@@ -2011,12 +2060,232 @@ a.item__more {
     font-weight: 700;
 }
 
-.settings__account {
-    margin-top: 1.5rem;
+/* The account, at the top of Ajustes (a card), and the way to delete it, at the end */
+.acct {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    margin: 0 0 1.5rem;
+    padding: 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0.9rem;
 }
 
-.settings__account h3 {
-    margin: 0 0 0.25rem;
+.acct p {
+    margin: 0;
+}
+
+.acct__who {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    min-width: 0;
+}
+
+.acct__avatar {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 2.9rem;
+    height: 2.9rem;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 50%;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.acct__id {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.acct__id strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.acct__how {
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+.acct__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.acct__chips:empty {
+    display: none;
+}
+
+.acct__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.12rem 0.6rem;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 0.8rem;
+}
+
+.settings__unconfirmed:empty {
+    display: none;
+}
+
+.settings__unconfirmed {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.settings__danger {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-top: 1.5rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--border);
+}
+
+.settings__danger h3 {
+    margin: 0;
+    color: var(--danger);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.settings__danger p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* A red outline, not a red fill: the way to delete is there for who looks for it, and is not touched by chance */
+button.button--danger-outline {
+    color: var(--danger);
+    background: none;
+    border-color: rgba(255, 139, 139, 0.5);
+}
+
+/* Deleting the account: what goes, as a list, and the pages of the process */
+.delete-account__gone {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin: 0.25rem 0 0.75rem;
+    padding: 0;
+    list-style: none;
+}
+
+.delete-account__gone li {
+    padding: 0.55rem 0.8rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--danger);
+    border-radius: 0.5rem;
+}
+
+.delete-account__google {
+    margin: 0 0 0.75rem;
+    padding: 0.6rem 0.8rem;
+    background: var(--accent-soft);
+    border-radius: 0.6rem;
+    font-size: 0.92rem;
+}
+
+.delete-account {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.delete-account h2,
+.delete-account p {
+    margin: 0;
+}
+
+.delete-account__badge {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    color: var(--ok);
+    background: rgba(122, 212, 154, 0.15);
+    border-radius: 50%;
+}
+
+.delete-account__badge--danger {
+    color: var(--danger);
+    background: rgba(255, 139, 139, 0.14);
+}
+
+.delete-account__leave {
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+/* A state of the process that is one message: the icon, the title and the words centred, the buttons as wide as the column */
+.delete-account--center {
+    align-items: center;
+    text-align: center;
+}
+
+.delete-account--center .actions {
+    align-self: stretch;
+}
+
+/* A plain text as a button ("Cancelar", "Volver a Ajustes"): the accent colour, no box, centred */
+a.button.button--text {
+    color: var(--accent);
+    background: none;
+    border-color: transparent;
+}
+
+/* Taking a copy: an outline in the accent colour (it is not the main thing of the screen, and it is not a danger either) */
+button.button--accent-outline {
+    color: var(--accent);
+    background: none;
+    border-color: var(--accent);
+}
+
+/* A page over everything, with no menu and no sync line: what is asked of a person before the app opens (keep the account?) */
+.gate-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    background: var(--bg);
+}
+
+.gate-overlay__body {
+    flex: 1;
+}
+
+@media (min-width: 900px) {
+    .gate-overlay .bar {
+        justify-content: center;
+    }
+
+    .gate-overlay .bar h1 {
+        flex: none;
+    }
+}
+
+/* A link inside a sentence ("... presiona Cerrar sesión."): it reads as the words around it, underlined and in the accent */
+button.link.link--inline {
+    display: inline;
+    min-height: 0;
+    padding: 0;
+    font: inherit;
+    text-decoration: underline;
 }
 
 .install-banner {

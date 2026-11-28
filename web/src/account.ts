@@ -26,3 +26,10 @@ export function passwordProblem(password: string): string | null {
 
     return new TextEncoder().encode(password).length > PASSWORD_MAX_BYTES ? 'La contraseña es demasiado larga: usa menos de 72 caracteres.' : null;
 }
+
+/** The first letter of an email, upper case, for the circle that stands for the person (`?` when there is none) */
+export function initialOf(email: string | null): string {
+    const first = email?.trim().charAt(0) ?? '';
+
+    return first === '' ? '?' : first.toLocaleUpperCase('es');
+}

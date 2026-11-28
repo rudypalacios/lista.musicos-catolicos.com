@@ -15,6 +15,7 @@ final class EmailTokens
 {
     public const VERIFY = 'verify';
     public const RESET = 'reset';
+    public const DELETE = 'delete';
 
     public function __construct(private readonly PDO $pdo)
     {
@@ -23,7 +24,7 @@ final class EmailTokens
     /**
      * A new code for the user. `$ttlSeconds` is how long it lives; `$now` is epoch ms.
      *
-     * @param self::VERIFY|self::RESET $purpose
+     * @param self::VERIFY|self::RESET|self::DELETE $purpose
      */
     public function issue(string $userId, string $purpose, int $ttlSeconds, int $now): string
     {
@@ -44,7 +45,7 @@ final class EmailTokens
      * Spends the code: the id of the user it was made for, or null when it is not a code, was made for something else,
      * expired or was already used. Two requests with the same code cannot both win.
      *
-     * @param self::VERIFY|self::RESET $purpose
+     * @param self::VERIFY|self::RESET|self::DELETE $purpose
      */
     public function consume(string $token, string $purpose, int $now): ?string
     {
@@ -64,6 +65,26 @@ final class EmailTokens
         $spent->execute([$hash]);
 
         return $spent->rowCount() === 1 ? $userId : null;
+    }
+
+    /**
+     * Who a code is for, without spending it: the page a link opens shows what it will do before the person says yes. Null for a
+     * code that is not one, is for something else or expired.
+     *
+     * @param self::VERIFY|self::RESET|self::DELETE $purpose
+     */
+    public function peek(string $token, string $purpose, int $now): ?string
+    {
+        if (preg_match('~^[0-9a-f]{64}$~', $token) !== 1) {
+            return null;
+        }
+        $statement = $this->pdo->prepare(
+            'SELECT user_id FROM email_tokens WHERE token_hash = ? AND purpose = ? AND expires_at > ?'
+        );
+        $statement->execute([hash('sha256', $token), $purpose, $now]);
+        $userId = $statement->fetchColumn();
+
+        return is_string($userId) ? $userId : null;
     }
 
     /** Cancels every code of the user (a new password makes the old links worthless) */

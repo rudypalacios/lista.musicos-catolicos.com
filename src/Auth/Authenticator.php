@@ -76,14 +76,22 @@ final class Authenticator
     public function authenticate(string $token): ?User
     {
         $statement = $this->pdo->prepare(
-            'SELECT u.id, u.email, u.email_verified_at FROM sessions s JOIN users u ON u.id = s.user_id '
+            'SELECT u.id, u.email, u.email_verified_at, u.delete_after, '
+            . "EXISTS (SELECT 1 FROM identities i WHERE i.user_id = u.id AND i.provider = 'google') AS google "
+            . 'FROM sessions s JOIN users u ON u.id = s.user_id '
             . 'WHERE s.token_hash = ? AND s.expires_at > ?'
         );
         $statement->execute([hash('sha256', $token), gmdate('Y-m-d H:i:s')]);
         $row = $statement->fetch();
 
         return is_array($row)
-            ? new User((string) $row['id'], (string) $row['email'], $row['email_verified_at'] !== null)
+            ? new User(
+                (string) $row['id'],
+                (string) $row['email'],
+                $row['email_verified_at'] !== null,
+                $row['delete_after'] === null ? null : (int) $row['delete_after'],
+                (int) $row['google'] === 1
+            )
             : null;
     }
 

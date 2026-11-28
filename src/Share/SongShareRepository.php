@@ -88,7 +88,8 @@ final class SongShareRepository
         $statement = $this->pdo->prepare(
             'SELECT g.id, g.title, g.author, g.body, g.listen_url, g.updated_at FROM song_shares s '
             . 'JOIN songs g ON g.id = s.song_id AND g.user_id = s.user_id '
-            . 'WHERE s.code = ? AND s.revoked_at IS NULL AND g.deleted_at IS NULL'
+            . 'JOIN users u ON u.id = s.user_id '
+            . 'WHERE s.code = ? AND s.revoked_at IS NULL AND g.deleted_at IS NULL AND u.delete_after IS NULL'
         );
         $statement->execute([$code]);
         $row = $statement->fetch();
@@ -119,7 +120,8 @@ final class SongShareRepository
     {
         $statement = $this->pdo->prepare(
             'SELECT g.title FROM song_shares s JOIN songs g ON g.id = s.song_id AND g.user_id = s.user_id '
-            . 'WHERE s.code = ? AND s.revoked_at IS NULL AND g.deleted_at IS NULL'
+            . 'JOIN users u ON u.id = s.user_id '
+            . 'WHERE s.code = ? AND s.revoked_at IS NULL AND g.deleted_at IS NULL AND u.delete_after IS NULL'
         );
         $statement->execute([$code]);
         $title = $statement->fetchColumn();

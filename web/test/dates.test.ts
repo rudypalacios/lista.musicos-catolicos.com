@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { isValidDate, longDate, shortDate, shortDay, today } from '../src/dates.ts';
+import { dayInWords, isValidDate, longDate, shortDate, shortDay, today } from '../src/dates.ts';
 
 describe('isValidDate', () => {
     it('accepts real calendar days', () => {
@@ -41,5 +41,13 @@ describe('shortDay', () => {
         assert.equal(shortDay('2026-11-01'), 'dom 1 nov');
         assert.equal(shortDay('2026-09-06'), 'dom 6 sep');
         assert.equal(shortDay('2026-12-31'), 'jue 31 dic');
+    });
+});
+
+describe('dayInWords', () => {
+    it('is the day a moment falls on, by the clock of the device, in words', () => {
+        assert.equal(dayInWords(new Date(2026, 11, 3, 15, 30)), 'jueves 3 de diciembre');
+        assert.equal(dayInWords(new Date(2026, 0, 1, 0, 5).getTime()), 'jueves 1 de enero');
+        assert.equal(dayInWords(new Date(2026, 10, 29, 23, 59)), 'domingo 29 de noviembre');
     });
 });

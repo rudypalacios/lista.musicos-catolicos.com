@@ -12,7 +12,7 @@ import { createSession } from './shell/session.ts';
 import { showFatal, startUpdates } from './updates.ts';
 import { screenKeeper } from './wakelock.ts';
 import { createInstallBanner } from './views/install-banner.ts';
-import { startResetPassword, startVerifyEmail } from './views/account-link.ts';
+import { startDeleteAccountLink, startResetPassword, startVerifyEmail } from './views/account-link.ts';
 import { startPrivacy } from './views/privacy.ts';
 import { startShared } from './views/shared.ts';
 
@@ -76,14 +76,16 @@ if (visiting.name === 'shared') {
     app.classList.add('is-gate');
     startUpdates(false);
     startPrivacy(app);
-} else if (visiting.name === 'verify' || visiting.name === 'reset') {
+} else if (visiting.name === 'verify' || visiting.name === 'reset' || visiting.name === 'delete-link') {
     // The link of an email: a page of its own that needs no session and no data of this device
     app.classList.add('is-gate');
     startUpdates(false);
     if (visiting.name === 'verify') {
         startVerifyEmail(app, visiting.token);
-    } else {
+    } else if (visiting.name === 'reset') {
         startResetPassword(app, visiting.token);
+    } else {
+        startDeleteAccountLink(app, visiting.token);
     }
 } else {
     applyReadingColors();

@@ -1,5 +1,6 @@
 import { ApiError, api } from '../api.ts';
 import { passwordProblem } from '../account.ts';
+import { dayInWords } from '../dates.ts';
 import { h } from '../dom.ts';
 
 /** The page a link of an email opens: it needs no session and is often opened in another browser than the one that signed up */
@@ -70,4 +71,68 @@ export function startResetPassword(root: HTMLElement, token: string): void {
             });
     });
     queueMicrotask(() => password.focus());
+}
+
+/** The words for what the person sees go in a list on the page of the deletion link (the numbers are the server's) */
+function goneList(preview: { songs: number; lists: number; templates: number }): HTMLElement {
+    const parts = [
+        preview.songs > 0 ? `${preview.songs} ${preview.songs === 1 ? 'canto' : 'cantos'}` : null,
+        preview.lists > 0 ? `${preview.lists} ${preview.lists === 1 ? 'listado' : 'listados'}` : null,
+        preview.templates > 0 ? `${preview.templates} ${preview.templates === 1 ? 'plantilla' : 'plantillas'}` : null,
+    ].filter((part): part is string => part !== null);
+    const last = parts.pop();
+    const mine = last === undefined ? null : parts.length === 0 ? last : `${parts.join(', ')} y ${last}`;
+
+    return h('ul', { class: 'delete-account__gone' },
+        h('li', {}, 'Tu cuenta y tu correo'),
+        ...(mine === null ? [] : [h('li', {}, mine)]),
+        h('li', {}, 'Los enlaces que compartiste'));
+}
+
+/**
+ * `/eliminar/:token`: the link of the email that asks to confirm deleting the account. It shows what will go and asks: opening the
+ * link never deletes anything by itself (a program that reads the links of an email would), and "Sí, eliminar mi cuenta" keeps the
+ * account 3 days before it goes, in case the person changes their mind.
+ */
+export function startDeleteAccountLink(root: HTMLElement, token: string): void {
+    const invalid = (offline: boolean): void => frame(root,
+        h('h2', {}, 'Este enlace ya no sirve'),
+        h('p', {}, offline
+            ? 'Necesitas conexión para esto. Abre el enlace otra vez cuando la tengas.'
+            : 'Ya se usó o venció. Si todavía quieres eliminar tu cuenta, pide otro enlace desde Ajustes, en la app.'),
+        h('div', { class: 'actions welcome__actions' }, OPEN_THE_APP()));
+
+    frame(root, h('p', { class: 'muted', role: 'status' }, h('span', { class: 'spinner', 'aria-hidden': 'true' }), ' Abriendo el enlace…'));
+    api.previewAccountDeletion(token)
+        .then((preview) => {
+            const say = h('p', { class: 'error', role: 'alert' });
+            const yes = h('button', { type: 'button', class: 'button button--danger-solid' }, 'Sí, eliminar mi cuenta');
+            yes.addEventListener('click', () => {
+                yes.disabled = true;
+                say.textContent = '';
+                api.confirmAccountDeletion(token)
+                    .then((done) => frame(root,
+                        h('h2', {}, `Tu cuenta se eliminará el ${dayInWords(done.deleteAfter)}`),
+                        h('p', {}, `Hasta ese día puedes cambiar de opinión: entra otra vez en Listas con ${done.email} y elige «Conservar mi cuenta». Después se borra para siempre.`),
+                        h('p', { class: 'muted' }, 'Mientras tanto se cerraron tus sesiones y tus enlaces compartidos dejaron de funcionar.'),
+                        h('div', { class: 'actions welcome__actions' }, OPEN_THE_APP())))
+                    .catch((failure: unknown) => {
+                        if (failure instanceof ApiError && failure.code === 'invalid_token') {
+                            invalid(false);
+
+                            return;
+                        }
+                        say.textContent = failure instanceof ApiError && failure.isOffline ? 'Necesitas conexión para esto.' : failure instanceof Error ? failure.message : 'No se pudo completar.';
+                        yes.disabled = false;
+                    });
+            });
+            frame(root,
+                h('h2', {}, '¿Eliminar tu cuenta?'),
+                h('p', { class: 'muted' }, `Cuenta: ${preview.email}`),
+                goneList(preview),
+                h('p', { class: 'muted' }, 'Tu cuenta se guardará 3 días por si cambias de opinión. Después se borra para siempre.'),
+                say,
+                h('div', { class: 'actions welcome__actions' }, yes, h('a', { class: 'button', href: '/' }, 'No, conservarla')));
+        })
+        .catch((failure: unknown) => invalid(failure instanceof ApiError && failure.isOffline));
 }

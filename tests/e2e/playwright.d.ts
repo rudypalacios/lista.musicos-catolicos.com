@@ -5,7 +5,13 @@ declare module 'playwright' {
         has?: Locator;
         hasText?: string | RegExp;
     }
+    /** A file the page offered to save (`acceptDownloads`) */
+    interface Download {
+        suggestedFilename(): string;
+        saveAs(path: string): Promise<void>;
+    }
     interface Locator {
+        scrollIntoViewIfNeeded(): Promise<void>;
         click(options?: { force?: boolean; position?: { x: number; y: number } }): Promise<void>;
         tap(): Promise<void>;
         check(): Promise<void>;
@@ -53,6 +59,7 @@ declare module 'playwright' {
         dismiss(): Promise<void>;
     }
     interface Page {
+        waitForEvent(event: 'download'): Promise<Download>;
         evaluate<T>(callback: () => T | Promise<T>): Promise<T>;
         evaluate<T, A>(callback: (argument: A) => T | Promise<T>, argument: A): Promise<T>;
         setContent(html: string): Promise<void>;
@@ -94,6 +101,7 @@ declare module 'playwright' {
         newContext(options: {
             viewport: { width: number; height: number };
             serviceWorkers?: 'allow' | 'block';
+            acceptDownloads?: boolean;
             userAgent?: string;
             hasTouch?: boolean;
             isMobile?: boolean;

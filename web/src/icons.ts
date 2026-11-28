@@ -21,6 +21,12 @@ const DRAWINGS = {
     play: { filled: true, shapes: [['path', { d: 'M7 4l14 8-14 8z' }]] },
     pencil: { shapes: [['path', { d: 'M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z' }], ['path', { d: 'M14 6l4 4' }]] },
     upload: { shapes: [['path', { d: 'M12 16V4M7 9l5-5 5 5M5 20h14' }]] },
+    /** Taking a copy of what is in the app (Ajustes → "Descargar mis cantos") */
+    download: { shapes: [['path', { d: 'M12 4v11M7 11l5 5 5-5M5 20h14' }]] },
+    /** "Revisa tu correo" */
+    mail: { shapes: [['rect', { x: '3', y: '5', width: '18', height: '14', rx: '2' }], ['path', { d: 'M3 7l9 6 9-6' }]] },
+    /** Leaving the account ("Cerrar sesión") */
+    logout: { shapes: [['path', { d: 'M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4M16 8l4 4-4 4M20 12H9' }]] },
     file: { shapes: [['path', { d: 'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z' }], ['path', { d: 'M14 3v5h5M9 13h6M9 17h6' }]] },
     plus: { shapes: [['path', { d: 'M12 5v14M5 12h14' }]] },
     minus: { shapes: [['path', { d: 'M5 12h14' }]] },

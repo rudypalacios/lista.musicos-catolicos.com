@@ -51,13 +51,22 @@ export function createFrame(root: HTMLElement, data: App, installBanner: Install
             email = options.email;
             current = options;
             requestSignOut = () => {
+                // Signing out takes the songs off this device (they stay in the account), and with no connection they cannot be
+                // opened until the person signs in again: that is said before it happens, not after (the owner asked, 2026-11-28)
+                void confirmDialog({
+                    title: '¿Cerrar sesión?',
+                    text: 'Tus cantos y listados siguen guardados en tu cuenta. Se quitan de este dispositivo, y sin conexión no podrás verlos hasta volver a entrar.',
+                    confirm: 'Cerrar sesión',
+                }).then((yes) => (yes ? leave() : undefined));
+            };
+            const leave = (): void => {
                 void signOut(data, (unsent) =>
                     confirmDialog({
-                        title: '¿Salir de todos modos?',
+                        title: '¿Cerrar sesión de todos modos?',
                         text: unsent === 1
-                            ? 'Hay 1 canto escrito en este dispositivo que no se pudo enviar. Si sales ahora se perderá.'
-                            : `Hay ${unsent} cantos escritos en este dispositivo que no se pudieron enviar. Si sales ahora se perderán.`,
-                        confirm: 'Salir',
+                            ? 'Hay 1 canto escrito en este dispositivo que no se pudo enviar. Si cierras sesión ahora se perderá.'
+                            : `Hay ${unsent} cantos escritos en este dispositivo que no se pudieron enviar. Si cierras sesión ahora se perderán.`,
+                        confirm: 'Cerrar sesión',
                         danger: true,
                     }),
                 ).then((done) => {
@@ -73,7 +82,6 @@ export function createFrame(root: HTMLElement, data: App, installBanner: Install
                     // With no account the dot says so; there is nothing to sync
                     void data.syncNow({ full: true }).then(() => showToast(data.status().guest ? 'Sin cuenta: tus cantos están solo en este dispositivo' : pullAnswer(data.status().state)));
                 },
-                onSignOut: () => requestSignOut(),
                 onNeedsSignIn: options.onNeedsSignIn,
                 onSignUp: options.onSignUp,
             });

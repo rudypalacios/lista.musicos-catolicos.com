@@ -28,7 +28,7 @@ the list, and nothing in `DESIGN-LOCK.md` is touched unless the owner unlocks it
   the list or the song's sheet.
 - At the church with no connection: open, find the list, sing, go back, what the dot says.
 - Leaving and coming back: where the app opens, what it remembers, signing out and in.
-- Settings and account: Ajustes and Salir are two taps away since the menu.
+- Settings and account: Ajustes and Cerrar sesión (it was Salir) are two taps away since the menu.
 
 Candidates already noted: the key only while singing; duplicating a list; the order and wording of the sheets;
 adding several songs to a part without leaving the picker; moving a song to the start or the end of its part;
@@ -492,7 +492,8 @@ Next, in this order (design agreed with the owner):
       migrations `0021` and `0022`; tests `GoogleIdentityTest`, `OAuthStatesTest`, `GoogleAccountsTest`, `GoogleApiTest`, `web/test/google-return.test.ts` and `tests/e2e/google.ts`. **Owner's part:** the OAuth client in Google Cloud and the two values in `.env`
       (`DEPLOY.md`, "Entrar con Google"); **the iPad is checked by hand.** **Not done, on purpose:** Ajustes does not say whether the account has Google linked, there is no "unlink", and Google's address is not compared with a person who typed
       the same Gmail with or without dots (they are two accounts).
-      (5) the privacy text for the public site (emails of other people are stored: the owner publishes it before opening sign-up), delete my account, export. **Before opening sign-up:** the owner publishes the privacy text.
+      (5) **done (2026-11-28):** delete my account (a link by email, 3 days to change one's mind, then gone: `Auth/AccountDeletion.php`, migration `0023`, `/ajustes/eliminar`, `/eliminar/:token`) and a copy to take ("Descargar mis cantos", a `.zip` made on the device); see CLAUDE.md, "Deleting an account, and signing out". The privacy text lives in the app (`/privacidad`), as the owner wanted.
+      **Not done, on purpose:** the public site's privacy text is not changed until the owner mixes the two systems; a "recover my songs" import of the `.zip` (the files are ChordPro, so the importer reads them one by one); deleting the account from the link without being signed in on any device is the same flow.
 - [ ] Share the key a list has each song in when the lyrics are not shared: today the visitor of a list shared with no lyrics sees the order, the titles and the authors
       but no keys (the key comes from the chords, which the server does not read: the parser lives in the app).
 - [ ] `develop` branch and a preview environment, if more people use it.

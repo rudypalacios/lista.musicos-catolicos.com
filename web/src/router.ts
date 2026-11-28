@@ -33,6 +33,10 @@ export type Route =
     | { name: 'privacy' }
     /** Right after creating an account: the confirmation link was sent (`sent`) or could not be. Hangs from Ajustes */
     | { name: 'check-mail'; sent: boolean }
+    /** Ajustes → "Eliminar mi cuenta…": what is deleted, a copy to take, and the link by email that starts it. Hangs from Ajustes */
+    | { name: 'delete-account' }
+    /** The link in the email that confirms deleting the account (`/eliminar/:token`): a page of its own, no app around it */
+    | { name: 'delete-link'; token: string }
     | { name: 'not-found' };
 
 const ID = '([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|[\\w-]{1,64})';
@@ -108,8 +112,15 @@ export function matchRoute(path: string, search = ''): Route {
     if (reset?.[1] !== undefined) {
         return { name: 'reset', token: reset[1] };
     }
+    const deleteLink = /^\/eliminar\/([0-9a-f]{64})$/.exec(clean);
+    if (deleteLink?.[1] !== undefined) {
+        return { name: 'delete-link', token: deleteLink[1] };
+    }
     if (clean === '/privacidad') {
         return { name: 'privacy' };
+    }
+    if (clean === '/ajustes/eliminar') {
+        return { name: 'delete-account' };
     }
     if (clean === '/ajustes/correo') {
         return { name: 'check-mail', sent: new URLSearchParams(search).get('enviado') !== '0' };
@@ -174,6 +185,8 @@ export const paths = {
     settings: (): string => '/ajustes',
     /** How the app uses a person's data */
     privacy: (): string => '/privacidad',
+    /** Deleting the account (from Ajustes) */
+    deleteAccount: (): string => '/ajustes/eliminar',
     /** Where a new account lands: was the confirmation link sent? */
     checkMail: (sent: boolean): string => (sent ? '/ajustes/correo' : '/ajustes/correo?enviado=0'),
     /** What a visitor opens: a list somebody shared, or its `n`-th song (from 1) */
@@ -194,6 +207,7 @@ export function sectionOf(route: Route): 'songs' | 'lists' | 'settings' {
         case 'settings':
         case 'install':
         case 'check-mail':
+        case 'delete-account':
             return 'settings';
         default:
             return 'songs';
@@ -246,6 +260,7 @@ export function parentOf(route: Route): { path: string; label: string } | null {
             return { path: paths.templates(), label: 'Plantillas' };
         case 'install':
         case 'check-mail':
+        case 'delete-account':
             return { path: paths.settings(), label: 'Ajustes' };
         default:
             return null;

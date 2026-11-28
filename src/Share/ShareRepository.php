@@ -102,7 +102,8 @@ final class ShareRepository
         $statement = $this->pdo->prepare(
             'SELECT s.user_id, s.with_lyrics, l.id, l.title, l.items, l.parts, l.updated_at FROM shares s '
             . 'JOIN setlists l ON l.id = s.setlist_id AND l.user_id = s.user_id '
-            . 'WHERE s.code = ? AND s.revoked_at IS NULL AND l.deleted_at IS NULL'
+            . 'JOIN users u ON u.id = s.user_id '
+            . 'WHERE s.code = ? AND s.revoked_at IS NULL AND l.deleted_at IS NULL AND u.delete_after IS NULL'
         );
         $statement->execute([$code]);
         $row = $statement->fetch();
@@ -166,7 +167,8 @@ final class ShareRepository
     {
         $statement = $this->pdo->prepare(
             'SELECT l.title FROM shares s JOIN setlists l ON l.id = s.setlist_id AND l.user_id = s.user_id '
-            . 'WHERE s.code = ? AND s.revoked_at IS NULL AND l.deleted_at IS NULL'
+            . 'JOIN users u ON u.id = s.user_id '
+            . 'WHERE s.code = ? AND s.revoked_at IS NULL AND l.deleted_at IS NULL AND u.delete_after IS NULL'
         );
         $statement->execute([$code]);
         $title = $statement->fetchColumn();
