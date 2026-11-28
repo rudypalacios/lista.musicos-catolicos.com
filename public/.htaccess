@@ -33,13 +33,14 @@ AddType application/manifest+json .webmanifest
 #
 # Cache. The build gives JS and CSS a content hash in the name (main-AB12CD34.js), so those
 # never change under the same URL. The files that name them must always be revalidated: the
-# service worker, the shell and the manifest.
+# service worker, the shell, the manifest and the icons (a phone keeps an icon by its address for days:
+# a new drawing goes in a new folder of public/icons/, and the old addresses revalidate).
 #
 <IfModule mod_headers.c>
   <FilesMatch "-[A-Z0-9]{8}\.(js|css)$">
     Header set Cache-Control "public, max-age=31536000, immutable"
   </FilesMatch>
-  <FilesMatch "^(sw\.js|index\.html|manifest\.webmanifest)$">
+  <FilesMatch "^(sw\.js|index\.html|manifest\.webmanifest|apple-touch-icon\.png|favicon\.ico|favicon-(16x16|32x32)\.png|android-chrome-(192x192|512x512)\.png)$">
     Header set Cache-Control "no-cache"
   </FilesMatch>
 </IfModule>

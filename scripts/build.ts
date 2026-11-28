@@ -15,11 +15,12 @@ const publicDir = join(root, 'public');
 /** Static files in public/ the app needs offline, besides what the build produces */
 const STATIC_SHELL = [
     '/manifest.webmanifest',
-    '/favicon-16x16.png',
-    '/favicon-32x32.png',
-    '/apple-touch-icon.png',
-    '/android-chrome-192x192.png',
-    '/android-chrome-512x512.png',
+    // The icons live in a folder with a number: a phone keeps an icon by its address for days, so a new drawing goes in a new folder
+    '/icons/2/favicon-16x16.png',
+    '/icons/2/favicon-32x32.png',
+    '/icons/2/apple-touch-icon.png',
+    '/icons/2/android-chrome-192x192.png',
+    '/icons/2/android-chrome-512x512.png',
 ];
 
 rmSync(join(publicDir, 'assets'), { recursive: true, force: true });

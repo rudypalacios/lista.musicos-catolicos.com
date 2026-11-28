@@ -41,6 +41,18 @@ const barSays = (page: Page): Promise<string> => page.locator('.perform__song-na
 const positionOf = (page: Page): Promise<string> => page.locator('.perform__count').innerText();
 const squares = (page: Page): Promise<number> => page.locator('.perform__pane').count();
 
+/**
+ * How many squares a page shows once it has had time to show `n`. After a reload "Sincronizado" is also what the dot says before the
+ * pull has come back, and the page redraws by itself when it does: looking at once would catch it a moment too early.
+ */
+async function squaresOnceItShows(page: Page, n: number): Promise<number> {
+    for (let attempt = 0; attempt < 50 && (await squares(page)) !== n; attempt++) {
+        await page.waitForTimeout(200);
+    }
+
+    return squares(page);
+}
+
 async function sing(page: Page, listId: string, n: number): Promise<void> {
     // The list may still be on its way from the server (it was just pushed): look again once it has had time to arrive
     for (let attempt = 0; attempt < 3; attempt++) {
@@ -74,7 +86,7 @@ try {
 
     // Page 2 alone: the sheet offers to divide it with the next song (3)
     await sing(wide, listId, 2);
-    assert.equal(await squares(wide), 1);
+    assert.equal(await squaresOnceItShows(wide, 1), 1);
     assert.equal(await positionOf(wide), '2/4');
     await openTools(wide);
     const divide = wide.locator('.sheet-layer.is-open').getByRole('button', { name: /Dividir con el canto siguiente/ });
@@ -117,7 +129,7 @@ try {
     // The page is what moves: after 2 and 3 comes 4, before them comes 1
     await wide.keyboard.press('ArrowRight');
     await wide.locator('.perform__count', { hasText: '4/4' }).waitFor();
-    assert.equal(await squares(wide), 1);
+    assert.equal(await squaresOnceItShows(wide, 1), 1);
     assert.equal(await positionOf(wide), '4/4');
     await openTools(wide);
     const last = wide.locator('.sheet-layer.is-open').getByRole('button', { name: /Dividir con el canto siguiente/ });
@@ -191,7 +203,7 @@ try {
     await wide.reload();
     await synced(wide);
     await sing(wide, listId, 2);
-    assert.equal(await squares(wide), 1, 'and the other device sees it separated');
+    assert.equal(await squaresOnceItShows(wide, 1), 1, 'and the other device sees it separated');
     pass('"Separar los dos cantos" makes each song a page again, on both devices');
 
     assert.deepEqual(problems, [], 'no uncaught errors in the page');
