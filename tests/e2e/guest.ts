@@ -115,10 +115,10 @@ try {
 
     await openSection(page, 'Ajustes');
     await page.getByText('Sin cuenta. Tus cantos, listados y plantillas están solo en este dispositivo.').waitFor();
-    assert.equal(await page.getByRole('button', { name: 'Salir' }).count(), 0, 'there is nothing to sign out of');
+    assert.equal(await page.getByRole('button', { name: 'Cerrar sesión' }).count(), 0, 'there is nothing to sign out of');
     await page.getByRole('button', { name: 'Ya tengo cuenta' }).first().waitFor();
     await page.getByRole('button', { name: 'Crear cuenta' }).first().waitFor();
-    pass('Ajustes says there is no account and offers to sign in instead of "Salir"');
+    pass('Ajustes says there is no account and offers to sign in instead of "Cerrar sesión"');
 
     // ----- signing in: cancelling the question changes nothing -----
     await openSection(page, 'Cantos');

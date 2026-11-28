@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http;
 
+use App\Auth\AccountDeletion;
 use App\Auth\Accounts;
 use App\Auth\Google\GoogleAccounts;
 use App\Auth\Google\GoogleOAuth;
@@ -14,6 +15,10 @@ use App\Auth\Authenticator;
 use App\Auth\EmailTokens;
 use App\Config;
 use App\Database\Migrator;
+use App\Http\Actions\AccountDeleteConfirmAction;
+use App\Http\Actions\AccountDeletePreviewAction;
+use App\Http\Actions\AccountDeleteRequestAction;
+use App\Http\Actions\AccountKeepAction;
 use App\Http\Actions\AuthOptionsAction;
 use App\Http\Actions\ChallengeAction;
 use App\Http\Actions\ForgotPasswordAction;
@@ -35,6 +40,7 @@ use App\Http\Actions\SharedViewAction;
 use App\Http\Actions\SongShareAction;
 use App\Http\Actions\VerifyEmailAction;
 use App\Http\Middleware\JsonOnly;
+use App\Http\Middleware\PurgeDueAccounts;
 use App\Http\Middleware\RequireUser;
 use App\Mail\AccountMail;
 use App\Mail\LogMailer;
@@ -78,12 +84,9 @@ final class AppFactory
     ): App {
         $authenticator = new Authenticator($pdo);
         $mailer ??= $config->mail->canSend() ? new SmtpMailer($config->mail) : new LogMailer();
-        $accounts = new Accounts(
-            $pdo,
-            $authenticator,
-            new EmailTokens($pdo),
-            new AccountMail($mailer, $config->appUrl)
-        );
+        $accountMail = new AccountMail($mailer, $config->appUrl);
+        $accounts = new Accounts($pdo, $authenticator, new EmailTokens($pdo), $accountMail);
+        $deletion = new AccountDeletion($pdo, $authenticator, new EmailTokens($pdo), $accountMail);
         // Google is offered only when the owner has set it up (or a test brings its own stand-in)
         $google ??= $config->google->isConfigured()
             ? new HttpGoogleOAuth($config->google, $config->appUrl . '/api/google/callback')
@@ -122,7 +125,8 @@ final class AppFactory
             $proof,
             $limits,
             $googleSignIn,
-            $config
+            $config,
+            $deletion
         ): void {
             $api->get('/health', new HealthAction($migrator));
             $api->post('/login', new LoginAction($authenticator));
@@ -142,7 +146,14 @@ final class AppFactory
             $api->get('/google/start', new GoogleStartAction($googleSignIn, $limits, $config->appUrl));
             $api->get('/google/callback', new GoogleCallbackAction($googleSignIn, $limits, $config->appUrl));
 
-            $api->get('/me', new MeAction())->add(new RequireUser($authenticator));
+            // Deleting the account: a link by email, 3 days to change one's mind, then it is deleted (AccountDeletion)
+            $api->post('/account/delete-request', new AccountDeleteRequestAction($deletion, $limits))
+                ->add(new RequireUser($authenticator));
+            $api->post('/account/delete-preview', new AccountDeletePreviewAction($deletion));
+            $api->post('/account/delete-confirm', new AccountDeleteConfirmAction($deletion));
+            $api->post('/account/keep', new AccountKeepAction($deletion))->add(new RequireUser($authenticator, true));
+
+            $api->get('/me', new MeAction())->add(new RequireUser($authenticator, true));
             $api->get('/sync', new PullAction($feed))->add(new RequireUser($authenticator));
             $api->post('/sync', new PushAction($songs, $setlists, $templates))->add(new RequireUser($authenticator));
 
@@ -157,7 +168,7 @@ final class AppFactory
             $api->get('/songs/{id}/share', [$song, 'status'])->add(new RequireUser($authenticator));
             $api->put('/songs/{id}/share', [$song, 'enable'])->add(new RequireUser($authenticator));
             $api->delete('/songs/{id}/share', [$song, 'revoke'])->add(new RequireUser($authenticator));
-        })->add(new JsonOnly());
+        })->add(new JsonOnly())->add(new PurgeDueAccounts($deletion));
 
         // Errors answer in JSON; the details only outside production
         $errors = $app->addErrorMiddleware(!$config->isProduction(), true, true);

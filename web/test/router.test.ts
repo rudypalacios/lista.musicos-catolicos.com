@@ -99,6 +99,18 @@ describe('matchRoute', () => {
         assert.deepEqual(parentOf(matchRoute('/ajustes/correo')), { path: '/ajustes', label: 'Ajustes' });
     });
 
+    it('knows the pages of deleting the account: the screen that hangs from Ajustes, and the page of the link in the email', () => {
+        const token = 'ab'.repeat(32);
+
+        assert.deepEqual(matchRoute('/ajustes/eliminar'), { name: 'delete-account' });
+        assert.equal(sectionOf(matchRoute('/ajustes/eliminar')), 'settings');
+        assert.deepEqual(parentOf(matchRoute('/ajustes/eliminar')), { path: '/ajustes', label: 'Ajustes' });
+        assert.equal(paths.deleteAccount(), '/ajustes/eliminar');
+        assert.deepEqual(matchRoute(`/eliminar/${token}`), { name: 'delete-link', token });
+        assert.equal(matchRoute(`/eliminar/${'ab'.repeat(31)}`).name, 'not-found', 'a code is 64 hex characters');
+        assert.equal(matchRoute('/eliminar').name, 'not-found');
+    });
+
     it('knows the settings screen, which belongs to no tab', () => {
         assert.deepEqual(matchRoute('/ajustes'), { name: 'settings' });
         assert.deepEqual(matchRoute('/ajustes/'), { name: 'settings' });

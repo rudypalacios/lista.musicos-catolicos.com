@@ -1,4 +1,4 @@
-import { api, ApiError } from '../api.ts';
+import { api, ApiError, type Me } from '../api.ts';
 import type { App } from '../app.ts';
 import { GOOGLE_PROBLEMS, readGoogleReturn, type GoogleReturn } from '../google-return.ts';
 import { describeGuestWork, hasGuestWork, isGuest } from '../guest.ts';
@@ -9,6 +9,7 @@ import { chooseDialog } from '../views/confirm-dialog.ts';
 import { forgotView } from '../views/forgot.ts';
 import type { InstallBanner } from '../views/install-banner.ts';
 import { accessView, type AccessMode } from '../views/access.ts';
+import { showKeepAccount } from '../views/keep-account.ts';
 import { welcomeView } from '../views/welcome.ts';
 import type { Frame } from './frame.ts';
 import { splash, type Screen } from './screen.ts';
@@ -103,6 +104,30 @@ export function createSession(parts: SessionParts): Session {
     };
 
     /**
+     * A session was just opened: if the account asked to be deleted and its 3 days are not up, the person is offered to keep it
+     * (`keepAccountView`) before `proceed` opens anything. "Seguir con la eliminación" ends the session and runs `leave`. If the server
+     * cannot be asked (no connection right after signing in) it goes on: the sync finds out and says so.
+     */
+    const guardPending = async (proceed: () => void, leave: () => void): Promise<void> => {
+        let deleteAfter: number | null = null;
+        try {
+            deleteAfter = (await api.me()).deleteAfter ?? null;
+        } catch {
+            // Nothing to offer without an answer
+        }
+        if (deleteAfter === null) {
+            proceed();
+
+            return;
+        }
+        showKeepAccount({
+            deleteAfter,
+            onKeep: proceed,
+            onLeave: () => void api.logout().catch(() => undefined).then(leave),
+        });
+    };
+
+    /**
      * The screen to get in with an email: "Entrar" and "Crear cuenta" as two tabs of one screen, with Google on top. `onCreated`
      * is what offers the second tab (a session that ended can only sign in); "Olvidé mi contraseña" comes back to the first.
      */
@@ -113,10 +138,13 @@ export function createSession(parts: SessionParts): Session {
         message?: string;
         onCancel?: () => void;
     }): void => {
+        // An account that asked to be deleted and is in its 3 days is offered to keep, before anything else of the app opens; if the
+        // person goes on with the deletion they are where they were (the way back of this screen, or this screen again)
+        const signedIn = (email: string): void => void guardPending(() => request.onSignedIn(email), request.onCancel ?? (() => showAccess(request)));
         screen.show(accessView({
             mode: request.mode,
             signIn: {
-                onSignedIn: request.onSignedIn,
+                onSignedIn: signedIn,
                 ...(request.message === undefined ? {} : { message: request.message }),
                 onForgot: () => screen.show(forgotView({ onBack: () => showAccess({ ...request, mode: 'sign-in' }) })),
             },
@@ -272,29 +300,43 @@ export function createSession(parts: SessionParts): Session {
     const finishGoogle = async (created: boolean): Promise<boolean> => {
         const owner = await data.owner();
         showConnecting();
-        let email: string;
+        let me: Me;
         try {
-            email = (await api.me()).email;
+            me = await api.me();
         } catch {
             return false;
         }
+        const email = me.email;
 
-        if (isGuest(owner)) {
-            await data.startGuest();
-            const choice = await adoptGuestWork(email, created ? 'sign-up' : 'sign-in');
-            if (choice === 'cancelled') {
-                enterGuest();
+        const goOn = async (): Promise<void> => {
+            if (isGuest(owner)) {
+                await data.startGuest();
+                const choice = await adoptGuestWork(email, created ? 'sign-up' : 'sign-in');
+                if (choice === 'cancelled') {
+                    enterGuest();
 
-                return true;
+                    return;
+                }
+                if (choice === 'dropped') {
+                    history.replaceState(null, '', paths.list());
+                }
+            } else if (owner !== email) {
+                await data.adopt(email);
             }
-            if (choice === 'dropped') {
-                history.replaceState(null, '', paths.list());
-            }
-        } else if (owner !== email) {
-            await data.adopt(email);
+            enter(email);
+            data.requestSync(0);
+        };
+        if (me.deleteAfter !== undefined && me.deleteAfter !== null) {
+            // It asked to be deleted: keep it, or go on and end this session
+            showKeepAccount({
+                deleteAfter: me.deleteAfter,
+                onKeep: () => void goOn().catch(report),
+                onLeave: () => void api.logout().catch(() => undefined).then(() => open()),
+            });
+
+            return true;
         }
-        enter(email);
-        data.requestSync(0);
+        await goOn();
 
         return true;
     };

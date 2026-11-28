@@ -1,5 +1,6 @@
 import type { Status } from '../app.ts';
 import { draftTag, h, link } from '../dom.ts';
+import { initialOf } from '../account.ts';
 import { icon, type IconName } from '../icons.ts';
 import { parentOf, paths, sectionOf, titleOf, type Route } from '../router.ts';
 import { songHeading, type SongHeading } from '../song-heading.ts';
@@ -20,8 +21,6 @@ export interface HeaderOptions {
     email: string | null;
     /** Syncs now; the dot in the bar does this when touched */
     onSync: () => void;
-    /** Asks to sign out (it asks first when something was never sent) */
-    onSignOut: () => void;
     /** The session ended, or there is no account: lets the person sign in */
     onNeedsSignIn: () => void;
     /** Opens the sign-up form (for a person with no account) */
@@ -40,8 +39,8 @@ const ENTRIES: ReadonlyArray<{ section: 'songs' | 'lists' | 'settings'; label: s
  * whole height and has its way back); at the left of a wide screen, always there. The bar says the
  * name of the screen, or on a screen that hangs from another, the way back to it, and holds a dot
  * for the sync: it says nothing while all is sent, a line under the bar speaks when something is
- * wrong, and touching it syncs now. The account (email, Salir) lives in Ajustes, and at the foot of
- * the menu on a wide screen.
+ * wrong, and touching it syncs now. The account (email, "Cerrar sesión") lives in Ajustes, and its
+ * letter and address are at the foot of the menu on a wide screen, which leads there.
  */
 export function createHeader(options: HeaderOptions): Header {
     const title = h('b', { class: 'bar__title' });
@@ -100,13 +99,25 @@ export function createHeader(options: HeaderOptions): Header {
         element: h('a', { href: entry.path, class: 'menu__entry', 'data-link': true, 'data-section': entry.section },
             icon(entry.glyph, 22), h('span', {}, entry.label)),
     }));
-    // With no account there is nothing to sign out of: the foot offers to sign in instead
-    const signOut = h('button', { type: 'button', class: 'link' }, options.email === null ? 'Iniciar sesión' : 'Salir');
-    signOut.addEventListener('click', options.email === null ? options.onNeedsSignIn : options.onSignOut);
+    // With no account there is nothing to sign out of: the foot offers to sign in instead. With one, the foot is the person: their
+    // letter (its ring is the colour of the sync dot, `paint`), their address cut to fit, and a button to leave. It says nothing
+    // about the sync: the dot says it (the owner, 2026-11-28).
+    const avatar = h('span', { class: 'menu__avatar menu__avatar--ok', 'aria-hidden': 'true' }, initialOf(options.email));
+    const foot = options.email === null
+        ? (() => {
+            const signIn = h('button', { type: 'button', class: 'link' }, 'Iniciar sesión');
+            signIn.addEventListener('click', options.onNeedsSignIn);
+
+            return h('div', { class: 'menu__foot' }, h('span', { class: 'menu__email' }, 'Sin cuenta'), signIn);
+        })()
+        // The foot takes the person to their account (Ajustes), where "Cerrar sesión" is: it has no button of its own, so the address
+        // gets the room
+        : h('a', { class: 'menu__foot menu__foot--account', href: paths.settings(), 'data-link': true, 'aria-label': `Tu cuenta: ${options.email}` },
+            avatar, h('span', { class: 'menu__email', title: options.email }, options.email));
     const menu = h('nav', { class: 'menu', 'aria-label': 'Menú' },
         h('span', { class: 'menu__brand' }, 'Lista'),
         ...entries.map(({ element }) => element),
-        h('div', { class: 'menu__foot' }, h('span', { class: 'menu__email' }, options.email ?? 'Sin cuenta'), signOut));
+        foot);
 
     return {
         top: [bar, line],
@@ -136,6 +147,7 @@ export function createHeader(options: HeaderOptions): Header {
             const { text: said, tone } = describeSync(status);
             text.textContent = said;
             dot.className = `sync-dot sync-dot--${tone}`;
+            avatar.className = `menu__avatar menu__avatar--${tone}`;
             dot.setAttribute('aria-label', `${said}. Toca para sincronizar ahora`);
             dot.title = said;
             line.className = `sync-line sync-line--${tone}`;

@@ -10,7 +10,7 @@ import { h } from '../dom.ts';
  */
 
 /** The day this text was last revised */
-export const PRIVACY_UPDATED = '27 de noviembre de 2026';
+export const PRIVACY_UPDATED = '28 de noviembre de 2026';
 
 /** Where people write about their data */
 export const PRIVACY_EMAIL = 'contacto@musicos-catolicos.com';
@@ -32,7 +32,7 @@ export const PRIVACY_SECTIONS: readonly Section[] = [
                 'No usamos tus datos para nada más que darte tu cuenta y tus cantos.',
                 'No los vendemos, no hay publicidad ni analítica y no te seguimos.',
                 'Puedes usar Listas sin cuenta: lo que escribas se queda solo en tu dispositivo.',
-                'Puedes pedir que borremos tu cuenta con todo lo que guardaste.',
+                'Puedes eliminar tu cuenta en Ajustes, con todo lo que guardaste.',
             ],
         }],
     },
@@ -75,7 +75,7 @@ export const PRIVACY_SECTIONS: readonly Section[] = [
         title: 'Cuánto tiempo',
         blocks: [{
             ul: [
-                'Tu cuenta y tu biblioteca, mientras tengas la cuenta.',
+                'Tu cuenta y tu biblioteca, mientras tengas la cuenta. Si pides eliminarla, 3 días más (para que puedas cambiar de opinión) y después se borran.',
                 'Los enlaces del correo: 2 días el de confirmar tu correo y 1 hora el de elegir contraseña nueva; se gastan al usarlos.',
                 'Las sesiones, hasta 180 días, o hasta que salgas.',
                 'Los registros contra abusos: 15 minutos los intentos fallidos de entrar; lo demás, un día como máximo.',
@@ -87,7 +87,8 @@ export const PRIVACY_SECTIONS: readonly Section[] = [
         id: 'derechos',
         title: 'Tus derechos y cómo borrar tu cuenta',
         blocks: [
-            { p: `Listas es un proyecto personal de Músicos Católicos. Puedes pedirnos saber qué datos tuyos tenemos, corregirlos, borrarlos o que dejemos de usarlos. Por ahora, para borrar tu cuenta escribe a ${PRIVACY_EMAIL} desde el correo de la cuenta, con el asunto «Privacidad»: borramos la cuenta y todo lo que guardaste. Respondemos dentro de 30 días; a veces podemos tardar más y entonces te avisamos.` },
+            { p: 'Puedes eliminar tu cuenta tú mismo, en Ajustes → «Eliminar mi cuenta…». Te mandamos un enlace al correo de la cuenta para confirmar. Después la guardamos 3 días por si cambias de opinión (en ese tiempo está cerrada y tus enlaces compartidos no funcionan; si entras otra vez, puedes conservarla) y luego se borra para siempre, con todo lo que guardaste. Antes puedes descargar tus cantos, también en Ajustes.' },
+            { p: `Listas es un proyecto personal de Músicos Católicos. Para saber qué datos tuyos tenemos, corregirlos, borrarlos al instante o que dejemos de usarlos, escribe a ${PRIVACY_EMAIL} desde el correo de la cuenta, con el asunto «Privacidad». Respondemos dentro de 30 días; a veces podemos tardar más y entonces te avisamos.` },
             { p: 'Si vives en la Unión Europea, el Reino Unido o Suiza, tienes además los derechos del Reglamento General de Protección de Datos (o su equivalente), incluido el de quejarte ante la autoridad de tu país.' },
             { p: 'Listas no está dirigida especialmente a menores de 13 años y no recopilamos a sabiendas sus datos; si crees que un menor nos envió los suyos, escríbenos y los borramos. Si cambia lo que Listas guarda, actualizaremos esta página y la fecha de arriba.' },
         ],

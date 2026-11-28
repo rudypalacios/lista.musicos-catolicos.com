@@ -65,6 +65,18 @@ export interface Me {
     email: string;
     /** Whether the address was confirmed (a link sent to it was opened) */
     verified?: boolean;
+    /** Whether the account signs in with Google */
+    google?: boolean;
+    /** When the account will be deleted (epoch ms) if it asked to be and is in its 3 days: it is offered to keep it; null otherwise */
+    deleteAfter?: number | null;
+}
+
+/** What the page of the deletion link shows before the person answers */
+export interface DeletionPreview {
+    email: string;
+    songs: number;
+    lists: number;
+    templates: number;
 }
 
 /** The proof of work the server asks for before a sign-up or a reset (`src/Security/ProofOfWork.php`) */
@@ -142,6 +154,14 @@ export const api = {
     resendVerification: (): Promise<{ mailSent: boolean }> => request('POST', '/api/verify-email/resend', {}),
     forgot: (email: string, pow: Proof): Promise<unknown> => request('POST', '/api/forgot', { email, pow }),
     resetPassword: (token: string, password: string): Promise<{ email: string }> => request('POST', '/api/reset', { token, password }),
+    /** Step 1 of deleting the account: the server sends a link to the account's email; nothing changes until it is opened and answered */
+    requestAccountDeletion: (): Promise<{ mailSent: boolean }> => request('POST', '/api/account/delete-request', {}),
+    /** What the link of that email will do (it needs no session and does not spend the link) */
+    previewAccountDeletion: (token: string): Promise<DeletionPreview> => request('POST', '/api/account/delete-preview', { token }),
+    /** The person said yes on the page of the link: the account is kept 3 days and deleted after them; `deleteAfter` is when (epoch ms) */
+    confirmAccountDeletion: (token: string): Promise<{ email: string; deleteAfter: number }> => request('POST', '/api/account/delete-confirm', { token }),
+    /** The person changed their mind during the 3 days */
+    keepAccount: (): Promise<unknown> => request('POST', '/api/account/keep', {}),
     pull: (since: number): Promise<Pulled> =>
         request<PulledPage>('GET', `/api/sync?since=${since}`).then((page) => ({
             ...page,
@@ -179,6 +199,7 @@ export const remote: Remote = { pull: api.pull, push: api.push };
 /** How the sync engine tells the failures of the API apart */
 export const errorKinds: ErrorKinds = {
     isOffline: (error) => error instanceof ApiError && error.isOffline,
-    isSignedOut: (error) => error instanceof ApiError && error.status === 401,
+    // A locked account (it asked to be deleted) answers nothing: signing in again offers to keep it
+    isSignedOut: (error) => error instanceof ApiError && (error.status === 401 || error.code === 'deletion_pending'),
     isRefusal: (error) => error instanceof ApiError && error.status === 400,
 };

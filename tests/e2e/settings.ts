@@ -209,7 +209,7 @@ try {
     assert.equal(await page.getByRole('button', { name: 'Ajustar' }).isVisible(), true);
     assert.equal(await page.locator('.sheet-layer').getByRole('button', { name: 'Subir un semitono' }).isVisible(), true);
     assert.equal(await page.getByRole('link', { name: 'Ajustes' }).count(), 0, 'no Ajustes in the sheet: the menu is on the list');
-    assert.equal(await page.getByRole('button', { name: 'Salir' }).count(), 0, 'no Salir in the sheet: the account is in Ajustes');
+    assert.equal(await page.getByRole('button', { name: 'Cerrar sesión' }).count(), 0, 'no Cerrar sesión in the sheet: the account is in Ajustes');
     await page.keyboard.press('Escape');
     await page.getByRole('button', { name: 'Ajustar' }).waitFor({ state: 'hidden' });
     pass('singing has a one-row bar; the key and the lyrics tools are behind "⋯", and Escape closes it');

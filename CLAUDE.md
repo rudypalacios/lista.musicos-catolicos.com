@@ -172,6 +172,20 @@ written out, with the first blocks mixed once, in slices so the screen moves; no
 The links of the emails open pages of their own that need no session and no data of the device (`/verificar/:token`, `/restablecer/:token`, `views/account-link.ts`, drawn
 by `main.ts` like the visitor's page). `tests/e2e/signup.ts` covers it end to end with a little SMTP server that receives the server's real emails.
 
+## Deleting an account, and signing out (the owner's decision, 2026-11-28)
+
+A person can delete their own account (Ajustes, at the end → `/ajustes/eliminar`, `views/delete-account.ts`), in three steps made so nobody does it by chance: (1) the app asks the server to send a **link to the account's email** (`POST /api/account/delete-request`,
+`Auth/AccountDeletion::request`, code purpose `delete`, 1 hour); nothing changes. (2) The page of the link (`/eliminar/:token`, `account-link.ts`) **shows what goes and asks**: opening a link never deletes (a program that reads the links of an email would), and "Sí, eliminar mi cuenta"
+(`delete-confirm`) **locks the account for 3 days** (`users.delete_after`, migration 0023): every session ends, its shared links stop (the two share queries join `users` with `delete_after IS NULL`) and `RequireUser` answers **403 `deletion_pending`** to everything but `GET /api/me` and `POST /api/account/keep`
+(`allowPending`). (3) After the 3 days it is **deleted for good** with everything it owns (`AccountDeletion::OWNED`: **a new table with a `user_id` goes in that list, and in its test**); `PurgeDueAccounts` runs it on any API request, because the host has no cron. Signing in again in the 3 days (password,
+Google, the sign-in of a device whose session ended) shows **`keepAccountView` over everything** (`showKeepAccount`, `session.ts` `guardPending` / `finishGoogle`): "Conservar mi cuenta" (`/api/account/keep`) or "Seguir con la eliminación" (ends the session). A device whose account is locked reads the 403 as a session that ended
+(`errorKinds.isSignedOut`). The privacy text says all of it (`views/privacy.ts`, "Tus derechos"): **when this changes, it changes there in the same PR.** If the owner deletes their own account and it is the only one, `seedOwner` makes it again, empty, from `OWNER_EMAIL`.
+
+**"Descargar mis cantos"** (the account card, and the delete screen, for guests too): a `.zip` made **on the device** (`export.ts` pure + tested, `zip.ts` a store-only zip with UTF-8 names, `download.ts` the glue), so it works offline: `cantos/<title>.txt` per song, as ChordPro with `{title}` and `{artist}`, and `listados.txt` with every list in the order of the Mass, each song in its key. iPad: a download from the installed app is checked by hand.
+
+**"Cerrar sesión"** (it was "Salir") asks "¿Cerrar sesión?" first (`shell/frame.ts`): signing out takes the songs off the device, and without a connection they cannot be opened until the person signs in again. The unsent-songs question still comes after it when it applies. Ajustes has the account as a **card at the top**
+(`views/account-card.ts`), the rail's foot is the person's letter (ring = the sync dot's colour) and address and leads to Ajustes; the mockup the owner chose and the locked design are in `DESIGN-LOCK.md` ("Menu"). Classes of this area are named `acct__*` / `delete-account__*` on purpose: `.chip` and the like already exist elsewhere (`.chip` of the editor was overwritten once).
+
 ## Signing in with Google (step 4 of "Open sign-up")
 
 A redirect flow done by the server: no script of Google is loaded in the page, so the CSP is unchanged (a link the browser follows is not governed by it). "Continuar con Google" is a plain link to `GET /api/google/start`

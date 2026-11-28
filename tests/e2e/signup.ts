@@ -8,7 +8,7 @@
  */
 import assert from 'node:assert/strict';
 import type { Page } from 'playwright';
-import { chromium, openSection, reporter, startMailSink, startServer } from './lib.ts';
+import { chromium, confirmSignOut, openSection, reporter, startMailSink, startServer } from './lib.ts';
 
 const PASSWORD = 'una clave bien larga';
 const NEW_PASSWORD = 'otra clave todavia mas larga';
@@ -82,7 +82,7 @@ try {
     await reading.getByText('No usamos tus datos para nada más que darte tu cuenta y tus cantos').waitFor();
     await reading.getByRole('heading', { name: 'Con cuenta, qué guardamos' }).waitFor();
     await reading.getByText('lista_session').waitFor();
-    await reading.getByText('Por ahora, para borrar tu cuenta escribe a').waitFor();
+    await reading.getByText('Puedes eliminar tu cuenta tú mismo, en Ajustes').waitFor();
     assert.equal(await reading.getByRole('button', { name: 'Crear cuenta' }).count(), 0, 'a page of text, with no app around it');
     pass('the sign-up links to the text about the data, a page of the app that needs no session');
 
@@ -124,7 +124,8 @@ try {
     pass('the link confirms the address with no session (another browser); the old one does not work; Ajustes stops saying it');
 
     // ----- forgetting the password -----
-    await page.getByRole('button', { name: 'Salir' }).click();
+    await page.getByRole('button', { name: 'Cerrar sesión' }).click();
+    await confirmSignOut(page);
     await page.getByRole('button', { name: 'Usar mi correo' }).click();
     await page.getByRole('button', { name: 'Olvidé mi contraseña' }).click();
     await page.getByLabel('Correo').fill('ana@example.com');

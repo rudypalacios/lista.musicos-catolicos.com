@@ -3,6 +3,7 @@ import { visibleParts } from '../data/setlists.ts';
 import { paths, type Route } from '../router.ts';
 import { addView } from '../views/add.ts';
 import { checkMailView } from '../views/check-mail.ts';
+import { deleteAccountView } from '../views/delete-account.ts';
 import { editView } from '../views/edit.ts';
 import { importView } from '../views/import.ts';
 import { installView } from '../views/install.ts';
@@ -54,7 +55,9 @@ export function routeView(data: App, route: Route, navigate: Navigate, account: 
         case 'check-mail':
             return Promise.resolve(checkMailView({ email: account.email ?? '', sent: route.sent, onContinue: () => navigate(paths.list()) }));
         case 'settings':
-            return Promise.resolve(settingsView(account));
+            return Promise.resolve(settingsView(data, account, navigate));
+        case 'delete-account':
+            return Promise.resolve(deleteAccountView(data, account));
         case 'list':
             return Promise.resolve(listView(data, navigate));
         case 'new':

@@ -115,7 +115,7 @@ final class AccountsApiTest extends TestCase
         $this->assertSame($expected, $this->body($response));
         $cookies = $this->cookieOf($response);
         $this->assertSame(
-            ['email' => 'ana@example.com', 'verified' => false],
+            ['email' => 'ana@example.com', 'verified' => false, 'google' => false, 'deleteAfter' => null],
             $this->body($this->call('GET', '/api/me', null, $cookies))
         );
         $this->assertCount(1, $this->mailer->sent);

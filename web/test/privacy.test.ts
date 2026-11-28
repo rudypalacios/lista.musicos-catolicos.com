@@ -52,8 +52,10 @@ describe('the text about the data', () => {
         assert.match(everything, /hay dos más/, 'Google and YouTube are the only two');
     });
 
-    it('does not promise what the app does not do: no analytics of its own, and deleting an account is by email for now', () => {
+    it('does not promise what the app does not do: no analytics of its own, and deleting an account is in Ajustes, after 3 days', () => {
         assert.match(everything, /no hay publicidad ni analítica/);
-        assert.match(everything, /Por ahora, para borrar tu cuenta escribe a/);
+        assert.match(everything, /Puedes eliminar tu cuenta tú mismo, en Ajustes/);
+        assert.match(everything, /la guardamos 3 días por si cambias de opinión/);
+        assert.ok(everything.includes(PRIVACY_EMAIL), 'and the address stays for what cannot be done in the app');
     });
 });

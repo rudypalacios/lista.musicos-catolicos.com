@@ -208,10 +208,18 @@ export async function editFromSongPage(page: Page): Promise<void> {
     await page.getByRole('button', { name: 'Editar letra y acordes' }).click();
 }
 
-/** Signs out the way a person does: Ajustes, then "Salir" */
+/** Signs out the way a person does: Ajustes, "Cerrar sesión" and the answer to "¿Cerrar sesión?" */
 export async function signOutFromSettings(page: Page): Promise<void> {
     await openSection(page, 'Ajustes');
-    await page.getByRole('button', { name: 'Salir' }).click();
+    await page.getByRole('button', { name: 'Cerrar sesión' }).click();
+    await confirmSignOut(page);
+}
+
+/** Answers "¿Cerrar sesión?" with the button that does it */
+export async function confirmSignOut(page: Page): Promise<void> {
+    const asking = page.getByRole('alertdialog', { name: '¿Cerrar sesión?' });
+    await asking.getByText('siguen guardados en tu cuenta').waitFor();
+    await asking.getByRole('button', { name: 'Cerrar sesión' }).click();
 }
 
 /** Waits until the header says the songs are synced (nothing left to send) */
